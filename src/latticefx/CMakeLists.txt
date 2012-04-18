@@ -13,9 +13,11 @@ set( _headerFiles
     DataSet.h
     MaskUtils.h
     OperationBase.h
-    PluginInterface.h
+    PageData.h
+    PagingThread.h
     PluginManager.h
     Preprocess.h
+    RootCallback.h
     Renderer.h
     RTPOperation.h
     TextureUtils.h
@@ -27,10 +29,12 @@ set( _sourceFiles
     DataSet.cpp
     MaskUtils.cpp
     OperationBase.cpp
-    PluginInterface.cpp
+    PageData.cpp
+    PagingThread.cpp
     PluginManager.cpp
     Preprocess.cpp
     Renderer.cpp
+    RootCallback.cpp
     RTPOperation.cpp
     TextureUtils.cpp
 )
