@@ -1,0 +1,34 @@
+# Required Vars:
+# ${_libName}
+# ${_headerFiles}
+
+SET(INSTALL_INCDIR include)
+SET(INSTALL_BINDIR bin)
+IF(WIN32)
+    SET(INSTALL_LIBDIR bin)
+    SET(INSTALL_ARCHIVEDIR lib)
+ELSE()
+    SET(INSTALL_LIBDIR lib${LIB_POSTFIX})
+    SET(INSTALL_ARCHIVEDIR lib${LIB_POSTFIX})
+ENDIF()
+
+SET(HEADERS_GROUP "Header Files")
+
+SOURCE_GROUP(
+    ${HEADERS_GROUP}
+    FILES ${_headerFiles}
+)
+
+INSTALL(
+    TARGETS ${_libName}
+    RUNTIME DESTINATION ${INSTALL_BINDIR} COMPONENT latticefx
+    LIBRARY DESTINATION ${INSTALL_LIBDIR} COMPONENT latticefx
+    ARCHIVE DESTINATION ${INSTALL_ARCHIVEDIR} COMPONENT latticefx-dev
+)
+
+# FIXME: Do not run for OS X framework
+INSTALL(
+    FILES        ${_headerFiles}
+    DESTINATION ${INSTALL_INCDIR}/${_libName}
+    COMPONENT latticefx-dev
+)

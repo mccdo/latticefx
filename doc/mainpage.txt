@@ -1,0 +1,37 @@
+/**
+
+\mainpage LatticeFX: A Visualization Framework
+
+\section Overview
+
+General description, OSG-based, support for time series data, support for volume visualization,
+support for large data sets, configurable, etc.
+
+\subsection ssDataSet The DataSet class
+
+  \li \link lfx::DataSet The DataSet class \endlink
+
+\subsection ssPAndC Preprocessing and Caching
+
+  \li \link lfx::Preprocess Preprocessing and Caching \endlink
+
+\subsection ssRTP Run-Time Processing Operations
+
+  \li \link lfx::RTPOperation Run-Time Processing Operations \endlink
+
+\subsection ssRF Rendering Framework
+
+  \li \link lfx::Renderer Rendering Framework \endlink
+
+\section Paging
+
+\section Utilities
+
+  \li \ref MaskUtils
+  \li \ref TextureUtils
+
+\section Plugins
+
+  \ref PluginSupport
+
+*/
