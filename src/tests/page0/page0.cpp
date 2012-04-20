@@ -53,8 +53,8 @@ int main( int argc, char** argv )
     lfx::PageData* pageData( new lfx::PageData );
     pageData->setRangeMode( lfx::PageData::PIXEL_SIZE_RANGE );
     pageData->setParent( root.get() );
-    pageData->setRangeData( 0, lfx::PageData::RangeData( 0, 500, "page-red.osg" ) );
-    pageData->setRangeData( 1, lfx::PageData::RangeData( 500, FLT_MAX, "page-white.osg" ) );
+    pageData->setRangeData( 0, lfx::PageData::RangeData( 0, 50000, "page-white.osg" ) );
+    pageData->setRangeData( 1, lfx::PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
     pageData->setBound( osg::BoundingSphere( osg::Vec3( 0., 0., 0. ), 1.5f ) );
     root->setUserData( pageData );
 

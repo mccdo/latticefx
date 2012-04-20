@@ -39,7 +39,7 @@ public:
 
 protected:
     boost::thread* _thread;
-    mutable boost::mutex _mutex;
+    mutable boost::mutex _requestMutex, _retrieveMutex;
 
     bool _haltRequest;
 

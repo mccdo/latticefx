@@ -24,24 +24,24 @@ PagingThread::~PagingThread()
 
 void PagingThread::halt()
 {
-    boost::mutex::scoped_lock( _mutex );
+    boost::mutex::scoped_lock( _requestMutex );
     _haltRequest = true;
 }
 bool PagingThread::getHaltRequest() const
 {
-    boost::mutex::scoped_lock( _mutex );
+    boost::mutex::scoped_lock( _requestMutex );
     return( _haltRequest );
 }
 
 void PagingThread::addLoadRequest( osg::Node* location, const std::string& fileName )
 {
-    boost::mutex::scoped_lock( _mutex );
+    boost::mutex::scoped_lock( _requestMutex );
     _loadRequestList.push_back( LoadRequest( location, fileName ) );
 }
 
 osg::Node* PagingThread::retrieveRequest( const osg::Node* location )
 {
-    boost::mutex::scoped_lock( _mutex );
+    boost::mutex::scoped_lock( _retrieveMutex );
 
     LoadRequestList::iterator it;
     for( it = _returnList.begin(); it != _returnList.end(); ++it )
@@ -61,15 +61,11 @@ void PagingThread::operator()()
 {
     while( !getHaltRequest() )
     {
-        {
-            boost::mutex::scoped_lock( _mutex );
-            std::cout << "__thread " << _loadRequestList.size() << " " << _completedList.size() <<
-                " " << _returnList.size() << std::endl;
-        }
-
         bool requestAvailable;
         {
-            boost::mutex::scoped_lock( _mutex );
+            boost::mutex::scoped_lock( _requestMutex );
+            std::cout << "__thread " << _loadRequestList.size() << " " << _completedList.size() <<
+                " " << _returnList.size() << std::endl;
             requestAvailable = !( _loadRequestList.empty() );
         }
 
@@ -77,7 +73,7 @@ void PagingThread::operator()()
         {
             LoadRequest request;
             {
-                boost::mutex::scoped_lock( _mutex );
+                boost::mutex::scoped_lock( _requestMutex );
                 request = *( _loadRequestList.begin() );
                 _loadRequestList.pop_front();
                 std::cout << "____Got a request for " << request._fileName << std::endl;
@@ -104,7 +100,7 @@ void PagingThread::operator()()
         {
             LoadRequest completed = *( _completedList.begin() );
             _completedList.pop_front();
-            boost::mutex::scoped_lock( _mutex );
+            boost::mutex::scoped_lock( _retrieveMutex );
             _returnList.push_back( completed );
         }
     }
