@@ -6,6 +6,7 @@
 #include <latticefx/Export.h>
 #include <osg/NodeCallback>
 #include <osg/Group>
+#include <osg/Camera>
 #include <latticefx/PageData.h>
 
 #include <vector>
@@ -25,10 +26,16 @@ public:
 
     void addPageParent( osg::Group* parent );
 
+    void setCamera( osg::Camera* camera );
+
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
     virtual ~RootCallback();
+
+    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::NodeVisitor* nv );
+
+    osg::ref_ptr< osg::Camera > _camera;
 
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;

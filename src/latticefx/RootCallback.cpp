@@ -2,6 +2,7 @@
 #include <latticefx/RootCallback.h>
 #include <latticefx/PagingThread.h>
 #include <latticefx/PageData.h>
+#include <osg/Transform>
 #include <boost/foreach.hpp>
 
 #include <iostream>
@@ -21,14 +22,16 @@ void RootCallback::addPageParent( osg::Group* parent )
 {
     _pageParentList.push_back( parent );
 }
+void RootCallback::setCamera( osg::Camera* camera )
+{
+    _camera = camera;
+}
 
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     std::cout << "Update." << std::endl;
 
     lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
-
-    // Check for subgraphs ready to be attached.
 
     // Add any new page requests.
     BOOST_FOREACH( GroupList::value_type grp, _pageParentList )
@@ -40,7 +43,8 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
             const osg::BoundingSphere& bSphere( pageData->getBound() );
-            // rangeValue = (compute pixelSize here)
+            rangeValue = computePixelSize( bSphere, nv );
+            std::cout << "Pixel size: " << rangeValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
         {
@@ -56,7 +60,8 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             case PageData::RangeData::UNLOADED:
             {
                 std::cout << "    RangeData UNLOADED" << std::endl;
-                // if rangeValue is in range
+                if( ( rangeValue >= rangeData._rangeValues.first ) &&
+                    ( rangeValue <= rangeData._rangeValues.second ) )
                 {
                     pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
                         rangeData._fileName );
@@ -93,6 +98,43 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     traverse( node, nv );
 }
+
+
+double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::NodeVisitor* nv )
+{
+    if( _camera == NULL )
+    {
+        OSG_WARN << "RootCallback: NULL _camera." << std::endl;
+        return( 0. );
+    }
+
+    osg::Matrix modelView( osg::computeLocalToWorld( nv->getNodePath() ) * _camera->getViewMatrix() );
+    const osg::Vec3 ecCenter = bSphere.center() * modelView ;
+    if( -( ecCenter.z() ) < bSphere.radius() )
+    {
+        // Inside the bounding sphere.
+        return( FLT_MAX );
+    }
+
+    // Compute pixelRadius, the sphere radius in pixels.
+
+    const osg::Viewport* vp( _camera->getViewport() );
+
+    osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * _camera->getProjectionMatrix() );
+    ccCenter.x() /= ccCenter.w();
+    double cx( ( ccCenter.x() * 2. + 1. ) * vp->width() + vp->x() );
+
+    const osg::Vec4 ecRight( ecCenter.x() + bSphere.radius(), ecCenter.y(), ecCenter.z(), 1. );
+    osg::Vec4 ccRight( ecRight * _camera->getProjectionMatrix() );
+    ccRight.x() /= ccRight.w();
+    double rx( ( ccRight.x() * 2. + 1. ) * vp->width() + vp->x() );
+
+    const double pixelRadius( rx - cx );
+
+    // Circle area A = pi * r^2
+    return( osg::PI * pixelRadius * pixelRadius );
+}
+
 
 // lfx
 }

@@ -69,5 +69,8 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 450 );
     viewer.setSceneData( root.get() );
+
+    rootCallback->setCamera( viewer.getCamera() );
+
     return( viewer.run() );
 }
