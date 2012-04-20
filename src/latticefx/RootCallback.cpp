@@ -51,6 +51,8 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             // rangeValue = (current timestamp)
         }
 
+        bool removeExpired( false );
+        unsigned int saveIndex( 0 );
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
@@ -61,7 +63,7 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             {
                 std::cout << "    RangeData UNLOADED" << std::endl;
                 if( ( rangeValue >= rangeData._rangeValues.first ) &&
-                    ( rangeValue <= rangeData._rangeValues.second ) )
+                    ( rangeValue < rangeData._rangeValues.second ) )
                 {
                     pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
                         rangeData._fileName );
@@ -76,7 +78,8 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 if( loadedModel != NULL )
                 {
                     std::cout << "      Retrieved: " << std::hex << loadedModel << std::endl;
-                    //    remove expired children
+                    removeExpired = true;
+                    saveIndex = childIndex;
                     pageData->getParent()->setChild( childIndex, loadedModel );
                     rangeData._status = PageData::RangeData::LOADED;
                 }
@@ -94,6 +97,28 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             }
             }
         }
+
+        if( removeExpired )
+        {
+            BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+            {
+                const unsigned int childIndex( rangeDataPair.first );
+                if( childIndex == saveIndex )
+                    continue;
+
+                PageData::RangeData& rangeData( rangeDataPair.second );
+                if( rangeData._status == PageData::RangeData::LOADED )
+                {
+                    if( ( rangeValue < rangeData._rangeValues.first ) ||
+                        ( rangeValue >= rangeData._rangeValues.second ) )
+                    {
+                        pageData->getParent()->setChild( childIndex, new osg::Group );
+                        rangeData._status = PageData::RangeData::UNLOADED;
+                    }
+                }
+            }
+        }
+
     }
 
     traverse( node, nv );
