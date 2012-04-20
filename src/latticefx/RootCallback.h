@@ -5,6 +5,10 @@
 
 #include <latticefx/Export.h>
 #include <osg/NodeCallback>
+#include <osg/Group>
+#include <latticefx/PageData.h>
+
+#include <vector>
 
 
 namespace lfx {
@@ -19,12 +23,15 @@ class LATTICEFX_EXPORT RootCallback : public osg::NodeCallback
 public:
     RootCallback();
 
+    void addPageParent( osg::Group* parent );
+
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
     virtual ~RootCallback();
 
-    bool _pagingActive;
+    typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
+    GroupList _pageParentList;
 };
 
 

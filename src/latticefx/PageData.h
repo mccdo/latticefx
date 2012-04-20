@@ -8,7 +8,8 @@
 #include <osg/Object>
 #include <osg/Group>
 
-#include <vector>
+#include <map>
+#include <string>
 
 
 namespace lfx {
@@ -33,9 +34,35 @@ public:
     void setRangeMode( const RangeMode rangeMode );
     RangeMode getRangeMode() const;
 
-    typedef std::pair< double, double > RangeData;
-    void setRangeData( const unsigned int childIndex, const RangeData rangeData );
-    RangeData getRangeData( const unsigned int childIndex ) const;
+    typedef std::pair< double, double > RangeValues;
+
+    struct LATTICEFX_EXPORT RangeData {
+        RangeData();
+        RangeData( double minVal, double maxVal, const std::string& fileName=std::string( "" ) );
+
+        unsigned int _childIndex;
+        RangeValues _rangeValues;
+        std::string _fileName;
+
+        typedef enum {
+            UNLOADED,
+            LOAD_REQUESTED,
+            LOADED,
+            UNLOAD_REQUESTED
+        } StatusType;
+        StatusType _status;
+    };
+
+    void setRangeData( const unsigned int childIndex, const RangeData& rangeData );
+    RangeData* getRangeData( const unsigned int childIndex );
+    const RangeData* getRangeData( const unsigned int childIndex ) const;
+
+    typedef std::map< unsigned int, RangeData > RangeDataMap;
+    RangeDataMap& getRangeDataMap();
+
+
+    void setBound( const osg::BoundingSphere& bound );
+    osg::BoundingSphere getBound() const;
 
     void setParent( osg::Group* parent );
     osg::Group* getParent();
@@ -45,8 +72,9 @@ protected:
 
     RangeMode _rangeMode;
 
-    typedef std::vector< RangeData > RangeDataVec;
-    RangeDataVec _rangeDataVec;
+    RangeDataMap _rangeDataMap;
+
+    osg::BoundingSphere _bound;
 
     osg::observer_ptr< osg::Group > _parent;
 };

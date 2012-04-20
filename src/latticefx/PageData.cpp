@@ -16,7 +16,7 @@ PageData::PageData()
 PageData::PageData( const PageData& rhs, const osg::CopyOp& copyOp )
   : osg::Object( rhs, copyOp ),
     _rangeMode( rhs._rangeMode ),
-    _rangeDataVec( rhs._rangeDataVec ),
+    _rangeDataMap( rhs._rangeDataMap ),
     _parent( rhs._parent )
 {
 }
@@ -33,21 +33,36 @@ PageData::RangeMode PageData::getRangeMode() const
     return( _rangeMode );
 }
 
-void PageData::setRangeData( const unsigned int childIndex, const RangeData rangeData )
+void PageData::setBound( const osg::BoundingSphere& bound )
 {
-    if( childIndex >= _rangeDataVec.size() )
-        _rangeDataVec.resize( childIndex + 1 );
-    _rangeDataVec[ childIndex ] = rangeData;
+    _bound = bound;
 }
-PageData::RangeData PageData::getRangeData( const unsigned int childIndex ) const
+osg::BoundingSphere PageData::getBound() const
 {
-    if( childIndex >= _rangeDataVec.size() )
-    {
-        std::cerr << "RangeData: childIndex " << childIndex << " out of range." << std::endl;
-        return( RangeData() );
-    }
-    else
-        return( _rangeDataVec[ childIndex ] );
+    return( _bound );
+}
+
+void PageData::setRangeData( const unsigned int childIndex, const RangeData& rangeData )
+{
+    _rangeDataMap[ childIndex ] = rangeData;
+}
+PageData::RangeData* PageData::getRangeData( const unsigned int childIndex )
+{
+    RangeDataMap::iterator it( _rangeDataMap.find( childIndex ) );
+    if( it != _rangeDataMap.end() )
+        return( &( it->second ) );
+    return( NULL );
+}
+const PageData::RangeData* PageData::getRangeData( const unsigned int childIndex ) const
+{
+    RangeDataMap::const_iterator it( _rangeDataMap.find( childIndex ) );
+    if( it != _rangeDataMap.end() )
+        return( &( it->second ) );
+    return( NULL );
+}
+PageData::RangeDataMap& PageData::getRangeDataMap()
+{
+    return( _rangeDataMap );
 }
 
 void PageData::setParent( osg::Group* parent )
@@ -57,6 +72,22 @@ void PageData::setParent( osg::Group* parent )
 osg::Group* PageData::getParent()
 {
     return( _parent.get() );
+}
+
+
+
+PageData::RangeData::RangeData()
+  : _childIndex( 0 ),
+    _rangeValues( RangeValues( 0., FLT_MAX ) ),
+    _status( UNLOADED )
+{
+}
+PageData::RangeData::RangeData( double minVal, double maxVal, const std::string& fileName )
+  : _childIndex( 0 ),
+    _rangeValues( RangeValues( minVal, maxVal ) ),
+    _fileName( fileName ),
+    _status( UNLOADED )
+{
 }
 
 
