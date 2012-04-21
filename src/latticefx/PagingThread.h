@@ -33,13 +33,15 @@ public:
 
     osg::Node* retrieveRequest( const osg::Node* location );
 
+    bool cancelLoadRequest( const osg::Node* location );
+
     /** \brief
     \details Called by the paging thread. */
     void operator()();
 
 protected:
     boost::thread* _thread;
-    mutable boost::mutex _requestMutex, _retrieveMutex;
+    mutable boost::mutex _requestMutex, _completedMutex, _retrieveMutex;
 
     bool _haltRequest;
 
@@ -60,6 +62,10 @@ protected:
     LoadRequestList _loadRequestList;
     LoadRequestList _completedList;
     LoadRequestList _returnList;
+
+
+    static osg::Node* retrieveAndRemove( const osg::Node* location, LoadRequestList& theList,
+            boost::mutex& theMutex );
 };
 
 

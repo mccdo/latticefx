@@ -44,11 +44,17 @@ public:
         RangeValues _rangeValues;
         std::string _fileName;
 
+        /**
+        \li UNLOADED        Child is en empty stub Group.
+        \li LOAD_REQUESTED  PagingTHread has been asked to load this child.
+        \li LOADED,         The child has been loaded and attached.
+        \li ACTIVE          The loaded child is in use and has not expired.
+        */
         typedef enum {
             UNLOADED,
             LOAD_REQUESTED,
             LOADED,
-            UNLOAD_REQUESTED
+            ACTIVE
         } StatusType;
         StatusType _status;
     };

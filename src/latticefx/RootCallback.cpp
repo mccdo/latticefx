@@ -39,31 +39,40 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
         std::cout << "  PageData." << std::endl;
 
-        double rangeValue( 0. );
+        double testValue( 0. );
+        PageData::RangeValues range;
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
             const osg::BoundingSphere& bSphere( pageData->getBound() );
-            rangeValue = computePixelSize( bSphere, nv );
-            std::cout << "Pixel size: " << rangeValue << std::endl;
+            testValue = computePixelSize( bSphere, nv );
+            std::cout << "Pixel size: " << testValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
         {
-            // rangeValue = (current timestamp)
+            // range = (current time range)
         }
 
         bool removeExpired( false );
-        unsigned int saveIndex( 0 );
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
+
+            if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
+            {
+                range = rangeData._rangeValues;
+            }
+            else
+            {
+                testValue = rangeData._rangeValues.first;
+            }
+
             switch( rangeData._status )
             {
             case PageData::RangeData::UNLOADED:
             {
                 std::cout << "    RangeData UNLOADED" << std::endl;
-                if( ( rangeValue >= rangeData._rangeValues.first ) &&
-                    ( rangeValue < rangeData._rangeValues.second ) )
+                if( inRange( testValue, range ) )
                 {
                     pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
                         rangeData._fileName );
@@ -79,7 +88,6 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 {
                     std::cout << "      Retrieved: " << std::hex << loadedModel << std::endl;
                     removeExpired = true;
-                    saveIndex = childIndex;
                     pageData->getParent()->setChild( childIndex, loadedModel );
                     rangeData._status = PageData::RangeData::LOADED;
                 }
@@ -88,11 +96,13 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             case PageData::RangeData::LOADED:
             {
                 std::cout << "    RangeData LOADED" << std::endl;
+                // Nothing to do.
                 break;
             }
-            case PageData::RangeData::UNLOAD_REQUESTED:
+            case PageData::RangeData::ACTIVE:
             {
-                std::cout << "    RangeData UNLOAD_REQUESTED" << std::endl;
+                std::cout << "    RangeData ACTIVE" << std::endl;
+                // Nothing to do.
                 break;
             }
             }
@@ -103,22 +113,52 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
             {
                 const unsigned int childIndex( rangeDataPair.first );
-                if( childIndex == saveIndex )
-                    continue;
-
                 PageData::RangeData& rangeData( rangeDataPair.second );
-                if( rangeData._status == PageData::RangeData::LOADED )
+
+                if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
                 {
-                    if( ( rangeValue < rangeData._rangeValues.first ) ||
-                        ( rangeValue >= rangeData._rangeValues.second ) )
+                    range = rangeData._rangeValues;
+                }
+                else
+                {
+                    testValue = rangeData._rangeValues.first;
+                }
+
+                switch( rangeData._status )
+                {
+                case PageData::RangeData::LOAD_REQUESTED:
+                {
+                    if( !inRange( testValue, range ) )
+                    {
+                        /* cancel request */
+                        rangeData._status = PageData::RangeData::UNLOADED;
+                    }
+                    break;
+                }
+                case PageData::RangeData::ACTIVE:
+                {
+                    if( !inRange( testValue, range ) )
                     {
                         pageData->getParent()->setChild( childIndex, new osg::Group );
                         rangeData._status = PageData::RangeData::UNLOADED;
                     }
+                    break;
+                }
+                case PageData::RangeData::LOADED:
+                {
+                    if( !inRange( testValue, range ) )
+                    {
+                        pageData->getParent()->setChild( childIndex, new osg::Group );
+                        rangeData._status = PageData::RangeData::UNLOADED;
+                    }
+                    else
+                    {
+                        rangeData._status = PageData::RangeData::ACTIVE;
+                    }
+                }
                 }
             }
         }
-
     }
 
     traverse( node, nv );

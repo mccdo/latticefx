@@ -24,37 +24,36 @@ PagingThread::~PagingThread()
 
 void PagingThread::halt()
 {
-    boost::mutex::scoped_lock( _requestMutex );
+    boost::mutex::scoped_lock lock( _requestMutex );
     _haltRequest = true;
 }
 bool PagingThread::getHaltRequest() const
 {
-    boost::mutex::scoped_lock( _requestMutex );
+    boost::mutex::scoped_lock lock( _requestMutex );
     return( _haltRequest );
 }
 
 void PagingThread::addLoadRequest( osg::Node* location, const std::string& fileName )
 {
-    boost::mutex::scoped_lock( _requestMutex );
+    boost::mutex::scoped_lock lock( _requestMutex );
     _loadRequestList.push_back( LoadRequest( location, fileName ) );
 }
 
 osg::Node* PagingThread::retrieveRequest( const osg::Node* location )
 {
-    boost::mutex::scoped_lock( _retrieveMutex );
+    return( retrieveAndRemove( location, _returnList, _retrieveMutex ) );
+}
 
-    LoadRequestList::iterator it;
-    for( it = _returnList.begin(); it != _returnList.end(); ++it )
-    {
-        if( it->_location == location )
-        {
-            osg::ref_ptr< osg::Node > returnValue = it->_loadedModel;
-            _returnList.erase( it );
-            std::cout << "__  Retreiving: " << std::hex << returnValue.get() << std::endl;
-            return( returnValue.release() );
-        }
-    }
-    return( NULL );
+bool PagingThread::cancelLoadRequest( const osg::Node* location )
+{
+    if( retrieveAndRemove( location, _loadRequestList, _requestMutex ) != NULL )
+        return( true );
+    else if( retrieveAndRemove( location, _completedList, _completedMutex ) != NULL )
+        return( true );
+    else if( retrieveAndRemove( location, _returnList, _retrieveMutex ) != NULL )
+        return( true );
+    else
+        return( false );
 }
 
 void PagingThread::operator()()
@@ -83,6 +82,7 @@ void PagingThread::operator()()
             {
                 request._loadedModel = osgDB::readNodeFile( request._fileName );
                 std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
+                boost::mutex::scoped_lock completedLock( _completedMutex );
                 _completedList.push_back( request );
             }
             // else if dbKey valid
@@ -96,15 +96,51 @@ void PagingThread::operator()()
 
         // Only allow one request to be returned to the app for now,
         // this will throttle how many OpenGL objects get created per frame.
-        if( !( _completedList.empty() ) && _returnList.empty() )
+        bool needReturn;
         {
-            LoadRequest completed = *( _completedList.begin() );
-            _completedList.pop_front();
-            boost::mutex::scoped_lock( _retrieveMutex );
-            _returnList.push_back( completed );
+            boost::mutex::scoped_lock lock( _retrieveMutex );
+            needReturn = _returnList.empty();
+        }
+        if( needReturn )
+        {
+            bool returnAvailable;
+            LoadRequest completed;
+            {
+                boost::mutex::scoped_lock lock( _completedMutex );
+                if( returnAvailable = !( _completedList.empty() ) )
+                {
+                    completed = *( _completedList.begin() );
+                    _completedList.pop_front();
+                }
+            }
+            if( returnAvailable )
+            {
+                boost::mutex::scoped_lock lock( _retrieveMutex );
+                _returnList.push_back( completed );
+            }
         }
     }
 }
+
+
+osg::Node* PagingThread::retrieveAndRemove( const osg::Node* location,
+        LoadRequestList& theList, boost::mutex& theMutex )
+{
+    boost::mutex::scoped_lock lock( theMutex );
+
+    LoadRequestList::iterator it;
+    for( it = theList.begin(); it != theList.end(); ++it )
+    {
+        if( it->_location == location )
+        {
+            osg::ref_ptr< osg::Node > returnValue = it->_loadedModel;
+            theList.erase( it );
+            return( returnValue.release() );
+        }
+    }
+    return( NULL );
+}
+
 
 
 
@@ -133,6 +169,8 @@ PagingThread::LoadRequest& PagingThread::LoadRequest::operator=( const PagingThr
     _location = rhs._location;
     _fileName = rhs._fileName;
     // dbKey is TBD.
+
+    _loadedModel = rhs._loadedModel;
 
     return( *this );
 }
