@@ -43,7 +43,9 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         PageData::RangeValues range;
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
-            const osg::BoundingSphere& bSphere( pageData->getBound() );
+            // If the owning Node has nothing but paged children, it must use Node::setInitialBound()
+            // to give it some spatial location and size. Retrieve that bound.
+            const osg::BoundingSphere& bSphere( node->getBound() );
             testValue = computePixelSize( bSphere, nv );
             std::cout << "Pixel size: " << testValue << std::endl;
         }

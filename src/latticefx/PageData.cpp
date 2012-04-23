@@ -33,14 +33,6 @@ PageData::RangeMode PageData::getRangeMode() const
     return( _rangeMode );
 }
 
-void PageData::setBound( const osg::BoundingSphere& bound )
-{
-    _bound = bound;
-}
-osg::BoundingSphere PageData::getBound() const
-{
-    return( _bound );
-}
 
 void PageData::setRangeData( const unsigned int childIndex, const RangeData& rangeData )
 {

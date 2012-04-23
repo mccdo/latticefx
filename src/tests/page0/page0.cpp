@@ -47,7 +47,10 @@ int main( int argc, char** argv )
     // To generate the test data, page-red.osg and page-white.osg:
     //generateDataFiles();
 
+    osg::BoundingSphere bound( osg::Vec3( 0., 0., 0. ), 1.5f );
+
     osg::ref_ptr< osg::Group > root( new osg::Group );
+    root->setInitialBound( bound );
     root->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
     lfx::PageData* pageData( new lfx::PageData );
@@ -55,7 +58,6 @@ int main( int argc, char** argv )
     pageData->setParent( root.get() );
     pageData->setRangeData( 0, lfx::PageData::RangeData( 0, 50000, "page-white.osg" ) );
     pageData->setRangeData( 1, lfx::PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
-    pageData->setBound( osg::BoundingSphere( osg::Vec3( 0., 0., 0. ), 1.5f ) );
     root->setUserData( pageData );
 
     lfx::RootCallback* rootCallback( new lfx::RootCallback );

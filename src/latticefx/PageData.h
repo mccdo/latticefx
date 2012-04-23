@@ -67,9 +67,6 @@ public:
     RangeDataMap& getRangeDataMap();
 
 
-    void setBound( const osg::BoundingSphere& bound );
-    osg::BoundingSphere getBound() const;
-
     void setParent( osg::Group* parent );
     osg::Group* getParent();
 
@@ -79,8 +76,6 @@ protected:
     RangeMode _rangeMode;
 
     RangeDataMap _rangeDataMap;
-
-    osg::BoundingSphere _bound;
 
     osg::observer_ptr< osg::Group > _parent;
 };
