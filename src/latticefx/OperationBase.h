@@ -16,7 +16,7 @@
 namespace lfx {
 
 
-/** \class OperationVelue OperationBase.h <latticefx/OperationBase.h>
+/** \class OperationValue OperationBase.h <latticefx/OperationBase.h>
 \brief
 \details
 */

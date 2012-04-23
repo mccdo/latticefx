@@ -15,6 +15,10 @@
 namespace lfx {
 
 
+/** \addtogroup PagingSupport */
+/**@{*/
+
+
 /** \class RootCallback RootCallback.h <latticefx/RootCallback.h>
 \brief 
 \details 
@@ -43,12 +47,14 @@ protected:
 };
 
 
+/**@}*/
+
+
 bool RootCallback::inRange( const double testValue, const PageData::RangeValues& range )
 {
     return( ( testValue >= range.first ) &&
             ( testValue < range.second ) );
 }
-
 
 
 // lfx

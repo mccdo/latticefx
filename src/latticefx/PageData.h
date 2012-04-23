@@ -15,6 +15,10 @@
 namespace lfx {
 
 
+/** \addtogroup PagingSupport */
+/**@{*/
+
+
 /** \class PageData PageData.h <latticefx/PageData.h>
 \brief 
 \details 
@@ -79,6 +83,9 @@ protected:
 
     osg::observer_ptr< osg::Group > _parent;
 };
+
+
+/**@}*/
 
 
 // lfx
