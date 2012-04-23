@@ -34,7 +34,7 @@ PocoMenuSetup()
 
 include( FindOSGHelper )
 PocoFinder()
-find_package( Boost REQUIRED )
+find_package( Boost REQUIRED thread date_time )
 find_package( osgWorks REQUIRED )
 
 find_package( VTK )
