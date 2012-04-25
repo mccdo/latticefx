@@ -63,8 +63,8 @@ void PagingThread::operator()()
         bool requestAvailable;
         {
             boost::mutex::scoped_lock( _requestMutex );
-            std::cout << "__thread " << _loadRequestList.size() << " " << _completedList.size() <<
-                " " << _returnList.size() << std::endl;
+            //std::cout << "__thread " << _loadRequestList.size() << " " << _completedList.size() <<
+            //    " " << _returnList.size() << std::endl;
             requestAvailable = !( _loadRequestList.empty() );
         }
 

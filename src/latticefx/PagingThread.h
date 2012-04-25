@@ -40,16 +40,33 @@ child in place of the empty Group node placeholder. At that time, any children t
 longer valid are removed from the parent Group and empty Group placeholders added back in
 their place.
 
+Note that the Group parent of pageable children initially has no bounding volume in the
+typical case where are children are pageable and therefore initially are all stub Group
+placeholders. In order for RootCallback to know the spatial location of the parent Group,
+the application should call setInitialBound() on the parent Group.
+
 Note that the empty Group placeholders must be unique and not shared. Their address is used
 by the RootCallback to uniquely identify the page requests sent to the PagingThread, and
 check for their load status.
+
+Work to be done (TBD):
+
+Need to implement a mechanism for intelligently deciding how many OpenGL objects to
+create per frame. OSG does this by adding a GraphicsOperation to each draw thread and
+only creating a limited number of objects per frame. We should be able to do something
+similar in a Camera post-draw callback, estimating the size of each OpenGL object and
+limiting the number created per frame based on amount of data sent over the bus.
 */
 /**@{*/
 
 
 /** \class PagingThread PagingThread.h <latticefx/PagingThread.h>
-\brief 
-\details 
+\brief Class to manage paging thread
+\details
+PagingThread manages a boost thread that loads OSG subgraphs from disk file or
+from a database. PagingThread is a singleton so that it can oversee paging on
+an application-wide basis and therefore avoid the possible bus contention that
+might occur if multiple paging threads were active.
 */
 class LATTICEFX_EXPORT PagingThread
 {
@@ -60,18 +77,62 @@ public:
     static PagingThread* instance();
     virtual ~PagingThread();
 
+    /** \brief Request that the paging thread stop execution.
+    \details Sets \c _haltRequest to true. The paging thread queries
+    the status of \c _haltRequest with getHaltRequest() and stops execution
+    when true. The thread might not stop immediately if it is actively
+    loading data. The paging thread ignores any pending load requests.
+    Loaded data not retrieved by client code remains referenced by the
+    PagingThread class. (TBD need a singleton destructor.)
+    
+    Thread safe. */
     void halt();
+
+    /** \brief Return true if client code has called halt().
+
+    Thread safe. */
     bool getHaltRequest() const;
 
+    /** \brief Add a request to load data from disk.
+    \details \c location is a unique address associated with the load request.
+    Client code should use it in subsequent retrieveRequest() calls.
+    
+    Thread safe. In typical usage, client code calls this during the update
+    traversal. */
     void addLoadRequest( osg::Node* location, const std::string& fileName );
+
+    /* \overload Add a request to load data from disk. */
     //void addRequest( const osg::Node* location, const int dbKey );
 
+    /** \brief Attempt to retrieve the result of a load request.
+    \details If the load request associated with \c location has not yet
+    completed, retrieveRequest() returns NULL. Otherwise, retrieveRequest()
+    returns the address of the loaded subgraph.
+    
+    Thread safe. In typical usage, client code calls this during the update
+    traversal. */
     osg::Node* retrieveRequest( const osg::Node* location );
 
+    /** \brief Cancel a load request.
+    \details If \c location is found in any of the PagingThread's queues,
+    it is removed and cancelLoadRequest() returns true. Otherwise, cancelLoadRequest()
+    returns false.
+
+    TBD. Possible bug: Seems plausible that the paging thread could take a request
+    off the \c _loadRequestList and start loading it. Before completion, the client code
+    could cancel the load. Then the paging thread would complete the load and add the
+    request to \c _completedList. This should be fixed.
+
+    Thread safe. In typical usage, client code calls this during the update
+    traversal. */
     bool cancelLoadRequest( const osg::Node* location );
 
-    /** \brief
-    \details Called by the paging thread. */
+    /** \brief Main loop executed by the paging thread.
+    \details Obtains requests from the \c _loadRequestList, loads the data, then adds the
+    loaded data to the \c _completedList. In the current implementation, this function also
+    moves requests from \c _completedList to \c _returnList once per loop iteration. Once on the
+    \c _returnList, client code can retrieve the request. If there are no requests in the
+    \c _loadRequestList, the paging thread sleep for 16 milliseconds. */
     void operator()();
 
 protected:
