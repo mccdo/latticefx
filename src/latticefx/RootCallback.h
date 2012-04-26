@@ -26,17 +26,21 @@ update traversal on the LatticeFX subgraph. Any subgraph elements that
 need updating register themselves with RootCallback, and RootCallback is
 attached to the root node of the LatticeFX scene graph. This means the
 osgUtil::UpdateVisitor only traverses as far as the root node, where all
-update work is performed.
+update work for the root's subgraph is performed.
 
-Currently, classes derived from Renderer must attach RootCallback to the
-root node of the subgraph they create.
+RootCallback exposes its functionality as generic public member methods,
+so apps may call those public methods directly, or use RootCallback as an
+OSG update callback. Currently (April 2012), classes derived from Renderer
+must attach RootCallback to the root node of the subgraph they create.
 
-Currently, RootCallback interacts with PagingThread to dynamically load
-and unload subgraph elements. In the future, RootCallback might have other
-functionality.
+Currently, RootCallback calls updatePaging(), the public method that
+interacts with PagingThread to dynamically load and unload subgraph
+elements. In the future, RootCallback might have other functionality,
+such as updating a uniform that contains the screen space projection of
+volumetric data.
 
-See RootCallback.cpp for the definition of RootCallback::operator()(osg::Node*,osg::NodeVisitor*),
-where update operations are described in detail.
+See RootCallback.cpp for the definition of RootCallback::updatePaging(),
+which describes paging in detail.
 */
 class LATTICEFX_EXPORT RootCallback : public osg::NodeCallback
 {
@@ -57,6 +61,11 @@ public:
     into screen space to determine their pixel size. */
     void setCamera( osg::Camera* camera );
 
+    /** \brief Dynamically load and unload data using the paging thread.
+    \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
+    which describes paging in detail. */
+    void updatePaging( const osg::Matrix& modelView );
+
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
@@ -64,11 +73,8 @@ protected:
 
     /** \brief Return the pixel size of \c bSphere.
     \details Computes the pixel radius of the bounding sphere, then returns
-    the area of a circle with that radius.
-
-    TBD: This method redundantly computes the OpenGL modelview matrix and can be optimized.
-    See the source for a TBD note. */
-    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::NodeVisitor* nv );
+    the area of a circle with that radius. */
+    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView );
 
     /** \brief Return true if \c testValue falls within the given \c range.
     \details If the paging RangeMode is PIXEL_SIZE_RANGE, \c testValue is obtained from

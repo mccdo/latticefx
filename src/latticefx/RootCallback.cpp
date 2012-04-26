@@ -27,10 +27,8 @@ void RootCallback::setCamera( osg::Camera* camera )
     _camera = camera;
 }
 
-void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
+void RootCallback::updatePaging( const osg::Matrix& modelView )
 {
-    //std::cout << "Update." << std::endl;
-
     lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
 
     // Add any new page requests.
@@ -51,7 +49,7 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
             // to give it some spatial location and size. Retrieve that bound.
             const osg::BoundingSphere& bSphere( grp->getBound() );
-            testValue = computePixelSize( bSphere, nv );
+            testValue = computePixelSize( bSphere, modelView );
             //std::cout << "Pixel size: " << testValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
@@ -171,37 +169,42 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 }
                 case PageData::RangeData::LOADED:
                 {
-                    /* Huh? This is a child we just added. Don't remove it!
-                    if( !inRange( testValue, range ) )
-                    {
-                        pageData->getParent()->setChild( childIndex, new osg::Group );
-                        rangeData._status = PageData::RangeData::UNLOADED;
-                    }
-                    else
-                    */
-                    {
-                        rangeData._status = PageData::RangeData::ACTIVE;
-                    }
+                    // We just loaded this one. Change status to ACTIVE.
+                    // If it's no longer valid, we'll remove it the *next* time we
+                    // load something (unloading it now might leave a gap where
+                    // nothing is rendered).
+                    rangeData._status = PageData::RangeData::ACTIVE;
                 }
                 }
             }
         }
     }
+}
+
+
+void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
+{
+    //std::cout << "Update." << std::endl;
+
+    if( _camera == NULL )
+    {
+        OSG_WARN << "RootCallback: NULL _camera." << std::endl;
+        traverse( node, nv );
+        return;
+    }
+
+    // modelView matrix required for bounding sphere pixel size computation (LOD).
+    osg::Matrix modelView = osg::computeLocalToWorld( nv->getNodePath() ) * _camera->getViewMatrix();
+    updatePaging( modelView );
+
+    // TBD Possible future update uniforms containing projection of volume vis into screen space.
 
     traverse( node, nv );
 }
 
 
-double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::NodeVisitor* nv )
+double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView )
 {
-    if( _camera == NULL )
-    {
-        OSG_WARN << "RootCallback: NULL _camera." << std::endl;
-        return( 0. );
-    }
-
-    // TBD optimization: This only needs to be done once per update.
-    osg::Matrix modelView( osg::computeLocalToWorld( nv->getNodePath() ) * _camera->getViewMatrix() );
     const osg::Vec3 ecCenter = bSphere.center() * modelView ;
     if( -( ecCenter.z() ) < bSphere.radius() )
     {
@@ -213,15 +216,19 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
 
     const osg::Viewport* vp( _camera->getViewport() );
 
+    // Get clip coord center, then get NDX x value (div by w), then get window x value.
     osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * _camera->getProjectionMatrix() );
     ccCenter.x() /= ccCenter.w();
-    double cx( ( ccCenter.x() * 2. + 1. ) * vp->width() + vp->x() );
+    double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
 
+    // Repeast, but start with an eye coord point that is 'radius' units to the right of center.
+    // Result is the pixel location of the rightmost edge of the bounding sphere.
     const osg::Vec4 ecRight( ecCenter.x() + bSphere.radius(), ecCenter.y(), ecCenter.z(), 1. );
     osg::Vec4 ccRight( ecRight * _camera->getProjectionMatrix() );
     ccRight.x() /= ccRight.w();
-    double rx( ( ccRight.x() * 2. + 1. ) * vp->width() + vp->x() );
+    double rx( ( ( ccRight.x() + 1. ) * .5 ) * vp->width() + vp->x() );
 
+    // Pixel radius is the rightmost edge of the sphere minus the center.
     const double pixelRadius( rx - cx );
 
     // Circle area A = pi * r^2
