@@ -17,8 +17,13 @@ vec3 generateTexCoord( const in int iid )
     int tiid = iid - ( p1 * (s*t) );
     int t1 = tiid / s;           // likewise, t1 = t coord...
     int s1 = tiid - ( t1 * s );  // ...and s1 = s coord.
+
     // Normalize (s1,t1,p1) to range (0 to (1-epsilon)).
-    return( vec3( s1 / texDim.x, t1 / texDim.y, p1 / texDim.z ) );
+    // Man. TextureRectangle would make this much easier.
+    float sEps = 1. / (texDim.x * 2. );
+    float tEps = 1. / (texDim.y * 2. );
+    float pEps = 1. / (texDim.z * 2. );
+    return( vec3( s1 / texDim.x + sEps, t1 / texDim.y + tEps, p1 / texDim.z + pEps ) );
 }
 
 mat3 makeOrientMat( const in vec3 dir )

@@ -8,6 +8,7 @@ endif()
 
 set( _headerFiles
     Export.h
+    BoundUtils.h
     ChannelData.h
     ChannelDataOSGArray.h
     DataSet.h
@@ -24,6 +25,7 @@ set( _headerFiles
 )
 
 set( _sourceFiles
+    BoundUtils.cpp
     ChannelData.cpp
     ChannelDataOSGArray.cpp
     DataSet.cpp

@@ -29,6 +29,7 @@ support for large data sets, configurable, etc.
 
   \li \ref MaskUtils
   \li \ref TextureUtils
+  \li \ref BoundUtils
 
 \section Plugins
 

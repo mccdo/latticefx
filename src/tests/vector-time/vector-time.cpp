@@ -19,7 +19,6 @@
 #include <osgwTools/Shapes.h>
 
 
-
 class InstancedVectors : public lfx::Renderer
 {
 public:
@@ -81,10 +80,8 @@ protected:
 lfx::DataSetPtr prepareDataSet()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
-    osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
-    const unsigned int w( 4 ), h( 1 ), d( 1 );
+    const unsigned int w( 8 ), h( 4 ), d( 1 );
     vertArray->resize( w*h*d );
-    dirArray->resize( w*h*d );
     unsigned int wIdx, hIdx, dIdx, index( 0 );
     for( wIdx=0; wIdx<w; ++wIdx )
     {
@@ -92,22 +89,41 @@ lfx::DataSetPtr prepareDataSet()
         {
             for( dIdx=0; dIdx<d; ++dIdx )
             {
-                const float x( ((double)wIdx)/(w-1.) * 4. - 2. );
-                const float y( 0. );
+                const float x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
+                const float y( ((double)hIdx)/(h-1.) * (double)h - (h*.5) );
                 const float z( 0. );
                 (*vertArray)[ index ].set( x, y, z );
-                (*dirArray)[ index ].set( sin(x), .5, .5 );
                 ++index;
             }
         }
     }
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
 
-    // Create a data set and add the vertex and direction data.
+    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
     lfx::DataSetPtr dsp( new lfx::DataSet() );
-    dsp->addChannel( vertData );
-    dsp->addChannel( dirData );
+    lfx::ChannelDataOSGArrayPtr dirData;
+
+    double time;
+    for( time=0.; time<1.0; time += 0.1 )
+    {
+        osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
+        dirArray->resize( w*h*d );
+        index = 0;
+        for( wIdx=0; wIdx<w; ++wIdx )
+        {
+            for( hIdx=0; hIdx<h; ++hIdx )
+            {
+                for( dIdx=0; dIdx<d; ++dIdx )
+                {
+                    const float x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
+                    (*dirArray)[ index ].set( sin( x*2. ), -sin( time ), .5 );
+                    ++index;
+                }
+            }
+        }
+        dirData = lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+        dsp->addChannel( vertData, time );
+        dsp->addChannel( dirData, time );
+    }
 
     lfx::RendererPtr renderOp( new InstancedVectors() );
     renderOp->addInput( vertData );
