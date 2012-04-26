@@ -153,7 +153,7 @@ bool DataSet::processChanges()
     // Rendering Framework support
     //
 
-    if( _dirtyFlags & RTP_DIRTY )
+    if( ( _dirtyFlags & ALL_DIRTY ) != 0 )
     {
         _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
 
