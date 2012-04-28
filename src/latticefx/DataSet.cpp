@@ -22,28 +22,40 @@ DataSet::~DataSet()
 {
 }
 
-void DataSet::addChannel( const ChannelDataPtr channel )
+void DataSet::addChannel( const ChannelDataPtr channel, const double time )
 {
-    _data.push_back( channel );
+    ChannelDataNameMap::iterator cdpIt( _data.find( channel->getName() ) );
+    ChannelDataComposite* comp;
+    if( cdpIt == _data.end() )
+    {
+        ChannelDataCompositePtr newComp( new ChannelDataComposite( channel->getName() ) );
+        _data[ channel->getName() ] = newComp;
+        comp = newComp.get();
+    }
+    else
+        comp = static_cast< ChannelDataComposite* >( cdpIt->second.get() );
+    comp->addChannel( channel, time );
+
     setDirty( ALL_DIRTY );
     checkAndResizeMask();
 }
 
-ChannelDataPtr DataSet::getChannel( const std::string& name )
+ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
 {
-    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    ChannelDataNameMap::iterator cdpIt( _data.find( name ) );
+    if( cdpIt == _data.end() )
+        return( ChannelDataPtr( ( ChannelData* )NULL ) );
+    else
     {
-        if( cdp->getName() == name )
-            return( cdp );
+        ChannelDataComposite* comp( static_cast< ChannelDataComposite* >( cdpIt->second.get() ) );
+        return( comp->getChannel( time ) );
     }
-
-    return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
 }
 
-const ChannelDataPtr DataSet::getChannel( const std::string& name ) const
+const ChannelDataPtr DataSet::getChannel( const std::string& name, const double time ) const
 {
     DataSet* nonConstThis = const_cast< DataSet* >( this );
-    return( nonConstThis->getChannel( name ) );
+    return( nonConstThis->getChannel( name, time ) );
 }
 
 
@@ -84,9 +96,9 @@ bool DataSet::updateSceneGraph()
     // Reset all attached inputs. If a ChannelData instance needs to refresh
     // a working copy of data from the original source data, it does so here.
     _mask->reset();
-    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
     {
-        cdp->reset();
+        channelPair.second->reset();
     }
 
     // Initially, everything is enabled.
@@ -136,11 +148,8 @@ bool DataSet::updateRunTimeProcessing()
             if( !( opPtr->getEnable() ) )
                 continue;
 
-            // The ChannelData attached as input to the operations might be ChannelDataComposite,
-            // in which case there is no real data attached. But we now have the real data in
-            // the currentData list. So, swap out the (possibly) abstart ChannelData for the
-            // real data. We'll restore them after the operation executes.
-            ChannelDataList saveData = swapData( opPtr, currentData );
+            // Assign actual / current data to the opPtr OperationBase.
+            setInputs( opPtr, currentData );
 
             switch( opPtr->getRTPOpType() )
             {
@@ -162,9 +171,6 @@ bool DataSet::updateRunTimeProcessing()
                 break;
             }
             }
-
-            // Restore the original ChannelData.
-            swapData( opPtr, saveData );
         }
     }
     return( true );
@@ -180,9 +186,10 @@ bool DataSet::updateRenderer()
             // Get the data at the current time.
             ChannelDataList currentData( getDataAtTime( time ) );
 
-            ChannelDataList saveData = swapData( _renderer, currentData );
+            // Assign actual / current data to the _renderer OperationBase.
+            setInputs( _renderer, currentData );
+
             _sceneGraph->addChild( _renderer->getSceneGraph( _mask ) );
-            swapData( _renderer, saveData );
         }
 
         return( true );
@@ -208,9 +215,10 @@ DataSet::DirtyFlags DataSet::getDirty() const
 TimeSet DataSet::getTimeSet() const
 {
     TimeSet timeSet;
-    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
     {
-        const std::string& name( cdp->getName() );
+        const std::string& name( channelPair.first );
+        ChannelDataPtr cdp( channelPair.second );
         ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
         if( comp != NULL )
         {
@@ -232,32 +240,31 @@ TimeSet DataSet::getTimeSet() const
 ChannelDataList DataSet::getDataAtTime( const double time )
 {
     ChannelDataList dataList;
-    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
     {
-        const std::string& name( cdp->getName() );
+        const std::string& name( channelPair.first );
+        ChannelDataPtr cdp( channelPair.second );
         ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
         if( comp != NULL )
-            dataList.push_back( comp->getChannel( name, time ) );
+            dataList.push_back( comp->getChannel( time ) );
         else
             dataList.push_back( cdp );
     }
     return( dataList );
 }
 
-ChannelDataList DataSet::swapData( OperationBasePtr opPtr, ChannelDataList& currentData )
+void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
 {
     ChannelDataList newList;
-    ChannelDataList returnList( opPtr->getInputs() );
-    BOOST_FOREACH( ChannelDataPtr cdp, returnList )
+    const OperationBase::StringList& inputs( opPtr->getInputNames() );
+    BOOST_FOREACH( const std::string& inputName, inputs )
     {
-        const std::string& name( cdp->getName() );
-        ChannelDataPtr data( findChannelData( name, currentData ) );
-        if( data == NULL )
-            OSG_WARN << "DataSet::swapData: Could not find data named \"" << name << "\"." << std::endl;
-        newList.push_back( data );
+        ChannelDataPtr cdp( lfx::findChannelData( inputName, currentData ) );
+        if( cdp == NULL )
+            OSG_WARN << "DataSet::swapData: Could not find data named \"" << inputName << "\"." << std::endl;
+        newList.push_back( cdp );
     }
     opPtr->setInputs( newList );
-    return( returnList );
 }
 
 
@@ -265,8 +272,9 @@ bool DataSet::checkAndResizeMask()
 {
     unsigned int size( 0 );
 
-    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
     {
+        ChannelData* cdp( channelPair.second.get() );
         unsigned int x, y, z;
         cdp->getDimensions( x, y, z );
         const unsigned int total( x * y * z );

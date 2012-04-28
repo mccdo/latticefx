@@ -29,6 +29,23 @@ ChannelDataList OperationBase::getInputs()
     return( _inputs );
 }
 
+void OperationBase::addInput( const std::string& name )
+{
+    _inputNames.push_back( name );
+}
+void OperationBase::setInputs( StringList& inputList )
+{
+    _inputNames = inputList;
+}
+OperationBase::StringList OperationBase::getInputNames()
+{
+    return( _inputNames );
+}
+const OperationBase::StringList& OperationBase::getInputNames() const
+{
+    return( _inputNames );
+}
+
 
 void OperationBase::setEnable( const bool enable )
 {

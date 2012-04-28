@@ -1,5 +1,6 @@
 
 #include <latticefx/ChannelDataComposite.h>
+#include <osg/Notify>
 
 #include <boost/foreach.hpp>
 
@@ -25,23 +26,35 @@ void ChannelDataComposite::addChannel( const ChannelDataPtr channel, const doubl
 }
 void ChannelDataComposite::addChannel( const ChannelDataPtr channel, const unsigned int level )
 {
+    OSG_WARN << "Composite LOD not yet supported." << std::endl;
 }
 
-ChannelDataPtr ChannelDataComposite::getChannel( const std::string& name, const double time )
+ChannelDataPtr ChannelDataComposite::getChannel( const double time )
 {
-    return( _timeData[ time ] );
+    TimeDataMap::iterator dataIt( _timeData.find( time ) );
+    if( dataIt == _timeData.end() )
+    {
+        // 'time' not in map; return data for previous time.
+        // TBD Need more intelligence than this:
+        return( _timeData.begin()->second );
+    }
+    else
+        return( dataIt->second );
 }
-ChannelDataPtr ChannelDataComposite::getChannel( const std::string& name, const unsigned int level )
+ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int level )
 {
+    OSG_WARN << "Composite LOD not yet supported." << std::endl;
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
-const ChannelDataPtr ChannelDataComposite::getChannel( const std::string& name, const double time ) const
+const ChannelDataPtr ChannelDataComposite::getChannel( const double time ) const
 {
-    return( ChannelDataPtr( ( ChannelData* )NULL ) );
+    ChannelDataComposite* nonConstThis = const_cast< ChannelDataComposite* >( this );
+    return( nonConstThis->getChannel( time ) );
 }
-const ChannelDataPtr ChannelDataComposite::getChannel( const std::string& name, const unsigned int level ) const
+const ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int level ) const
 {
+    OSG_WARN << "Composite LOD not yet supported." << std::endl;
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 

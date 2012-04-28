@@ -48,13 +48,13 @@ public:
     //
 
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
-    void addChannel( const ChannelDataPtr channel );
+    void addChannel( const ChannelDataPtr channel, const double time=0. );
 
     /** \brief Get a named channel for a specific time value \c time.
     \returns NULL if the named channel doesn't exist at the specified time. */
-    ChannelDataPtr getChannel( const std::string& name );
-    /** \overload ChannelDataPtr getChannel(const std::string&) */
-    const ChannelDataPtr getChannel( const std::string& name ) const;
+    ChannelDataPtr getChannel( const std::string& name, const double time=0. );
+    /** \overload ChannelDataPtr getChannel(const std::string&,const double) */
+    const ChannelDataPtr getChannel( const std::string& name, const double time=0. ) const;
 
 
 
@@ -154,11 +154,14 @@ protected:
 
     TimeSet getTimeSet() const;
     ChannelDataList getDataAtTime( const double time );
-    ChannelDataList swapData( OperationBasePtr opPtr, ChannelDataList& currentData );
+    void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
     bool checkAndResizeMask();
 
-    ChannelDataList _data;
+
+    typedef std::map< std::string, ChannelDataPtr > ChannelDataNameMap;
+    ChannelDataNameMap _data;
+
     PreprocessList _preprocess;
     RTPOperationList _ops;
     RendererPtr _renderer;

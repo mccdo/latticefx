@@ -51,13 +51,14 @@ public:
     void addChannel( const ChannelDataPtr channel, const double time=0. );
     void addChannel( const ChannelDataPtr channel, const unsigned int level=0 );
 
-    /** \brief Get a named channel for a specific time value \c time.
-    \returns NULL if the named channel doesn't exist at the specified time. */
-    ChannelDataPtr getChannel( const std::string& name, const double time=0. );
-    ChannelDataPtr getChannel( const std::string& name, const unsigned int level=0 );
+    /** \brief Get a channel for a specific time value \c time.
+    \returns ChannelData for the specified \c time. If the exact time doesn't
+    have a ChannelData, this function returns the previous time's channelData. */
+    ChannelDataPtr getChannel( const double time=0. );
+    ChannelDataPtr getChannel( const unsigned int level=0 );
 
-    const ChannelDataPtr getChannel( const std::string& name, const double time=0. ) const;
-    const ChannelDataPtr getChannel( const std::string& name, const unsigned int level=0 ) const;
+    const ChannelDataPtr getChannel( const double time=0. ) const;
+    const ChannelDataPtr getChannel( const unsigned int level=0 ) const;
 
     const TimeSet getTimeSet() const;
 

@@ -16,6 +16,10 @@
 namespace lfx {
 
 
+// Forward declaration.
+class DataSet;
+
+
 /** \class OperationValue OperationBase.h <latticefx/OperationBase.h>
 \brief
 \details
@@ -91,10 +95,17 @@ public:
 
     virtual lfx::OperationBase* create() { return( NULL ); }
 
-    /** \brief */
-    virtual void addInput( ChannelDataPtr input );
-    virtual void setInputs( ChannelDataList inputList );
-    virtual ChannelDataList getInputs();
+    typedef std::vector< std::string > StringList;
+    /** \brief Add an input by name.
+    \details \c name must match the name of a ChannelData added to the DataSet. */
+    virtual void addInput( const std::string& name );
+    /** \brief Add all inputs by name.
+    \details All names in \c inputList must match the names of ChannelData objects added to the DataSet. */
+    virtual void setInputs( StringList& inputList );
+    /** \brief Get all input names. */
+    virtual StringList getInputNames();
+    /** \overload StringList OperationBase::getInputNames() */
+    virtual const StringList& getInputNames() const;
 
 
     /** \brief */
@@ -111,7 +122,16 @@ public:
     const OperationValue* getValue( const std::string& name ) const;
 
 protected:
+    friend DataSet;
+    virtual void addInput( ChannelDataPtr input );
+    virtual void setInputs( ChannelDataList inputList );
+    virtual ChannelDataList getInputs();
+
+    /** List of actual inputs. During data processing, DataSet assigns ChannelData
+    objects to this array based on names stored in _inputNames. */
     ChannelDataList _inputs;
+    /** List of input names assigned by the application. */
+    StringList _inputNames;
 
     OperationType _opType;
     bool _enable;

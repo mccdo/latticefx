@@ -121,12 +121,12 @@ lfx::DataSetPtr prepareDataSet()
     // Create a mask operation and add it to the data set.
     lfx::RTPOperationPtr maskOp( new MyMask() );
     maskOp->setValue( "threshold", lfx::OperationValue( -0.1f ) );
-    maskOp->addInput( cdp );
+    maskOp->addInput( cdp->getName() );
     //maskOp->setEnable( false ); // Optionally disable the mask operation.
     dsp->addOperation( maskOp );
 
     lfx::RendererPtr renderOp( new MyRenderer() );
-    renderOp->addInput( cdp );
+    renderOp->addInput( cdp->getName() );
     dsp->setRenderer( renderOp );
 
     return( dsp );

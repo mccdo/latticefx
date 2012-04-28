@@ -110,8 +110,8 @@ lfx::DataSetPtr prepareDataSet()
     dsp->addChannel( dirData );
 
     lfx::RendererPtr renderOp( new InstancedVectors() );
-    renderOp->addInput( vertData );
-    renderOp->addInput( dirData );
+    renderOp->addInput( vertData->getName() );
+    renderOp->addInput( dirData->getName() );
     dsp->setRenderer( renderOp );
 
     return( dsp );
