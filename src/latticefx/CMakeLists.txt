@@ -10,6 +10,7 @@ set( _headerFiles
     Export.h
     BoundUtils.h
     ChannelData.h
+    ChannelDataComposite.h
     ChannelDataOSGArray.h
     DataSet.h
     MaskUtils.h
@@ -27,6 +28,7 @@ set( _headerFiles
 set( _sourceFiles
     BoundUtils.cpp
     ChannelData.cpp
+    ChannelDataComposite.cpp
     ChannelDataOSGArray.cpp
     DataSet.cpp
     MaskUtils.cpp

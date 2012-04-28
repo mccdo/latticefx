@@ -1,5 +1,6 @@
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelData.h>
+#include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
@@ -100,7 +101,10 @@ lfx::DataSetPtr prepareDataSet()
 
     lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
     lfx::DataSetPtr dsp( new lfx::DataSet() );
-    lfx::ChannelDataOSGArrayPtr dirData;
+    dsp->addChannel( vertData );
+
+    std::string dirName( "directions" );
+    lfx::ChannelDataCompositePtr dirDataComp( new lfx::ChannelDataComposite( dirName ) );
 
     double time;
     for( time=0.; time<1.0; time += 0.1 )
@@ -120,14 +124,14 @@ lfx::DataSetPtr prepareDataSet()
                 }
             }
         }
-        dirData = lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-        dsp->addChannel( vertData, time );
-        dsp->addChannel( dirData, time );
+        lfx::ChannelDataOSGArrayPtr dirData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( dirArray.get(), dirName ) ) );
+        dirDataComp->addChannel( dirData, time );
     }
+    dsp->addChannel( dirDataComp );
 
     lfx::RendererPtr renderOp( new InstancedVectors() );
     renderOp->addInput( vertData );
-    renderOp->addInput( dirData );
+    renderOp->addInput( dirDataComp );
     dsp->setRenderer( renderOp );
 
     return( dsp );

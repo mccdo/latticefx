@@ -20,6 +20,14 @@ void OperationBase::addInput( ChannelDataPtr input )
 {
     _inputs.push_back( input );
 }
+void OperationBase::setInputs( ChannelDataList inputList )
+{
+    _inputs = inputList;
+}
+ChannelDataList OperationBase::getInputs()
+{
+    return( _inputs );
+}
 
 
 void OperationBase::setEnable( const bool enable )

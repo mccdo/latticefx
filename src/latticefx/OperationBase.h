@@ -93,6 +93,8 @@ public:
 
     /** \brief */
     virtual void addInput( ChannelDataPtr input );
+    virtual void setInputs( ChannelDataList inputList );
+    virtual ChannelDataList getInputs();
 
 
     /** \brief */

@@ -1,5 +1,6 @@
 
 #include <latticefx/DataSet.h>
+#include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 
 #include <osg/Group>
@@ -21,22 +22,16 @@ DataSet::~DataSet()
 {
 }
 
-void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue& time )
+void DataSet::addChannel( const ChannelDataPtr channel )
 {
-    _data[ time ].push_back( channel );
+    _data.push_back( channel );
     setDirty( ALL_DIRTY );
     checkAndResizeMask();
 }
 
-ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue& time )
+ChannelDataPtr DataSet::getChannel( const std::string& name )
 {
-    TimeSeriesData::iterator tsdIt( _data.find( time ) );
-    if( tsdIt == _data.end() )
-        return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
-
-    ChannelDataList& cdl = tsdIt->second;
-    ChannelDataPtr cdp;
-    BOOST_FOREACH( cdp, cdl )
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
     {
         if( cdp->getName() == name )
             return( cdp );
@@ -45,10 +40,10 @@ ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue& ti
     return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
 }
 
-const ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue& time ) const
+const ChannelDataPtr DataSet::getChannel( const std::string& name ) const
 {
     DataSet* nonConstThis = const_cast< DataSet* >( this );
-    return( nonConstThis->getChannel( name, time ) );
+    return( nonConstThis->getChannel( name ) );
 }
 
 
@@ -76,12 +71,12 @@ const RendererPtr DataSet::getRenderer() const
 
 osg::Node* DataSet::getSceneData()
 {
-    processChanges();
+    updateSceneGraph();
 
     return( _sceneGraph.get() );
 }
 
-bool DataSet::processChanges()
+bool DataSet::updateSceneGraph()
 {
     if( _dirtyFlags == NOT_DIRTY )
         return( true );
@@ -89,84 +84,112 @@ bool DataSet::processChanges()
     // Reset all attached inputs. If a ChannelData instance needs to refresh
     // a working copy of data from the original source data, it does so here.
     _mask->reset();
-    BOOST_FOREACH( TimeSeriesData::value_type timeData, _data )
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
     {
-        BOOST_FOREACH( ChannelDataPtr cdp, timeData.second )
-        {
-            cdp->reset();
-        }
+        cdp->reset();
     }
 
     // Initially, everything is enabled.
     _mask->setAll( (const char)1 ); // Enable all elements.
 
 
-    //
     // Preprocess & Cache (if dirty)
-    //
     if( _dirtyFlags & PREPROCESS_DIRTY )
     {
-        // Not yet implemented.
+        updatePreprocessing();
     }
 
-
-    //
     // Run Time Operations (if dirty)
-    //
     if( _dirtyFlags & RTP_DIRTY )
     {
-        // Iterate over all time steps.
-        BOOST_FOREACH( TimeSeriesData::value_type timeData, _data )
-        {
-            // Iterate over all attached run time operations.
-            BOOST_FOREACH( RTPOperationPtr opPtr, _ops )
-            {
-                if( opPtr->getEnable() )
-                {
-                    switch( opPtr->getRTPOpType() )
-                    {
-                    case RTPOperation::Mask:
-                    {
-                        const ChannelDataPtr mask = opPtr->mask( _mask );
-                        _mask->andValues( mask.get() );
-                        break;
-                    }
-                    case RTPOperation::Filter:
-                    {
-                        opPtr->filter( _mask );
-                        break;
-                    }
-                    case RTPOperation::Channel:
-                    {
-                        ChannelDataPtr cdp = opPtr->channel( _mask );
-                        addChannel( cdp, timeData.first );
-                        break;
-                    }
-                    }
-                }
-            }
-        }
+        updateRunTimeProcessing();
     }
 
-
-    //
     // Rendering Framework support
-    //
-
     if( ( _dirtyFlags & ALL_DIRTY ) != 0 )
     {
         _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
-
-        // TBD support for time series data.
-        if( _renderer != NULL )
-            _sceneGraph->addChild( _renderer->getSceneGraph( _mask ) );
+        updateRenderer();
     }
 
-
     _dirtyFlags = NOT_DIRTY;
-
     return( true );
 }
+
+bool DataSet::updatePreprocessing()
+{
+    // Not yet implemented.
+    return( true );
+}
+bool DataSet::updateRunTimeProcessing()
+{
+    // Iterate over all time steps.
+    TimeSet timeSet( getTimeSet() );
+    BOOST_FOREACH( double time, timeSet )
+    {
+        // Get the data at the current time.
+        ChannelDataList currentData( getDataAtTime( time ) );
+
+        // Iterate over all attached run time operations.
+        BOOST_FOREACH( RTPOperationPtr opPtr, _ops )
+        {
+            if( !( opPtr->getEnable() ) )
+                continue;
+
+            // The ChannelData attached as input to the operations might be ChannelDataComposite,
+            // in which case there is no real data attached. But we now have the real data in
+            // the currentData list. So, swap out the (possibly) abstart ChannelData for the
+            // real data. We'll restore them after the operation executes.
+            ChannelDataList saveData = swapData( opPtr, currentData );
+
+            switch( opPtr->getRTPOpType() )
+            {
+            case RTPOperation::Mask:
+            {
+                const ChannelDataPtr mask = opPtr->mask( _mask );
+                _mask->andValues( mask.get() );
+                break;
+            }
+            case RTPOperation::Filter:
+            {
+                opPtr->filter( _mask );
+                break;
+            }
+            case RTPOperation::Channel:
+            {
+                ChannelDataPtr cdp = opPtr->channel( _mask );
+                addChannel( cdp );
+                break;
+            }
+            }
+
+            // Restore the original ChannelData.
+            swapData( opPtr, saveData );
+        }
+    }
+    return( true );
+}
+bool DataSet::updateRenderer()
+{
+    // TBD support for time series data.
+    if( _renderer != NULL )
+    {
+        TimeSet timeSet( getTimeSet() );
+        BOOST_FOREACH( double time, timeSet )
+        {
+            // Get the data at the current time.
+            ChannelDataList currentData( getDataAtTime( time ) );
+
+            ChannelDataList saveData = swapData( _renderer, currentData );
+            _sceneGraph->addChild( _renderer->getSceneGraph( _mask ) );
+            swapData( _renderer, saveData );
+        }
+
+        return( true );
+    }
+    return( false );
+}
+
 
 const ChannelDataPtr DataSet::getMask() const
 {
@@ -182,29 +205,79 @@ DataSet::DirtyFlags DataSet::getDirty() const
     return( _dirtyFlags );
 }
 
+TimeSet DataSet::getTimeSet() const
+{
+    TimeSet timeSet;
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    {
+        const std::string& name( cdp->getName() );
+        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
+        if( comp != NULL )
+        {
+            const TimeSet& ts( comp->getTimeSet() );
+            timeSet.insert( ts.begin(), ts.end() );
+        }
+        else
+        {
+            // 'cdp' isn't a ChannelDataComposite, so it contains no
+            // time series data and therefore by definition is at time 0.
+            timeSet.insert( 0. );
+        }
+    }
+    if( timeSet.size() == 0 )
+        timeSet.insert( 0. );
+    return( timeSet );
+}
+
+ChannelDataList DataSet::getDataAtTime( const double time )
+{
+    ChannelDataList dataList;
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    {
+        const std::string& name( cdp->getName() );
+        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
+        if( comp != NULL )
+            dataList.push_back( comp->getChannel( name, time ) );
+        else
+            dataList.push_back( cdp );
+    }
+    return( dataList );
+}
+
+ChannelDataList DataSet::swapData( OperationBasePtr opPtr, ChannelDataList& currentData )
+{
+    ChannelDataList newList;
+    ChannelDataList returnList( opPtr->getInputs() );
+    BOOST_FOREACH( ChannelDataPtr cdp, returnList )
+    {
+        const std::string& name( cdp->getName() );
+        ChannelDataPtr data( findChannelData( name, currentData ) );
+        if( data == NULL )
+            OSG_WARN << "DataSet::swapData: Could not find data named \"" << name << "\"." << std::endl;
+        newList.push_back( data );
+    }
+    opPtr->setInputs( newList );
+    return( returnList );
+}
+
 
 bool DataSet::checkAndResizeMask()
 {
     unsigned int size( 0 );
 
-    std::pair< TimeValue, ChannelDataList > timeData;
-    BOOST_FOREACH( timeData, _data )
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
     {
-        ChannelDataPtr cdp;
-        BOOST_FOREACH( cdp, timeData.second )
+        unsigned int x, y, z;
+        cdp->getDimensions( x, y, z );
+        const unsigned int total( x * y * z );
+        if( total != size )
         {
-            unsigned int x, y, z;
-            cdp->getDimensions( x, y, z );
-            const unsigned int total( x * y * z );
-            if( total != size )
+            if( size != 0 )
             {
-                if( size != 0 )
-                {
-                    osg::notify( osg::WARN ) << "DataSet::checkAndResizeMask: Size inconsistency." << std::endl;
-                    return( false );
-                }
-                size = total;
+                osg::notify( osg::WARN ) << "DataSet::checkAndResizeMask: Size inconsistency." << std::endl;
+                return( false );
             }
+            size = total;
         }
     }
 

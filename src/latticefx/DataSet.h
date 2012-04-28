@@ -5,6 +5,7 @@
 
 #include <latticefx/Export.h>
 #include <latticefx/ChannelData.h>
+#include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/Preprocess.h>
 #include <latticefx/RTPOperation.h>
@@ -15,11 +16,7 @@
 
 #include <string>
 #include <list>
-#include <map>
 
-
-/** ISSUE: Are time values doubles, signed/unsigned ints, or something else? */
-typedef double TimeValue;
 
 
 // Forwards
@@ -51,21 +48,13 @@ public:
     //
 
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
-    void addChannel( const ChannelDataPtr channel, const TimeValue& time=(TimeValue)0. );
+    void addChannel( const ChannelDataPtr channel );
 
     /** \brief Get a named channel for a specific time value \c time.
     \returns NULL if the named channel doesn't exist at the specified time. */
-    ChannelDataPtr getChannel( const std::string& name, const TimeValue& time=(TimeValue)0. );
-
-    /** \overload ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue& time ); */
-    const ChannelDataPtr getChannel( const std::string& name, const TimeValue& time=(TimeValue)0. ) const;
-
-    /** \brief Get all channels for a specific time value \c time.
-    \details Returns all channels as a ChannelDataList. */
-    ChannelDataList& getChannels( const TimeValue& time=(TimeValue)0. );
-
-    /** \overload ChannelDataList& DataSet::getChannels( const TimeValue& time ); */
-    const ChannelDataList& getChannels( const TimeValue& time=(TimeValue)0. ) const;
+    ChannelDataPtr getChannel( const std::string& name );
+    /** \overload ChannelDataPtr getChannel(const std::string&) */
+    const ChannelDataPtr getChannel( const std::string& name ) const;
 
 
 
@@ -135,7 +124,7 @@ public:
     osg::Node* getSceneData();
 
     /** \brief Execute all operations (process all data and create scene graph). */
-    bool processChanges();
+    bool updateSceneGraph();
 
     /** \brief Return the current mask.
     \details The return value depends on when the function is called.
@@ -159,11 +148,17 @@ public:
     DirtyFlags getDirty() const;
 
 protected:
+    bool updatePreprocessing();
+    bool updateRunTimeProcessing();
+    bool updateRenderer();
+
+    TimeSet getTimeSet() const;
+    ChannelDataList getDataAtTime( const double time );
+    ChannelDataList swapData( OperationBasePtr opPtr, ChannelDataList& currentData );
+
     bool checkAndResizeMask();
 
-    typedef std::map< TimeValue, ChannelDataList > TimeSeriesData;
-
-    TimeSeriesData _data;
+    ChannelDataList _data;
     PreprocessList _preprocess;
     RTPOperationList _ops;
     RendererPtr _renderer;

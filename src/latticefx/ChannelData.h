@@ -15,7 +15,7 @@
 namespace lfx {
 
 
-/** \class ChannelData ChannelData.h <ChannelData.h>
+/** \class ChannelData ChannelData.h <latticefx/ChannelData.h>
 \brief Scalar data container class.
 \details Create one instance for each scalar array in
 the data set, and add it to the DataSet class. Add ChannelData
@@ -32,6 +32,7 @@ class LATTICEFX_EXPORT ChannelData
 {
 public:
     ChannelData( const std::string& name=std::string( "" ) );
+    ChannelData( const ChannelData& rhs );
     virtual ~ChannelData();
 
 
@@ -95,6 +96,9 @@ protected:
 
 typedef boost::shared_ptr< ChannelData > ChannelDataPtr;
 typedef std::vector< ChannelDataPtr > ChannelDataList;
+
+
+LATTICEFX_EXPORT ChannelDataPtr findChannelData( const std::string& name, const ChannelDataList& dataList );
 
 
 // lfx
