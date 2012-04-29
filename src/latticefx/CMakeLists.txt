@@ -17,6 +17,7 @@ set( _headerFiles
     OperationBase.h
     PageData.h
     PagingThread.h
+    PlayControl.h
     PluginManager.h
     Preprocess.h
     RootCallback.h
@@ -35,6 +36,7 @@ set( _sourceFiles
     OperationBase.cpp
     PageData.cpp
     PagingThread.cpp
+    PlayControl.cpp
     PluginManager.cpp
     Preprocess.cpp
     Renderer.cpp

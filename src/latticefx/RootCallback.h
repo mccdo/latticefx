@@ -4,6 +4,7 @@
 
 
 #include <latticefx/Export.h>
+#include <latticefx/PlayControl.h>
 #include <osg/NodeCallback>
 #include <osg/Group>
 #include <osg/Camera>
@@ -52,19 +53,38 @@ public:
     RootCallback::operator()(osg::Node*,osg::NodeVisitor*) iterates over
     \c _pageParentList, modifying the children of each added osg::Group if
     necessary based on the PageData stored in \c parent's UserData.
+
+    TBD If the parent is time series, implicitly call addTimeSeriesParent.
+    For now, app must manually call addTimeSeriesParent regardless of
+    whether the parent is paged or not.
     
     Requirement: \c parent must have a PageData stored in its UserData. */
     void addPageParent( osg::Group* parent );
+
+    /** \brief Register a scene graph node as the parent of time series data.
+    \details TBD.
+    */
+    void addTimeSeriesParent( osg::Group* parent );
 
     /** \brief Specify a Camera for use in LOD computations.
     \details The Camera is used to transform pageable child bounding volumes
     into screen space to determine their pixel size. */
     void setCamera( osg::Camera* camera );
 
+    /** \brief
+    \details
+    */
+    void setPlayControl( lfx::PlayControlPtr playControl );
+
     /** \brief Dynamically load and unload data using the paging thread.
     \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
     which describes paging in detail. */
     void updatePaging( const osg::Matrix& modelView );
+
+    /** \brief Select the appropriate child for the current animation time.
+    \details TBD
+    */
+    void updateTimeSeries();
 
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
@@ -86,8 +106,12 @@ protected:
 
     osg::ref_ptr< osg::Camera > _camera;
 
+    PlayControlPtr _playControl;
+    double _prevClockTime, _animationTime;
+
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;
+    GroupList _timeSeriesParentList;
 };
 
 

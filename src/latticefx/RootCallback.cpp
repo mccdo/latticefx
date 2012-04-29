@@ -12,6 +12,9 @@ namespace lfx {
 
 
 RootCallback::RootCallback()
+  : _playControl( (PlayControl*)NULL ),
+    _prevClockTime( 0. ),
+    _animationTime( 0. )
 {
 }
 RootCallback::~RootCallback()
@@ -22,6 +25,11 @@ void RootCallback::addPageParent( osg::Group* parent )
 {
     _pageParentList.push_back( parent );
 }
+void RootCallback::addTimeSeriesParent( osg::Group* parent )
+{
+    _timeSeriesParentList.push_back( parent );
+}
+
 void RootCallback::setCamera( osg::Camera* camera )
 {
     _camera = camera;
@@ -36,7 +44,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
     {
         if( grp->getUserData() == NULL )
         {
-            OSG_WARN << "RootCallback::operator(): page parent has NULL UserData. Should be ;fx::PageData." << std::endl;
+            OSG_WARN << "RootCallback::updatePaging(): page parent has NULL UserData. Should be ;fx::PageData." << std::endl;
             continue;
         }
         lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
@@ -54,7 +62,9 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
         {
-            // range = (current time range)
+            // TBD Range should be a buffer around current time, but
+            // needs to be configurable.
+            range = PageData::RangeValues( -1., 10. );
         }
 
         // removeExpired is initially false and only set to true if we add a child.
@@ -181,6 +191,62 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
     }
 }
 
+void RootCallback::updateTimeSeries()
+{
+    if( _timeSeriesParentList.empty() )
+        return;
+
+    osg::Node* bestChild( NULL );
+    double minTimeDifference( FLT_MAX );
+
+    // Iterate over all parents registered as time series parents,
+    // and find best child for current _animationTime.
+    BOOST_FOREACH( GroupList::value_type grp, _timeSeriesParentList )
+    {
+        if( grp->getUserData() == NULL )
+        {
+            OSG_WARN << "RootCallback::updateTimeSeries: time series parent has NULL UserData. Should be ;fx::PageData." << std::endl;
+            return;
+        }
+        lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+        //std::cout << "  PageData." << std::endl;
+        if( pageData->getRangeMode() != PageData::TIME_RANGE )
+        {
+            OSG_WARN << "RootCallback::updateTimeSeries: RangeMode is not TIME_RANGE." << std::endl;
+            return;
+        }
+
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        {
+            const unsigned int childIndex( rangeDataPair.first );
+            PageData::RangeData& rangeData( rangeDataPair.second );
+            if( rangeData._status != PageData::RangeData::ACTIVE )
+                continue;
+
+            double timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
+            if( timeDifference < minTimeDifference )
+            {
+                minTimeDifference = timeDifference;
+                bestChild = pageData->getParent()->getChild( childIndex );
+            }
+        }
+    }
+    if( bestChild == NULL )
+    {
+        OSG_WARN << "RootCallback::updateTimeSeries(): No best child available." << std::endl;
+        OSG_WARN << "\tCheck to make sure there is at least one ACTIVE child." << std::endl;
+        return;
+    }
+    BOOST_FOREACH( GroupList::value_type grp, _timeSeriesParentList )
+    {
+        unsigned int childIndex;
+        for( childIndex=0; childIndex < grp->getNumChildren(); ++childIndex )
+        {
+            osg::Node* child( grp->getChild( childIndex ) );
+            child->setNodeMask( ( child == bestChild ) ? 0xffffffff : 0x0 );
+        }
+    }
+}
 
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
@@ -193,9 +259,20 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         return;
     }
 
+    if( _playControl != NULL )
+    {
+        const double clockTime( nv->getFrameStamp()->getReferenceTime() );
+        const double elapsed( clockTime - _prevClockTime );
+        _prevClockTime = clockTime;
+        _playControl->elapsedClockTick( elapsed );
+        _animationTime = _playControl->getAnimationTime();
+    }
+
     // modelView matrix required for bounding sphere pixel size computation (LOD).
     osg::Matrix modelView = osg::computeLocalToWorld( nv->getNodePath() ) * _camera->getViewMatrix();
     updatePaging( modelView );
+
+    updateTimeSeries();
 
     // TBD Possible future update uniforms containing projection of volume vis into screen space.
 
