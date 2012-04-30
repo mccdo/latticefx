@@ -1,6 +1,8 @@
 
 #include <latticefx/OperationBase.h>
 
+#include <boost/foreach.hpp>
+
 
 namespace lfx {
 
@@ -32,6 +34,15 @@ ChannelDataList OperationBase::getInputs()
 void OperationBase::addInput( const std::string& name )
 {
     _inputNames.push_back( name );
+}
+ChannelDataPtr OperationBase::getInput( const std::string& name )
+{
+    BOOST_FOREACH( ChannelDataPtr cdp, _inputs )
+    {
+        if( cdp->getName() == name )
+            return( cdp );
+    }
+    return( ChannelDataPtr( (ChannelData*)NULL ) );
 }
 void OperationBase::setInputs( StringList& inputList )
 {

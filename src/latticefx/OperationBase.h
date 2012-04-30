@@ -99,6 +99,10 @@ public:
     /** \brief Add an input by name.
     \details \c name must match the name of a ChannelData added to the DataSet. */
     virtual void addInput( const std::string& name );
+    /** \brief Retrieve the ChannelData corresponding to the named input.
+    \details Before invoking the OperationBase, DataSet uses the input names to
+    assign actual ChannelData inputs. Use this method to retrieve such an input. */
+    virtual ChannelDataPtr getInput( const std::string& name );
     /** \brief Add all inputs by name.
     \details All names in \c inputList must match the names of ChannelData objects added to the DataSet. */
     virtual void setInputs( StringList& inputList );

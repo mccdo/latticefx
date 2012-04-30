@@ -29,7 +29,7 @@ public:
 
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
     {
-        const osg::Array* sourceArray( _inputs[ 0 ]->asOSGArray() );
+        const osg::Array* sourceArray( getInput( "positions" )->asOSGArray() );
         const osg::Vec3Array* positions( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
 
         osg::ref_ptr< osg::Geode > geode( new osg::Geode );
@@ -48,12 +48,12 @@ public:
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( _inputs[ 0 ] ) );
+        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( getInput( "positions" ) ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
         stateSet->addUniform( posUni );
 
-        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( _inputs[ 1 ] ) );
+        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( getInput( "directions" ) ) );
         stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
         stateSet->addUniform( dirUni );

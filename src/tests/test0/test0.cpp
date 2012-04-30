@@ -25,7 +25,7 @@ public:
 
     virtual lfx::ChannelDataPtr mask( const lfx::ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataPtr input = _inputs.front();
+        lfx::ChannelDataPtr input = getInput( "vertices" );
         if( ( input == NULL ) )
         {
             osg::notify( osg::WARN ) << "MyMask::mask(): Invalid input." << std::endl;
@@ -78,7 +78,7 @@ public:
         geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         osg::Geometry* geom = new osg::Geometry;
-        lfx::ChannelDataPtr input = lfx::getMaskedChannel( _inputs.front(), maskIn );
+        lfx::ChannelDataPtr input = lfx::getMaskedChannel( getInput( "vertices" ), maskIn );
         geom->setVertexArray( input->asOSGArray() );
 
         unsigned int idx, size = geom->getVertexArray()->getNumElements();
