@@ -75,6 +75,7 @@ public:
     \details
     */
     void setPlayControl( lfx::PlayControlPtr playControl );
+    PlayControl* getPlayControl();
 
     /** \brief Dynamically load and unload data using the paging thread.
     \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),

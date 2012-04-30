@@ -2,6 +2,8 @@
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
+#include <latticefx/RootCallback.h>
+#include <latticefx/PlayControl.h>
 
 #include <osg/Group>
 #include <osg/Notify>
@@ -16,6 +18,17 @@ DataSet::DataSet()
   : _sceneGraph( new osg::Group ),
     _dirtyFlags( ALL_DIRTY )
 {
+    RootCallback* rootcb( new RootCallback() );
+    rootcb->addTimeSeriesParent( _sceneGraph.get() );
+    _sceneGraph->setUpdateCallback( rootcb );
+
+    PlayControlPtr playControl( new PlayControl() );
+    rootcb->setPlayControl( playControl );
+
+    PageData* pageData( new PageData );
+    pageData->setRangeMode( PageData::TIME_RANGE );
+    pageData->setParent( _sceneGraph.get() );
+    _sceneGraph->setUserData( pageData );
 }
 
 DataSet::~DataSet()
@@ -180,17 +193,31 @@ bool DataSet::updateRenderer()
     // TBD support for time series data.
     if( _renderer != NULL )
     {
+        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
+        PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
+        unsigned int childIndex( 0 );
+        double minTime( FLT_MAX ), maxTime( -FLT_MAX );
+
         TimeSet timeSet( getTimeSet() );
         BOOST_FOREACH( double time, timeSet )
         {
-            // Get the data at the current time.
+            // Get the data at the current time and assign as inputs to the Renderer.
             ChannelDataList currentData( getDataAtTime( time ) );
-
-            // Assign actual / current data to the _renderer OperationBase.
             setInputs( _renderer, currentData );
 
+            PageData::RangeData rangeData( time, 0. );
+            rangeData._status = PageData::RangeData::ACTIVE;
+            pageData->setRangeData( childIndex, rangeData );
+            ++childIndex;
+
             _sceneGraph->addChild( _renderer->getSceneGraph( _mask ) );
+
+            minTime = osg::minimum( minTime, time );
+            maxTime = osg::maximum( maxTime, time );
         }
+
+        PlayControl* playControl( rootcb->getPlayControl() );
+        playControl->setTimeRange( minTime, maxTime );
 
         return( true );
     }

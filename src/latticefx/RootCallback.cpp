@@ -34,6 +34,14 @@ void RootCallback::setCamera( osg::Camera* camera )
 {
     _camera = camera;
 }
+void RootCallback::setPlayControl( lfx::PlayControlPtr playControl )
+{
+    _playControl = playControl;
+}
+PlayControl* RootCallback::getPlayControl()
+{
+    return( _playControl.get() );
+}
 
 void RootCallback::updatePaging( const osg::Matrix& modelView )
 {
@@ -54,6 +62,13 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         PageData::RangeValues range;
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
+            if( _camera == NULL )
+            {
+                // computePixelSize() requires non-NULL _camera.
+                OSG_WARN << "RootCallback::updatePaging(): NULL _camera." << std::endl;
+                return;
+            }
+
             // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
             // to give it some spatial location and size. Retrieve that bound.
             const osg::BoundingSphere& bSphere( grp->getBound() );
@@ -193,9 +208,6 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
 
 void RootCallback::updateTimeSeries()
 {
-    if( _timeSeriesParentList.empty() )
-        return;
-
     osg::Node* bestChild( NULL );
     double minTimeDifference( FLT_MAX );
 
@@ -252,13 +264,6 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     //std::cout << "Update." << std::endl;
 
-    if( _camera == NULL )
-    {
-        OSG_WARN << "RootCallback: NULL _camera." << std::endl;
-        traverse( node, nv );
-        return;
-    }
-
     if( _playControl != NULL )
     {
         const double clockTime( nv->getFrameStamp()->getReferenceTime() );
@@ -268,11 +273,17 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         _animationTime = _playControl->getAnimationTime();
     }
 
-    // modelView matrix required for bounding sphere pixel size computation (LOD).
-    osg::Matrix modelView = osg::computeLocalToWorld( nv->getNodePath() ) * _camera->getViewMatrix();
-    updatePaging( modelView );
+    if( !( _pageParentList.empty() ) )
+    {
+        // modelView matrix required for bounding sphere pixel size computation (LOD).
+        osg::Matrix modelMatrix( osg::computeLocalToWorld( nv->getNodePath() ) );
+        osg::Matrix modelView( ( _camera == NULL ) ? modelMatrix :
+            modelMatrix * _camera->getViewMatrix() );
+        updatePaging( modelView );
+    }
 
-    updateTimeSeries();
+    if( !( _timeSeriesParentList.empty() ) )
+        updateTimeSeries();
 
     // TBD Possible future update uniforms containing projection of volume vis into screen space.
 
