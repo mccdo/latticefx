@@ -11,19 +11,19 @@ support for large data sets, configurable, etc.
 
   \li \link lfx::DataSet The DataSet class \endlink
 
-\subsection ssPAndC Preprocessing and Caching
+\subsection ssOps Operations on Data
 
   \li \link lfx::Preprocess Preprocessing and Caching \endlink
-
-\subsection ssRTP Run-Time Processing Operations
-
   \li \link lfx::RTPOperation Run-Time Processing Operations \endlink
-
-\subsection ssRF Rendering Framework
-
   \li \link lfx::Renderer Rendering Framework \endlink
 
 \section Paging
+
+  \li \ref PagingSupport
+
+\section TimeSeries
+
+  \li \ref TimeSeriesSupport
 
 \section Utilities
 
@@ -33,6 +33,6 @@ support for large data sets, configurable, etc.
 
 \section Plugins
 
-  \ref PluginSupport
+  \li \ref PluginSupport
 
 */
