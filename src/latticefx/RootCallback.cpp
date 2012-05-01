@@ -12,9 +12,7 @@ namespace lfx {
 
 
 RootCallback::RootCallback()
-  : _playControl( (PlayControl*)NULL ),
-    _prevClockTime( 0. ),
-    _animationTime( 0. )
+  : _animationTime( 0. )
 {
 }
 RootCallback::~RootCallback()
@@ -34,13 +32,13 @@ void RootCallback::setCamera( osg::Camera* camera )
 {
     _camera = camera;
 }
-void RootCallback::setPlayControl( lfx::PlayControlPtr playControl )
+void RootCallback::setAnimationTime( const double time )
 {
-    _playControl = playControl;
+    _animationTime = time;
 }
-PlayControl* RootCallback::getPlayControl()
+double RootCallback::getAnimationTime() const
 {
-    return( _playControl.get() );
+    return( _animationTime );
 }
 
 void RootCallback::updatePaging( const osg::Matrix& modelView )
@@ -263,15 +261,6 @@ void RootCallback::updateTimeSeries()
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     //std::cout << "Update." << std::endl;
-
-    if( _playControl != NULL )
-    {
-        const double clockTime( nv->getFrameStamp()->getReferenceTime() );
-        const double elapsed( clockTime - _prevClockTime );
-        _prevClockTime = clockTime;
-        _playControl->elapsedClockTick( elapsed );
-        _animationTime = _playControl->getAnimationTime();
-    }
 
     if( !( _pageParentList.empty() ) )
     {

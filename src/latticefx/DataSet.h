@@ -57,6 +57,12 @@ public:
     const ChannelDataPtr getChannel( const std::string& name, const double time=0. ) const;
 
 
+    /** \brief Returns the min and max time extents of all attached data. */
+    osg::Vec2d getTimeRange() const;
+    /** \overload */
+    void getTimeRange( double& minTime, double& maxTime ) const;
+
+
 
     //
     // Preprocessing & Caching section

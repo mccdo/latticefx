@@ -22,9 +22,6 @@ DataSet::DataSet()
     rootcb->addTimeSeriesParent( _sceneGraph.get() );
     _sceneGraph->setUpdateCallback( rootcb );
 
-    PlayControlPtr playControl( new PlayControl() );
-    rootcb->setPlayControl( playControl );
-
     PageData* pageData( new PageData );
     pageData->setRangeMode( PageData::TIME_RANGE );
     pageData->setParent( _sceneGraph.get() );
@@ -69,6 +66,24 @@ const ChannelDataPtr DataSet::getChannel( const std::string& name, const double 
 {
     DataSet* nonConstThis = const_cast< DataSet* >( this );
     return( nonConstThis->getChannel( name, time ) );
+}
+
+osg::Vec2d DataSet::getTimeRange() const
+{
+    double minTime, maxTime;
+    getTimeRange( minTime, maxTime );
+    return( osg::Vec2d( minTime, maxTime ) );
+}
+void DataSet::getTimeRange( double& minTime, double& maxTime ) const 
+{
+    TimeSet timeSet( getTimeSet() );
+    if( timeSet.empty() )
+    {
+        minTime = maxTime = 0.;
+        return;
+    }
+    minTime = *( timeSet.begin() );
+    maxTime = *( timeSet.rbegin() );
 }
 
 
@@ -215,9 +230,6 @@ bool DataSet::updateRenderer()
             minTime = osg::minimum( minTime, time );
             maxTime = osg::maximum( maxTime, time );
         }
-
-        PlayControl* playControl( rootcb->getPlayControl() );
-        playControl->setTimeRange( minTime, maxTime );
 
         return( true );
     }

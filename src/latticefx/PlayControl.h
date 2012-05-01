@@ -33,8 +33,11 @@ public:
     void setPlayRate( double playRate );
     double getPlayRate() const;
 
+    void setTimeRange( const osg::Vec2d& timeRange );
+    /** overload */
     void setTimeRange( const double minTime, const double maxTime );
-    void getTimeRange( double& minTime, double& maxTime );
+    osg::Vec2d getTimeRange() const;
+    void getTimeRange( double& minTime, double& maxTime ) const;
 
 protected:
     typedef std::list< osg::ref_ptr< osg::Node > > NodeList;

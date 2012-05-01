@@ -1,8 +1,10 @@
+
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelData.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
+#include <latticefx/PlayControl.h>
 #include <latticefx/TextureUtils.h>
 #include <latticefx/MaskUtils.h>
 #include <latticefx/BoundUtils.h>
@@ -14,6 +16,7 @@
 #include <osg/Program>
 #include <osg/Uniform>
 #include <osgViewer/Viewer>
+#include <osgGA/TrackballManipulator>
 #include <osgDB/FileUtils>
 
 #include <osgwTools/Shapes.h>
@@ -139,9 +142,23 @@ int main( int argc, char** argv )
     // Create an example data set.
     lfx::DataSetPtr dsp( prepareDataSet() );
 
+    lfx::PlayControlPtr playControl( new lfx::PlayControl( dsp->getSceneData() ) );
+    playControl->setTimeRange( dsp->getTimeRange() );
+
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
-    // Obtain the data set's scene graph and add it to the viewer.
+    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.setSceneData( dsp->getSceneData() );
-    return( viewer.run() );
+
+    double prevClockTime( 0. );
+    while( !( viewer.done() ) )
+    {
+        const double clockTime( viewer.getFrameStamp()->getReferenceTime() );
+        const double elapsed( clockTime - prevClockTime );
+        prevClockTime = clockTime;
+        playControl->elapsedClockTick( elapsed );
+
+        viewer.frame();
+    }
+    return( 0 );
 }

@@ -74,8 +74,8 @@ public:
     /** \brief
     \details
     */
-    void setPlayControl( lfx::PlayControlPtr playControl );
-    PlayControl* getPlayControl();
+    void setAnimationTime( const double time );
+    double getAnimationTime() const;
 
     /** \brief Dynamically load and unload data using the paging thread.
     \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
@@ -107,8 +107,7 @@ protected:
 
     osg::ref_ptr< osg::Camera > _camera;
 
-    PlayControlPtr _playControl;
-    double _prevClockTime, _animationTime;
+    double _animationTime;
 
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;

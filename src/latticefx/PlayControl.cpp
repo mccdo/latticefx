@@ -46,23 +46,18 @@ void PlayControl::elapsedClockTick( double elapsed )
         _time += delta;
 
 
-    // TBD In the future, we want to be able to manage several scene graphs from
-    // a single PlayControl. Each scene would register itself with the PlayControl.
-    // App would call elapsedClockTick() once, and the following loop would
-    // set the animation time on each registered scene.
-    //
-    // For now, PlayControl must be added to the RootCallback. Kind of a hack, as
-    // direct app access is currently somewhat cumbersome. But this should be
-    // sufficient for development testing of time series code.
-#if 0
+    // PlayControl can manage several scene graphs. Each scene registers itself
+    // using the PlayControl contructor or PlayControl::addScene().
+    // App calls elapsedClockTick() once per frame, and the following loop
+    // sets the animation time on each registered scene.
     BOOST_FOREACH( osg::ref_ptr< osg::Node > node, _scenes )
     {
         // TBD Runtime dynamic_cast should be avoided. We should cache pointers
         // to the RootCallbacks when the scenes are added.
         RootCallback* rootcb( dynamic_cast< lfx::RootCallback* >(
-            node->getUserData() ) );
+            node->getUpdateCallback() ) );
+        rootcb->setAnimationTime( _time );
     }
-#endif
 }
 
 void PlayControl::setAnimationTime( double time )
@@ -79,12 +74,20 @@ double PlayControl::getPlayRate() const
     return( _playRate );
 }
 
+void PlayControl::setTimeRange( const osg::Vec2d& timeRange )
+{
+    setTimeRange( timeRange.x(), timeRange.y() );
+}
 void PlayControl::setTimeRange( const double minTime, const double maxTime )
 {
     _minTime = minTime;
     _maxTime = maxTime;
 }
-void PlayControl::getTimeRange( double& minTime, double& maxTime )
+osg::Vec2d PlayControl::getTimeRange() const
+{
+    return( osg::Vec2d( _minTime, _maxTime ) );
+}
+void PlayControl::getTimeRange( double& minTime, double& maxTime ) const
 {
     minTime = _minTime;
     maxTime = _maxTime;
