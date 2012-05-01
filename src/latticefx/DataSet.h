@@ -28,7 +28,7 @@ namespace osg {
 namespace lfx {
 
 
-/** \class DataSet DataSet.h <DataSet.h>
+/** \class DataSet DataSet.h <latticefx/DataSet.h>
 \brief Data set storage and interface.
 \details Create an instance of this class for each data set you application
 uses and renders. Each DataSet can contain 0 or more ChannelData objects, which

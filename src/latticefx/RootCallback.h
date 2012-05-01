@@ -21,26 +21,31 @@ namespace lfx {
 
 /** \class RootCallback RootCallback.h <latticefx/RootCallback.h>
 \brief Update callback for LatticeFX subgraphs
-\details The main purpose of RootCallback is to avoid the expense of an
+\details RootCallback updates a scene graph for correct display in the
+presence of paging activity, time series animation, and configuration of
+uniforms used by subordinate program objects.
+
+RootCallback is an OSG update callback to avoid the expense of an
 update traversal on the LatticeFX subgraph. Any subgraph elements that
-need updating register themselves with RootCallback, and RootCallback is
-attached to the root node of the LatticeFX scene graph. This means the
-osgUtil::UpdateVisitor only traverses as far as the root node, where all
-update work for the root's subgraph is performed.
+need updating register themselves with RootCallback. In this way, only
+the node owning RootCallback need be visited by the osgUtil::UpdateVisitor.
 
 RootCallback exposes its functionality as generic public member methods,
 so apps may call those public methods directly, or use RootCallback as an
-OSG update callback. Currently (April 2012), classes derived from Renderer
-must attach RootCallback to the root node of the subgraph they create.
+OSG update callback. Currently (May 2012), DataSet attaches an instance of
+RootCallback as an update callback to the root of the DataSet's scene graph.
 
-Currently, RootCallback calls updatePaging(), the public method that
+RootCallback calls updatePaging(), the public method that
 interacts with PagingThread to dynamically load and unload subgraph
-elements. In the future, RootCallback might have other functionality,
+elements. See RootCallback.cpp for the definition of RootCallback::updatePaging(),
+which describes paging in detail.
+
+RootCallback also calls updateTimeSeries to select the best child node
+for the current animation time, and set child node masks accordingly.
+
+In the future, RootCallback might have other functionality,
 such as updating a uniform that contains the screen space projection of
 volumetric data.
-
-See RootCallback.cpp for the definition of RootCallback::updatePaging(),
-which describes paging in detail.
 */
 class LATTICEFX_EXPORT RootCallback : public osg::NodeCallback
 {
