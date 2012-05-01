@@ -38,6 +38,7 @@ public:
 
 
     RTPOperation( const RTPOpType rtpOpType );
+    RTPOperation( const RTPOperation& rhs );
 
 
     /** \brief Override to implement a mask operation. */

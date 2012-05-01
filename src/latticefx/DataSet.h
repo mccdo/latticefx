@@ -40,6 +40,7 @@ class LATTICEFX_EXPORT DataSet
 {
 public:
     DataSet();
+    DataSet( const DataSet& rhs );
     virtual ~DataSet();
 
 

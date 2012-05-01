@@ -6,10 +6,13 @@ namespace lfx {
 
 
 Preprocess::Preprocess()
-    : OperationBase( OperationBase::PreprocessCacheType )
+  : OperationBase( OperationBase::PreprocessCacheType )
 {
 }
-
+Preprocess::Preprocess( const Preprocess& rhs )
+  : OperationBase( rhs )
+{
+}
 Preprocess::~Preprocess()
 {
 }

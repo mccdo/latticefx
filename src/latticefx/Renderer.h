@@ -23,6 +23,7 @@ class LATTICEFX_EXPORT Renderer : public lfx::OperationBase
 {
 public:
     Renderer();
+    Renderer( const Renderer& rhs );
     virtual ~Renderer();
 
     /** \brief TBD

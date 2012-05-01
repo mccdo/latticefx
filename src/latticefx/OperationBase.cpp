@@ -12,7 +12,14 @@ OperationBase::OperationBase( const OperationType opType )
     _enable( true )
 {
 }
-
+OperationBase::OperationBase( const OperationBase& rhs )
+  : _inputs( rhs._inputs ),
+    _inputNames( rhs._inputNames ),
+    _opType( rhs._opType ),
+    _enable( rhs._enable ),
+    _nameValueMap( rhs._nameValueMap )
+{
+}
 OperationBase::~OperationBase()
 {
 }
@@ -89,6 +96,12 @@ const OperationValue* OperationBase::getValue( const std::string& name ) const
 
 OperationValue::OperationValue()
   : _valueType( NO_VALUE )
+{
+}
+OperationValue::OperationValue( const OperationValue& rhs )
+  : _valueType( rhs._valueType ),
+    _value( rhs._value ),
+    _valueString( rhs._valueString )
 {
 }
 OperationValue::~OperationValue()

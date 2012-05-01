@@ -6,10 +6,13 @@ namespace lfx {
 
 
 Renderer::Renderer()
-    : OperationBase( OperationBase::RendererType )
+  : OperationBase( OperationBase::RendererType )
 {
 }
-
+Renderer::Renderer( const Renderer& rhs )
+  : OperationBase( rhs )
+{
+}
 Renderer::~Renderer()
 {
 }

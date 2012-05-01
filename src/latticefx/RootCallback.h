@@ -46,6 +46,7 @@ class LATTICEFX_EXPORT RootCallback : public osg::NodeCallback
 {
 public:
     RootCallback();
+    RootCallback( const RootCallback& rhs );
 
     /** \brief Register a scene graph node as the parent of pageable children.
     \details This function adds \c parent to \c _pageParentList. During update,

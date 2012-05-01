@@ -15,6 +15,14 @@ RootCallback::RootCallback()
   : _animationTime( 0. )
 {
 }
+RootCallback::RootCallback( const RootCallback& rhs )
+  : osg::NodeCallback( rhs ),
+    _camera( rhs._camera ),
+    _animationTime( rhs._animationTime ),
+    _pageParentList( rhs._pageParentList ),
+    _timeSeriesParentList( rhs._timeSeriesParentList )
+{
+}
 RootCallback::~RootCallback()
 {
 }

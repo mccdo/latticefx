@@ -28,6 +28,12 @@ ChannelDataOSGArray::ChannelDataOSGArray( osg::Array* data, const std::string& n
 {
     reset();
 }
+ChannelDataOSGArray::ChannelDataOSGArray( const ChannelDataOSGArray& rhs )
+  : ChannelData( rhs ),
+    _data( rhs._data )
+{
+    reset();
+}
 
 ChannelDataOSGArray::~ChannelDataOSGArray()
 {

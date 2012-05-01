@@ -37,6 +37,7 @@ public:
     } ValueType;
 
     OperationValue();
+    OperationValue( const OperationValue& rhs );
     virtual ~OperationValue();
 
     explicit OperationValue( const int value );
@@ -91,6 +92,7 @@ public:
     OperationType getType() const { return( _opType ); }
 
     OperationBase( const OperationType opType=UnspecifiedType );
+    OperationBase( const OperationBase& rhs );
     virtual ~OperationBase();
 
     virtual lfx::OperationBase* create() { return( NULL ); }

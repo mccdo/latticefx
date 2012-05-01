@@ -23,6 +23,7 @@ class LATTICEFX_EXPORT Preprocess : public lfx::OperationBase
 {
 public:
     Preprocess();
+    Preprocess( const Preprocess& rhs );
     virtual ~Preprocess();
 
 protected:

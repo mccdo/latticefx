@@ -26,7 +26,15 @@ DataSet::DataSet()
     pageData->setParent( _sceneGraph.get() );
     _sceneGraph->setUserData( pageData );
 }
-
+DataSet::DataSet( const DataSet& rhs )
+  : _data( rhs._data ),
+    _preprocess( rhs._preprocess ),
+    _ops( rhs._ops ),
+    _renderer( rhs._renderer ),
+    _mask( rhs._mask ),
+    _dirtyFlags( ALL_DIRTY )
+{
+}
 DataSet::~DataSet()
 {
 }
