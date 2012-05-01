@@ -3,7 +3,6 @@
 #include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RootCallback.h>
-#include <latticefx/PlayControl.h>
 
 #include <osg/Group>
 #include <osg/Notify>

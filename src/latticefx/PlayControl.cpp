@@ -14,7 +14,13 @@ PlayControl::PlayControl( osg::Node* scene )
     _minTime( 0. ),
     _maxTime( 1. )
 {
-    _scenes.push_back( scene );
+    RootCallback* rootcb( dynamic_cast< RootCallback* >( scene->getUpdateCallback() ) );
+    if( rootcb == NULL )
+    {
+        OSG_WARN << "PlayControl(): Invalid scene update callback." << std::endl;
+        return;
+    }
+    _scenes[ scene ] = rootcb;
 }
 PlayControl::PlayControl( const PlayControl& rhs )
   : _scenes( rhs._scenes ),
@@ -30,7 +36,13 @@ PlayControl::~PlayControl()
 
 void PlayControl::addScene( osg::Node* scene )
 {
-    _scenes.push_back( scene );
+    RootCallback* rootcb( dynamic_cast< RootCallback* >( scene->getUpdateCallback() ) );
+    if( rootcb == NULL )
+    {
+        OSG_WARN << "PlayControl::addScene(): Invalid scene update callback." << std::endl;
+        return;
+    }
+    _scenes[ scene ] = rootcb;
 }
 
 void PlayControl::elapsedClockTick( double elapsed )
@@ -50,13 +62,11 @@ void PlayControl::elapsedClockTick( double elapsed )
     // using the PlayControl contructor or PlayControl::addScene().
     // App calls elapsedClockTick() once per frame, and the following loop
     // sets the animation time on each registered scene.
-    BOOST_FOREACH( osg::ref_ptr< osg::Node > node, _scenes )
+    BOOST_FOREACH( NodeCBMap::value_type nodeCBPair, _scenes )
     {
-        // TBD Runtime dynamic_cast should be avoided. We should cache pointers
-        // to the RootCallbacks when the scenes are added.
-        RootCallback* rootcb( dynamic_cast< lfx::RootCallback* >(
-            node->getUpdateCallback() ) );
-        rootcb->setAnimationTime( _time );
+        // .first is the scene itself, which we don't need in this loop.
+        // .second is a ref_ptr to a RootCallback. Set its animation time.
+        nodeCBPair.second->setAnimationTime( _time );
     }
 }
 

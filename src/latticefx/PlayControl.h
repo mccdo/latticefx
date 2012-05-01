@@ -3,10 +3,11 @@
 #define __LATTICEFX_PLAY_CONTROL_H__ 1
 
 #include <latticefx/Export.h>
+#include <latticefx/RootCallback.h>
 #include <osg/Node>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
-#include <list>
+#include <map>
 
 
 namespace lfx {
@@ -40,8 +41,8 @@ public:
     void getTimeRange( double& minTime, double& maxTime ) const;
 
 protected:
-    typedef std::list< osg::ref_ptr< osg::Node > > NodeList;
-    NodeList _scenes;
+    typedef std::map< osg::ref_ptr< osg::Node >, osg::ref_ptr< RootCallback > > NodeCBMap;
+    NodeCBMap _scenes;
 
     double _time;
     double _playRate;

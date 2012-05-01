@@ -4,7 +4,6 @@
 
 
 #include <latticefx/Export.h>
-#include <latticefx/PlayControl.h>
 #include <osg/NodeCallback>
 #include <osg/Group>
 #include <osg/Camera>
