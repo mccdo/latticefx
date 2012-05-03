@@ -12,12 +12,74 @@
 #include <iostream>
 
 
+unsigned int computeDynamicPositions( osg::Vec3Array* a,
+        const unsigned int w, const unsigned int h, const unsigned int d, const double t )
+{
+    a->resize( w*h*d );
+    unsigned int index( 0 );
+    unsigned int wIdx, hIdx, dIdx;
+    for( wIdx=0; wIdx<w; ++wIdx )
+    {
+        for( hIdx=0; hIdx<h; ++hIdx )
+        {
+            for( dIdx=0; dIdx<d; ++dIdx )
+            {
+                const double x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
+                const double y( ((double)hIdx)/(h-1.) * (double)h - (h*.5) );
+                const double z( ((double)dIdx)/(d-1.) * (double)d - (d*.5) );
+                (*a)[ index ].set( x + sin( (x+y+t)*.8 ), y + sin( (x+y+t) ), z + sin( (x+y+t)*1.2 ) );
+                ++index;
+            }
+        }
+    }
+    return( index );
+}
 
-lfx::DataSetPtr prepareDataSet()
+lfx::DataSetPtr prepareSimplePoints()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
-    std::cout << "Creating data set. Dimentions: " << w << " x " << h << " x " << d << std::endl;
+    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
+
+    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    const double maxTime( 8. );
+    const double sampleRate( 60. );
+    std::cout << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz." << std::endl;
+
+    unsigned int totalSamples( 0 );
+    double time;
+    for( time=0.; time<maxTime; time += 1./sampleRate )
+    {
+        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
+        unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
+        totalSamples += count;
+        lfx::ChannelDataOSGArrayPtr posData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        dsp->addChannel( posData, time );
+    }
+    std::cout << "Total samples: " << totalSamples << std::endl;
+
+    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
+    renderOp->addInput( "positions" );
+    dsp->setRenderer( renderOp );
+
+    return( dsp );
+}
+lfx::DataSetPtr preparePointSprites()
+{
+    lfx::DataSetPtr dsp( (lfx::DataSet*) NULL );
+    return( dsp );
+}
+lfx::DataSetPtr prepareSpheres()
+{
+    lfx::DataSetPtr dsp( (lfx::DataSet*) NULL );
+    return( dsp );
+}
+lfx::DataSetPtr prepareDirectionVectors()
+{
+    osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
+    const unsigned int w( 73 ), h( 41 ), d( 11 );
+    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
 
     unsigned int samplesPerTime( w*h*d );
     vertArray->resize( samplesPerTime );
@@ -71,7 +133,8 @@ lfx::DataSetPtr prepareDataSet()
     }
     std::cout << "Total samples: " << count << std::endl;
 
-    lfx::RendererPtr renderOp( new lfx::VectorRenderer() );
+    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
     dsp->setRenderer( renderOp );
@@ -79,12 +142,41 @@ lfx::DataSetPtr prepareDataSet()
     return( dsp );
 }
 
+lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
+{
+    switch( style )
+    {
+    case lfx::VectorRenderer::POINT_SPRITES:
+    case lfx::VectorRenderer::SPHERES:
+        std::cout << "point sprites / spheres are not yet implemented." << std::endl;
+    default:
+    case lfx::VectorRenderer::SIMPLE_POINTS:
+        return( prepareSimplePoints() );
+//    case lfx::VectorRenderer::POINT_SPRITES:
+//        return( preparePointSprites() );
+//    case lfx::VectorRenderer::SPHERES:
+//        return( prepareSpheres() );
+    case lfx::VectorRenderer::DIRECTION_VECTORS:
+        return( prepareDirectionVectors() );
+    }
+}
 
 
 int main( int argc, char** argv )
 {
+    std::cout << "With no options, render as simple points." << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "\t-ps\tRender as point sprites." << std::endl;
+    std::cout << "\t-s\tRender as spheres." << std::endl;
+    std::cout << "\t-d\tRender as direction vectors." << std::endl << std::endl;
+    osg::ArgumentParser arguments( &argc, argv );
+    lfx::VectorRenderer::PointStyle style( lfx::VectorRenderer::SIMPLE_POINTS );
+    if( arguments.find( "-ps" ) > 0 ) style = lfx::VectorRenderer::POINT_SPRITES;
+    if( arguments.find( "-s" ) > 0 ) style = lfx::VectorRenderer::SPHERES;
+    if( arguments.find( "-d" ) > 0 ) style = lfx::VectorRenderer::DIRECTION_VECTORS;
+
     // Create an example data set.
-    lfx::DataSetPtr dsp( prepareDataSet() );
+    lfx::DataSetPtr dsp( prepareDataSet( style ) );
 
     lfx::PlayControlPtr playControl( new lfx::PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );
