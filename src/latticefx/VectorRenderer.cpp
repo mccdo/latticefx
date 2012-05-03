@@ -76,6 +76,44 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     case SPHERES:
     {
+        osg::Geometry* geom( osgwTools::makeGeodesicSphere() );
+        geom->setUseDisplayList( false );
+        geom->setUseVertexBufferObjects( true );
+        // TBD bound pad needs to be settable.
+        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+        geode->addDrawable( geom );
+
+        // Set the number of instances.
+        const unsigned int numElements( sourceArray->getNumElements() );
+        unsigned int idx;
+        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
+
+        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+
+        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
+        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
+        stateSet->addUniform( posUni );
+
+        const ChannelDataPtr radChannel( getInput( getInputTypeAlias( RADIUS ) ) );
+        osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
+        stateSet->setTextureAttributeAndModes( 1, radTex, osg::StateAttribute::OFF );
+        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( 1 );
+        stateSet->addUniform( radUni );
+
+        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
+        stateSet->addUniform( texDim );
+
+        osg::Program* program = new osg::Program();
+        stateSet->setAttribute( program );
+        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
+        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-pointspheres.vs" ) );
+        program->addShader( vertexShader );
+        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
+        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-pointspheres.fs" ) );
+        program->addShader( fragmentShader );
         break;
     }
     case DIRECTION_VECTORS:
@@ -83,6 +121,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Geometry* geom( osgwTools::makeArrow() );
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
+        // TBD bound pad needs to be settable.
         geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
         geode->addDrawable( geom );
 

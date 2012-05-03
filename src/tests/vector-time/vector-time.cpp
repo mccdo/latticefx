@@ -72,7 +72,54 @@ lfx::DataSetPtr preparePointSprites()
 }
 lfx::DataSetPtr prepareSpheres()
 {
-    lfx::DataSetPtr dsp( (lfx::DataSet*) NULL );
+    const unsigned int w( 15 ), h( 12 ), d( 9 );
+    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
+    const unsigned int samplesPerTime( w*h*d );
+
+    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    unsigned int totalSamples( 0 );
+
+    const double maxTime( 8. );
+    const double sampleRate( 30. );
+    std::cout << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz." << std::endl;
+    double time;
+    for( time=0.; time<maxTime; time += 1./sampleRate )
+    {
+        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
+        unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
+        totalSamples += count;
+        lfx::ChannelDataOSGArrayPtr posData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        dsp->addChannel( posData, time );
+
+        // Array of radius values.
+        osg::ref_ptr< osg::FloatArray > radArray( new osg::FloatArray );
+        radArray->resize( samplesPerTime );
+        unsigned int wIdx, hIdx, dIdx, index( 0 );
+        for( wIdx=0; wIdx<w; ++wIdx )
+        {
+            for( hIdx=0; hIdx<h; ++hIdx )
+            {
+                for( dIdx=0; dIdx<d; ++dIdx )
+                {
+                    const double x( ((double)wIdx)/(w-1.) );
+                    const double y( ((double)hIdx)/(h-1.) );
+                    const double rad( osg::absolute( sin( x+y+time ) ) ); 
+                    (*radArray)[ index ] = rad * .33;
+                    ++index;
+                }
+            }
+        }
+        lfx::ChannelDataOSGArrayPtr radData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( radArray.get(), "radii" ) ) );
+        dsp->addChannel( radData, time );
+    }
+    std::cout << "Total samples: " << totalSamples << std::endl;
+
+    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    renderOp->setPointStyle( lfx::VectorRenderer::SPHERES );
+    renderOp->addInput( "positions" );
+    renderOp->addInput( "radii" );
+    dsp->setRenderer( renderOp );
+
     return( dsp );
 }
 lfx::DataSetPtr prepareDirectionVectors()
@@ -147,15 +194,14 @@ lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
     switch( style )
     {
     case lfx::VectorRenderer::POINT_SPRITES:
-    case lfx::VectorRenderer::SPHERES:
-        std::cout << "point sprites / spheres are not yet implemented." << std::endl;
+        std::cout << "point sprites not yet implemented." << std::endl;
     default:
     case lfx::VectorRenderer::SIMPLE_POINTS:
         return( prepareSimplePoints() );
 //    case lfx::VectorRenderer::POINT_SPRITES:
 //        return( preparePointSprites() );
-//    case lfx::VectorRenderer::SPHERES:
-//        return( prepareSpheres() );
+    case lfx::VectorRenderer::SPHERES:
+        return( prepareSpheres() );
     case lfx::VectorRenderer::DIRECTION_VECTORS:
         return( prepareDirectionVectors() );
     }
