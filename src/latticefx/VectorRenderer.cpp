@@ -76,7 +76,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     case SPHERES:
     {
-        osg::Geometry* geom( osgwTools::makeGeodesicSphere() );
+        // Geodesic sphere with subdivision=1 produces 20 sides. sub=2 produces 80 sides.
+        osg::Geometry* geom( osgwTools::makeGeodesicSphere( 1., 1 ) );
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
         // TBD bound pad needs to be settable.

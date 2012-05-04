@@ -3,6 +3,20 @@
 #extension GL_ARB_draw_instanced : require
 
 
+/** begin light **/
+
+varying vec3 ecVertex;
+varying vec3 ecNormal;
+
+void vertexLighting( in vec4 ocVertex, in vec3 ocNormal )
+{
+    ecVertex = vec3( gl_ModelViewMatrix * ocVertex );
+    ecNormal = gl_NormalMatrix * ocNormal;
+}
+
+/** end light **/
+
+
 uniform sampler3D texPos;
 uniform sampler3D texRad;
 uniform vec3 texDim;
@@ -41,6 +55,8 @@ void main()
     // Scale and translate the vertex, then transform to clip coords.
     vec4 oVec = vec4( scale * gl_Vertex.xyz + pos.xyz, 1.0 );
     gl_Position = gl_ModelViewProjectionMatrix * oVec;
+
+    vertexLighting( oVec, gl_Normal );
 
     gl_FrontColor = vec4( tC, 1. );
 }
