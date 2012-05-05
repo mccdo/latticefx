@@ -238,6 +238,8 @@ bool DataSet::updateRenderer()
             maxTime = osg::maximum( maxTime, time );
         }
 
+        _sceneGraph->setStateSet( _renderer->getRootState() );
+
         return( true );
     }
     return( false );

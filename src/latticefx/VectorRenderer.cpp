@@ -45,6 +45,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
     ChannelDataPtr posChannel( getInput( getInputTypeAlias( POSITION ) ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
+    const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( dynamic_cast< osg::Vec3Array* >( sourceArray ) );
 
     switch( _pointStyle )
@@ -65,9 +66,6 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         c->push_back( osg::Vec4( 1., 1., 1., 1. ) );
         geom->setColorArray( c );
         geom->setColorBinding( osg::Geometry::BIND_OVERALL );
-
-        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-        stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
         break;
     }
     case POINT_SPRITES:
@@ -85,7 +83,6 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geode->addDrawable( geom );
 
         // Set the number of instances.
-        const unsigned int numElements( sourceArray->getNumElements() );
         unsigned int idx;
         for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
             geom->getPrimitiveSet( idx )->setNumInstances( numElements );
@@ -94,12 +91,66 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
-        stateSet->addUniform( posUni );
 
         const ChannelDataPtr radChannel( getInput( getInputTypeAlias( RADIUS ) ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         stateSet->setTextureAttributeAndModes( 1, radTex, osg::StateAttribute::OFF );
+        break;
+    }
+    case DIRECTION_VECTORS:
+    {
+        osg::Geometry* geom( osgwTools::makeArrow() );
+        geom->setUseDisplayList( false );
+        geom->setUseVertexBufferObjects( true );
+        // TBD bound pad needs to be settable.
+        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+        geode->addDrawable( geom );
+
+        // Set the number of instances.
+        unsigned int idx;
+        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
+
+        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+
+        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
+        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
+
+        const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) ) );
+        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
+        stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
+        break;
+    }
+    }
+
+    return( geode.release() );
+}
+
+osg::StateSet* VectorRenderer::getRootState()
+{
+    osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
+
+    ChannelDataPtr posChannel( getInput( getInputTypeAlias( POSITION ) ) );
+    osg::Array* sourceArray( posChannel->asOSGArray() );
+    const unsigned int numElements( sourceArray->getNumElements() );
+
+    switch( _pointStyle )
+    {
+    default:
+    case SIMPLE_POINTS:
+    {
+        stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+        break;
+    }
+    case POINT_SPRITES:
+    {
+        break;
+    }
+    case SPHERES:
+    {
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
+        stateSet->addUniform( posUni );
+
         osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( 1 );
         stateSet->addUniform( radUni );
 
@@ -119,29 +170,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     case DIRECTION_VECTORS:
     {
-        osg::Geometry* geom( osgwTools::makeArrow() );
-        geom->setUseDisplayList( false );
-        geom->setUseVertexBufferObjects( true );
-        // TBD bound pad needs to be settable.
-        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
-        geode->addDrawable( geom );
-
-        // Set the number of instances.
-        const unsigned int numElements( sourceArray->getNumElements() );
-        unsigned int idx;
-        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
-            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
-
-        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
-        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
         stateSet->addUniform( posUni );
 
-        const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) ) );
-        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
-        stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
         stateSet->addUniform( dirUni );
 
@@ -161,8 +192,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     }
 
-    return( geode.release() );
+    return( stateSet.release() );
 }
+
 
 void VectorRenderer::setPointStyle( const PointStyle& pointStyle )
 {

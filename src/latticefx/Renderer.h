@@ -30,6 +30,10 @@ public:
     \details TBD */
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn ) = 0;
 
+    /** \brief TBD
+    \details TBD */
+    virtual osg::StateSet* getRootState() { return( NULL ); }
+
 protected:
 };
 

@@ -31,6 +31,10 @@ public:
 
     /** \brief
     \details */
+    virtual osg::StateSet* getRootState();
+
+    /** \brief
+    \details */
     typedef enum {
         SIMPLE_POINTS,
         POINT_SPRITES,
