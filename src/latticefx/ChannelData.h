@@ -57,13 +57,13 @@ public:
     \returns NULL if the operation is unsupported, memory is exhausted, or the
     operation fails for any reason. */
     virtual char* asCharPtr() { return( NULL ); };
-    /** \override char* ChannelData::asCharPtr(); */
+    /** \overload char* ChannelData::asCharPtr(); */
     virtual const char* asCharPtr() const { return( NULL ); };
 
     /** \brief
     \details */
     virtual osg::Array* asOSGArray() { return( NULL ); }
-    /** \override osg::Array* ChannelData::asOSGArray(); */
+    /** \overload osg::Array* ChannelData::asOSGArray(); */
     virtual const osg::Array* asOSGArray() const { return( NULL ); }
 
     /** \brief Set all elements of the data to the same value.

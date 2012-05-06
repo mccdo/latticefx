@@ -47,13 +47,13 @@ public:
     /** \brief
     \details */
     virtual char* asCharPtr();
-    /** \override char* ChannelDataOSGArray::asCharPtr(); */
+    /** \overload char* ChannelDataOSGArray::asCharPtr(); */
     virtual const char* asCharPtr() const;
 
     /** \brief
     \details */
     virtual osg::Array* asOSGArray() { return( _workingData.get() ); }
-    /** \override osg::Array* ChannelDataOSGArray::asOSGArray(); */
+    /** \overload osg::Array* ChannelDataOSGArray::asOSGArray(); */
     virtual const osg::Array* asOSGArray() const { return( _workingData.get() ); }
 
     /** \brief Set all elements of the data to the same value.
