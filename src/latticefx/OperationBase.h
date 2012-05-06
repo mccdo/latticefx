@@ -128,7 +128,7 @@ public:
     const OperationValue* getValue( const std::string& name ) const;
 
 protected:
-    friend DataSet;
+    friend class DataSet;
     virtual void addInput( ChannelDataPtr input );
     virtual void setInputs( ChannelDataList inputList );
     virtual ChannelDataList getInputs();
