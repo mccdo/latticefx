@@ -39,8 +39,11 @@ channel creation functions. An example is the MyMask RTPOperation.
 class LATTICEFX_EXPORT DataSet
 {
 public:
+    ///Constructor
     DataSet();
+    ///Copy constructor
     DataSet( const DataSet& rhs );
+    ///Destructor
     virtual ~DataSet();
 
 
@@ -48,6 +51,9 @@ public:
     // Data section
     //
 
+    ///\name Data section
+    
+    ///\{
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
     void addChannel( const ChannelDataPtr channel, const double time=0. );
 
@@ -62,19 +68,22 @@ public:
     osg::Vec2d getTimeRange() const;
     /** \overload */
     void getTimeRange( double& minTime, double& maxTime ) const;
-
+    ///\}
 
 
     //
     // Preprocessing & Caching section
     //
-
+    ///\name Preprocessing & Caching section
 
 
     //
     // Run-Time Operations section
     //
+    
+    ///\name Run-Time Operations section
 
+    ///\{
     /** \brief Add a runtime processing operation to the end of the operation list.
     \details All runtime processing operations are executed sequentially. Note that
     the app is responsible for maintaining operation list order.*/
@@ -106,6 +115,7 @@ public:
 
     /** \overload RTPOperationList& DataSet::getOprtations(); */
     const RTPOperationList& getOperations() const;
+    ///\}
 
     /** Need to be able to set a list of operations.
     Store multiple lists and switch between them. */
@@ -116,6 +126,9 @@ public:
     // Rendering Framework
     //
 
+    ///\name Rendering Framework
+    
+    ///\{
     /** \brief Specify the Renderer plugin operation for creating the scene graph.
     \details TBD
     */
@@ -153,6 +166,7 @@ public:
     } DirtyFlags;
     void setDirty( const DirtyFlags flags=ALL_DIRTY );
     DirtyFlags getDirty() const;
+    ///\}
 
 protected:
     bool updatePreprocessing();
