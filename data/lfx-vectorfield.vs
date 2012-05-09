@@ -82,6 +82,4 @@ void main()
     gl_Position = gl_ModelViewProjectionMatrix * hoVec;
 
     vertexLighting( hoVec, orientMat * gl_Normal );
-
-    gl_FrontColor = vec4( tC, 1. );
 }

@@ -61,12 +61,6 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setVertexArray( positions );
         geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, positions->size() ) );
         geode->addDrawable( geom );
-
-        // TBD Need point shader. For now, use FFP and white color.
-        osg::Vec4Array* c( new osg::Vec4Array );
-        c->push_back( osg::Vec4( 1., 1., 1., 1. ) );
-        geom->setColorArray( c );
-        geom->setColorBinding( osg::Geometry::BIND_OVERALL );
         break;
     }
     case POINT_SPRITES:
@@ -147,6 +141,15 @@ osg::StateSet* VectorRenderer::getRootState()
     case SIMPLE_POINTS:
     {
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+
+        osg::Program* program = new osg::Program();
+        stateSet->setAttribute( program );
+        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
+        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-simplepoints.vs" ) );
+        program->addShader( vertexShader );
+        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
+        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-simplepoints.fs" ) );
+        program->addShader( fragmentShader );
         break;
     }
     case POINT_SPRITES:
