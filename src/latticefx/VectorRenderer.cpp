@@ -43,7 +43,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    ChannelDataPtr posChannel( getInput( getInputTypeAlias( POSITION ) ) );
+    ChannelDataPtr posChannel( lfx::getMaskedChannel(
+        getInput( getInputTypeAlias( POSITION ) ), maskIn ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( dynamic_cast< osg::Vec3Array* >( sourceArray ) );
@@ -89,10 +90,15 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
+        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
+        stateSet->addUniform( texDim );
+
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr radChannel( getInput( getInputTypeAlias( RADIUS ) ) );
+        const ChannelDataPtr radChannel( lfx::getMaskedChannel(
+            getInput( getInputTypeAlias( RADIUS ) ), maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         stateSet->setTextureAttributeAndModes( 1, radTex, osg::StateAttribute::OFF );
         break;
@@ -113,10 +119,15 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
+        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
+        stateSet->addUniform( texDim );
+
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) ) );
+        const ChannelDataPtr dirChannel( lfx::getMaskedChannel(
+            getInput( getInputTypeAlias( DIRECTION ) ), maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
         stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
         break;
@@ -129,10 +140,6 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 osg::StateSet* VectorRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
-
-    ChannelDataPtr posChannel( getInput( getInputTypeAlias( POSITION ) ) );
-    osg::Array* sourceArray( posChannel->asOSGArray() );
-    const unsigned int numElements( sourceArray->getNumElements() );
 
     switch( _pointStyle )
     {
@@ -154,10 +161,6 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( 1 );
         stateSet->addUniform( radUni );
 
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
-        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
-        stateSet->addUniform( texDim );
-
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
         osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
@@ -175,10 +178,6 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
         stateSet->addUniform( dirUni );
-
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
-        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
-        stateSet->addUniform( texDim );
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );

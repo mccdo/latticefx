@@ -1,6 +1,6 @@
 
-#ifndef __LATTICEFX_MASK_UTILS_H__
-#define __LATTICEFX_MASK_UTILS_H__ 1
+#ifndef __LATTICEFX_TEXTURE_UTILS_H__
+#define __LATTICEFX_TEXTURE_UTILS_H__ 1
 
 
 #include <latticefx/Export.h>
@@ -48,5 +48,5 @@ LATTICEFX_EXPORT osg::Texture3D* createTexture3DForInstancedRenderer( const Chan
 }
 
 
-// __LATTICEFX_MASK_UTILS_H__
+// __LATTICEFX_TEXTURE_UTILS_H__
 #endif
