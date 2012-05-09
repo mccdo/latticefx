@@ -24,6 +24,7 @@ set( _headerFiles
     Renderer.h
     RTPOperation.h
     TextureUtils.h
+    TransferFunctionUtils.h
     VectorRenderer.h
 )
 
@@ -44,6 +45,7 @@ set( _sourceFiles
     RootCallback.cpp
     RTPOperation.cpp
     TextureUtils.cpp
+    TransferFunctionUtils.cpp
     VectorRenderer.cpp
 )
 

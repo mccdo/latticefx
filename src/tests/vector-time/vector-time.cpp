@@ -4,6 +4,7 @@
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/VectorRenderer.h>
+#include <latticefx/TransferFunctionUtils.h>
 #include <latticefx/PlayControl.h>
 
 #include <osgViewer/Viewer>
@@ -191,20 +192,29 @@ lfx::DataSetPtr prepareDirectionVectors()
 
 lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
 {
+    lfx::DataSetPtr dataSet;
     switch( style )
     {
     case lfx::VectorRenderer::POINT_SPRITES:
         std::cout << "point sprites not yet implemented." << std::endl;
     default:
     case lfx::VectorRenderer::SIMPLE_POINTS:
-        return( prepareSimplePoints() );
+        dataSet = prepareSimplePoints();
+        break;
 //    case lfx::VectorRenderer::POINT_SPRITES:
-//        return( preparePointSprites() );
+//        dataSet = preparePointSprites();
+//        break;
     case lfx::VectorRenderer::SPHERES:
-        return( prepareSpheres() );
+        dataSet = prepareSpheres();
+        break;
     case lfx::VectorRenderer::DIRECTION_VECTORS:
-        return( prepareDirectionVectors() );
+        dataSet = prepareDirectionVectors();
+        break;
     }
+
+    osg::ref_ptr< osg::Image > image( lfx::loadImageFromDat( "01.dat" ) );
+
+    return( dataSet );
 }
 
 
