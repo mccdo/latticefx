@@ -31,7 +31,7 @@ DataSet::DataSet( const DataSet& rhs )
     _preprocess( rhs._preprocess ),
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
-    _mask( rhs._mask ),
+    _maskList( rhs._maskList ),
     _dirtyFlags( ALL_DIRTY )
 {
 }
@@ -54,7 +54,6 @@ void DataSet::addChannel( const ChannelDataPtr channel, const double time )
     comp->addChannel( channel, time );
 
     setDirty( ALL_DIRTY );
-    checkAndResizeMask();
 }
 
 ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
@@ -130,14 +129,10 @@ bool DataSet::updateSceneGraph()
 
     // Reset all attached inputs. If a ChannelData instance needs to refresh
     // a working copy of data from the original source data, it does so here.
-    _mask->reset();
     BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
     {
         channelPair.second->reset();
     }
-
-    // Initially, everything is enabled.
-    _mask->setAll( (const char)1 ); // Enable all elements.
 
 
     // Preprocess & Cache (if dirty)
@@ -170,12 +165,20 @@ bool DataSet::updatePreprocessing()
 }
 bool DataSet::updateRunTimeProcessing()
 {
+    // Create a new list of masks (one for each time step).
+    _maskList.clear();
+
     // Iterate over all time steps.
     TimeSet timeSet( getTimeSet() );
     BOOST_FOREACH( double time, timeSet )
     {
         // Get the data at the current time.
         ChannelDataList currentData( getDataAtTime( time ) );
+
+        // Allocate a mask and initialize to all zeros.
+        ChannelDataOSGArrayPtr mask( createSizedMask( currentData ) );
+        mask->setAll( (const char)1 ); // Enable all elements.
+        _maskList.push_back( mask );
 
         // Iterate over all attached run time operations.
         BOOST_FOREACH( RTPOperationPtr opPtr, _ops )
@@ -190,18 +193,18 @@ bool DataSet::updateRunTimeProcessing()
             {
             case RTPOperation::Mask:
             {
-                const ChannelDataPtr mask = opPtr->mask( _mask );
-                _mask->andValues( mask.get() );
+                const ChannelDataPtr newMask = opPtr->mask( mask );
+                mask->andValues( newMask.get() );
                 break;
             }
             case RTPOperation::Filter:
             {
-                opPtr->filter( _mask );
+                opPtr->filter( mask );
                 break;
             }
             case RTPOperation::Channel:
             {
-                ChannelDataPtr cdp = opPtr->channel( _mask );
+                ChannelDataPtr cdp = opPtr->channel( mask );
                 addChannel( cdp );
                 break;
             }
@@ -220,6 +223,7 @@ bool DataSet::updateRenderer()
         unsigned int childIndex( 0 );
         double minTime( FLT_MAX ), maxTime( -FLT_MAX );
 
+        ChannelDataList::iterator maskIt = _maskList.begin();
         TimeSet timeSet( getTimeSet() );
         BOOST_FOREACH( double time, timeSet )
         {
@@ -232,7 +236,8 @@ bool DataSet::updateRenderer()
             pageData->setRangeData( childIndex, rangeData );
             ++childIndex;
 
-            _sceneGraph->addChild( _renderer->getSceneGraph( _mask ) );
+            _sceneGraph->addChild( _renderer->getSceneGraph( *maskIt ) );
+            ++maskIt;
 
             minTime = osg::minimum( minTime, time );
             maxTime = osg::maximum( maxTime, time );
@@ -245,11 +250,6 @@ bool DataSet::updateRenderer()
     return( false );
 }
 
-
-const ChannelDataPtr DataSet::getMask() const
-{
-    return( _mask );
-}
 
 void DataSet::setDirty( const DirtyFlags flags )
 {
@@ -316,40 +316,21 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
 }
 
 
-bool DataSet::checkAndResizeMask()
+ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList )
 {
     unsigned int size( 0 );
 
-    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
+    BOOST_FOREACH( const ChannelDataPtr cdp, dataList )
     {
-        ChannelData* cdp( channelPair.second.get() );
         unsigned int x, y, z;
         cdp->getDimensions( x, y, z );
-        const unsigned int total( x * y * z );
-        if( total != size )
-        {
-            if( size != 0 )
-            {
-                osg::notify( osg::WARN ) << "DataSet::checkAndResizeMask: Size inconsistency." << std::endl;
-                return( false );
-            }
-            size = total;
-        }
+        const unsigned int total( x*y*z );
+        size = osg::maximum( size, total );
     }
 
-    osg::ByteArray* byteArray( NULL );
-    if( _mask == NULL )
-    {
-        byteArray = new osg::ByteArray;
-        _mask = ChannelDataOSGArrayPtr( new ChannelDataOSGArray( byteArray ) );
-    }
-    else
-        byteArray = static_cast< osg::ByteArray* >( _mask->asOSGArray() );
-
-    if( byteArray->getNumElements() != size )
-        _mask->resize( size );
-
-    return( true );
+    osg::ByteArray* byteArray( new osg::ByteArray );
+    byteArray->resize( size );
+    return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( byteArray ) ) );
 }
 
 

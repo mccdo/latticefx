@@ -146,17 +146,6 @@ public:
     /** \brief Execute all operations (process all data and create scene graph). */
     bool updateSceneGraph();
 
-    /** \brief Return the current mask.
-    \details The return value depends on when the function is called.
-    If called from any Preprocess operation, the returned array will be filled with 'true'
-    (all elements enabled).
-    If called from any RTPOperation, the return value will reflect the processing of any
-    preceding hpst-based RTPOperations of type Mask.
-    If called from the Renderer (or after the data has been processed and the scene graph
-    generated), the return value will reflect the accumulation of all host-based RTP
-    operations of type Mask. */
-    const ChannelDataPtr getMask() const;
-
     typedef enum {
         NOT_DIRTY        = ( 0 ),
         PREPROCESS_DIRTY = ( 0x1 << 0 ),
@@ -177,7 +166,7 @@ protected:
     ChannelDataList getDataAtTime( const double time );
     void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
-    bool checkAndResizeMask();
+    ChannelDataOSGArrayPtr createSizedMask(  const ChannelDataList& dataList );
 
 
     typedef std::map< std::string, ChannelDataPtr > ChannelDataNameMap;
@@ -187,7 +176,7 @@ protected:
     RTPOperationList _ops;
     RendererPtr _renderer;
 
-    ChannelDataOSGArrayPtr _mask;
+    ChannelDataList _maskList;
 
     osg::ref_ptr< osg::Group > _sceneGraph;
     DirtyFlags _dirtyFlags;
