@@ -26,15 +26,55 @@ public:
     Renderer( const Renderer& rhs );
     virtual ~Renderer();
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Create a scene graph from the base class ChannelData.
+    \details Override this function in derived classes and add your own code to
+    create a scene graph. Input ChannelData is stored in OperationBase::_inputs.
+
+    DataSet calls this function once for each time step. The \c maskIn will likely
+    be different for every time step. */
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn ) = 0;
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Create a single state set for all scene graphs.
+    \details Create a single state set that applies to all scene graphs created by
+    the getSceneGraph() method. One example of state that probably applies to all
+    scene graphs would be the osg::Program object.
+
+    Any state that varies over time steps should be in the time step scene graph's
+    StateSet. One example is a uniform for the number of data elements in the
+    ChannelData, which could vary depending on how many elements passed the host
+    mask at a given time step. */
     virtual osg::StateSet* getRootState() { return( NULL ); }
 
+
+    /** \name Texture Unit Usage
+    \details TBD */
+    /**@{*/
+
+    /** \brief Set the base unit for Renderer texture usage.
+    \details If the Renderer uses textures, they will be stored in \c baseUnit
+    or higher. The default for \c baseUnit is 8. */
+    void setTextureBaseUnit( const unsigned int baseUnit );
+
+    /** \brief Get the base texture unit used by the Renderer.
+    \details Returns the base texture unit. */
+    unsigned int getTextureBaseUnit() const;
+
+    /**@}*/
+
+
+    /** \name Transfer Function Parameters
+    \details */
+    /**@{*/
+    /**@}*/
+
+
+    /** \name Hardware Mask Parameters
+    \details */
+    /**@{*/
+    /**@}*/
+
 protected:
+    unsigned int _baseUnit;
 };
 
 typedef boost::shared_ptr< Renderer > RendererPtr;

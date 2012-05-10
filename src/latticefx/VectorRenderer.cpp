@@ -87,13 +87,14 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
+        unsigned int baseUnit( getTextureBaseUnit() );
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
-        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
+        stateSet->setTextureAttributeAndModes( baseUnit++, posTex, osg::StateAttribute::OFF );
 
         const ChannelDataPtr radChannel(
             getInput( getInputTypeAlias( RADIUS ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
-        stateSet->setTextureAttributeAndModes( 1, radTex, osg::StateAttribute::OFF );
+        stateSet->setTextureAttributeAndModes( baseUnit++, radTex, osg::StateAttribute::OFF );
         break;
     }
     case DIRECTION_VECTORS:
@@ -116,12 +117,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
+        unsigned int baseUnit( getTextureBaseUnit() );
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
-        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
+        stateSet->setTextureAttributeAndModes( baseUnit++, posTex, osg::StateAttribute::OFF );
 
         const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
-        stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
+        stateSet->setTextureAttributeAndModes( baseUnit++, dirTex, osg::StateAttribute::OFF );
         break;
     }
     }
@@ -156,10 +158,11 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case SPHERES:
     {
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
+        int baseUnit( (int)( getTextureBaseUnit() ) );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
         stateSet->addUniform( posUni );
 
-        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( 1 );
+        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( baseUnit++ );
         stateSet->addUniform( radUni );
 
         osg::Program* program = new osg::Program();
@@ -174,10 +177,11 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case DIRECTION_VECTORS:
     {
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
+        int baseUnit( (int)( getTextureBaseUnit() ) );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
         stateSet->addUniform( posUni );
 
-        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
+        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( baseUnit++ );
         stateSet->addUniform( dirUni );
 
         osg::Program* program = new osg::Program();

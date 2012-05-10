@@ -47,11 +47,8 @@ public:
     virtual ~DataSet();
 
 
-    //
-    // Data section
-    //
-
-    ///\name Data section
+    /** \name Data Section
+    \details TBD */
     
     ///\{
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
@@ -71,17 +68,12 @@ public:
     ///\}
 
 
-    //
-    // Preprocessing & Caching section
-    //
-    ///\name Preprocessing & Caching section
+    /** \name Preprocessing & Caching section
+    \details TBD */
 
 
-    //
-    // Run-Time Operations section
-    //
-    
-    ///\name Run-Time Operations section
+    /** \name Run-Time Operations Section
+    \details TBD */
 
     ///\{
     /** \brief Add a runtime processing operation to the end of the operation list.
@@ -122,12 +114,9 @@ public:
 
 
 
-    //
-    // Rendering Framework
-    //
+    /** \name Rendering Framework Section
+    \details TBD */
 
-    ///\name Rendering Framework
-    
     ///\{
     /** \brief Specify the Renderer plugin operation for creating the scene graph.
     \details TBD
