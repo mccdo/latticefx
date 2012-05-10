@@ -65,6 +65,24 @@ public:
     /** \name Transfer Function Parameters
     \details */
     /**@{*/
+
+    void setTransferFunction( osg::Image* image );
+    osg::Image* getTransferFunction();
+    const osg::Image* getTransferFunction() const;
+
+    void setTransferFunctionInput( const std::string& name );
+    const std::string& getTransferFunctionInput() const;
+
+    typedef enum {
+        TF_RGB,
+        TF_RGBA,
+        TF_ALPHA
+    } TransferFunctionDestination;
+    /** \brief TBD
+    \details Default is TF_ALPHA. */
+    void setTransferFunctionDestination( TransferFunctionDestination dest );
+    TransferFunctionDestination getTransferFunctionDestination() const;
+
     /**@}*/
 
 
@@ -75,6 +93,10 @@ public:
 
 protected:
     unsigned int _baseUnit;
+
+    osg::ref_ptr< osg::Image > _tfImage;
+    std::string _tfInputName;
+    TransferFunctionDestination _tfDest;
 };
 
 typedef boost::shared_ptr< Renderer > RendererPtr;

@@ -2,7 +2,7 @@
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelData.h>
 #include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/Renderer.h>
+#include <latticefx/RTPOperation.h>
 #include <latticefx/VectorRenderer.h>
 #include <latticefx/TransferFunctionUtils.h>
 #include <latticefx/PlayControl.h>
@@ -11,6 +11,45 @@
 #include <osgGA/TrackballManipulator>
 
 #include <iostream>
+
+
+
+class DepthComputation : public lfx::RTPOperation
+{
+public:
+    DepthComputation() : lfx::RTPOperation( lfx::RTPOperation::Channel ) {}
+    DepthComputation( const DepthComputation& rhs ) : lfx::RTPOperation( rhs ) {}
+
+    lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
+    {
+        lfx::ChannelDataPtr posData( getInput( "positions" ) );
+        osg::Array* posBaseArray( posData->asOSGArray() );
+        osg::Vec3Array* posArray( static_cast< osg::Vec3Array* >( posBaseArray ) );
+
+        // Depth value is the z value. Create an array of the z values.
+        // Track min and max values so we can normalize later.
+        float minDepth( FLT_MAX ), maxDepth( -FLT_MAX );
+        osg::FloatArray* depth( new osg::FloatArray );
+        osg::Vec3Array::const_iterator it;
+        for( it=posArray->begin(); it != posArray->end(); ++it )
+        {
+            const float z( it->z() );
+            minDepth = osg::minimum( minDepth, z );
+            maxDepth = osg::maximum( minDepth, z );
+            depth->push_back( z );
+        }
+        // Normalize the new array of depth values.
+        const float range( maxDepth - minDepth );
+        osg::FloatArray::iterator itZ;
+        for( itZ=depth->begin(); itZ != depth->end(); ++itZ )
+        {
+            // Put in range 0.0 .. 1.0.
+            *itZ = ( *itZ - minDepth ) / range;
+        }
+
+        return( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( depth, "depth" ) ) );
+    }
+};
 
 
 unsigned int computeDynamicPositions( osg::Vec3Array* a,
@@ -59,9 +98,15 @@ lfx::DataSetPtr prepareSimplePoints()
     }
     std::cout << "Total samples: " << totalSamples << std::endl;
 
+    // Add RTP operation to create a depth channel to use as input to the transfer function.
+    DepthComputation* dc( new DepthComputation() );
+    dc->addInput( "positions" );
+    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+
     lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
     renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
     renderOp->addInput( "positions" );
+    renderOp->addInput( "depth" ); // From DepthComputation channel creator
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -115,10 +160,16 @@ lfx::DataSetPtr prepareSpheres()
     }
     std::cout << "Total samples: " << totalSamples << std::endl;
 
+    // Add RTP operation to create a depth channel to use as input to the transfer function.
+    DepthComputation* dc( new DepthComputation() );
+    dc->addInput( "positions" );
+    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+
     lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
     renderOp->setPointStyle( lfx::VectorRenderer::SPHERES );
     renderOp->addInput( "positions" );
     renderOp->addInput( "radii" );
+    renderOp->addInput( "depth" ); // From DepthComputation channel creator
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -181,10 +232,16 @@ lfx::DataSetPtr prepareDirectionVectors()
     }
     std::cout << "Total samples: " << count << std::endl;
 
+    // Add RTP operation to create a depth channel to use as input to the transfer function.
+    DepthComputation* dc( new DepthComputation() );
+    dc->addInput( "positions" );
+    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+
     lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
     renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
+    renderOp->addInput( "depth" ); // From DepthComputation channel creator
     dsp->setRenderer( renderOp );
 
     return( dsp );
