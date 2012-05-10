@@ -7,12 +7,17 @@
 
 #include <osg/Array>
 #include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/enable_shared_from_this.hpp>
 
 #include <string>
 #include <vector>
 
 
 namespace lfx {
+
+
+class ChannelData;
+typedef boost::shared_ptr< ChannelData > ChannelDataPtr;
 
 
 /** \class ChannelData ChannelData.h <latticefx/ChannelData.h>
@@ -28,7 +33,7 @@ Currently, ChannelData is just a wrapper around an osg::Array
 (see ChannelDataOSGArray),
 and only osg::ByteArray (for masking) and osg::Vec3Array (for
 vertices) are supported. */
-class LATTICEFX_EXPORT ChannelData
+class LATTICEFX_EXPORT ChannelData : public boost::enable_shared_from_this< ChannelData >
 {
 public:
     ChannelData( const std::string& name=std::string( "" ) );
@@ -66,6 +71,16 @@ public:
     /** \overload osg::Array* ChannelData::asOSGArray(); */
     virtual const osg::Array* asOSGArray() const { return( NULL ); }
 
+    /** \brief Return this ChannelData with the specified mask applied.
+    \detailt If \maskIn indicates no masking (no zero values), getMaskedChannel()
+    may return a pointer to the original ChannelData. Otherwise, a data copy
+    would likely be created. The actual implementation is determined by the
+    derived class. */
+    virtual ChannelDataPtr getMaskedChannel( const ChannelDataPtr maskIn )
+    {
+        return( shared_from_this() );
+    }
+
     /** \brief Set all elements of the data to the same value.
     \details */
     virtual void setAll( const char value ) {}
@@ -94,7 +109,6 @@ protected:
     std::string _name;
 };
 
-typedef boost::shared_ptr< ChannelData > ChannelDataPtr;
 typedef std::vector< ChannelDataPtr > ChannelDataList;
 
 

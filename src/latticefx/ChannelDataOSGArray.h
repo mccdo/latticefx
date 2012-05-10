@@ -56,6 +56,13 @@ public:
     /** \overload osg::Array* ChannelDataOSGArray::asOSGArray(); */
     virtual const osg::Array* asOSGArray() const { return( _workingData.get() ); }
 
+    /** \brief Return this ChannelData with the specified mask applied.
+    \detailt If \maskIn indicates no masking (no zero values), getMaskedChannel()
+    returns a pointer to the original ChannelData. Otherwise, getMaskedChannel()
+    allocates a new ChannelDataOSGArray containing only the unmasked values.
+    \param maskIn Must be a ChannelDataOSGArray. */
+    virtual ChannelDataPtr getMaskedChannel( const ChannelDataPtr maskIn );
+
     /** \brief Set all elements of the data to the same value.
     \details */
     virtual void setAll( const char value );

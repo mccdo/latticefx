@@ -2,7 +2,6 @@
 #include <latticefx/VectorRenderer.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/TextureUtils.h>
-#include <latticefx/MaskUtils.h>
 #include <latticefx/BoundUtils.h>
 
 #include <osg/Geode>
@@ -43,8 +42,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    ChannelDataPtr posChannel( lfx::getMaskedChannel(
-        getInput( getInputTypeAlias( POSITION ) ), maskIn ) );
+    ChannelDataPtr posChannel(
+        getInput( getInputTypeAlias( POSITION ) )->getMaskedChannel( maskIn ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( dynamic_cast< osg::Vec3Array* >( sourceArray ) );
@@ -91,8 +90,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr radChannel( lfx::getMaskedChannel(
-            getInput( getInputTypeAlias( RADIUS ) ), maskIn ) );
+        const ChannelDataPtr radChannel(
+            getInput( getInputTypeAlias( RADIUS ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         stateSet->setTextureAttributeAndModes( 1, radTex, osg::StateAttribute::OFF );
         break;
@@ -120,8 +119,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr dirChannel( lfx::getMaskedChannel(
-            getInput( getInputTypeAlias( DIRECTION ) ), maskIn ) );
+        const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
         stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
         break;

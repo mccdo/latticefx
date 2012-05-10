@@ -4,7 +4,6 @@
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/TextureUtils.h>
-#include <latticefx/MaskUtils.h>
 #include <latticefx/BoundUtils.h>
 
 #include <osg/Geode>

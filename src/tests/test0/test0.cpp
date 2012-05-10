@@ -3,7 +3,6 @@
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
-#include <latticefx/MaskUtils.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -78,7 +77,7 @@ public:
         geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         osg::Geometry* geom = new osg::Geometry;
-        lfx::ChannelDataPtr input = lfx::getMaskedChannel( getInput( "vertices" ), maskIn );
+        lfx::ChannelDataPtr input( getInput( "vertices" )->getMaskedChannel( maskIn ) );
         geom->setVertexArray( input->asOSGArray() );
 
         unsigned int idx, size = geom->getVertexArray()->getNumElements();
