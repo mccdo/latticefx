@@ -19,6 +19,12 @@
 
 
 
+// When sending transfer function input as a vertex attribute,
+// specify this vertex attrib location.
+#define TF_INPUT_ATTRIB 12
+// Note: GeForce 9800M supports only 0 .. 15.
+
+
 namespace lfx {
 
 
@@ -61,7 +67,11 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         geom->setVertexArray( positions );
 
-        //geom->setVertexAttribData(
+        const ChannelDataPtr tfInputChannel(
+            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+        osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
+        geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
+        geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
 
         geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, positions->size() ) );
         geode->addDrawable( geom );
@@ -157,8 +167,13 @@ osg::StateSet* VectorRenderer::getRootState()
     {
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
+        int baseUnit( (int)( getTextureBaseUnit() ) );
+        addTransferFunctionUniforms( stateSet, baseUnit );
+
         osg::Program* program = new osg::Program();
+        program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
         stateSet->setAttribute( program );
+
         osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
         vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-simplepoints.vs" ) );
         program->addShader( vertexShader );

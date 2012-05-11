@@ -3,5 +3,8 @@
 
 void main()
 {
-    gl_FragColor = vec4( 1., 1., 1., 1. );
+    gl_FragData[ 0 ] = gl_Color;
+
+    // Support for second/glow render target.
+    gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
 }
