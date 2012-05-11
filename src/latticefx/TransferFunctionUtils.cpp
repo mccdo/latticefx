@@ -32,6 +32,7 @@ osg::Image* loadImageFromDat( const std::string& fileName,
         if( istr.fail() )
             break;
         istr >> rgb[0] >> rgb[1] >> rgb[2];
+        rgb *= 1.f/255.f;
         
         if( index+1 > array->size() )
             array->resize( index+1 );
@@ -56,6 +57,7 @@ osg::Image* loadImageFromDat( const std::string& fileName,
     osg::ref_ptr< osg::Image > image( new osg::Image );
     image->setImage( array->size(), 1, 1, GL_RGBA, GL_RGBA, GL_FLOAT,
         (unsigned char*)( &((*array)[0]) ), osg::Image::USE_NEW_DELETE );
+
 
     return( image.release() );
 }

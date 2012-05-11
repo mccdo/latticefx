@@ -74,9 +74,9 @@ public:
     const std::string& getTransferFunctionInput() const;
 
     typedef enum {
-        TF_RGB,
-        TF_RGBA,
-        TF_ALPHA
+        TF_RGB = 0,
+        TF_RGBA = 1,
+        TF_ALPHA = 2
     } TransferFunctionDestination;
     /** \brief TBD
     \details Default is TF_ALPHA. */

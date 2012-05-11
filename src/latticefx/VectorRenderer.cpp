@@ -6,6 +6,8 @@
 
 #include <osg/Geode>
 #include <osg/Geometry>
+#include <osg/Texture1D>
+#include <osg/Texture2D>
 #include <osg/Texture3D>
 #include <osg/Shader>
 #include <osg/Program>
@@ -158,12 +160,30 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case SPHERES:
     {
+        // stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDED_LIGHTING, osg::StateAttribute::ON );
+
         int baseUnit( (int)( getTextureBaseUnit() ) );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
         stateSet->addUniform( posUni );
 
         osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( baseUnit++ );
         stateSet->addUniform( radUni );
+
+        const ChannelDataPtr tfInputChannel( getInput( getTransferFunctionInput() ) );
+        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+        stateSet->setTextureAttributeAndModes( baseUnit, tfInputTex, osg::StateAttribute::OFF );
+
+        osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
+        stateSet->addUniform( tfInputUni );
+
+        osg::Texture1D* tf1dTex( new osg::Texture1D( getTransferFunction() ) );
+        stateSet->setTextureAttributeAndModes( baseUnit, tf1dTex, osg::StateAttribute::OFF );
+
+        osg::Uniform* tf1dUni( new osg::Uniform( osg::Uniform::SAMPLER_1D, "tf1d" ) ); tf1dUni->set( baseUnit++ );
+        stateSet->addUniform( tf1dUni );
+
+        osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
+        stateSet->addUniform( tfDestUni );
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );

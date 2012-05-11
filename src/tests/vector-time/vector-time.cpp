@@ -35,7 +35,7 @@ public:
         {
             const float z( it->z() );
             minDepth = osg::minimum( minDepth, z );
-            maxDepth = osg::maximum( minDepth, z );
+            maxDepth = osg::maximum( maxDepth, z );
             depth->push_back( z );
         }
         // Normalize the new array of depth values.
@@ -103,11 +103,19 @@ lfx::DataSetPtr prepareSimplePoints()
     dc->addInput( "positions" );
     dsp->addOperation( lfx::RTPOperationPtr( dc ) );
 
+
     lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
     renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
+
+    // Configure transfer function.
+    renderOp->setTransferFunctionInput( "depth" );
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+
     dsp->setRenderer( renderOp );
+
 
     return( dsp );
 }
@@ -170,6 +178,12 @@ lfx::DataSetPtr prepareSpheres()
     renderOp->addInput( "positions" );
     renderOp->addInput( "radii" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
+
+    // Configure transfer function.
+    renderOp->setTransferFunctionInput( "depth" );
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -242,6 +256,12 @@ lfx::DataSetPtr prepareDirectionVectors()
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
+
+    // Configure transfer function.
+    renderOp->setTransferFunctionInput( "depth" );
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -268,8 +288,6 @@ lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
         dataSet = prepareDirectionVectors();
         break;
     }
-
-    osg::ref_ptr< osg::Image > image( lfx::loadImageFromDat( "01.dat" ) );
 
     return( dataSet );
 }

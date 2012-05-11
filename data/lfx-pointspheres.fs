@@ -31,9 +31,8 @@ vec4 fragmentLighting( vec4 baseColor )
 
 void main()
 {
-    // TBD baseColor comes from transfer function.
-    vec4 baseColor = vec4( 1., 1., 1., 1. );
+    gl_FragData[ 0 ] = fragmentLighting( gl_Color );
 
-    // TBD Note: Must support RTT (use gl_FragData[]).
-    gl_FragColor = fragmentLighting( baseColor );
+    // Support for second/glow render target.
+    gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
 }
