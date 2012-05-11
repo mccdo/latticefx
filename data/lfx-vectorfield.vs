@@ -17,6 +17,44 @@ void vertexLighting( in vec4 ocVertex, in vec3 ocNormal )
 /** end light **/
 
 
+/** begin transfer function **/
+
+uniform sampler1D tf1d;
+uniform sampler3D tfInput;
+uniform int tfDest;
+const int tfDestRGB = 0;
+const int tfDestRGBA = 1;
+const int tfDestAlpha = 2;
+
+void transferFunction( in vec3 tC )
+{
+    float index = texture3D( tfInput, tC ).a;
+    vec4 result = texture1D( tf1d, index );
+    if( tfDest == tfDestRGB )
+    {
+        gl_FrontColor.rgb = result.rgb;
+        gl_BackColor.rgb = result.rgb;
+        gl_FrontColor.a = gl_Color.a;
+        gl_BackColor.a = gl_Color.a;
+    }
+    else if( tfDest == tfDestRGBA )
+    {
+        gl_FrontColor = result;
+        gl_BackColor = result;
+    }
+    else
+    {
+        gl_FrontColor.rgb = gl_Color.rgb;
+        gl_BackColor.rgb = gl_Color.rgb;
+        gl_FrontColor.a = result.a;
+        gl_BackColor.a = result.a;
+    }
+}
+
+/** end transfer function **/
+
+
+
 uniform sampler3D texPos;
 uniform sampler3D texDir;
 uniform vec3 texDim;
@@ -82,4 +120,6 @@ void main()
     gl_Position = gl_ModelViewProjectionMatrix * hoVec;
 
     vertexLighting( hoVec, orientMat * gl_Normal );
+
+    transferFunction( tC );
 }

@@ -160,7 +160,7 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case SPHERES:
     {
-        // stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDED_LIGHTING, osg::StateAttribute::ON );
+        stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
         int baseUnit( (int)( getTextureBaseUnit() ) );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
@@ -168,6 +168,7 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( baseUnit++ );
         stateSet->addUniform( radUni );
+
 
         const ChannelDataPtr tfInputChannel( getInput( getTransferFunctionInput() ) );
         osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
@@ -191,12 +192,25 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case DIRECTION_VECTORS:
     {
+        stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
+
         int baseUnit( (int)( getTextureBaseUnit() ) );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
         stateSet->addUniform( posUni );
 
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( baseUnit++ );
         stateSet->addUniform( dirUni );
+
+
+        const ChannelDataPtr tfInputChannel( getInput( getTransferFunctionInput() ) );
+        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+        stateSet->setTextureAttributeAndModes( baseUnit, tfInputTex, osg::StateAttribute::OFF );
+
+        osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
+        stateSet->addUniform( tfInputUni );
+
+        addTransferFunctionUniforms( stateSet, baseUnit );
+
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
