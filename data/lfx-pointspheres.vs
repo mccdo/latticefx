@@ -93,6 +93,7 @@ void main()
     // Scale and translate the vertex, then transform to clip coords.
     vec4 oVec = vec4( scale * gl_Vertex.xyz + pos.xyz, 1.0 );
     gl_Position = gl_ModelViewProjectionMatrix * oVec;
+    gl_ClipVertex = gl_ModelViewMatrix * oVec;
 
     vertexLighting( oVec, gl_Normal );
 

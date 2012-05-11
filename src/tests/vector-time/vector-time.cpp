@@ -9,6 +9,7 @@
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
+#include <osg/ClipNode>
 
 #include <iostream>
 
@@ -307,15 +308,24 @@ int main( int argc, char** argv )
     if( arguments.find( "-d" ) > 0 ) style = lfx::VectorRenderer::DIRECTION_VECTORS;
 
     // Create an example data set.
+    osg::Group* root( new osg::Group );
     lfx::DataSetPtr dsp( prepareDataSet( style ) );
+    root->addChild( dsp->getSceneData() );
 
+    // Test hardware clip planes
+    osg::ClipNode* cn( new osg::ClipNode() );
+    cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., -3. ) );
+    root->addChild( cn );
+    root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+    
+    // Play the time series animation
     lfx::PlayControlPtr playControl( new lfx::PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
-    viewer.setSceneData( dsp->getSceneData() );
+    viewer.setSceneData( root );
 
     double prevClockTime( 0. );
     while( !( viewer.done() ) )

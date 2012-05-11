@@ -118,6 +118,7 @@ void main()
     vec3 oVec = orientMat * (scale * gl_Vertex.xyz);
     vec4 hoVec = vec4( oVec + pos.xyz, 1.0 );
     gl_Position = gl_ModelViewProjectionMatrix * hoVec;
+    gl_ClipVertex = gl_ModelViewMatrix * hoVec;
 
     vertexLighting( hoVec, orientMat * gl_Normal );
 

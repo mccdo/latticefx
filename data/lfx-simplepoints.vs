@@ -36,6 +36,7 @@ void transferFunction()
 void main()
 {
     gl_Position = ftransform();
+    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 
     transferFunction();
 }
