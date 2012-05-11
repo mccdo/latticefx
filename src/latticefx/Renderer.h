@@ -92,6 +92,8 @@ public:
     /**@}*/
 
 protected:
+    void addTransferFunctionUniforms( osg::StateSet* stateSet, int& baseUnit );
+
     unsigned int _baseUnit;
 
     osg::ref_ptr< osg::Image > _tfImage;

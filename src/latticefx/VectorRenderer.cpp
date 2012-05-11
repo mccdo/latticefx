@@ -176,14 +176,8 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
-        osg::Texture1D* tf1dTex( new osg::Texture1D( getTransferFunction() ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tf1dTex, osg::StateAttribute::OFF );
+        addTransferFunctionUniforms( stateSet, baseUnit );
 
-        osg::Uniform* tf1dUni( new osg::Uniform( osg::Uniform::SAMPLER_1D, "tf1d" ) ); tf1dUni->set( baseUnit++ );
-        stateSet->addUniform( tf1dUni );
-
-        osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
-        stateSet->addUniform( tfDestUni );
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
