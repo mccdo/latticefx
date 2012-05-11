@@ -60,6 +60,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setUseVertexBufferObjects( true );
 
         geom->setVertexArray( positions );
+
+        //geom->setVertexAttribData(
+
         geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, positions->size() ) );
         geode->addDrawable( geom );
         break;
@@ -97,6 +100,11 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             getInput( getInputTypeAlias( RADIUS ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, radTex, osg::StateAttribute::OFF );
+
+        const ChannelDataPtr tfInputChannel(
+            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+        stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
         break;
     }
     case DIRECTION_VECTORS:
@@ -126,6 +134,11 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, dirTex, osg::StateAttribute::OFF );
+
+        const ChannelDataPtr tfInputChannel(
+            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+        stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
         break;
     }
     }
@@ -169,11 +182,6 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( baseUnit++ );
         stateSet->addUniform( radUni );
 
-
-        const ChannelDataPtr tfInputChannel( getInput( getTransferFunctionInput() ) );
-        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tfInputTex, osg::StateAttribute::OFF );
-
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
@@ -200,11 +208,6 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( baseUnit++ );
         stateSet->addUniform( dirUni );
-
-
-        const ChannelDataPtr tfInputChannel( getInput( getTransferFunctionInput() ) );
-        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tfInputTex, osg::StateAttribute::OFF );
 
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
