@@ -28,6 +28,7 @@ const int tfDestAlpha = 2;
 
 void transferFunction( in vec3 tC )
 {
+    // Get index. tfInput texture format is GL_ALPHA32F_ARB.
     float index = texture3D( tfInput, tC ).a;
     vec4 result = texture1D( tf1d, index );
     if( tfDest == tfDestRGB )

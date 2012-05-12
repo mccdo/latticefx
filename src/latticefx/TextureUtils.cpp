@@ -92,10 +92,21 @@ osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source
         dataType = GL_FLOAT;
         break;
     }
+    case osg::Array::Vec2ArrayType:
+    {
+        const osg::Vec2Array* v2Array( dynamic_cast< const osg::Vec2Array* >( sourceArray ) );
+        sourceData = const_cast< osg::Vec2* >( &( (*v2Array)[ 0 ] ) );
+        // Shader retrieves values from the 'ba' components.
+        intFormat = GL_LUMINANCE_ALPHA32F_ARB;
+        dataFormat = GL_LUMINANCE_ALPHA;
+        dataType = GL_FLOAT;
+        break;
+    }
     case osg::Array::FloatArrayType:
     {
         const osg::FloatArray* fArray( dynamic_cast< const osg::FloatArray* >( sourceArray ) );
         sourceData = const_cast< GLfloat* >( &( (*fArray)[ 0 ] ) );
+        // Shader retrieves values from the 'a' component.
         intFormat = GL_ALPHA32F_ARB;
         dataFormat = GL_ALPHA;
         dataType = GL_FLOAT;

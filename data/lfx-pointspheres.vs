@@ -28,6 +28,7 @@ const int tfDestAlpha = 2;
 
 void transferFunction( in vec3 tC )
 {
+    // Get index. tfInput texture format is GL_ALPHA32F_ARB.
     float index = texture3D( tfInput, tC ).a;
     vec4 result = texture1D( tf1d, index );
     if( tfDest == tfDestRGB )
@@ -87,7 +88,7 @@ void main()
     // Sample (look up) xyz position
     vec4 pos = texture3D( texPos, tC );
 
-    // Sample (look up) radius
+    // Sample (look up) radius. texRad texture format is GL_ALPHA32F_ARB.
     float scale = texture3D( texRad, tC ).a;
 
     // Scale and translate the vertex, then transform to clip coords.
