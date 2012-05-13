@@ -6,11 +6,18 @@
 #include <latticefx/Export.h>
 #include <latticefx/OperationBase.h>
 
+#include <osg/Image>
+#include <osg/ref_ptr>
+
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <list>
 
 
+namespace osg {
+    class Node;
+    class StateSet;
+}
 
 namespace lfx {
 

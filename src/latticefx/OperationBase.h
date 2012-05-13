@@ -6,11 +6,12 @@
 #include <latticefx/Export.h>
 #include <latticefx/ChannelData.h>
 
+#include <osg/Vec3>
+
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <list>
 #include <map>
-
 
 
 namespace lfx {

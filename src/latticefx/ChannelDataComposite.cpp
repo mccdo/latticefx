@@ -1,6 +1,7 @@
 
 #include <latticefx/ChannelDataComposite.h>
 #include <osg/Notify>
+#include <osg/math>
 
 #include <boost/foreach.hpp>
 

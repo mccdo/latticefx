@@ -5,13 +5,16 @@
 
 #include <latticefx/Export.h>
 
-#include <osg/Array>
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
 
 #include <string>
 #include <vector>
 
+
+namespace osg {
+    class Array;
+}
 
 namespace lfx {
 
