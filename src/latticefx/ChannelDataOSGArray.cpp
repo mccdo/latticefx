@@ -101,6 +101,23 @@ const char* ChannelDataOSGArray::asCharPtr() const
 
 ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskIn )
 {
+#define MASK_LOOP( _sIt, _sArr, _mIt, _mArr, _dIt, _dArr ) \
+    { \
+        unsigned int count( 0 ); \
+        _dArr->resize( _sArr->size() ); \
+        for( _sIt=_sArr->begin(), _mIt=_mArr->begin(), _dIt=_dArr->begin(); \
+            _sIt != _sArr->end(); ++_sIt, ++_mIt ) \
+        { \
+            if( *_mIt != 0 ) \
+            { \
+                *_dIt  = *_sIt; \
+                count++; \
+                ++_dIt; \
+            } \
+        } \
+        _dArr->resize( count ); \
+    }
+
     if( maskIn == NULL )
         return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
 
@@ -125,50 +142,38 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
     osg::Array* sourceArray( this->asOSGArray() );
     switch( sourceArray->getType() )
     {
-    case osg::Array::Vec3ArrayType:
-    {
-        const osg::Vec3Array* osgSource( static_cast< osg::Vec3Array* >( sourceArray ) );
-        osg::Vec3Array::const_iterator srcIt;
-        osg::ref_ptr< osg::Vec3Array > maskedData( new osg::Vec3Array );
-        maskedData->resize( osgSource->size() );
-        osg::Vec3Array::iterator destIt;
-
-        unsigned int count( 0 );
-        for( srcIt=osgSource->begin(), maskIt=osgMask->begin(), destIt=maskedData->begin();
-            srcIt != osgSource->end(); ++srcIt, ++maskIt )
-        {
-            if( *maskIt != 0 )
-            {
-                *destIt = *srcIt;
-                count++;
-                ++destIt;
-            }
-        }
-        maskedData->resize( count );
-
-        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
-        return( newData );
-    }
     case osg::Array::FloatArrayType:
     {
         const osg::FloatArray* osgSource( static_cast< osg::FloatArray* >( sourceArray ) );
         osg::FloatArray::const_iterator srcIt;
         osg::ref_ptr< osg::FloatArray > maskedData( new osg::FloatArray );
-        maskedData->resize( osgSource->size() );
         osg::FloatArray::iterator destIt;
 
-        unsigned int count( 0 );
-        for( srcIt=osgSource->begin(), maskIt=osgMask->begin(), destIt=maskedData->begin();
-            srcIt != osgSource->end(); ++srcIt, ++maskIt )
-        {
-            if( *maskIt != 0 )
-            {
-                *destIt = *srcIt;
-                count++;
-                ++destIt;
-            }
-        }
-        maskedData->resize( count );
+        MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
+
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
+        return( newData );
+    }
+    case osg::Array::Vec2ArrayType:
+    {
+        const osg::Vec2Array* osgSource( static_cast< osg::Vec2Array* >( sourceArray ) );
+        osg::Vec2Array::const_iterator srcIt;
+        osg::ref_ptr< osg::Vec2Array > maskedData( new osg::Vec2Array );
+        osg::Vec2Array::iterator destIt;
+
+        MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
+
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
+        return( newData );
+    }
+    case osg::Array::Vec3ArrayType:
+    {
+        const osg::Vec3Array* osgSource( static_cast< osg::Vec3Array* >( sourceArray ) );
+        osg::Vec3Array::const_iterator srcIt;
+        osg::ref_ptr< osg::Vec3Array > maskedData( new osg::Vec3Array );
+        osg::Vec3Array::iterator destIt;
+
+        MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
 
         ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
         return( newData );
@@ -179,6 +184,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
         return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
     }
     }
+#undef MASK_LOOP
 }
 
 
@@ -198,6 +204,7 @@ void ChannelDataOSGArray::setAll( const char value )
     }
     default:
     {
+        OSG_WARN << "ChannelDataOSGArray::setAll(const char): Unsupported array type." << std::endl;
         break;
     }
     }
@@ -218,6 +225,7 @@ void ChannelDataOSGArray::setAll( const float value )
     }
     default:
     {
+        OSG_WARN << "ChannelDataOSGArray::setAll(const float): Unsupported array type." << std::endl;
         break;
     }
     }
@@ -243,6 +251,7 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
     }
     default:
     {
+        OSG_WARN << "ChannelDataOSGArray::andValues(): Unsupported array type." << std::endl;
         break;
     }
     }
@@ -272,6 +281,10 @@ void ChannelDataOSGArray::resize( size_t size )
     case osg::Array::FloatArrayType:
         ( dynamic_cast< osg::FloatArray* >( _data.get() ) )->resize( size );
         ( dynamic_cast< osg::FloatArray* >( _workingData.get() ) )->resize( size );
+        break;
+    case osg::Array::Vec2ArrayType:
+        ( dynamic_cast< osg::Vec2Array* >( _data.get() ) )->resize( size );
+        ( dynamic_cast< osg::Vec2Array* >( _workingData.get() ) )->resize( size );
         break;
     case osg::Array::Vec3ArrayType:
         ( dynamic_cast< osg::Vec3Array* >( _data.get() ) )->resize( size );
@@ -306,6 +319,12 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     {
         memcpy( AS_CHAR_PTR( osg::FloatArray, lhs ),
             AS_CONST_CHAR_PTR( osg::FloatArray, rhs ), sizeBytes );
+        break;
+    }
+    case osg::Array::Vec2ArrayType:
+    {
+        memcpy( AS_CHAR_PTR( osg::Vec2Array, lhs ),
+            AS_CONST_CHAR_PTR( osg::Vec2Array, rhs ), sizeBytes );
         break;
     }
     case osg::Array::Vec3ArrayType:
