@@ -168,7 +168,7 @@ osg::StateSet* VectorRenderer::getRootState()
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         int baseUnit( (int)( getTextureBaseUnit() ) );
-        addTransferFunctionUniforms( stateSet, baseUnit );
+        addTransferFunctionUniforms( stateSet.get(), baseUnit );
 
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
@@ -200,7 +200,7 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
-        addTransferFunctionUniforms( stateSet, baseUnit );
+        addTransferFunctionUniforms( stateSet.get(), baseUnit );
 
 
         osg::Program* program = new osg::Program();
@@ -227,7 +227,7 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
-        addTransferFunctionUniforms( stateSet, baseUnit );
+        addTransferFunctionUniforms( stateSet.get(), baseUnit );
 
 
         osg::Program* program = new osg::Program();
