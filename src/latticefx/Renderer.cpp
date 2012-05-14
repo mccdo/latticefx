@@ -12,7 +12,10 @@ namespace lfx {
 Renderer::Renderer()
   : OperationBase( OperationBase::RendererType ),
     _baseUnit( 8 ),
-    _tfDest( TF_ALPHA )
+    _tfDest( TF_ALPHA ),
+    _hmSource( HM_SOURCE_ALPHA ),
+    _hmReference( 0.f ),
+    _hmOperator( HM_OP_OFF )
 {
 }
 Renderer::Renderer( const Renderer& rhs )
@@ -20,7 +23,11 @@ Renderer::Renderer( const Renderer& rhs )
     _baseUnit( rhs._baseUnit ),
     _tfImage( rhs._tfImage ),
     _tfInputName( rhs._tfInputName ),
-    _tfDest( rhs._tfDest )
+    _tfDest( rhs._tfDest ),
+    _hmSource( rhs._hmSource ),
+    _hmInputName( rhs._hmInputName ),
+    _hmReference( rhs._hmReference ),
+    _hmOperator( rhs._hmOperator )
 {
 }
 Renderer::~Renderer()
@@ -60,7 +67,7 @@ const std::string& Renderer::getTransferFunctionInput() const
     return( _tfInputName );
 }
 
-void Renderer::setTransferFunctionDestination( Renderer::TransferFunctionDestination dest )
+void Renderer::setTransferFunctionDestination( const Renderer::TransferFunctionDestination dest )
 {
     _tfDest = dest;
 }
@@ -70,8 +77,45 @@ Renderer::TransferFunctionDestination Renderer::getTransferFunctionDestination()
 }
 
 
+void Renderer::setHardwareMaskInputSource( const HardwareMaskInputSource source )
+{
+    _hmSource = source;
+}
+const Renderer::HardwareMaskInputSource Renderer::getHardwareMaskInputSource() const
+{
+    return( _hmSource );
+}
 
-void Renderer::addTransferFunctionUniforms( osg::StateSet* stateSet, int& baseUnit )
+void Renderer::setHardwareMaskInput( const std::string& inputName )
+{
+    _hmInputName = inputName;
+}
+const std::string& Renderer::getHardwareMaskInput() const
+{
+    return( _hmInputName );
+}
+
+void Renderer::setHardwareMaskReference( const float reference )
+{
+    _hmReference = reference;
+}
+float Renderer::getHardwareMaskReference() const
+{
+    return( _hmReference );
+}
+
+void Renderer::setHardwareMaskOperator( const unsigned int& maskOp )
+{
+    _hmOperator = maskOp;
+}
+unsigned int Renderer::getHardwareMaskOperator() const
+{
+    return( _hmOperator );
+}
+
+
+
+void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUnit )
 {
     osg::Image* function( getTransferFunction() );
     if( ( function->t() == 1 ) && ( function->r() == 1 ) )
@@ -104,6 +148,34 @@ void Renderer::addTransferFunctionUniforms( osg::StateSet* stateSet, int& baseUn
 
     osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
     stateSet->addUniform( tfDestUni );
+
+
+    // Cram all mask parameters into a single vec4 uniform:
+    //   Element 0: Input source (0=alpha, 1=red, 2=scalar
+    //   Element 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
+    //   Element 2: Operator negate flag (1=negate).
+    //   Element 3: Reference value.
+    osg::Vec4 maskParams( 0., 0., 0., _hmReference );
+    if( _hmOperator != HM_OP_OFF )
+    {
+        if( ( _hmSource & HM_SOURCE_RED ) != 0 )
+            maskParams[ 0 ] = 1.f;
+        else if( ( _hmSource & HM_SOURCE_SCALAR ) != 0 )
+            maskParams[ 0 ] = 2.f;
+
+        if( ( _hmOperator & HM_OP_EQ ) != 0 )
+            maskParams[ 1 ] = 1.f;
+        else if( ( _hmOperator & HM_OP_LT ) != 0 )
+            maskParams[ 1 ] = 2.f;
+        else if( ( _hmOperator & HM_OP_GT ) != 0 )
+            maskParams[ 1 ] = 3.f;
+
+        if( ( _hmOperator & HM_OP_NOT ) != 0 )
+            maskParams[ 2 ] = 1.f;
+    }
+
+    osg::Uniform* hmParamsUni( new osg::Uniform( "hmParams", maskParams ) );
+    stateSet->addUniform( hmParamsUni );
 }
 
 

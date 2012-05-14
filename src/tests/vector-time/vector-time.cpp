@@ -185,6 +185,11 @@ lfx::DataSetPtr prepareSpheres()
     renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
 
+    // Configure hardware mask.
+    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_RED );
+    renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_OFF );
+    renderOp->setHardwareMaskReference( 0.f );
+
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -314,7 +319,7 @@ int main( int argc, char** argv )
 
     // Test hardware clip planes
     osg::ClipNode* cn( new osg::ClipNode() );
-    cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., -3. ) );
+    cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., 3. ) );
     root->addChild( cn );
     root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
     

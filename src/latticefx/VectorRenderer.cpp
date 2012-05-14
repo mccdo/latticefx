@@ -19,9 +19,10 @@
 
 
 
-// When sending transfer function input as a vertex attribute,
-// specify this vertex attrib location.
+// When sending transfer function / hardware mask inputs as vertex attributes,
+// specify these vertex attrib locations.
 #define TF_INPUT_ATTRIB 12
+#define HM_SOURCE_ATTRIB 13
 // Note: GeForce 9800M supports only 0 .. 15.
 
 
@@ -73,6 +74,15 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
         geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
 
+        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
+        {
+            const ChannelDataPtr hmInputChannel(
+                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            osg::Array* hmInputArray( hmInputChannel->asOSGArray() );
+            geom->setVertexAttribArray( HM_SOURCE_ATTRIB, hmInputArray );
+            geom->setVertexAttribBinding( HM_SOURCE_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
+        }
+
         geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, positions->size() ) );
         geode->addDrawable( geom );
         break;
@@ -115,6 +125,14 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
         osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+
+        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
+        {
+            const ChannelDataPtr hmInputChannel(
+                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
+            stateSet->setTextureAttributeAndModes( baseUnit++, hmInputTex, osg::StateAttribute::OFF );
+        }
         break;
     }
     case DIRECTION_VECTORS:
@@ -149,6 +167,14 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
         osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+
+        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
+        {
+            const ChannelDataPtr hmInputChannel(
+                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
+            stateSet->setTextureAttributeAndModes( baseUnit++, hmInputTex, osg::StateAttribute::OFF );
+        }
         break;
     }
     }
@@ -168,7 +194,7 @@ osg::StateSet* VectorRenderer::getRootState()
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         int baseUnit( (int)( getTextureBaseUnit() ) );
-        addTransferFunctionUniforms( stateSet.get(), baseUnit );
+        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
 
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
@@ -200,7 +226,13 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
-        addTransferFunctionUniforms( stateSet.get(), baseUnit );
+        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
+        {
+            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( baseUnit++ );
+            stateSet->addUniform( hmInputUni );
+        }
+
+        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
 
 
         osg::Program* program = new osg::Program();
@@ -227,7 +259,13 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
         stateSet->addUniform( tfInputUni );
 
-        addTransferFunctionUniforms( stateSet.get(), baseUnit );
+        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
+        {
+            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( baseUnit++ );
+            stateSet->addUniform( hmInputUni );
+        }
+
+        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
 
 
         osg::Program* program = new osg::Program();

@@ -55,6 +55,50 @@ void transferFunction( in vec3 tC )
 /** end transfer function **/
 
 
+/** begin hardware mask **/
+
+uniform sampler3D hmInput;
+uniform vec4 hmParams;
+
+// Return true if passed, false if failed.
+bool hardwareMask( in vec3 tC )
+{
+    // hmParams has all mask parameters in a single vec4 uniform:
+    //   Element 0: Input source (0=alpha, 1=red, 2=scalar
+    //   Element 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
+    //   Element 2: Operator negate flag (1=negate).
+    //   Element 3: Reference value.
+
+    if( hmParams[ 1 ] == 0. ) // Off
+        return( true );
+
+    float value;
+    if( hmParams[ 0 ] == 0. )
+        value = gl_FrontColor.a;
+    else if( hmParams[ 0 ] == 1. )
+        value = gl_FrontColor.r;
+    else if( hmParams[ 0 ] == 2. )
+    {
+        // hmInput texture format is GL_ALPHA32F_ARB.
+        value = texture3D( hmInput, tC ).a;
+    }
+
+    bool result;
+    if( hmParams[ 1 ] == 1. ) // Equal
+        result = ( value == hmParams[ 3 ] );
+    else if( hmParams[ 1 ] == 2. ) // Less than
+        result = ( value < hmParams[ 3 ] );
+    else if( hmParams[ 1 ] == 3. ) // Greater than
+        result = ( value > hmParams[ 3 ] );
+
+    if( hmParams[ 2 ] == 1. ) // Negate
+        result = !result;
+    return( result );
+}
+
+/** end hardware mask **/
+
+
 
 uniform sampler3D texPos;
 uniform sampler3D texDir;
@@ -107,6 +151,15 @@ void main()
     // Generate stp texture coords from the instance ID.
     vec3 tC = generateTexCoord( gl_InstanceIDARB );
 
+    transferFunction( tC );
+    if( !hardwareMask( tC ) )
+    {
+        // "Discard" in vectex shader: set clip coord x, y, and z all > w.
+        // (Setting them < -w would also work).
+        gl_Position = vec4( 1., 1., 1., 0. );
+        return;
+    }
+
     // Sample (look up) xyz position
     vec4 pos = texture3D( texPos, tC );
 
@@ -122,6 +175,4 @@ void main()
     gl_ClipVertex = gl_ModelViewMatrix * hoVec;
 
     vertexLighting( hoVec, orientMat * gl_Normal );
-
-    transferFunction( tC );
 }
