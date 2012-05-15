@@ -25,7 +25,51 @@ namespace lfx {
 
 /** \class Renderer Renderer.h <latticefx/Renderer.h>
 \brief Base class for Rendering Framework operations.
-\details TBD
+\details Applications should create an instance of a class that derives from Renderer,
+such as lfx::VectorRenderer or lfx::VolumeRenderer, and attach it to a DataSet using
+DataSet::setRenderer(). Exactly one Renderer may be attached to a DataSet.
+
+Applications should attach any necessary input ChannelData to the Renderer instance.
+No ChannelData are required by the Renderer base class, but derived classes might require
+specific ChannelData inputs. For example, when rendering simple points, VectorRenderer
+requires position data:
+
+\code
+    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
+    renderOp->addInput( "positions" );
+\endcode
+
+\section DeriveRenderer Creating a New Renderer
+
+Derived classes must override the getSceneGraph() and should almost certainly
+override the getRootState() methods.
+
+getSceneGraph() will be invoked by DataSet once per time step to create a
+scene graph. DataSet will configure OperationBase::_inputs with the required
+inputs for the time step. getSceneGraph() constructs a scene graph using those
+inputs. In this way, getSceneGraph() typically doesn't need to know the time
+for the time step.
+
+getRootState() will be called once by DataSet to obtain a StateSet that
+applies to all time step scene graphs created by getSceneGraph(). This allows
+a Renderer to avoid setting duplicate state in each time step scene graph.
+
+Derived classes might want to add additional functionality, such as the
+point rendering styles supported by VectorRenderer (see
+VectorRenderer::setPointStyle()). Alternatively, OperationBase supports
+a name-value pair interface for passing control parameters. This is
+particularly useful if the derived Renderer is to be loaded from a plugin,
+in which case compile-time access to public methods is not available.
+
+LatticeFX and the Renderer base class provide several tools and utilities to
+aid in Renderer creation.
+
+\li \ref BoundUtils
+\li \ref TextureUtils
+\li \ref TransferFunctionUtils
+\li getOrAssignTextureUnit() for assigning and organizing texture unit usage.
+\li addHardwareFeatureUniforms() for setting commonly used uniform variables.
 */
 class LATTICEFX_EXPORT Renderer : public lfx::OperationBase
 {
@@ -63,7 +107,6 @@ public:
     or higher. The default for \c baseUnit is 8. This function implicitly calls
     resetTextureUnitAssignments(). */
     void setTextureBaseUnit( const unsigned int baseUnit );
-
     /** \brief Get the base texture unit used by the Renderer.
     \details Returns the base texture unit. */
     unsigned int getTextureBaseUnit() const;
@@ -168,6 +211,8 @@ public:
     /**@}*/
 
 protected:
+    /** \brief TBD
+    \details TBD */
     void addHardwareFeatureUniforms( osg::StateSet* stateSet );
 
     unsigned int _baseUnit;

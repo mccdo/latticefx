@@ -121,12 +121,18 @@ public:
     virtual bool getEnable() const;
 
 
+    /** \name Name-Value Pair Interface
+    */
+    /**@{*/
+
     /** \brief */
     void setValue( const std::string& name, const OperationValue& value );
     /** \brief */
     bool hasValue( const std::string& name ) const;
     /** \brief */
     const OperationValue* getValue( const std::string& name ) const;
+
+    /**@}*/
 
 protected:
     friend class DataSet;
