@@ -25,6 +25,7 @@ set( _headerFiles
     TextureUtils.h
     TransferFunctionUtils.h
     VectorRenderer.h
+    VolumeRenderer.h
 )
 
 set( _sourceFiles
@@ -45,6 +46,7 @@ set( _sourceFiles
     TextureUtils.cpp
     TransferFunctionUtils.cpp
     VectorRenderer.cpp
+    VolumeRenderer.cpp
 )
 
 
