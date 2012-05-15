@@ -68,11 +68,16 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         geom->setVertexArray( positions );
 
-        const ChannelDataPtr tfInputChannel(
-            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
-        osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
-        geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
-        geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
+        if( this->getTransferFunction() != NULL )
+        {
+            const ChannelDataPtr tfInputChannel(
+                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
+            // simplepoints shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
+            osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
+            geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
+            geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
+        }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
@@ -121,10 +126,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, radTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr tfInputChannel(
-            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
-        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+        if( this->getTransferFunction() != NULL )
+        {
+            const ChannelDataPtr tfInputChannel(
+                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+            stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+        }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
@@ -163,10 +171,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
         stateSet->setTextureAttributeAndModes( baseUnit++, dirTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr tfInputChannel(
-            getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
-        osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+        if( this->getTransferFunction() != NULL )
+        {
+            const ChannelDataPtr tfInputChannel(
+                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+            stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+        }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {

@@ -341,6 +341,46 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     }
 }
 
+osg::Vec3Array* ChannelDataOSGArray::convertToVec3Array( osg::Array* source )
+{
+    if( source->getType() == osg::Array::Vec3ArrayType )
+        return( static_cast< osg::Vec3Array* >( source ) );
+
+    osg::Vec3Array* result( new osg::Vec3Array );
+    result->resize( source->getNumElements() );
+    unsigned int idx;
+    switch( source->getType() )
+    {
+    case osg::Array::ByteArrayType:
+    {
+        osg::ByteArray* byteSource( static_cast< osg::ByteArray* >( source ) );
+        for( idx=0; idx<source->getNumElements(); ++idx )
+            (*result)[ idx ].set( (float)( (*byteSource)[ idx ] ), 0., 0. );
+        break;
+    }
+    case osg::Array::FloatArrayType:
+    {
+        osg::FloatArray* floatSource( static_cast< osg::FloatArray* >( source ) );
+        for( idx=0; idx<source->getNumElements(); ++idx )
+            (*result)[ idx ].set( (*floatSource)[ idx ], 0., 0. );
+        break;
+    }
+    case osg::Array::Vec2ArrayType:
+    {
+        osg::Vec2Array* vec2Source( static_cast< osg::Vec2Array* >( source ) );
+        for( idx=0; idx<source->getNumElements(); ++idx )
+            (*result)[ idx ].set( (*vec2Source)[ idx ].x(), (*vec2Source)[ idx ].y(), 0. );
+        break;
+    }
+    default:
+    {
+        OSG_WARN << "ChannelDataOSGArray::convertToVec3Array(): Unsupported array type." << std::endl;
+        break;
+    }
+    }
+    return( result );
+}
+
 
 // lfx
 }

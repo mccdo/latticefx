@@ -80,6 +80,12 @@ public:
     */
     virtual void resize( size_t size );
 
+    /** \brief Convert the array to Vec3 data.
+    \details If the array is already a Vec3Array, return it.
+    Otherwise, copy data from the parameter array into a new Vec3Array.
+    */
+    static osg::Vec3Array* convertToVec3Array( osg::Array* source );
+
 protected:
     /** \brief _data is the original data, as specified by the calling code. */
     osg::ref_ptr< osg::Array > _data;

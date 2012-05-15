@@ -4,7 +4,10 @@
 /** begin transfer function **/
 
 uniform sampler1D tf1d;
-attribute float tfInput;
+uniform sampler2D tf2d;
+uniform sampler3D tf3d;
+attribute vec3 tfInput;
+uniform int tfDimension;
 uniform int tfDest;
 const int tfDestRGB = 0;
 const int tfDestRGBA = 1;
@@ -12,7 +15,20 @@ const int tfDestAlpha = 2;
 
 void transferFunction()
 {
-    vec4 result = texture1D( tf1d, tfInput );
+    vec4 result;
+    if( tfDimension == 1 ) // 1D transfer function.
+        result = texture1D( tf1d, tfInput.s );
+    else if( tfDimension == 2 ) // 2D transfer function.
+        result = texture2D( tf2d, tfInput.st );
+    else if( tfDimension == 3 ) // 3D transfer function.
+        result = texture3D( tf3d, tfInput.stp );
+    else // Transfer function is disabled.
+    {
+        gl_FrontColor = gl_Color;
+        gl_BackColor = gl_Color;
+        return;
+    }
+
     if( tfDest == tfDestRGB )
     {
         gl_FrontColor.rgb = result.rgb;
@@ -36,6 +52,12 @@ void transferFunction()
 
 attribute float hmInput;
 uniform vec4 hmParams;
+const float hmAlpha = 0.;
+const float hmRed = 1.;
+const float hmScalar = 2.;
+const float hmEqual = 1.;
+const float hmLessThan = 2.;
+const float hmGreaterThan = 3.;
 
 // Return true if passed, false if failed.
 bool hardwareMask()
@@ -50,19 +72,19 @@ bool hardwareMask()
         return( true );
 
     float value;
-    if( hmParams[ 0 ] == 0. )
+    if( hmParams[ 0 ] == hmAlpha )
         value = gl_FrontColor.a;
-    else if( hmParams[ 0 ] == 1. )
+    else if( hmParams[ 0 ] == hmRed )
         value = gl_FrontColor.r;
-    else if( hmParams[ 0 ] == 2. )
+    else if( hmParams[ 0 ] == hmScalar )
         value = hmInput;
 
     bool result;
-    if( hmParams[ 1 ] == 1. ) // Equal
+    if( hmParams[ 1 ] == hmEqual )
         result = ( value == hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == 2. ) // Less than
+    else if( hmParams[ 1 ] == hmLessThan )
         result = ( value < hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == 3. ) // Greater than
+    else if( hmParams[ 1 ] == hmGreaterThan )
         result = ( value > hmParams[ 3 ] );
 
     if( hmParams[ 2 ] == 1. ) // Negate

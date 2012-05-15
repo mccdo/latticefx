@@ -20,7 +20,10 @@ void vertexLighting( in vec4 ocVertex, in vec3 ocNormal )
 /** begin transfer function **/
 
 uniform sampler1D tf1d;
+uniform sampler2D tf2d;
+uniform sampler3D tf3d;
 uniform sampler3D tfInput;
+uniform int tfDimension;
 uniform int tfDest;
 const int tfDestRGB = 0;
 const int tfDestRGBA = 1;
@@ -28,9 +31,31 @@ const int tfDestAlpha = 2;
 
 void transferFunction( in vec3 tC )
 {
-    // Get index. tfInput texture format is GL_ALPHA32F_ARB.
-    float index = texture3D( tfInput, tC ).a;
-    vec4 result = texture1D( tf1d, index );
+    vec4 result;
+    if( tfDimension == 1 ) // 1D transfer function.
+    {
+        // tfInput texture format is GL_ALPHA32F_ARB.
+        float index = texture3D( tfInput, tC ).a;
+        result = texture1D( tf1d, index );
+    }
+    else if( tfDimension == 2 ) // 2D transfer function.
+    {
+        // tfInput texture format is GL_LUMINANCE_ALPHA32F_ARB.
+        vec2 index = texture3D( tfInput, tC ).ba;
+        result = texture2D( tf2d, index );
+    }
+    else if( tfDimension == 3 ) // 3D transfer function.
+    {
+        vec3 index = texture3D( tfInput, tC ).rgb;
+        result = texture3D( tf3d, index );
+    }
+    else // Transfer function is disabled.
+    {
+        gl_FrontColor = gl_Color;
+        gl_BackColor = gl_Color;
+        return;
+    }
+
     if( tfDest == tfDestRGB )
     {
         gl_FrontColor.rgb = result.rgb;
@@ -59,6 +84,12 @@ void transferFunction( in vec3 tC )
 
 uniform sampler3D hmInput;
 uniform vec4 hmParams;
+const float hmAlpha = 0.;
+const float hmRed = 1.;
+const float hmScalar = 2.;
+const float hmEqual = 1.;
+const float hmLessThan = 2.;
+const float hmGreaterThan = 3.;
 
 // Return true if passed, false if failed.
 bool hardwareMask( in vec3 tC )
@@ -73,22 +104,22 @@ bool hardwareMask( in vec3 tC )
         return( true );
 
     float value;
-    if( hmParams[ 0 ] == 0. )
+    if( hmParams[ 0 ] == hmAlpha )
         value = gl_FrontColor.a;
-    else if( hmParams[ 0 ] == 1. )
+    else if( hmParams[ 0 ] == hmRed )
         value = gl_FrontColor.r;
-    else if( hmParams[ 0 ] == 2. )
+    else if( hmParams[ 0 ] == hmScalar )
     {
         // hmInput texture format is GL_ALPHA32F_ARB.
         value = texture3D( hmInput, tC ).a;
     }
 
     bool result;
-    if( hmParams[ 1 ] == 1. ) // Equal
+    if( hmParams[ 1 ] == hmEqual )
         result = ( value == hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == 2. ) // Less than
+    else if( hmParams[ 1 ] == hmLessThan )
         result = ( value < hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == 3. ) // Greater than
+    else if( hmParams[ 1 ] == hmGreaterThan )
         result = ( value > hmParams[ 3 ] );
 
     if( hmParams[ 2 ] == 1. ) // Negate

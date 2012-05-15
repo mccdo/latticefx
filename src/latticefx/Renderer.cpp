@@ -117,10 +117,18 @@ unsigned int Renderer::getHardwareMaskOperator() const
 
 void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUnit )
 {
+    int tfDimension;
     osg::Image* function( getTransferFunction() );
-    if( ( function->t() == 1 ) && ( function->r() == 1 ) )
+    if( function == NULL )
+    {
+        // No transfer function specified.
+        tfDimension = 0;
+    }
+    else if( ( function->t() == 1 ) && ( function->r() == 1 ) )
     {
         // 1D transfer function.
+        tfDimension = 1;
+
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
         stateSet->setTextureAttributeAndModes( baseUnit, tf1dTex, osg::StateAttribute::OFF );
 
@@ -130,6 +138,8 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUni
     else if( function->r() == 1 )
     {
         // 2D transfer function.
+        tfDimension = 2;
+
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
         stateSet->setTextureAttributeAndModes( baseUnit, tf2dTex, osg::StateAttribute::OFF );
 
@@ -139,12 +149,17 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUni
     else
     {
         // 3D transfer function.
+        tfDimension = 3;
+
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
         stateSet->setTextureAttributeAndModes( baseUnit, tf3dTex, osg::StateAttribute::OFF );
 
         osg::Uniform* tf3dUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tf3d" ) ); tf3dUni->set( baseUnit++ );
         stateSet->addUniform( tf3dUni );
     }
+
+    osg::Uniform* tfDimUni( new osg::Uniform( "tfDimension", tfDimension ) );
+    stateSet->addUniform( tfDimUni );
 
     osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
     stateSet->addUniform( tfDestUni );
