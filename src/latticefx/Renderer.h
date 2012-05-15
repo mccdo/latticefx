@@ -12,6 +12,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <list>
+#include <map>
 
 
 namespace osg {
@@ -59,12 +60,23 @@ public:
 
     /** \brief Set the base unit for Renderer texture usage.
     \details If the Renderer uses textures, they will be stored in \c baseUnit
-    or higher. The default for \c baseUnit is 8. */
+    or higher. The default for \c baseUnit is 8. This function implicitly calls
+    resetTextureUnitAssignments(). */
     void setTextureBaseUnit( const unsigned int baseUnit );
 
     /** \brief Get the base texture unit used by the Renderer.
     \details Returns the base texture unit. */
     unsigned int getTextureBaseUnit() const;
+
+    /** \brief Assign, or return the previously assigned texture unit.
+    \details Primarily for use by derived classes that need to ensure the same
+    texture unit is used for both the setTextureAttribute() call and the shader
+    uniform value. */
+    unsigned int getOrAssignTextureUnit( const std::string& key );
+    /** \brief Clears all previous texture unit assignments.
+    \details Restores texture unit assignments to its initial state. A subsequent
+    call to getOrAssignTextureUnit() will return the base unit. */
+    void resetTextureUnitAssignments();
 
     /**@}*/
 
@@ -156,9 +168,12 @@ public:
     /**@}*/
 
 protected:
-    void addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUnit );
+    void addHardwareFeatureUniforms( osg::StateSet* stateSet );
 
     unsigned int _baseUnit;
+    unsigned int _unitAssignmentCounter;
+    typedef std::map< std::string, unsigned int > UnitAssignmentMap;
+    UnitAssignmentMap _unitAssignmentMap;
 
     osg::ref_ptr< osg::Image > _tfImage;
     std::string _tfInputName;

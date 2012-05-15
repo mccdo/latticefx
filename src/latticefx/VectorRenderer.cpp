@@ -68,7 +68,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         geom->setVertexArray( positions );
 
-        if( this->getTransferFunction() != NULL )
+        if( getTransferFunction() != NULL )
         {
             const ChannelDataPtr tfInputChannel(
                 getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
@@ -117,21 +117,23 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
-        unsigned int baseUnit( getTextureBaseUnit() );
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, posTex, osg::StateAttribute::OFF );
+        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
+        stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
 
         const ChannelDataPtr radChannel(
             getInput( getInputTypeAlias( RADIUS ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, radTex, osg::StateAttribute::OFF );
+        const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
+        stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
 
-        if( this->getTransferFunction() != NULL )
+        if( getTransferFunction() != NULL )
         {
             const ChannelDataPtr tfInputChannel(
                 getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
             osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-            stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+            stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
@@ -139,7 +141,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr hmInputChannel(
                 getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
             osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
-            stateSet->setTextureAttributeAndModes( baseUnit++, hmInputTex, osg::StateAttribute::OFF );
+            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
+            stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
         }
         break;
     }
@@ -163,20 +166,22 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
-        unsigned int baseUnit( getTextureBaseUnit() );
         osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, posTex, osg::StateAttribute::OFF );
+        const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
+        stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
 
         const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) )->getMaskedChannel( maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
-        stateSet->setTextureAttributeAndModes( baseUnit++, dirTex, osg::StateAttribute::OFF );
+        const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
+        stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
 
-        if( this->getTransferFunction() != NULL )
+        if( getTransferFunction() != NULL )
         {
             const ChannelDataPtr tfInputChannel(
                 getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
             osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
-            stateSet->setTextureAttributeAndModes( baseUnit++, tfInputTex, osg::StateAttribute::OFF );
+            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+            stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
@@ -184,7 +189,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr hmInputChannel(
                 getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
             osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
-            stateSet->setTextureAttributeAndModes( baseUnit++, hmInputTex, osg::StateAttribute::OFF );
+            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
+            stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
         }
         break;
     }
@@ -204,8 +210,7 @@ osg::StateSet* VectorRenderer::getRootState()
     {
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
-        int baseUnit( (int)( getTextureBaseUnit() ) );
-        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
+        addHardwareFeatureUniforms( stateSet.get() );
 
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
@@ -227,23 +232,29 @@ osg::StateSet* VectorRenderer::getRootState()
     {
         stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
-        int baseUnit( (int)( getTextureBaseUnit() ) );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
+        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
         stateSet->addUniform( posUni );
 
-        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( baseUnit++ );
+        const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
+        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( (int)radTexUnit );
         stateSet->addUniform( radUni );
 
-        osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
-        stateSet->addUniform( tfInputUni );
+        if( getTransferFunction() != NULL )
+        {
+            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( (int)tfInputUnit );
+            stateSet->addUniform( tfInputUni );
+        }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( baseUnit++ );
+            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
+            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( (int)hmInputUnit );
             stateSet->addUniform( hmInputUni );
         }
 
-        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
+        addHardwareFeatureUniforms( stateSet.get() );
 
 
         osg::Program* program = new osg::Program();
@@ -260,23 +271,29 @@ osg::StateSet* VectorRenderer::getRootState()
     {
         stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
-        int baseUnit( (int)( getTextureBaseUnit() ) );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( baseUnit++ );
+        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
         stateSet->addUniform( posUni );
 
-        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( baseUnit++ );
+        const unsigned int dirTexUnit( getOrAssignTextureUnit( "dirTex" ) );
+        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( (int)dirTexUnit );
         stateSet->addUniform( dirUni );
 
-        osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( baseUnit++ );
-        stateSet->addUniform( tfInputUni );
+        if( getTransferFunction() != NULL )
+        {
+            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( (int)tfInputUnit );
+            stateSet->addUniform( tfInputUni );
+        }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( baseUnit++ );
+            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
+            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( (int)hmInputUnit );
             stateSet->addUniform( hmInputUni );
         }
 
-        addHardwareFeatureUniforms( stateSet.get(), baseUnit );
+        addHardwareFeatureUniforms( stateSet.get() );
 
 
         osg::Program* program = new osg::Program();

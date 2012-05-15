@@ -12,6 +12,7 @@ namespace lfx {
 Renderer::Renderer()
   : OperationBase( OperationBase::RendererType ),
     _baseUnit( 8 ),
+    _unitAssignmentCounter( 8 ),
     _tfDest( TF_ALPHA ),
     _hmSource( HM_SOURCE_ALPHA ),
     _hmReference( 0.f ),
@@ -21,6 +22,8 @@ Renderer::Renderer()
 Renderer::Renderer( const Renderer& rhs )
   : OperationBase( rhs ),
     _baseUnit( rhs._baseUnit ),
+    _unitAssignmentCounter( rhs._unitAssignmentCounter ),
+    _unitAssignmentMap( rhs._unitAssignmentMap ),
     _tfImage( rhs._tfImage ),
     _tfInputName( rhs._tfInputName ),
     _tfDest( rhs._tfDest ),
@@ -38,10 +41,27 @@ Renderer::~Renderer()
 void Renderer::setTextureBaseUnit( const unsigned int baseUnit )
 {
     _baseUnit = baseUnit;
+    resetTextureUnitAssignments();
 }
 unsigned int Renderer::getTextureBaseUnit() const
 {
     return( _baseUnit );
+}
+unsigned int Renderer::getOrAssignTextureUnit( const std::string& key )
+{
+    UnitAssignmentMap::const_iterator it( _unitAssignmentMap.find( key ) );
+    if( it == _unitAssignmentMap.end() )
+    {
+        _unitAssignmentMap[ key ] = _unitAssignmentCounter;
+        return( _unitAssignmentCounter++ );
+    }
+    else
+        return( it->second );
+}
+void Renderer::resetTextureUnitAssignments()
+{
+    _unitAssignmentCounter = _baseUnit;
+    _unitAssignmentMap.clear();
 }
 
 
@@ -115,7 +135,7 @@ unsigned int Renderer::getHardwareMaskOperator() const
 
 
 
-void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUnit )
+void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 {
     int tfDimension;
     osg::Image* function( getTransferFunction() );
@@ -130,9 +150,10 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUni
         tfDimension = 1;
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tf1dTex, osg::StateAttribute::OFF );
+        const unsigned int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
+        stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf1dUni( new osg::Uniform( osg::Uniform::SAMPLER_1D, "tf1d" ) ); tf1dUni->set( baseUnit++ );
+        osg::Uniform* tf1dUni( new osg::Uniform( osg::Uniform::SAMPLER_1D, "tf1d" ) ); tf1dUni->set( (int)tf1dUnit );
         stateSet->addUniform( tf1dUni );
     }
     else if( function->r() == 1 )
@@ -141,9 +162,10 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUni
         tfDimension = 2;
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tf2dTex, osg::StateAttribute::OFF );
+        const unsigned int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
+        stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf2dUni( new osg::Uniform( osg::Uniform::SAMPLER_2D, "tf2d" ) ); tf2dUni->set( baseUnit++ );
+        osg::Uniform* tf2dUni( new osg::Uniform( osg::Uniform::SAMPLER_2D, "tf2d" ) ); tf2dUni->set( (int)tf2dUnit );
         stateSet->addUniform( tf2dUni );
     }
     else
@@ -152,9 +174,10 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet, int& baseUni
         tfDimension = 3;
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
-        stateSet->setTextureAttributeAndModes( baseUnit, tf3dTex, osg::StateAttribute::OFF );
+        const unsigned int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
+        stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf3dUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tf3d" ) ); tf3dUni->set( baseUnit++ );
+        osg::Uniform* tf3dUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tf3d" ) ); tf3dUni->set( (int)tf3dUnit );
         stateSet->addUniform( tf3dUni );
     }
 
