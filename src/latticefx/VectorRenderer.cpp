@@ -51,8 +51,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    ChannelDataPtr posChannel(
-        getInput( getInputTypeAlias( POSITION ) )->getMaskedChannel( maskIn ) );
+    ChannelDataPtr posAlias( getInput( getInputTypeAlias( POSITION ) ) );
+    if( posAlias == NULL )
+    {
+        OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required POSITION ChannelData." << std::endl;
+        return( NULL );
+    }
+    ChannelDataPtr posChannel( posAlias->getMaskedChannel( maskIn ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( dynamic_cast< osg::Vec3Array* >( sourceArray ) );
@@ -121,8 +126,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr radChannel(
-            getInput( getInputTypeAlias( RADIUS ) )->getMaskedChannel( maskIn ) );
+        ChannelDataPtr radAlias( getInput( getInputTypeAlias( RADIUS ) ) );
+        if( radAlias == NULL )
+        {
+            OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required RADIUS ChannelData." << std::endl;
+            return( NULL );
+        }
+        const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
         osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
         const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
         stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
@@ -170,7 +180,13 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
 
-        const ChannelDataPtr dirChannel( getInput( getInputTypeAlias( DIRECTION ) )->getMaskedChannel( maskIn ) );
+        ChannelDataPtr dirAlias( getInput( getInputTypeAlias( DIRECTION ) ) );
+        if( dirAlias == NULL )
+        {
+            OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required DIRECTION ChannelData." << std::endl;
+            return( NULL );
+        }
+        const ChannelDataPtr dirChannel( dirAlias->getMaskedChannel( maskIn ) );
         osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
         const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
         stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
