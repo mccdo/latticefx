@@ -68,8 +68,21 @@ aid in Renderer creation.
 \li \ref BoundUtils
 \li \ref TextureUtils
 \li \ref TransferFunctionUtils
+\li OperationBase::getInput(const std::string&) Returns the ChannelData for the specified name string.
 \li getOrAssignTextureUnit() for assigning and organizing texture unit usage.
 \li addHardwareFeatureUniforms() for setting commonly used uniform variables.
+
+Derived classes should support the transfer function and hardware mask early in the rendering pipeline.
+In particular, these operations should be performed before lighting, aa the light ambient and diffuse
+colors may be taken from the transfer function. Early execution of the hardware mask can improve
+performance by discarding vertices or fragments prior to expensive downstream operations.
+
+Derived classes should support OpenGL FFP clip planes by computing gl_ClipVertex in the vertex shader.
+This is usually just the eye coordinate vertex:
+
+\code
+    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
+\endcode
 */
 class LATTICEFX_EXPORT Renderer : public lfx::OperationBase
 {
@@ -99,7 +112,15 @@ public:
 
 
     /** \name Texture Unit Usage
-    \details TBD */
+    \details The Renderer may use 0 or more textures in the scene graph it creates. These methods
+    control the first texture unit a Renderer will use -- the texture base unit. The Renderer may
+    use that, or any higher unit. The default base unit is 8. Typically, modern GPUs are limited
+    to 16 total texture units.
+
+    This API also allows names to be associated with texture units. This is useful in
+    Renderer-derived classes that need to specify the texture in getSceneGraph() and the texture
+    unit uniform in getRootState(). The derived class queries the unit by name and is guaranteed
+    to get the same unit in both functions. */
     /**@{*/
 
     /** \brief Set the base unit for Renderer texture usage.
@@ -125,14 +146,29 @@ public:
 
 
     /** \name Transfer Function Parameters
-    \details */
+    \details This API allows a ChannelData input to be used as an index to a transfer
+    function texture lookup. The output of the transfer function can be directed into
+    the color RGB, RGBA, or alpha only.
+
+    The intent is that this will be implemented in a GPU shader
+    program, but it could execute in either a vertex or fragment shader depending on the
+    implementation.
     /**@{*/
 
+    /** \brief TBD
+    \details TBD */
     void setTransferFunction( osg::Image* image );
+    /** \brief TBD
+    \details TBD */
     osg::Image* getTransferFunction();
+    /** \overload */
     const osg::Image* getTransferFunction() const;
 
+    /** \brief TBD
+    \details TBD */
     void setTransferFunctionInput( const std::string& name );
+    /** \brief TBD
+    \details TBD */
     const std::string& getTransferFunctionInput() const;
 
     typedef enum {
@@ -143,6 +179,8 @@ public:
     /** \brief TBD
     \details Default is TF_ALPHA. */
     void setTransferFunctionDestination( const TransferFunctionDestination dest );
+    /** \brief TBD
+    \details TBD */
     TransferFunctionDestination getTransferFunctionDestination() const;
 
     /**@}*/
@@ -187,14 +225,18 @@ public:
     void setHardwareMaskInputSource( const HardwareMaskInputSource source );
     const HardwareMaskInputSource getHardwareMaskInputSource() const;
 
-    /** \brief
-    \details */
+    /** \brief TBD
+    \details TBD */
     void setHardwareMaskInput( const std::string& name );
+    /** \brief TBD
+    \details TBD */
     const std::string& getHardwareMaskInput() const;
 
-    /** \brief
+    /** \brief TBD
     \details Default is 0.0f. */
     void setHardwareMaskReference( const float reference );
+    /** \brief TBD
+    \details TBD */
     float getHardwareMaskReference() const;
 
     typedef enum {
@@ -207,7 +249,10 @@ public:
     /** \brief TBD
     \details Default is HM_OFF. */
     void setHardwareMaskOperator( const unsigned int& maskOp );
+    /** \brief TBD
+    \details TBD */
     unsigned int getHardwareMaskOperator() const;
+
     /**@}*/
 
 protected:

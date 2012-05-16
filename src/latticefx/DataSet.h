@@ -126,7 +126,7 @@ public:
     /** \brief Get the Renderer plugin operation.
     \details TBD */
     RendererPtr getRenderer();
-    /** \override */
+    /** \overload */
     const RendererPtr getRenderer() const;
 
     /** \brief Get the OSG scene graph. */

@@ -22,9 +22,11 @@ class DataSet;
 
 
 /** \class OperationValue OperationBase.h <latticefx/OperationBase.h>
-\brief
-\details
-*/
+\brief Stores a value for use by the name-value pair interface.
+\details This class allows arbitrary values to be passed to instances of an
+OperationBase. This is particularly useful for classes loaded from plugins, for
+which apps must pass configuration parameters without any compile-time knowledge
+of the class interface (except that it derives from OperationBase). */
 struct LATTICEFX_EXPORT OperationValue
 {
 public:
@@ -68,7 +70,10 @@ protected:
         float _float;
         float _vec3[ 3 ];
         bool _bool;
+        std::string _valueString2;
     } _value;
+    // Can't have a std::string in the union because types with copy constructors
+    // aren't allowed in unions.
     std::string _valueString;
 };
 
@@ -78,7 +83,17 @@ typedef std::map< std::string, OperationValue > NameValueMap;
 
 /** \class OperationBase OperationBase.h <latticefx/OperationBase.h>
 \brief Base class for Preprocessing & Caching, Run-Time Processing, and Rendering Framework operations.
-\details TBD
+\details Common interface for all DataSet data operations, and the primary interface
+for operations loaded via the PluginManager.
+
+OperationBase contains the following features:
+\li A OperationType to specify the class's usage as either Preprocessing & Caching, Run-TIme
+Processing, or Rendering Framework.
+\li A generic creation mechanism for use by plugin-loaded classes.
+\li A set of ChannelData inputs used by the OperationBase-derived class, and methods for
+accessing those inputs.
+\li An enable/disable flag.
+\li A generic name-value pair API for run-time configuration.
 */
 class LATTICEFX_EXPORT OperationBase
 {
@@ -96,6 +111,10 @@ public:
     OperationBase( const OperationBase& rhs );
     virtual ~OperationBase();
 
+    /** \brief Create and return a new instance.
+    \details Called by PluginManager to create an instance of classes
+    defined in plugin libraries. All classes loaded by plugins must
+    override and implement this method. */
     virtual lfx::OperationBase* create() { return( NULL ); }
 
     typedef std::vector< std::string > StringList;
@@ -115,21 +134,30 @@ public:
     virtual const StringList& getInputNames() const;
 
 
-    /** \brief */
+    /** \brief Enable or disable the operation.
+    \details Derived classes should adhere to this parameter and disable
+    processing if requested to do so. */
     virtual void setEnable( const bool enable=true );
-    /** \brief */
+    /** \brief Get the enable/disable state. */
     virtual bool getEnable() const;
 
 
     /** \name Name-Value Pair Interface
-    */
+    \details Allows run-time configuration of an OperationBase without compile-time
+    knowledge of the derived class interface. The name-value pair API is particularly
+    useful for passing parameters to classes loaded from plugins. */
     /**@{*/
 
-    /** \brief */
+    /** \brief Store a \c value associated with \c name.
+    \details Stores the \c value in \c _nameValueMap indexed by \c name. */
     void setValue( const std::string& name, const OperationValue& value );
-    /** \brief */
+    /** \brief Check for existance of a name-value pair.
+    \details If \c _nameValueMap has a value for \c name, return true. Otherwise,
+    return false. */
     bool hasValue( const std::string& name ) const;
-    /** \brief */
+    /** \brief Get the value for a name. 
+    \details Use \c name to look up a value in \c _nameValueMap and return the address
+    of that value. If \c _nameValueMap doesn't contain \c name, return NULL. */
     const OperationValue* getValue( const std::string& name ) const;
 
     /**@}*/

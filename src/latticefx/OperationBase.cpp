@@ -44,11 +44,14 @@ void OperationBase::addInput( const std::string& name )
 }
 ChannelDataPtr OperationBase::getInput( const std::string& name )
 {
+    // Find the ChannelData in _inputs with the same name as the parameter,
+    // and return it.
     BOOST_FOREACH( ChannelDataPtr cdp, _inputs )
     {
         if( cdp->getName() == name )
             return( cdp );
     }
+    // Didn't find a match. Return a pointer to NULL.
     return( ChannelDataPtr( (ChannelData*)NULL ) );
 }
 void OperationBase::setInputs( StringList& inputList )
@@ -69,7 +72,6 @@ void OperationBase::setEnable( const bool enable )
 {
     _enable = enable;
 }
-
 bool OperationBase::getEnable() const
 {
     return( _enable );
@@ -85,9 +87,11 @@ bool OperationBase::hasValue( const std::string& name ) const
 }
 const OperationValue* OperationBase::getValue( const std::string& name ) const
 {
+    // Return the value associated with the name.
     if( hasValue( name ) )
         return( &( _nameValueMap.find( name )->second ) );
     else
+        // Didn't find it. Return NULL.
         return( NULL );
 }
 
