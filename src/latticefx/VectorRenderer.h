@@ -113,8 +113,9 @@ public:
     virtual osg::StateSet* getRootState();
 
 
-    /** \brief
-    \details */
+    /** \brief Rendering style
+    \details Enum for supported rendering styles.
+    NOTE: POINT_SPRITES is currently unsupported. */
     typedef enum {
         SIMPLE_POINTS,
         POINT_SPRITES,
@@ -122,15 +123,13 @@ public:
         DIRECTION_VECTORS
     } PointStyle;
 
-    /** \brief
-    \details */
+    /** \brief Set the rendering style.
+    \details The default is SIMPLE_POINTS. */
     void setPointStyle( const PointStyle& pointStyle );
-    /** \brief
-    \details */
+    /** \brief Get the rendering style. */
     PointStyle getPointStyle() const;
 
-    /** \brief
-    \details */
+    /** \brief Enum for input data type. */
     typedef enum {
         POSITION,
         DIRECTION,
@@ -138,11 +137,11 @@ public:
     } InputType;
     typedef std::map< InputType, std::string > InputTypeMap;
 
-    /** \brief
-    \details */
+    /** \brief Associate a ChannelData name with an InputType.
+    \details This method allows the application to use arbitrarily named ChannelData
+    with the VectorRenderer. */
     void setInputNameAlias( const InputType& inputType, const std::string& alias );
-    /** \brief
-    \details */
+    /** \brief Get the ChannelData name alias for the specified \c inputType. */
     std::string getInputTypeAlias( const InputType& inputType ) const;
 
 protected:

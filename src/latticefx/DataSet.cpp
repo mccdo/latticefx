@@ -215,7 +215,6 @@ bool DataSet::updateRunTimeProcessing()
 }
 bool DataSet::updateRenderer()
 {
-    // TBD support for time series data.
     if( _renderer != NULL )
     {
         RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
@@ -236,6 +235,8 @@ bool DataSet::updateRenderer()
             pageData->setRangeData( childIndex, rangeData );
             ++childIndex;
 
+            // TBD Renderer::getSceneGraph() could encounter an error and return NULL.
+            // We need to handle that more robustly.
             _sceneGraph->addChild( _renderer->getSceneGraph( *maskIt ) );
             ++maskIt;
 

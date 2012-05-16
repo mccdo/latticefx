@@ -33,6 +33,7 @@ VectorRenderer::VectorRenderer()
   : lfx::Renderer(),
     _pointStyle( SIMPLE_POINTS )
 {
+    // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
     setInputNameAlias( DIRECTION, "directions" );
     setInputNameAlias( RADIUS, "radii" );
@@ -51,6 +52,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
+    // Get the input position data as an osg::Vec3Array. Position data is required
+    // for all rendering styles.
+    // Get the position data using the input type alias for the POSITION input type.
     ChannelDataPtr posAlias( getInput( getInputTypeAlias( POSITION ) ) );
     if( posAlias == NULL )
     {
@@ -60,7 +64,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     ChannelDataPtr posChannel( posAlias->getMaskedChannel( maskIn ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
-    osg::Vec3Array* positions( dynamic_cast< osg::Vec3Array* >( sourceArray ) );
+    osg::Vec3Array* positions( static_cast< osg::Vec3Array* >( sourceArray ) );
 
     switch( _pointStyle )
     {
@@ -71,12 +75,25 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
 
+        // Set vertex array from our osg::Vec3Array of position data.
         geom->setVertexArray( positions );
 
+        // Note that the transfer function input must be specified in the
+        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
+        // because the derived class might require the input data in a specific
+        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
+        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
         if( getTransferFunction() != NULL )
         {
-            const ChannelDataPtr tfInputChannel(
-                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            // If using a transfer function, we must have a valid input.
+            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
+            if( tfInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getTransferFunctionInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
             osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
             // simplepoints shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
             osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
@@ -84,21 +101,32 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
         }
 
+        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            const ChannelDataPtr hmInputChannel(
-                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            // Hardware mask input is a scalar. Find the ChannelData and return an error
+            // if it's not present.
+            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
+            if( hmInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getHardwareMaskInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
             osg::Array* hmInputArray( hmInputChannel->asOSGArray() );
             geom->setVertexAttribArray( HM_SOURCE_ATTRIB, hmInputArray );
             geom->setVertexAttribBinding( HM_SOURCE_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
         }
 
-        geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, positions->size() ) );
+        // Draw points.
+        geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, numElements ) );
         geode->addDrawable( geom );
         break;
     }
     case POINT_SPRITES:
     {
+        OSG_NOTICE << "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." << std::endl;
         break;
     }
     case SPHERES:
@@ -118,6 +146,14 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
+        // We send down instanced data in a 3D texture. We use the instance ID to generate
+        // a 3D texture coordinate and retrieve the data from the array. Get the dimensions,
+        // and pass it to the shader (required so that it can compute the texture coordinates).
+        //
+        // DO NOT specify texDim uniform in getRootState(). The number of elements in the
+        // input ChannelData could vary from one time step to the next, which affects the
+        // size of the data textures and therefore the texDim uniform values. It must be
+        // specified per time step.
         const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
@@ -126,6 +162,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
 
+        // Get the radius data using the input type alias for the RADIUS input type.
         ChannelDataPtr radAlias( getInput( getInputTypeAlias( RADIUS ) ) );
         if( radAlias == NULL )
         {
@@ -137,19 +174,39 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
         stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
 
+        // Note that the transfer function input must be specified in the
+        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
+        // because the derived class might require the input data in a specific
+        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
+        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
         if( getTransferFunction() != NULL )
         {
-            const ChannelDataPtr tfInputChannel(
-                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
+            if( tfInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getTransferFunctionInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
             osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
 
+        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            const ChannelDataPtr hmInputChannel(
-                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            // Hardware mask input is a scalar. Find the ChannelData and return an error
+            // if it's not present.
+            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
+            if( hmInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getHardwareMaskInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
             osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
@@ -172,6 +229,14 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
+        // We send down instanced data in a 3D texture. We use the instance ID to generate
+        // a 3D texture coordinate and retrieve the data from the array. Get the dimensions,
+        // and pass it to the shader (required so that it can compute the texture coordinates).
+        //
+        // DO NOT specify texDim uniform in getRootState(). The number of elements in the
+        // input ChannelData could vary from one time step to the next, which affects the
+        // size of the data textures and therefore the texDim uniform values. It must be
+        // specified per time step.
         const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
@@ -180,6 +245,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
 
+        // Get the direction data using the input type alias for the DIRECTION input type.
         ChannelDataPtr dirAlias( getInput( getInputTypeAlias( DIRECTION ) ) );
         if( dirAlias == NULL )
         {
@@ -191,19 +257,39 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
         stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
 
+        // Note that the transfer function input must be specified in the
+        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
+        // because the derived class might require the input data in a specific
+        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
+        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
         if( getTransferFunction() != NULL )
         {
-            const ChannelDataPtr tfInputChannel(
-                getInput( getTransferFunctionInput() )->getMaskedChannel( maskIn ) );
+            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
+            if( tfInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getTransferFunctionInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
             osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
 
+        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            const ChannelDataPtr hmInputChannel(
-                getInput( getHardwareMaskInput() )->getMaskedChannel( maskIn ) );
+            // Hardware mask input is a scalar. Find the ChannelData and return an error
+            // if it's not present.
+            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
+            if( hmInputByName == NULL )
+            {
+                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
+                    getHardwareMaskInput() << "\"." << std::endl;
+                return( NULL );
+            }
+            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
             osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
@@ -224,8 +310,7 @@ osg::StateSet* VectorRenderer::getRootState()
     default:
     case SIMPLE_POINTS:
     {
-        stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-
+        // Set base class transfer function and hardware mask uniforms.
         addHardwareFeatureUniforms( stateSet.get() );
 
         osg::Program* program = new osg::Program();
@@ -242,12 +327,17 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case POINT_SPRITES:
     {
+        OSG_NOTICE << "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." << std::endl;
         break;
     }
     case SPHERES:
     {
+        // Required for correct lighting of clipped spheres.
         stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
+        // position, radius, transfer function input, and hardware mask input texture
+        // units are the same for all time steps, so set their sampler uniform unit
+        // values in the root state.
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
         stateSet->addUniform( posUni );
@@ -270,6 +360,7 @@ osg::StateSet* VectorRenderer::getRootState()
             stateSet->addUniform( hmInputUni );
         }
 
+        // Set base class transfer function and hardware mask uniforms.
         addHardwareFeatureUniforms( stateSet.get() );
 
 
@@ -285,8 +376,12 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case DIRECTION_VECTORS:
     {
+        // Required for correct lighting of clipped arrows.
         stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
+        // position, direction, transfer function input, and hardware mask input texture
+        // units are the same for all time steps, so set their sampler uniform unit
+        // values in the root state.
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
         stateSet->addUniform( posUni );
@@ -309,6 +404,7 @@ osg::StateSet* VectorRenderer::getRootState()
             stateSet->addUniform( hmInputUni );
         }
 
+        // Set base class transfer function and hardware mask uniforms.
         addHardwareFeatureUniforms( stateSet.get() );
 
 
@@ -345,8 +441,10 @@ std::string VectorRenderer::getInputTypeAlias( const InputType& inputType ) cons
 {
     InputTypeMap::const_iterator it( _inputTypeMap.find( inputType ) );
     if( it != _inputTypeMap.end() )
+        // Found it.
         return( it->second );
     else
+        // Should never happen, as the constructor assigns defaults.
         return( "" );
 }
 

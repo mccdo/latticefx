@@ -317,7 +317,11 @@ protected:
         <li> 3: Reference value.
       </ul>
     </ul>
-    */
+
+    Note that addHardwareFeatureUniforms() doesn't handle the transfer function input. This
+    must be specified in the Renderer-derived class in order to support Renderers that
+    require the input data in a specific format (such as a 3D texture or as a generic vertex
+    attrib). This also applies to the hardware mask input. */
     void addHardwareFeatureUniforms( osg::StateSet* stateSet );
 
     unsigned int _baseUnit;
