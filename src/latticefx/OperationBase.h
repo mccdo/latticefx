@@ -70,7 +70,6 @@ protected:
         float _float;
         float _vec3[ 3 ];
         bool _bool;
-        std::string _valueString2;
     } _value;
     // Can't have a std::string in the union because types with copy constructors
     // aren't allowed in unions.
