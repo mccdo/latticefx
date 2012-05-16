@@ -41,6 +41,7 @@ Renderer::~Renderer()
 void Renderer::setTextureBaseUnit( const unsigned int baseUnit )
 {
     _baseUnit = baseUnit;
+    // Setting the base unit clears all previous texture unit assignments.
     resetTextureUnitAssignments();
 }
 unsigned int Renderer::getTextureBaseUnit() const
@@ -52,16 +53,22 @@ unsigned int Renderer::getOrAssignTextureUnit( const std::string& key )
     UnitAssignmentMap::const_iterator it( _unitAssignmentMap.find( key ) );
     if( it == _unitAssignmentMap.end() )
     {
+        // Addign the next available texture unit and store that assignment.
         _unitAssignmentMap[ key ] = _unitAssignmentCounter;
         return( _unitAssignmentCounter++ );
     }
     else
+    {
+        // Return the previously assigned unit.
         return( it->second );
+    }
 }
 void Renderer::resetTextureUnitAssignments()
 {
-    _unitAssignmentCounter = _baseUnit;
+    // Clear all previous assignments.
     _unitAssignmentMap.clear();
+    // The next assignment will start at the base unit and increment upwards.
+    _unitAssignmentCounter = _baseUnit;
 }
 
 
@@ -181,9 +188,11 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         stateSet->addUniform( tf3dUni );
     }
 
+    // uniform int tfDimension, 0 (disabled), 1, 2, or 3.
     osg::Uniform* tfDimUni( new osg::Uniform( "tfDimension", tfDimension ) );
     stateSet->addUniform( tfDimUni );
 
+    // uniform int tfDest, 0=RGB, 1=RGBA, 2=ALPHA
     osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
     stateSet->addUniform( tfDestUni );
 
@@ -191,7 +200,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
     // Cram all mask parameters into a single vec4 uniform:
     //   Element 0: Input source (0=alpha, 1=red, 2=scalar
     //   Element 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
-    //   Element 2: Operator negate flag (1=negate).
+    //   Element 2: Operator negate flag (0=no negate, 1=negate).
     //   Element 3: Reference value.
     osg::Vec4 maskParams( 0., 0., 0., _hmReference );
     if( _hmOperator != HM_OP_OFF )

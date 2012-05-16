@@ -73,9 +73,9 @@ aid in Renderer creation.
 \li addHardwareFeatureUniforms() for setting commonly used uniform variables.
 
 Derived classes should support the transfer function and hardware mask early in the rendering pipeline.
-In particular, these operations should be performed before lighting, aa the light ambient and diffuse
-colors may be taken from the transfer function. Early execution of the hardware mask can improve
-performance by discarding vertices or fragments prior to expensive downstream operations.
+In particular, these operations should be performed before lighting, aa the transfer function determines
+the ambient and diffuse material colors. Early execution of the hardware mask can improve performance
+by discarding vertices or fragments prior to expensive downstream operations.
 
 Derived classes should support OpenGL FFP clip planes by computing gl_ClipVertex in the vertex shader.
 This is usually just the eye coordinate vertex:
@@ -150,25 +150,40 @@ public:
     function texture lookup. The output of the transfer function can be directed into
     the color RGB, RGBA, or alpha only.
 
-    The intent is that this will be implemented in a GPU shader
-    program, but it could execute in either a vertex or fragment shader depending on the
-    implementation.
+    The transfer function determines the color of rendered data. It's executed
+    before lighting, and the results affect the ambient and diffuse material colors.
+    It's also executed before the hardware mask so that rendering may be halted based
+    on the transfer function result.
+
+    The intent is that this will be implemented in a GPU shader program, but it could
+    execute in either a vertex or fragment shader depending on the implementation.
     /**@{*/
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Set the transfer function image.
+    \details  The transfer function is implemented as a texture lookup. This method
+    specifies the osg::Image used to create the transfer function texture.
+
+    The image may be 1D, 2D, or 3D, and the derived Renderer must support all
+    three variants. The dimension of the image determines the required dimension of the
+    input ChannelData (setTransferFunctionInput()) and behavior is undefined in the event
+    of a mismatch.
+
+    Set the transfer function to NULL to disable the transfer function. In this case, lighting
+    ambient and diffuse material colors are taken from the OpenGL primary color. */
     void setTransferFunction( osg::Image* image );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the transfer function image. */
     osg::Image* getTransferFunction();
     /** \overload */
     const osg::Image* getTransferFunction() const;
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Specify the ChannelData used as an index into the transfer function.
+    \details Specifies the ChannelData indirectly by its \c name. The ChannelData dimensions
+    must match the dimensions of the image (setTransferFunction()) or behavior is undefined.
+    ChannelData indices in the range 0.0 to 1.0 index into the transfer function. Indices outside
+    that range are clamped. Applications can use filter or channel operations to normalize
+    ChannelData if necessary. */
     void setTransferFunctionInput( const std::string& name );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the name of the transfer function input ChannelData. */
     const std::string& getTransferFunctionInput() const;
 
     typedef enum {
@@ -176,11 +191,19 @@ public:
         TF_RGBA = 1,
         TF_ALPHA = 2
     } TransferFunctionDestination;
-    /** \brief TBD
-    \details Default is TF_ALPHA. */
+    /** \brief Specify the transfer function destination.
+    \details The transfer function image (setTransferFunction()) is indexed by the input
+    (setTransferFunctionInput()) producing a GLSL vec4 result. This function determines how that
+    result is directed.
+    \li TF_RGB The result determines the RGB values of the ambient and diffuse material colors.
+    The alpha values are taken from the OpenGL primary color.
+    \li TF_RGBA The result determines the RGBA values of the ambient and diffuse material colors.
+    \li TF_ALPHA The result alpha value determines the alpha values of the ambient and diffuse
+    material colors. The RGB values are taken from the OpenGL primary color.
+
+    The default is TF_ALPHA. */
     void setTransferFunctionDestination( const TransferFunctionDestination dest );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the transfer function destination. */
     TransferFunctionDestination getTransferFunctionDestination() const;
 
     /**@}*/
@@ -220,23 +243,32 @@ public:
         HM_SOURCE_RED,
         HM_SOURCE_SCALAR
     } HardwareMaskInputSource;
-    /** \brief
-    \details Default is HM_SOURCE_ALPHA */
+    /** \brief Specify the input source for the hardware mask.
+    \details If the input is HM_SOURCE_ALPHA or HM_SOURCE_RED, those input values
+    come from the output of the transfer function. If the input is HM_SOURCE_SCALAR,
+    the input value comes from the ChannelData specified with setHardwareMaskInput().
+
+    The default is HM_SOURCE_ALPHA */
     void setHardwareMaskInputSource( const HardwareMaskInputSource source );
+    /** \brief Get the input source setting. */
     const HardwareMaskInputSource getHardwareMaskInputSource() const;
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Specify the hardware mask input ChannelData.
+    \details Specifies the ChannelData to use as the hardware mask source input when
+    the source is set to HM_SOURCE_SCALAR (setHardwareMaskInputSource()). If the
+    input source is not HM_SOURCE_SCALAR, this method is ignored. */
     void setHardwareMaskInput( const std::string& name );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the input ChannelData used when the source is HM_SOURCE_SCALAR. */
     const std::string& getHardwareMaskInput() const;
 
-    /** \brief TBD
-    \details Default is 0.0f. */
+    /** \brief Set the hardware mask comparison reference value.
+    \details The input source value is compared against this reference value using
+    the comparison operator (setHardwareMaskOperator()). If the expression evaluates
+    to true, rendering proceeds, and is halted otherwise.
+
+    The default is 0.0f. */
     void setHardwareMaskReference( const float reference );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the hardware mask comparison reference value. */
     float getHardwareMaskReference() const;
 
     typedef enum {
@@ -246,18 +278,46 @@ public:
         HM_OP_GT = ( 0x1 << 2 ),
         HM_OP_NOT = ( 0x1 << 3 )
     } HardwareMaskOperator;
-    /** \brief TBD
-    \details Default is HM_OFF. */
+    /** \brief Specifies the hardware mask comparison operator.
+    \details Specifies how to compare the source input values against the reference value.
+    If the comparison evaluates to true, rendering proceeds. If the comparison evaluates
+    to false, rendering is halted.
+
+    Note that HM_OP_NOT may be bitwise-ORed with HM_OP_EQ, HM_OP_LT, and HM_OP_GT to negate
+    the comparison result.
+
+    The default is HM_OFF, which disables the hardware mask. */
     void setHardwareMaskOperator( const unsigned int& maskOp );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get the hardware mask comparison operatos. */
     unsigned int getHardwareMaskOperator() const;
 
     /**@}*/
 
 protected:
-    /** \brief TBD
-    \details TBD */
+    /** \brief Set general uniforms and textures for base Renderer functionality.
+    \details This is a convenience function for use by derived classes. It sets many uniforms
+    and textures used by the transfer function and hardware mask features. Derived classes call
+    this function to add the uniforms and textures to the \c stateSet.
+
+    The uniforms and textures set in this function include:
+    <ul>
+    <li> sampler1D tf1d (and associated osg::Texture1D) contains the 1D transfer function.
+    <li> sampler2D tf2d (and associated osg::Texture2D) contains the 2D transfer function.
+    <li> sampler3D tf3d (and associated osg::Texture3D) contains the 3D transfer function.
+    <li> int tfDimension, set to 0 if the transfer function is disabled. Otherwise, values of 1, 2, or
+    3 indicate the transfer function sampler uniform: tf1d, tf2d, or tf3d, respectively.
+    <li> int tfDest, the transfer function destination, set to 0, 1, or 2 for TF_RGB,
+    TF_RGBA, or TF_ALPHA destinations.
+    <li> vec4 hmParams, containing all parameters for the hardware mask packed into a single
+    uniform. The elements are set as follows:
+      <ul>
+        <li> 0: Input source (0=alpha, 1=red, 2=scalar
+        <li> 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
+        <li> 2: Operator negate flag (0=no negate, 1=negate).
+        <li> 3: Reference value.
+      </ul>
+    </ul>
+    */
     void addHardwareFeatureUniforms( osg::StateSet* stateSet );
 
     unsigned int _baseUnit;
