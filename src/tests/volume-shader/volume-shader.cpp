@@ -74,7 +74,7 @@ osg::StateSet* createStateSet(std::string volumeName, std::string transferName)
 	osg::ref_ptr< osg::StateSet > ss = new osg::StateSet;
 
 	osg::ref_ptr< osg::Program > program = new osg::Program();
-	ss->setAttribute( program );
+	ss->setAttribute( program.get() );
 	osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
 	vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-volumetricslice.vs" ) );
 	program->addShader( vertexShader );
