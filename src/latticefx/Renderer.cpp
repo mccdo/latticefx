@@ -31,6 +31,7 @@
 #include <osg/Texture1D>
 #include <osg/Texture2D>
 #include <osg/Texture3D>
+#include <osgDB/FileUtils>
 
 
 namespace lfx {
@@ -250,6 +251,27 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
     osg::Uniform* hmParamsUni( new osg::Uniform( "hmParams", maskParams ) );
     stateSet->addUniform( hmParamsUni );
+}
+
+
+osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::string& fileName )
+{
+    const std::string fullName( osgDB::findDataFile( fileName ) );
+    if( fullName.empty() )
+    {
+        OSG_WARN << "Renderer::loadShader(): Can't find file \"" << fileName << "\"." << std::endl;
+        return( NULL );
+    }
+
+    osg::ref_ptr< osg::Shader > shader( new osg::Shader( type ) );
+    shader->setName( fileName );
+    if( !( shader->loadShaderSourceFromFile( fullName ) ) )
+    {
+        OSG_WARN << "Renderer::loadShader(): \"" << fullName << "\":" << std::endl;
+        OSG_WARN << "\tloadShaderSourceFromFile() returned false." << std::endl;
+        return( NULL );
+    }
+    return( shader.release() );
 }
 
 

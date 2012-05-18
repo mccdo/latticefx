@@ -33,6 +33,7 @@
 #include <latticefx/Export.h>
 #include <latticefx/OperationBase.h>
 
+#include <osg/Shader>
 #include <osg/Image>
 #include <osg/ref_ptr>
 
@@ -350,6 +351,14 @@ protected:
     require the input data in a specific format (such as a 3D texture or as a generic vertex
     attrib). This also applies to the hardware mask input. */
     void addHardwareFeatureUniforms( osg::StateSet* stateSet );
+
+    /** \brief Convenience routine for loading a shader from source.
+    \details Takes care of finding the source file, setting an appropriate name for the
+    shader, loading the source, and displaying error messages as needed. Calling code
+    merely needs to add the return value to a Program.
+    \returns A valid Shader object on success. Returns NULL on failure. Note that
+    osg::Program::addShader() is a no-op if the shader parameter is NULL. */
+    osg::Shader* loadShader( const osg::Shader::Type type, const std::string& fileName );
 
     unsigned int _baseUnit;
     unsigned int _unitAssignmentCounter;

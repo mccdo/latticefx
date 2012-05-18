@@ -343,13 +343,8 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
         stateSet->setAttribute( program );
-
-        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-simplepoints.vs" ) );
-        program->addShader( vertexShader );
-        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-simplepoints.fs" ) );
-        program->addShader( fragmentShader );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-simplepoints.vs" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-simplepoints.fs" ) );
         break;
     }
     case POINT_SPRITES:
@@ -393,12 +388,8 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
-        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-pointspheres.vs" ) );
-        program->addShader( vertexShader );
-        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-pointspheres.fs" ) );
-        program->addShader( fragmentShader );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-pointspheres.vs" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-pointspheres.fs" ) );
         break;
     }
     case DIRECTION_VECTORS:
@@ -437,12 +428,8 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
-        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.vs" ) );
-        program->addShader( vertexShader );
-        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.fs" ) );
-        program->addShader( fragmentShader );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-vectorfield.vs" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-vectorfield.fs" ) );
         break;
     }
     }
