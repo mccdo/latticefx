@@ -57,12 +57,12 @@ if( NOT BUILD_SHARED_LIBS )
 endif()
 
 
-
+#
+# Add all of the libraries to the build system
 add_subdirectory( src/latticefx )
 add_subdirectory( src/plugins )
 add_subdirectory( src/tests )
-
-
+# add_subdirectory( src/vtk_utils )
 
 #
 # Doxygen
