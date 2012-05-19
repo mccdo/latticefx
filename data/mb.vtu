@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<VTKFile type="vtkHierarchicalDataSet" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+  <vtkHierarchicalDataSet>
+    <DataSet group="0" dataset="0" file="mb/mb_0.vts"/>
+    <DataSet group="0" dataset="1" file="mb/mb_1.vts"/>
+    <DataSet group="0" dataset="2" file="mb/mb_2.vts"/>
+  </vtkHierarchicalDataSet>
+</VTKFile>
