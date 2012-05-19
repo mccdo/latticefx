@@ -32,7 +32,6 @@
 
 #include <latticefx/Export.h>
 #include <latticefx/ChannelData.h>
-#include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/Preprocess.h>
 #include <latticefx/RTPOperation.h>
@@ -43,6 +42,8 @@
 
 #include <string>
 #include <list>
+#include <map>
+#include <set>
 
 
 
@@ -53,6 +54,14 @@ namespace osg {
 
 
 namespace lfx {
+
+
+/** An ordered set of time values. */
+typedef std::set< double > TimeSet;
+
+/** \brief Map of time values to ChannelDataPtr.
+When ChannelData are added for a specific time, they are added to a map of this type. */
+typedef std::map< double, ChannelDataPtr > TimeDataMap;
 
 
 /** \class DataSet DataSet.h <latticefx/DataSet.h>
@@ -180,18 +189,23 @@ protected:
 
     TimeSet getTimeSet() const;
     ChannelDataList getDataAtTime( const double time );
-    void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
+    static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
     ChannelDataOSGArrayPtr createSizedMask(  const ChannelDataList& dataList );
 
 
-    typedef std::map< std::string, ChannelDataPtr > ChannelDataNameMap;
-    ChannelDataNameMap _data;
+    typedef std::map< double, ChannelDataList > ChannelDataTimeMap;
+    ChannelDataTimeMap _data;
+
+    typedef std::set< std::string > StringSet;
+    /** Set of unique ChannelData names. */
+    StringSet _dataNames;
 
     PreprocessList _preprocess;
     RTPOperationList _ops;
     RendererPtr _renderer;
 
+    /** A mask per time step, possible heterogeneous lengths per time step. */
     ChannelDataList _maskList;
 
     osg::ref_ptr< osg::Group > _sceneGraph;

@@ -55,6 +55,7 @@ DataSet::DataSet()
 }
 DataSet::DataSet( const DataSet& rhs )
   : _data( rhs._data ),
+    _dataNames( rhs._dataNames ),
     _preprocess( rhs._preprocess ),
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
@@ -68,33 +69,38 @@ DataSet::~DataSet()
 
 void DataSet::addChannel( const ChannelDataPtr channel, const double time )
 {
-    ChannelDataNameMap::iterator cdpIt( _data.find( channel->getName() ) );
-    ChannelDataComposite* comp;
-    if( cdpIt == _data.end() )
-    {
-        ChannelDataCompositePtr newComp( new ChannelDataComposite( channel->getName() ) );
-        _data[ channel->getName() ] = newComp;
-        comp = newComp.get();
-    }
-    else
-        comp = static_cast< ChannelDataComposite* >( cdpIt->second.get() );
-    comp->addChannel( channel, time );
-
+    _data[ time ].push_back( channel );
+    _dataNames.insert( channel->getName() );
     setDirty( ALL_DIRTY );
 }
-
 ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
 {
-    ChannelDataNameMap::iterator cdpIt( _data.find( name ) );
-    if( cdpIt == _data.end() )
-        return( ChannelDataPtr( ( ChannelData* )NULL ) );
-    else
-    {
-        ChannelDataComposite* comp( static_cast< ChannelDataComposite* >( cdpIt->second.get() ) );
-        return( comp->getChannel( time ) );
-    }
-}
+    ChannelDataPtr cdp;
+    ChannelDataTimeMap::const_iterator cdlIt( _data.find( time ) );
+    if( cdlIt != _data.end() )
+        cdp = findChannelData( name, cdlIt->second );
 
+    if( cdp == NULL )
+    {
+        // No data found for this exact time. Search data prior to the specified
+        // time by starting at the end of time and searching backwards.
+        ChannelDataTimeMap::const_reverse_iterator crt( _data.rbegin() );
+        while( crt != _data.rend() )
+        {
+            if( crt->first < time )
+            {
+                // Found some data just before time.
+                cdp = findChannelData( name, crt->second );
+                if( cdp != NULL )
+                    break;
+            }
+            ++crt;
+        }
+        // If we got here, we never found any data with the given name
+        // and cdp is NULL, which is what we will return.
+    }
+    return( cdp );
+}
 const ChannelDataPtr DataSet::getChannel( const std::string& name, const double time ) const
 {
     DataSet* nonConstThis = const_cast< DataSet* >( this );
@@ -156,9 +162,12 @@ bool DataSet::updateSceneGraph()
 
     // Reset all attached inputs. If a ChannelData instance needs to refresh
     // a working copy of data from the original source data, it does so here.
-    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
+    BOOST_FOREACH( ChannelDataTimeMap::value_type channelTimePair, _data )
     {
-        channelPair.second->reset();
+        BOOST_FOREACH( ChannelDataPtr cdp, channelTimePair.second )
+        {
+            cdp->reset();
+        }
     }
 
 
@@ -232,7 +241,7 @@ bool DataSet::updateRunTimeProcessing()
             case RTPOperation::Channel:
             {
                 ChannelDataPtr cdp = opPtr->channel( mask );
-                addChannel( cdp );
+                addChannel( cdp, time );
                 break;
             }
             }
@@ -285,48 +294,34 @@ void DataSet::setDirty( const DirtyFlags flags )
 }
 DataSet::DirtyFlags DataSet::getDirty() const
 {
+    // TBD query the Renderer to see if it's dirty.
     return( _dirtyFlags );
 }
 
 TimeSet DataSet::getTimeSet() const
 {
     TimeSet timeSet;
-    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
+    BOOST_FOREACH( ChannelDataTimeMap::value_type channelTimePair, _data )
     {
-        const std::string& name( channelPair.first );
-        ChannelDataPtr cdp( channelPair.second );
-        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
-        if( comp != NULL )
-        {
-            const TimeSet& ts( comp->getTimeSet() );
-            timeSet.insert( ts.begin(), ts.end() );
-        }
-        else
-        {
-            // 'cdp' isn't a ChannelDataComposite, so it contains no
-            // time series data and therefore by definition is at time 0.
-            timeSet.insert( 0. );
-        }
+        timeSet.insert( channelTimePair.first );
     }
-    if( timeSet.size() == 0 )
-        timeSet.insert( 0. );
     return( timeSet );
 }
 
 ChannelDataList DataSet::getDataAtTime( const double time )
 {
-    ChannelDataList dataList;
-    BOOST_FOREACH( ChannelDataNameMap::value_type channelPair, _data )
+    ChannelDataList cdl;
+    BOOST_FOREACH( const std::string& name, _dataNames )
     {
-        const std::string& name( channelPair.first );
-        ChannelDataPtr cdp( channelPair.second );
-        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
-        if( comp != NULL )
-            dataList.push_back( comp->getChannel( time ) );
-        else
-            dataList.push_back( cdp );
+        /*
+        ChannelDataPtr cdp( getChannel( name, time ) );
+        if( cdp != NULL )
+            // It might be NULL if the RTP operations contain a channel creator.
+            cdl.push_back( cdp );
+            */
+        cdl.push_back( getChannel( name, time ) );
     }
-    return( dataList );
+    return( cdl );
 }
 
 void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
@@ -337,7 +332,7 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
     {
         ChannelDataPtr cdp( lfx::findChannelData( inputName, currentData ) );
         if( cdp == NULL )
-            OSG_WARN << "DataSet::swapData: Could not find data named \"" << inputName << "\"." << std::endl;
+            OSG_WARN << "DataSet::setInputs(): Could not find data named \"" << inputName << "\"." << std::endl;
         newList.push_back( cdp );
     }
     opPtr->setInputs( newList );

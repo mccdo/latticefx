@@ -44,28 +44,22 @@
 namespace lfx {
 
 
-typedef std::set< double > TimeSet;
-typedef std::map< double, ChannelDataPtr > TimeDataMap;
-
 
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
-\details This class allows ChannelData per time step and/or ChannelData
-per level of detail.
+\details This class allows ChannelData per level of detail.
 
-In typical usage, the app stores one or more concrete ChannelData objects
-in a ChannelDataComposite, one for each time step. Concrete ChannelData
-classes are ChannelData objects that store actual data, such as
-ChannelDataOSGArray, or (TBD not yet implemented) ChannelDataDBKey.
+In typical usage, a Preprocess operation stores one or more concrete ChannelData objects
+in a ChannelDataComposite, one for each level of details. Concrete ChannelData
+classes are ChannelData objects that store actual data, such as ChannelDataOSGArray, or
+(TBD not yet implemented) ChannelDataDBKey.
 
-Preprocessing operations that create multiple levels of detail or octant
-bricks of 3D textures replace the concrete ChannelData at each time step
-with yet another ChannelDataCompositire containing LOD or octant data.
-ChannelDataComposites may be arranged hierarchically multiple levels deep
-if necessary.
+RTPOperation has no special handling for ChannelDataComposite and should never
+encounter one in practice. The DataSet will invoke an RTPOperation only with concrete
+ChannelData.
 
-Behavior is undefined if both a parent and a subordinate ChannelDataComposite
-store multiple time series data. */
+Renderer operations need to support ChannelDataComposite LOD data during scene graph
+creation. */
 class LATTICEFX_EXPORT ChannelDataComposite : public lfx::ChannelData
 {
 public:
@@ -74,20 +68,15 @@ public:
     virtual ~ChannelDataComposite();
 
 
-    /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
-    void addChannel( const ChannelDataPtr channel, const double time=0. );
+    /** \brief Add a data channel to the ChannelDataList for a specific \c level of detail. */
     void addChannel( const ChannelDataPtr channel, const unsigned int level=0 );
 
-    /** \brief Get a channel for a specific time value \c time.
-    \returns ChannelData for the specified \c time. If the exact time doesn't
-    have a ChannelData, this function returns the previous time's channelData. */
-    ChannelDataPtr getChannel( const double time=0. );
+    /** \brief Get a channel for a specific \c level of detail.
+    \returns ChannelData for the specified \c level. If the exact level doesn't
+    have a ChannelData, this function returns NULL. */
     ChannelDataPtr getChannel( const unsigned int level=0 );
-
-    const ChannelDataPtr getChannel( const double time=0. ) const;
+    /** \overload */
     const ChannelDataPtr getChannel( const unsigned int level=0 ) const;
-
-    const TimeSet getTimeSet() const;
 
 
     /** \brief
@@ -119,7 +108,8 @@ public:
     virtual void resize( size_t size ) {}
 
 protected:
-    TimeDataMap _timeData;
+    // TBD will need to change to store data by LOD level.
+    ChannelDataList _data;
 };
 
 typedef boost::shared_ptr< ChannelDataComposite > ChannelDataCompositePtr;
