@@ -2,7 +2,7 @@
 set( _libName vtk_utils )
 
 if( BUILD_SHARED_LIBS )
-    add_definitions( -DLATTICEFX_VTK_UTILSLIBRARY )
+    add_definitions( -DLATTICEFX_LIBRARY )
 endif()
 
 set( HEADER_PATH ${PROJECT_SOURCE_DIR}/src/vtk_utils )
