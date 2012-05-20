@@ -68,11 +68,11 @@ longer valid are removed from the parent Group and empty Group placeholders adde
 their place.
 
 Note that the Group parent of pageable children initially has no bounding volume in the
-typical case where are children are pageable and therefore initially are all stub Group
+typical case where all   children are pageable and therefore initially are all stub Group
 placeholders. In order for RootCallback to know the spatial location of the parent Group,
 the application should call setInitialBound() on the parent Group.
 
-Note that the empty Group placeholders must be unique and not shared. Their address is used
+Note that the empty Group placeholders must be unique and not shared. Their addresses are used
 by the RootCallback to uniquely identify the page requests sent to the PagingThread, and
 check for their load status.
 

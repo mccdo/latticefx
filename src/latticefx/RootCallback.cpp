@@ -91,8 +91,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
         //std::cout << "  PageData." << std::endl;
 
-        double testValue( 0. );
-        PageData::RangeValues range;
+        PageData::RangeValues validRange;
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
             if( _camera == NULL )
@@ -105,14 +104,15 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
             // to give it some spatial location and size. Retrieve that bound.
             const osg::BoundingSphere& bSphere( grp->getBound() );
-            testValue = computePixelSize( bSphere, modelView );
+            double pixelSize( computePixelSize( bSphere, modelView ) );
+            validRange = PageData::RangeValues( pixelSize, pixelSize );
             //std::cout << "Pixel size: " << testValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
         {
             // TBD Range should be a buffer around current time, but
             // needs to be configurable.
-            range = PageData::RangeValues( -1., 10. );
+            validRange = PageData::RangeValues( -1., 10. );
         }
 
         // removeExpired is initially false and only set to true if we add a child.
@@ -124,17 +124,18 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
 
+            PageData::RangeValues childRange;
             if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
             {
                 // Child-specific PageData::RangeData contains min and max values as a std::pair.
-                range = rangeData._rangeValues;
+                childRange = rangeData._rangeValues;
             }
             else
             {
                 // If paging based on time, only the min value of the range -- the time for
                 // the child -- is relevant. We'll compare it against a range around the
                 // current play time.
-                testValue = rangeData._rangeValues.first;
+                childRange = PageData::RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
             }
 
             switch( rangeData._status )
@@ -142,7 +143,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             case PageData::RangeData::UNLOADED:
             {
                 //std::cout << "    RangeData UNLOADED" << std::endl;
-                if( inRange( testValue, range ) )
+                if( inRange( validRange, childRange ) )
                 {
                     // Child state is UNLOADED, but it's in range. Add a request to the PagingThread.
                     pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
@@ -193,20 +194,21 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 PageData::RangeData& rangeData( rangeDataPair.second );
 
                 // Get range and testValue info just as we did previously.
+                PageData::RangeValues childRange;
                 if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
                 {
-                    range = rangeData._rangeValues;
+                    childRange = rangeData._rangeValues;
                 }
                 else
                 {
-                    testValue = rangeData._rangeValues.first;
+                    childRange = PageData::RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
                 }
 
                 switch( rangeData._status )
                 {
                 case PageData::RangeData::LOAD_REQUESTED:
                 {
-                    if( !inRange( testValue, range ) )
+                    if( !inRange( validRange, childRange ) )
                     {
                         // Cancel request. Note there's a possible thread safety issue
                         // with this (see PagingThread::cancelLoadRequest() for more info.
@@ -217,7 +219,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 }
                 case PageData::RangeData::ACTIVE:
                 {
-                    if( !inRange( testValue, range ) )
+                    if( !inRange( validRange, childRange ) )
                     {
                         // Remove this expired child by placing a Group stub in its place.
                         pageData->getParent()->setChild( childIndex, new osg::Group );

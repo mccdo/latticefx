@@ -129,13 +129,15 @@ protected:
     the area of a circle with that radius. */
     double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView );
 
-    /** \brief Return true if \c testValue falls within the given \c range.
-    \details If the paging RangeMode is PIXEL_SIZE_RANGE, \c testValue is obtained from
-    computePixelSize() and \c range comes from the child-specific PageData::RangeData.
-    If the paging RangeMode is TIME_RANGE, \c testValue comes from the minimum value
-    in the child-specific PageData::RangeData, and \c range comes from (TBD, based on
-    current play time and buffer around that time). */
-    static inline bool inRange( const double testValue, const PageData::RangeValues& range );
+    /** \brief Return true if \c validRange and \c childRange overlap.
+    \details If the paging RangeMode is PIXEL_SIZE_RANGE, both min and max values of
+    \c validRange are set to the return value of computePixelSize() and \c childRange
+    comes from the child-specific PageData::RangeData.
+
+    If the paging RangeMode is TIME_RANGE, \c validRange is a range of time values specified
+    by the application, and both min and max values of \c childRange are set to the time
+    value of the child node. */
+    static inline bool inRange( const PageData::RangeValues& validRange, const PageData::RangeValues& childRange );
 
     osg::ref_ptr< osg::Camera > _camera;
 
@@ -150,10 +152,10 @@ protected:
 /**@}*/
 
 
-bool RootCallback::inRange( const double testValue, const PageData::RangeValues& range )
+bool RootCallback::inRange( const PageData::RangeValues& validRange, const PageData::RangeValues& childRange )
 {
-    return( ( testValue >= range.first ) &&
-            ( testValue < range.second ) );
+    return( ( childRange.second >= validRange.first ) &&
+            ( childRange.first < validRange.second ) );
 }
 
 
