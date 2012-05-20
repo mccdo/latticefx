@@ -299,7 +299,7 @@ void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string v
 
 std::string fileIO::getExtension( std::string filename )
 {
-    int len = filename.size();
+    int len = (int)( filename.size() );
     int i, foundPeriod = 0;
     std::string extension;
     for( i = len - 1; i >= 0; i-- )
@@ -339,7 +339,7 @@ void fileIO::readToFileEnd( FILE *inputFile )
 
 void fileIO::StripTrailingSpaces( std::string line )
 {
-    for( int i = line.size() - 1; i >= 0; i-- )
+    for( int i = (int)( line.size() ) - 1; i >= 0; i-- )
     {
         if( line[i] != ' ' ) break;
         line[i] = '\0';
