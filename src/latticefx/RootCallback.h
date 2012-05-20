@@ -103,11 +103,28 @@ public:
     into screen space to determine their pixel size. */
     void setCamera( osg::Camera* camera );
 
-    /** \brief
-    \details
-    */
+    /** \brief Set the current animation time.
+    \details Called by PlayContaol as the time series animation advances.
+    This function does not need to be called if time series data is not being
+    used. The calling code is responsible for updating the animation time as
+    the animation plays forwards or backwards, and handling effects like ffwd,
+    rew, or stop/pause. */
     void setAnimationTime( const double time );
+    /** \brief Get the current animation time. */
     double getAnimationTime() const;
+
+    /** \brief Set the paging time range.
+    \details Children are paged in if their time value falls within the
+    specified \c validRange around the current animation time, though they are
+    displayed only when their time value matches the current animation time.
+    Times in \c validRange are relative to the current animation time. For
+    example: RangeValues( -.5, 1. ) pages in children whose time values are
+    0.5 seconds before and 1.0 seconds after the current animation time.
+
+    Default: RangeValues( -0.5, 0.5 ). */
+    void setTimeRange( const PageData::RangeValues& validRange );
+    /** \brief Get the paging time range. */
+    PageData::RangeValues getTimeRange() const;
 
     /** \brief Dynamically load and unload data using the paging thread.
     \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
@@ -142,6 +159,7 @@ protected:
     osg::ref_ptr< osg::Camera > _camera;
 
     double _animationTime;
+    PageData::RangeValues _validRange;
 
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;

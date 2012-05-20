@@ -39,13 +39,15 @@ namespace lfx {
 
 
 RootCallback::RootCallback()
-  : _animationTime( 0. )
+  : _animationTime( 0. ),
+    _validRange( PageData::RangeValues( -0.5, 0.5 ) )
 {
 }
 RootCallback::RootCallback( const RootCallback& rhs )
   : osg::NodeCallback( rhs ),
     _camera( rhs._camera ),
     _animationTime( rhs._animationTime ),
+    _validRange( rhs._validRange ),
     _pageParentList( rhs._pageParentList ),
     _timeSeriesParentList( rhs._timeSeriesParentList )
 {
@@ -74,6 +76,14 @@ void RootCallback::setAnimationTime( const double time )
 double RootCallback::getAnimationTime() const
 {
     return( _animationTime );
+}
+void RootCallback::setTimeRange( const PageData::RangeValues& validRange )
+{
+    _validRange = validRange;
+}
+PageData::RangeValues RootCallback::getTimeRange() const
+{
+    return( _validRange );
 }
 
 void RootCallback::updatePaging( const osg::Matrix& modelView )
@@ -105,14 +115,21 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             // to give it some spatial location and size. Retrieve that bound.
             const osg::BoundingSphere& bSphere( grp->getBound() );
             double pixelSize( computePixelSize( bSphere, modelView ) );
+
+            // Valid range is only the pixelSize. We'll see if it's inside the childRange,
+            // which is a min and max pixelSize to display the child.
             validRange = PageData::RangeValues( pixelSize, pixelSize );
             //std::cout << "Pixel size: " << testValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
         {
-            // TBD Range should be a buffer around current time, but
-            // needs to be configurable.
-            validRange = PageData::RangeValues( -1., 10. );
+            // validRange is set by the application. The assumption is that this will be large enough
+            // to accomodate several children, only one of which will be displayed (by use of NodeMask).
+            // This is different from pixel size paging because the time step (and therefore valid child)
+            // is expected to change quite rapidly, so wee need to page in a buffer around the current
+            // play time to help ensure a smooth animation free ofpaging bottlenecks.
+            validRange = _validRange;
+            //validRange = PageData::RangeValues( -1., 10. );
         }
 
         // removeExpired is initially false and only set to true if we add a child.
@@ -127,14 +144,14 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             PageData::RangeValues childRange;
             if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
             {
-                // Child-specific PageData::RangeData contains min and max values as a std::pair.
+                // Child-specific PageData::RangeData contains min and max pixel size values as a std::pair.
                 childRange = rangeData._rangeValues;
             }
             else
             {
                 // If paging based on time, only the min value of the range -- the time for
-                // the child -- is relevant. We'll compare it against a range around the
-                // current play time.
+                // the child -- is relevant. We'll see if it's inside the validRange (a
+                // range around the current play time).
                 childRange = PageData::RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
             }
 
@@ -193,7 +210,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 const unsigned int childIndex( rangeDataPair.first );
                 PageData::RangeData& rangeData( rangeDataPair.second );
 
-                // Get range and testValue info just as we did previously.
+                // Get childRange just as we did previously.
                 PageData::RangeValues childRange;
                 if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
                 {
