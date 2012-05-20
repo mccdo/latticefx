@@ -35,24 +35,21 @@
 /*!\file cleanVTK.h
 cleanVTK API
 */
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 #include <string>
 
 class vtkPointSet;
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
-{
-namespace util
+namespace vtk_utils
 {
 // function declarations
 ///Takes in a vtkPointSet and removes vertices not used by a cell.
-VE_UTIL_EXPORTS void dumpVerticesNotUsedByCells( vtkPointSet * );
+LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet * );
 ///Takes in a vtkPointSet and removes vertices not used by a cell and writes it back out.
 ///param vtkFileName The name of the file to be written out.
-VE_UTIL_EXPORTS void dumpVerticesNotUsedByCells( vtkPointSet *, std::string vtkFileName );
+LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet *, std::string vtkFileName );
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

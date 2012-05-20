@@ -76,8 +76,9 @@
 
 #include <cassert>
 #include <algorithm>
-
-namespace vtkutil
+namespace lfx
+{
+namespace vtk_utils
 {
 
 ///Pulled from Loki to make some constructs work
@@ -633,5 +634,5 @@ public:
     }
 };
 }
-
+}
 #endif

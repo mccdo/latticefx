@@ -30,11 +30,11 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/ComputeMeanCellBBoxLengthCallback.h>
-#include <ves/xplorer/util/cfdAccessoryFunctions.h>
+#include <vtk_utils/ComputeMeanCellBBoxLengthCallback.h>
+#include <vtk_utils/cfdAccessoryFunctions.h>
 #include<vtkDataSet.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////////
 ComputeMeanCellBBoxLengthCallback::ComputeMeanCellBBoxLengthCallback()

@@ -36,21 +36,19 @@
 /*!file cfdAccessoryFunctions.h
 cfdAccessoryFunctions API
 */
-/*!class ves::xplorer::util::cfdAccessoryFunctions
+/*!class lfx::vtk_utils::cfdAccessoryFunctions
 *This class returns information on an input vector.
 */
 
 class vtkDataArray;
 class vtkDataSet;
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS cfdAccessoryFunctions
+class LATTICEFX_VTK_UTILS_EXPORT cfdAccessoryFunctions
 {
 public:
     ///Constructor
@@ -74,5 +72,4 @@ private:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

@@ -35,22 +35,20 @@
 /*!\file DataObjectHandler.h
  * DataObjectHandler API. At a minimum, converts cell data to point data in each dataset of
  * the data object.
- * \class ves::xplorer::util::DataObjectHandler
+ * \class lfx::vtk_utils::DataObjectHandler
  *
  */
 class vtkDataObject;
 class vtkDataSet;
 
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS DataObjectHandler
+class LATTICEFX_VTK_UTILS_EXPORT DataObjectHandler
 {
 public:
     ///Constructor
@@ -58,10 +56,10 @@ public:
     ///Destructor
     virtual ~DataObjectHandler();
 
-    /*!\class ves::xplorer::util::DataObjectHandler::DatasetOperatorCallback
+    /*!\class lfx::vtk_utils::DataObjectHandler::DatasetOperatorCallback
     *
     */
-    class VE_UTIL_EXPORTS DatasetOperatorCallback
+    class LATTICEFX_VTK_UTILS_EXPORT DatasetOperatorCallback
     {
     public:
         ///Constructor
@@ -112,5 +110,4 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

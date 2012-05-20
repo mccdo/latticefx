@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/ComputeVectorMagnitudeAndScalarsCallback.h>
-#include <ves/xplorer/util/cfdAccessoryFunctions.h>
+#include <vtk_utils/ComputeVectorMagnitudeAndScalarsCallback.h>
+#include <vtk_utils/cfdAccessoryFunctions.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
@@ -39,7 +39,7 @@
 
 #include <iostream>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////////
 ComputeVectorMagnitudeAndScalarsCallback::ComputeVectorMagnitudeAndScalarsCallback()

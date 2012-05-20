@@ -69,8 +69,7 @@ public:
 
         // Set the number of instances.
         const unsigned int numElements( sourceArray->getNumElements() );
-        unsigned int idx;
-        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+        for( unsigned int idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
             geom->getPrimitiveSet( idx )->setNumInstances( numElements );
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );

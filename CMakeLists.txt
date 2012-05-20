@@ -34,7 +34,7 @@ PocoMenuSetup()
 
 include( FindOSGHelper )
 PocoFinder()
-find_package( Boost REQUIRED thread date_time )
+find_package( Boost REQUIRED thread date_time filesystem system)
 find_package( osgWorks REQUIRED )
 
 find_package( VTK )
@@ -42,9 +42,7 @@ if( VTK_FOUND )
     include( ${VTK_USE_FILE} )
 endif()
 
-
 include( CMakeMacros )
-
 
 option( BOOST_ALL_DYN_LINK "If set, use Boost dynamic libraries (boost_*); otherwise static (libboost_*)." OFF )
 if( BOOST_ALL_DYN_LINK )
@@ -62,7 +60,9 @@ endif()
 add_subdirectory( src/latticefx )
 add_subdirectory( src/plugins )
 add_subdirectory( src/tests )
-# add_subdirectory( src/vtk_utils )
+if( VTK_FOUND )
+    add_subdirectory( src/vtk_utils )
+endif()
 
 #
 # Doxygen

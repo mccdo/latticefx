@@ -31,12 +31,12 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/xplorer/util/ActiveDataInformationCallback.h>
+#include <vtk_utils/ActiveDataInformationCallback.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 ////////////////////////////////////////////////////////////////////////////////
 ActiveDataInformationCallback::ActiveDataInformationCallback()

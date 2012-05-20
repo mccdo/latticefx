@@ -33,13 +33,12 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <ves/xplorer/util/readWriteVtkThings.h>
+#include <vtk_utils/readWriteVtkThings.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
 #include <vtkDataSetReader.h>
 #include <vtkInformationStringKey.h>
-//#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkRectilinearGrid.h>
@@ -49,17 +48,18 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
-#include <ves/xplorer/util/cfdVTKFileHandler.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
-#include <ves/xplorer/util/ComputeDataObjectBoundsCallback.h>
+
+#include <vtk_utils/cfdVTKFileHandler.h>
+#include <vtk_utils/DataObjectHandler.h>
+#include <vtk_utils/ComputeDataObjectBoundsCallback.h>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 ///////////////////////////////////////////////////////////////////////////////
-void ves::xplorer::util::printWhatItIs( vtkDataObject * dataSet )
+void lfx::vtk_utils::printWhatItIs( vtkDataObject * dataSet )
 {
     if( dataSet == NULL )
     {
@@ -69,7 +69,7 @@ void ves::xplorer::util::printWhatItIs( vtkDataObject * dataSet )
     std::cout << dataSet->GetClassName() << std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
-void ves::xplorer::util::printBounds( vtkDataObject* dataObject )
+void lfx::vtk_utils::printBounds( vtkDataObject* dataObject )
 {
     double bounds[6];
     DataObjectHandler dataObjectHandler;
@@ -93,7 +93,7 @@ void ves::xplorer::util::printBounds( vtkDataObject* dataObject )
     }
 }
 ///////////////////////////////////////////////////////////////////////////////
-vtkDataObject* ves::xplorer::util::readVtkThing( 
+vtkDataObject* lfx::vtk_utils::readVtkThing( 
     std::string vtkFilename, int printFlag )
 {
     try
@@ -116,13 +116,13 @@ vtkDataObject* ves::xplorer::util::readVtkThing(
     vtkDataObject* temp = fileReader.GetDataSetFromFile( vtkFilename );
     if( printFlag )
     {
-        ves::xplorer::util::printBounds( temp );
-        ves::xplorer::util::printWhatItIs( temp );
+        lfx::vtk_utils::printBounds( temp );
+        lfx::vtk_utils::printWhatItIs( temp );
     }
     return temp;
 }
 ///////////////////////////////////////////////////////////////////////////////
-bool ves::xplorer::util::writeVtkThing( 
+bool lfx::vtk_utils::writeVtkThing( 
     vtkDataObject* vtkThing, std::string vtkFilename, int binaryFlag )
 {
     cfdVTKFileHandler fileWriter;

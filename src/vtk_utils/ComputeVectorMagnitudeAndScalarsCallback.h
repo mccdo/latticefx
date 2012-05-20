@@ -36,22 +36,20 @@
 ComputeVectorMagnitudeAndScalarsCallback API.
 */
 
-/*!\class ves::xplorer::util::ComputeVectorMagnitudeAndScalarsCallback
+/*!\class lfx::vtk_utils::ComputeVectorMagnitudeAndScalarsCallback
 *
 */
 class vtkDataSet;
 
-#include <ves/VEConfig.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/Export.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS ComputeVectorMagnitudeAndScalarsCallback:
+class LATTICEFX_VTK_UTILS_EXPORT ComputeVectorMagnitudeAndScalarsCallback:
             public DataObjectHandler::DatasetOperatorCallback
 {
 public:
@@ -72,6 +70,5 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif
 

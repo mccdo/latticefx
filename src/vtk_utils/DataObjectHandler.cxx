@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
@@ -49,7 +49,7 @@
 
 #include <iostream>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 DataObjectHandler::DataObjectHandler()
         : m_numberOfPointDataArrays( 0 ),

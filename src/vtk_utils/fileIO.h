@@ -35,22 +35,20 @@
 #define FILEIO_H
 /*!\file fileIO.h
  * fileIO API
- * \class ves::xplorer::util::fileIO
+ * \class lfx::vtk_utils::fileIO
  *
  */
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS fileIO
+class LATTICEFX_VTK_UTILS_EXPORT fileIO
 {
 public:
     ///Constructor
@@ -134,5 +132,4 @@ public:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

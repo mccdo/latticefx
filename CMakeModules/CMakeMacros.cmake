@@ -26,7 +26,39 @@ macro( _splitList _tokenIn _list0out _list1out )
     endforeach()
 endmacro()
 
-
+#
+#setup the VTK libraries that are needed for various libraries
+set( _vtkLibraries )
+if( VTK_FOUND )
+    list( APPEND _vtkLibraries
+        vtkCommon
+        vtkIO
+        vtkFiltering
+        vtkRendering
+        #used for text - may be able to remove later
+        vtkHybrid
+        )
+endif()
+#        vtkImaging
+#        vtkRendering
+#        vtkParallel
+#        vtkGraphics
+#        vtksys
+#        vtkexoIIc
+#        vtkftgl
+#        vtkDICOMParser
+#        vtkNetCDF
+#        vtkmetaio
+#        vtksqlite
+#        vtkverdict
+#        vtkfreetype
+#        vtkNetCDF_cxx
+#        vtkpng
+#        vtkjpeg
+#        vtktiff
+#        vtkexpat
+#        VPIC
+#        Cosmo
 
 set( _requiredDependencyIncludes
     ${POCO_INCLUDE_DIR}
@@ -43,6 +75,7 @@ set( _requiredDependencyLibraries
     ${Boost_LIBRARIES}
 	${OSGWORKS_LIBRARIES}
     ${OSG_LIBRARIES}
+    ${_vtkLibraries}
 )
 set( _projectLibraries
     latticefx

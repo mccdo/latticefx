@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/viewCells.h>
+#include <vtk_utils/viewCells.h>
 #include <iostream>
 
 #include <vtkPoints.h>
@@ -59,9 +59,9 @@
 #include <vtkCellArray.h>
 #include <vtkLookupTable.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
-vtkUnstructuredGrid* ves::xplorer::util::extractExteriorCellsOnly( vtkUnstructuredGrid *output )
+vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGrid *output )
 {
     int pt, npts, ptId;
     vtkIdList *pts = vtkIdList::New();
@@ -128,7 +128,7 @@ vtkUnstructuredGrid* ves::xplorer::util::extractExteriorCellsOnly( vtkUnstructur
     return exteriorCells;
 }
 
-void ves::xplorer::util::viewCells( vtkDataSet *dataset, const float shrinkFactor )
+void lfx::vtk_utils::viewCells( vtkDataSet *dataset, const float shrinkFactor )
 {
     std::cout << "\nviewCells: Preparing to view mesh..." << std::endl;
     int numCells = dataset->GetNumberOfCells();
@@ -239,7 +239,7 @@ void ves::xplorer::util::viewCells( vtkDataSet *dataset, const float shrinkFacto
     iren->Delete();
 }
 
-void ves::xplorer::util::viewXSectionOfRectilinearGrid( vtkRectilinearGrid *output )
+void lfx::vtk_utils::viewXSectionOfRectilinearGrid( vtkRectilinearGrid *output )
 {
     std::cout << "\nPreparing to view mesh..." << std::endl;
     int numCells = output->GetNumberOfCells();
@@ -364,7 +364,7 @@ void viewXSection( vtkDataObject *output )
 }
 */
 
-void ves::xplorer::util::GetAxesSymbol( vtkActor * axesActor )
+void lfx::vtk_utils::GetAxesSymbol( vtkActor * axesActor )
 {
     // Create the axes and the associated mapper and actor.
     vtkPoints *newPts = vtkPoints::New();
@@ -431,7 +431,7 @@ void ves::xplorer::util::GetAxesSymbol( vtkActor * axesActor )
     axesMapper->Delete();
 }
 
-void ves::xplorer::util::GetAxesLabels( vtkFollower * xActor,
+void lfx::vtk_utils::GetAxesLabels( vtkFollower * xActor,
                                         vtkFollower * yActor,
                                         vtkFollower * zActor )
 {
@@ -473,7 +473,7 @@ void ves::xplorer::util::GetAxesLabels( vtkFollower * xActor,
     zMapper->Delete();
 }
 
-void ves::xplorer::util::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, const float shrinkFactor )
+void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, const float shrinkFactor )
 {
     //std::cout << "\nPreparing to view mesh..." << std::endl;
     int numCells = dataset->GetNumberOfCells();

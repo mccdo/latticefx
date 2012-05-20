@@ -30,16 +30,16 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/setScalarAndVector.h>
+#include <vtk_utils/setScalarAndVector.h>
 #include <iostream>
 
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
-void ves::xplorer::util::activateScalar( vtkDataSet * dataSet )
+void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
 {
     // if there are data arrays, count the number of arrays
     int numPDArrays = dataSet->GetPointData()->GetNumberOfArrays();
@@ -99,7 +99,7 @@ void ves::xplorer::util::activateScalar( vtkDataSet * dataSet )
     return;
 }
 
-void ves::xplorer::util::activateVector( vtkDataSet * dataSet )
+void lfx::vtk_utils::activateVector( vtkDataSet * dataSet )
 {
     // if there are data arrays, count the number of arrays
     int numPDArrays = dataSet->GetPointData()->GetNumberOfArrays();

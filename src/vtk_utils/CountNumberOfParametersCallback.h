@@ -36,23 +36,21 @@
 CountNumberOfParametersCallback API.
 */
 
-/*!\class ves::xplorer::util::CountNumberOfParametersCallback
+/*!\class lfx::vtk_utils::CountNumberOfParametersCallback
 *
 */
 class vtkDataSet;
 
-#include <ves/VEConfig.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/Export.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 #include <vector>
 #include <string>
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS CountNumberOfParametersCallback:
+class LATTICEFX_VTK_UTILS_EXPORT CountNumberOfParametersCallback:
             public DataObjectHandler::DatasetOperatorCallback
 {
 public:
@@ -78,6 +76,5 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif
 

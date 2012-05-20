@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/xplorer/util/CountNumberOfParametersCallback.h>
+#include <vtk_utils/CountNumberOfParametersCallback.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
@@ -39,7 +39,7 @@
 
 #include <algorithm>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////
 CountNumberOfParametersCallback::CountNumberOfParametersCallback()

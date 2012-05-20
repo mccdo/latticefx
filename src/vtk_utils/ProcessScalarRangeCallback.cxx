@@ -31,14 +31,14 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/xplorer/util/ProcessScalarRangeCallback.h>
+#include <vtk_utils/ProcessScalarRangeCallback.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <iostream>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////
 ProcessScalarRangeCallback::ProcessScalarRangeCallback()

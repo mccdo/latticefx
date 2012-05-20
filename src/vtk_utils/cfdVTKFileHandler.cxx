@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/cfdVTKFileHandler.h>
+#include <vtk_utils/cfdVTKFileHandler.h>
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
 #include <vtkXMLFileReadTester.h>
@@ -82,7 +82,7 @@
 
 namespace fs = boost::filesystem;
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////
 //Constructors                      //

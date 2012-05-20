@@ -39,18 +39,15 @@
 class vtkDataObject;
 class vtkPolyData;
 
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
-{
-namespace util
+namespace vtk_utils
 {
 // function declarations
 ///Reads in a grid (vtkDataSet) and returns it as a surface (vtkPolyData).
-VE_UTIL_EXPORTS vtkPolyData * cfdGrid2Surface( vtkDataObject *dataSet, float deciVal );
+LATTICEFX_VTK_UTILS_EXPORT vtkPolyData * cfdGrid2Surface( vtkDataObject *dataSet, float deciVal );
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

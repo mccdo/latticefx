@@ -30,12 +30,12 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/GetNumberOfPointsCallback.h>
-#include <ves/xplorer/util/cfdAccessoryFunctions.h>
+#include <vtk_utils/GetNumberOfPointsCallback.h>
+#include <vtk_utils/cfdAccessoryFunctions.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////
 GetNumberOfPointsCallback::GetNumberOfPointsCallback()

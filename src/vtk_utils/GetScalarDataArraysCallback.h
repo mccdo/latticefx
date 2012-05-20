@@ -35,28 +35,26 @@
 GetScalarDataArraysCallback API.
 */
 
-/*!\class ves::xplorer::util::GetScalarDataArraysCallback
+/*!\class lfx::vtk_utils::GetScalarDataArraysCallback
 *
 */
 class vtkDataSet;
 
 #include <vtkType.h>
 
-#include <ves/VEConfig.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/Export.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 #include <utility>
 #include <vector>
 #include <string>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS GetScalarDataArraysCallback:
+class LATTICEFX_VTK_UTILS_EXPORT GetScalarDataArraysCallback:
             public DataObjectHandler::DatasetOperatorCallback
 {
 public:
@@ -85,4 +83,3 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce

@@ -32,7 +32,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <ves/xplorer/util/cfdGrid2Surface.h>
+#include <vtk_utils/cfdGrid2Surface.h>
 #include <vtkDataObject.h>
 #include <vtkPointData.h>
 #include <vtkContourFilter.h>
@@ -45,9 +45,9 @@
 #include <vtkCompositeDataGeometryFilter.h>
 #include <vtkAlgorithmOutput.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
-vtkPolyData* ves::xplorer::util::cfdGrid2Surface( vtkDataObject *dataSet, float deciVal )
+vtkPolyData* lfx::vtk_utils::cfdGrid2Surface( vtkDataObject *dataSet, float deciVal )
 {
     vtkPolyDataAlgorithm* geometryFilter = 0; 
 

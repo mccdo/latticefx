@@ -36,22 +36,20 @@
 GetNumberOfPointsCallback API.
 */
 
-/*!\class ves::xplorer::util::GetNumberOfPointsCallback
+/*!\class lfX::vtk_utils::GetNumberOfPointsCallback
 *
 */
 class vtkDataSet;
 
-#include <ves/VEConfig.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/Export.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS GetNumberOfPointsCallback:
+class LATTICEFX_VTK_UTILS_EXPORT GetNumberOfPointsCallback:
             public DataObjectHandler::DatasetOperatorCallback
 {
 public:
@@ -73,6 +71,5 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif
 

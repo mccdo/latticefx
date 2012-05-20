@@ -30,7 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/fileIO.h>
+#include <vtk_utils/fileIO.h>
+
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -43,7 +44,7 @@
 #include <cstring>
 namespace fs = boost::filesystem;
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 ////////////////////////////////////////////////////////////////////////////////
 fileIO::fileIO( )
 {}

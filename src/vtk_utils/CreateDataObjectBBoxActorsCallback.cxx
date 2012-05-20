@@ -31,14 +31,14 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/xplorer/util/CreateDataObjectBBoxActorsCallback.h>
+#include <vtk_utils/CreateDataObjectBBoxActorsCallback.h>
 #include <vtkDataSet.h>
 #include <vtkActor.h>
 #include <vtkOutlineFilter.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////////
 CreateDataObjectBBoxActorsCallback::CreateDataObjectBBoxActorsCallback()

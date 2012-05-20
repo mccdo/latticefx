@@ -31,11 +31,11 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/xplorer/util/ComputeDataObjectBoundsCallback.h>
+#include <vtk_utils/ComputeDataObjectBoundsCallback.h>
 #include <vtkDataSet.h>
 #include <cmath>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////
 ComputeDataObjectBoundsCallback::ComputeDataObjectBoundsCallback()

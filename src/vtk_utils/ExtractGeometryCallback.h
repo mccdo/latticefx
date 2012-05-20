@@ -34,7 +34,7 @@
 #define  EXTRACT_GEOMETRY_CALLBACK
 /*!\file ExtractGeometryCallback.h
  * ExtractGeometryCallback API.
- * \class ves::xplorer::util::ExtractGeometryCallback
+ * \class lfx::vtk_utils::ExtractGeometryCallback
  *
  */
 class vtkDataSet;
@@ -42,17 +42,15 @@ class vtkMultiBlockDataSet;
 class vtkUnstructuredGrid;
 class vtkPolyData;
 
-#include <ves/VEConfig.h>
-#include <ves/xplorer/util/DataObjectHandler.h>
+#include <vtk_utils/Export.h>
+#include <vtk_utils/DataObjectHandler.h>
 
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS ExtractGeometryCallback:
+class LATTICEFX_VTK_UTILS_EXPORT ExtractGeometryCallback:
             public DataObjectHandler::DatasetOperatorCallback
 {
 public:
@@ -83,5 +81,4 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif

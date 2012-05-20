@@ -1,5 +1,5 @@
 
-set( _libName lfx_vtk_utils )
+set( _libName vtk_utils )
 
 if( BUILD_SHARED_LIBS )
     add_definitions( -DLATTICEFX_VTK_UTILSLIBRARY )

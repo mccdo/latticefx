@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/xplorer/util/cleanVtk.h>
+#include <vtk_utils/cleanVtk.h>
 
 #include <iostream>
 #include <fstream>
@@ -45,9 +45,9 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
-using namespace ves::xplorer::util;
+using namespace lfx::vtk_utils;
 
-void ves::xplorer::util::dumpVerticesNotUsedByCells( vtkPointSet * grid )
+void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
 {
     if( grid == NULL )
     {
@@ -355,7 +355,7 @@ void ves::xplorer::util::dumpVerticesNotUsedByCells( vtkPointSet * grid )
     delete [] isNeededPoint;
 }
 
-void ves::xplorer::util::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string vtkFileName )
+void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string vtkFileName )
 {
     if( grid == NULL )
     {

@@ -36,7 +36,7 @@
 cfdVTKFileHandler API
 */
 
-/*!\class ves::xplorer::util::cfdVTKFileHandler
+/*!\class lfx::vtk_utils::cfdVTKFileHandler
 *
 */
 class vtkXMLFileReadTester;
@@ -45,17 +45,15 @@ class vtkDataObject;
 class vtkAlgorithm;
 class vtkXMLReader;
 
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 #include <string>
 #include <vector>
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
-namespace util
-{
-class VE_UTIL_EXPORTS cfdVTKFileHandler
+class LATTICEFX_VTK_UTILS_EXPORT cfdVTKFileHandler
 {
 public:
     ///Constructor
@@ -145,5 +143,4 @@ protected:
 };
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif// CFD_VTK_FILE_HANDLER_H

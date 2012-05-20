@@ -35,26 +35,23 @@
 /*!\file setScalarAndVector.h
 setScalarAndVector API
 */
-#include <ves/VEConfig.h>
+#include <vtk_utils/Export.h>
 
 // class declarations
 class vtkDataSet;
 
-namespace ves
+namespace lfx
 {
-namespace xplorer
-{
-namespace util
+namespace vtk_utils
 {
 // function declarations
 ///Select a scalar and make it active
 ///\param dataSet the dataset containing the scalar of interest.
-VE_UTIL_EXPORTS void activateScalar( vtkDataSet* dataSet );
+LATTICEFX_VTK_UTILS_EXPORT void activateScalar( vtkDataSet* dataSet );
 ///Select a vector and make it active
 ///\param dataSet the dataset containing the vector of interest.
-VE_UTIL_EXPORTS void activateVector( vtkDataSet* dataSet );
+LATTICEFX_VTK_UTILS_EXPORT void activateVector( vtkDataSet* dataSet );
 }// end of util namesapce
 }// end of xplorer namesapce
-}// end of ves namesapce
 #endif //setScalarAndVector_H
 
