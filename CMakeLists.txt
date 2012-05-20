@@ -60,9 +60,9 @@ endif()
 add_subdirectory( src/latticefx )
 add_subdirectory( src/plugins )
 add_subdirectory( src/tests )
-#if( VTK_FOUND )
-#    add_subdirectory( src/vtk_utils )
-#endif()
+if( VTK_FOUND )
+    add_subdirectory( src/vtk_utils )
+endif()
 add_subdirectory( data )
 
 #
