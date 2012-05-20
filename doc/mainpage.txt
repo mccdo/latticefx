@@ -17,6 +17,11 @@ support for large data sets, configurable, etc.
   \li \link lfx::RTPOperation Run-Time Processing Operations \endlink
   \li \link lfx::Renderer Rendering Framework \endlink
 
+\section Rendering
+
+  \li \link lfx::VectorRenderer Rendering Vector Data \endlink
+  \li \link lfx::VolumeRenderer Rendering Volume Data \endlink
+
 \section Paging
 
   \li \ref PagingSupport
@@ -27,9 +32,9 @@ support for large data sets, configurable, etc.
 
 \section Utilities
 
-  \li \ref MaskUtils
-  \li \ref TextureUtils
   \li \ref BoundUtils
+  \li \ref TextureUtils
+  \li \ref TransferFunctionUtils
 
 \section Plugins
 
