@@ -77,12 +77,27 @@ set( _requiredDependencyLibraries
     ${OSG_LIBRARIES}
     ${_vtkLibraries}
 )
-set( _projectLibraries
-    latticefx
-)
 
 
 
+# Usage:
+#   _addLibrary( <category> <libraryName>
+#      <sourceFile1>
+#      <sourceFile2>
+#      <sourceFile3> ...etc...
+#      [ LATTICEFX_LIBRARIES
+#         <lib1>
+#         <lib2> ...etc... ]
+#
+# <category> is a project label such as "Lib" or "Plugin".
+# <libraryName> is the library name.
+# <sourceFileN> are the library source code files (.cpp/.h).
+# <libN> are libraries to link with.
+# 
+# <libraryName> is always linked with ${_requiredDependencyLibraries}.
+# Any additional libraries specified after the LATTICEFX_LIBRARIES keyword
+# are added on the link line before ${_requiredDependencyLibraries}.
+#
 macro( _addLibrary _category _libName )
     include_directories(
         ${_projectIncludes}
@@ -110,9 +125,29 @@ macro( _addLibrary _category _libName )
 endmacro()
 
 
+# Usage:
+#   _addExecutable( <category> <executableName>
+#      <sourceFile1>
+#      <sourceFile2>
+#      <sourceFile3> ...etc...
+#      [ LATTICEFX_LIBRARIES
+#         <lib1>
+#         <lib2> ...etc... ]
+#
+# <category> is a project label such as "App", "Test", or "Example".
+# <executableName> is the executable name.
+# <sourceFileN> are the executable source code files (.cpp/.h).
+# <libN> are libraries to link with.
+# 
+# <executableName> is always linked with ${_requiredDependencyLibraries}.
+# Any additional libraries specified after the LATTICEFX_LIBRARIES keyword
+# are added on the link line before ${_requiredDependencyLibraries}.
+#
 macro( _addExecutable _category _exeName )
+    _splitList( LATTICEFX_LIBRARIES sources libs ${ARGN} )
+
     add_executable( ${_exeName}
-        ${ARGN}
+        ${sources}
     )
 
     include_directories(
@@ -121,7 +156,7 @@ macro( _addExecutable _category _exeName )
     )
 
     target_link_libraries( ${_exeName}
-        ${_projectLibraries}
+        ${libs}
         ${_requiredDependencyLibraries}
     )
     
