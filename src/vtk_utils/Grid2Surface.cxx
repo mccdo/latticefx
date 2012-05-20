@@ -32,7 +32,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <vtk_utils/cfdGrid2Surface.h>
+#include <vtk_utils/Grid2Surface.h>
 #include <vtkDataObject.h>
 #include <vtkPointData.h>
 #include <vtkContourFilter.h>
@@ -47,7 +47,7 @@
 
 using namespace lfx::vtk_utils;
 
-vtkPolyData* lfx::vtk_utils::cfdGrid2Surface( vtkDataObject *dataSet, float deciVal )
+vtkPolyData* lfx::vtk_utils::Grid2Surface( vtkDataObject *dataSet, float deciVal )
 {
     vtkPolyDataAlgorithm* geometryFilter = 0; 
 

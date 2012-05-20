@@ -36,7 +36,7 @@
 cfdVTKFileHandler API
 */
 
-/*!\class lfx::vtk_utils::cfdVTKFileHandler
+/*!\class lfx::vtk_utils::VTKFileHandler
 *
 */
 class vtkXMLFileReadTester;
@@ -53,16 +53,16 @@ namespace lfx
 {
 namespace vtk_utils
 {
-class LATTICEFX_VTK_UTILS_EXPORT cfdVTKFileHandler
+class LATTICEFX_VTK_UTILS_EXPORT VTKFileHandler
 {
 public:
     ///Constructor
-    cfdVTKFileHandler();
+    VTKFileHandler();
     ///Copy Constructor
     ///\param fh Right hand side
-    cfdVTKFileHandler( const cfdVTKFileHandler& fh );
+    VTKFileHandler( const VTKFileHandler& fh );
     ///Destructor
-    virtual ~cfdVTKFileHandler();
+    virtual ~VTKFileHandler();
 
     enum OutFileType
     {
@@ -103,7 +103,7 @@ public:
 
     ///Equal operator
     ///\param fh The right hand side
-    cfdVTKFileHandler& operator=( const cfdVTKFileHandler& fh );
+    VTKFileHandler& operator=( const VTKFileHandler& fh );
 protected:
     ///Read XML UnstructredGrid data
     void _getXMLUGrid();

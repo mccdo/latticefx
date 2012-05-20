@@ -31,7 +31,6 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <vtk_utils/GetScalarDataArraysCallback.h>
-#include <vtk_utils/cfdAccessoryFunctions.h>
 
 #include <vtkDataSet.h>
 #include <vtkCell.h>

@@ -49,7 +49,7 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
-#include <vtk_utils/cfdVTKFileHandler.h>
+#include <vtk_utils/VTKFileHandler.h>
 #include <vtk_utils/DataObjectHandler.h>
 #include <vtk_utils/ComputeDataObjectBoundsCallback.h>
 
@@ -112,7 +112,7 @@ vtkDataObject* lfx::vtk_utils::readVtkThing(
         return 0;
     }
 
-    cfdVTKFileHandler fileReader;
+    VTKFileHandler fileReader;
     vtkDataObject* temp = fileReader.GetDataSetFromFile( vtkFilename );
     if( printFlag )
     {
@@ -125,9 +125,9 @@ vtkDataObject* lfx::vtk_utils::readVtkThing(
 bool lfx::vtk_utils::writeVtkThing( 
     vtkDataObject* vtkThing, std::string vtkFilename, int binaryFlag )
 {
-    cfdVTKFileHandler fileWriter;
+    VTKFileHandler fileWriter;
     if( !binaryFlag )
-        fileWriter.SetOutFileWriteMode( cfdVTKFileHandler::CFD_ASCII );
+        fileWriter.SetOutFileWriteMode( VTKFileHandler::CFD_ASCII );
     return fileWriter.WriteDataSet( vtkThing, vtkFilename );
 }
 

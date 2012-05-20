@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/cfdVTKFileHandler.h>
+#include <vtk_utils/VTKFileHandler.h>
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
 #include <vtkXMLFileReadTester.h>
@@ -87,7 +87,7 @@ using namespace lfx::vtk_utils;
 //////////////////////////////////////
 //Constructors                      //
 //////////////////////////////////////
-cfdVTKFileHandler::cfdVTKFileHandler():
+VTKFileHandler::VTKFileHandler():
     _xmlTester( 0 ),
     _dataSet( 0 ),
     mDataReader( 0 )
@@ -96,7 +96,7 @@ cfdVTKFileHandler::cfdVTKFileHandler():
     _outFileMode = CFD_BINARY;
 }
 /////////////////////////////////////////////////////////////////
-cfdVTKFileHandler::cfdVTKFileHandler( const cfdVTKFileHandler& fh )
+VTKFileHandler::VTKFileHandler( const VTKFileHandler& fh )
 {
     _outFileType = fh._outFileType;
     _outFileMode = fh._outFileMode;
@@ -107,12 +107,12 @@ cfdVTKFileHandler::cfdVTKFileHandler( const cfdVTKFileHandler& fh )
     _xmlTester = vtkXMLFileReadTester::New();
     _xmlTester = fh._xmlTester;
     _dataSet = fh._dataSet;
-    std::cout << "cfdVTKFileHandler::cfdVTKFileHandler Bad News" << std::endl;
+    std::cout << "VTKFileHandler::VTKFileHandler Bad News" << std::endl;
 }
 ///////////////////////////////////////
 //Destructor                         //
 ///////////////////////////////////////
-cfdVTKFileHandler::~cfdVTKFileHandler()
+VTKFileHandler::~VTKFileHandler()
 {
     if( _xmlTester )
     {
@@ -120,32 +120,32 @@ cfdVTKFileHandler::~cfdVTKFileHandler()
     }
 }
 ////////////////////////////////////////////////////////////
-void cfdVTKFileHandler::SetVTKOutFileType( OutFileType type )
+void VTKFileHandler::SetVTKOutFileType( OutFileType type )
 {
     _outFileType = type;
 }
 /////////////////////////////////////////////////////////////
-void cfdVTKFileHandler::SetOutFileWriteMode( OutFileMode mode )
+void VTKFileHandler::SetOutFileWriteMode( OutFileMode mode )
 {
     _outFileMode = mode;
 }
 //////////////////////////////////////////////////////
-void cfdVTKFileHandler::SetInputFileName( std::string inFile )
+void VTKFileHandler::SetInputFileName( std::string inFile )
 {
     _inFileName = inFile;
 }
 //////////////////////////////////////////////////////
-void cfdVTKFileHandler::SetOutputFileName( std::string oFile )
+void VTKFileHandler::SetOutputFileName( std::string oFile )
 {
     _outFileName = oFile;
 }
 //////////////////////////////////////////////////////
-/*vtkAlgorithm* cfdVTKFileHandler::GetAlgorithm()
+/*vtkAlgorithm* VTKFileHandler::GetAlgorithm()
 {
     return mDataReader;
 }*/
 ////////////////////////////////////////////////////////////////////
-vtkDataObject* cfdVTKFileHandler::GetDataSetFromFile( const std::string& vtkFileName )
+vtkDataObject* VTKFileHandler::GetDataSetFromFile( const std::string& vtkFileName )
 {
     if( vtkFileName.empty() )
     {
@@ -210,14 +210,14 @@ vtkDataObject* cfdVTKFileHandler::GetDataSetFromFile( const std::string& vtkFile
     }
     catch( ... )
     {
-        std::cerr << "cfdVTKFileHandler::GetDataSetFromFile "
+        std::cerr << "VTKFileHandler::GetDataSetFromFile "
             << "Memory allocation error." << std::endl;
         _dataSet = 0;
     }
     return _dataSet;
 }
 /////////////////////////////////////////////
-void cfdVTKFileHandler::_readClassicVTKFile()
+void VTKFileHandler::_readClassicVTKFile()
 {
     if( !_inFileName.c_str() )
         return;
@@ -263,7 +263,7 @@ void cfdVTKFileHandler::_readClassicVTKFile()
     }
 }
 /////////////////////////////////////////////////
-void cfdVTKFileHandler::_getXMLMultiGroupDataSet( bool isMultiBlock )
+void VTKFileHandler::_getXMLMultiGroupDataSet( bool isMultiBlock )
 {
     vtkXMLCompositeDataReader* mgdReader = 0;
     if( isMultiBlock )
@@ -283,7 +283,7 @@ void cfdVTKFileHandler::_getXMLMultiGroupDataSet( bool isMultiBlock )
     mgdReader->Delete();
 }
 /////////////////////////////////////////////////
-void cfdVTKFileHandler::GetXMLHierarchicalDataSet()
+void VTKFileHandler::GetXMLHierarchicalDataSet()
 {
     vtkXMLHierarchicalDataReader* mgdReader = 0;
     mgdReader = vtkXMLHierarchicalDataReader::New();
@@ -295,7 +295,7 @@ void cfdVTKFileHandler::GetXMLHierarchicalDataSet()
     mgdReader->Delete();
 }
 //////////////////////////////////////
-void cfdVTKFileHandler::_getXMLUGrid()
+void VTKFileHandler::_getXMLUGrid()
 {
     vtkXMLUnstructuredGridReader* ugReader
         = vtkXMLUnstructuredGridReader::New();
@@ -309,7 +309,7 @@ void cfdVTKFileHandler::_getXMLUGrid()
     ugReader->Delete();
 }
 //////////////////////////////////////
-void cfdVTKFileHandler::_getXMLSGrid()
+void VTKFileHandler::_getXMLSGrid()
 {
     vtkXMLStructuredGridReader* sgReader
     = vtkXMLStructuredGridReader::New();
@@ -321,7 +321,7 @@ void cfdVTKFileHandler::_getXMLSGrid()
     sgReader->Delete();
 }
 /////////////////////////////////////////////
-void cfdVTKFileHandler::_getXMLRGrid()
+void VTKFileHandler::_getXMLRGrid()
 {
     vtkXMLRectilinearGridReader* rgReader
     = vtkXMLRectilinearGridReader::New();
@@ -333,7 +333,7 @@ void cfdVTKFileHandler::_getXMLRGrid()
     rgReader->Delete();
 }
 ////////////////////////////////////////////////
-void cfdVTKFileHandler::_getXMLPolyData()
+void VTKFileHandler::_getXMLPolyData()
 {
     vtkXMLPolyDataReader* pdReader
         = vtkXMLPolyDataReader::New();
@@ -345,7 +345,7 @@ void cfdVTKFileHandler::_getXMLPolyData()
     pdReader->Delete();
 }
 ////////////////////////////////////////////////
-void cfdVTKFileHandler::GetXMLImageData( void )
+void VTKFileHandler::GetXMLImageData( void )
 {
     vtkXMLImageDataReader* reader = vtkXMLImageDataReader::New();
     reader->SetFileName( _inFileName.c_str() );
@@ -355,7 +355,7 @@ void cfdVTKFileHandler::GetXMLImageData( void )
     reader->Delete();
 }
 /////////////////////////////////////////////////////////////////////////////////
-bool cfdVTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileName )
+bool VTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileName )
 {
     if( outFileName.empty() )
     {
@@ -439,7 +439,7 @@ bool cfdVTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFil
     return false;
 }
 ////////////////////////////////////////////////////////////////////////
-void cfdVTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
+void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
                                               std::string vtkFilename, int binaryFlag )
 {
     if( vtkThing == NULL )
@@ -534,7 +534,7 @@ void cfdVTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     std::cout << "... done\n" << std::endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
-cfdVTKFileHandler& cfdVTKFileHandler::operator=( const cfdVTKFileHandler& fh )
+VTKFileHandler& VTKFileHandler::operator=( const VTKFileHandler& fh )
 {
     if( this != &fh )
     {
@@ -553,12 +553,12 @@ cfdVTKFileHandler& cfdVTKFileHandler::operator=( const cfdVTKFileHandler& fh )
     return *this;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void cfdVTKFileHandler::SetScalarsAndVectorsToRead( std::vector< std::string > activeArrays )
+void VTKFileHandler::SetScalarsAndVectorsToRead( std::vector< std::string > activeArrays )
 {
     m_activeArrays = activeArrays;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void cfdVTKFileHandler::UpdateReaderActiveArrays( vtkXMLReader* reader )
+void VTKFileHandler::UpdateReaderActiveArrays( vtkXMLReader* reader )
 {
     if( !m_activeArrays.empty() )
     {
@@ -576,7 +576,7 @@ void cfdVTKFileHandler::UpdateReaderActiveArrays( vtkXMLReader* reader )
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-std::vector< std::string > cfdVTKFileHandler::GetDataSetArraysFromFile( const std::string& vtkFileName )
+std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::string& vtkFileName )
 {
     if( vtkFileName.empty() )
     {
@@ -694,7 +694,7 @@ std::vector< std::string > cfdVTKFileHandler::GetDataSetArraysFromFile( const st
 }
 ////////////////////////////////////////////////////////////////////////////////
 /*
- void cfdVTKFileHandler::OperateOnAllDatasetsInObject( vtkDataObject* dataObject )
+ void VTKFileHandler::OperateOnAllDatasetsInObject( vtkDataObject* dataObject )
  {
  vtkDataSet* currentDataset = 0;
  if( dataObject->IsA( "vtkCompositeDataSet" ) )

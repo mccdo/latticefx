@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <vtk_utils/GetNumberOfPointsCallback.h>
-#include <vtk_utils/cfdAccessoryFunctions.h>
+
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 

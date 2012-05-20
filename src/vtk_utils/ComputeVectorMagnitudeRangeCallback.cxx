@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <vtk_utils/ComputeVectorMagnitudeRangeCallback.h>
-#include <vtk_utils/cfdAccessoryFunctions.h>
+#include <vtk_utils/AccessoryFunctions.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
@@ -57,7 +57,7 @@ void ComputeVectorMagnitudeRangeCallback::OperateOnDataset( vtkDataSet* dataset 
         return;
     }
     double* range =
-        cfdAccessoryFunctions::ComputeVectorMagnitudeRange( dataset->GetPointData()->GetVectors() );
+        AccessoryFunctions::ComputeVectorMagnitudeRange( dataset->GetPointData()->GetVectors() );
     m_magnitudeRange[0] = ( range[0] < m_magnitudeRange[0] ) ? range[0] : m_magnitudeRange[0];
     m_magnitudeRange[1] = ( range[1] > m_magnitudeRange[1] ) ? range[1] : m_magnitudeRange[1];
 }

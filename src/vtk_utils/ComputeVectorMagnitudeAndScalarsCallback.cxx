@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <vtk_utils/ComputeVectorMagnitudeAndScalarsCallback.h>
-#include <vtk_utils/cfdAccessoryFunctions.h>
+#include <vtk_utils/AccessoryFunctions.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkDataArray.h>

@@ -30,46 +30,24 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CFD_ACCESSORY_FUNCTIONS_H
-#define CFD_ACCESSORY_FUNCTIONS_H
-
-/*!file cfdAccessoryFunctions.h
-cfdAccessoryFunctions API
-*/
-/*!class lfx::vtk_utils::cfdAccessoryFunctions
-*This class returns information on an input vector.
+#ifndef CFD_GRID_2_SURFACE_H
+#define CFD_GRID_2_SURFACE_H
+/*!\file Grid2Surface.h
+*Grid to surface converting API
 */
 
-class vtkDataArray;
-class vtkDataSet;
+class vtkDataObject;
+class vtkPolyData;
+
 #include <vtk_utils/Export.h>
 
 namespace lfx
 {
 namespace vtk_utils
 {
-class LATTICEFX_VTK_UTILS_EXPORT cfdAccessoryFunctions
-{
-public:
-    ///Constructor
-    cfdAccessoryFunctions();
-    ///Destructor
-    ~cfdAccessoryFunctions();
-    ///Find the range of the magnitude of the vector for vector-based
-    ///visualization when "scale by vector magnitude" is selected.
-    ///\param dataArray The vector to be measured
-    static double * ComputeVectorMagnitudeRange( vtkDataArray * dataArray );
-    ///Find the Mean Cell Bounding Box (????) Length
-    ///\param dataSet The values for the grid that is being analyzed.
-    static double ComputeMeanCellBBLength( vtkDataSet * dataSet );
-
-
-private:
-    ///Find the magnitude of the input vector
-    ///\param vectorComponents The three dimensional array holding the
-    ///components of the vector being evaluated
-    static double ComputeVectorMagnitude( double vectorComponents [ 3 ] );
-};
+// function declarations
+///Reads in a grid (vtkDataSet) and returns it as a surface (vtkPolyData).
+LATTICEFX_VTK_UTILS_EXPORT vtkPolyData * Grid2Surface( vtkDataObject *dataSet, float deciVal );
 }// end of util namesapce
 }// end of xplorer namesapce
 #endif

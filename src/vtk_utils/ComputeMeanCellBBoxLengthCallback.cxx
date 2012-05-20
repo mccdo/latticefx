@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <vtk_utils/ComputeMeanCellBBoxLengthCallback.h>
-#include <vtk_utils/cfdAccessoryFunctions.h>
+#include <vtk_utils/AccessoryFunctions.h>
 #include<vtkDataSet.h>
 
 using namespace lfx::vtk_utils;
@@ -49,6 +49,6 @@ double ComputeMeanCellBBoxLengthCallback::GetMeanCellBBLength()
 void ComputeMeanCellBBoxLengthCallback::OperateOnDataset( vtkDataSet* dataset )
 {
     m_meanCellBBLength +=
-        cfdAccessoryFunctions::ComputeMeanCellBBLength( dataset );
+        AccessoryFunctions::ComputeMeanCellBBLength( dataset );
 }
 
