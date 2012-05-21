@@ -30,6 +30,7 @@
 #include <latticefx/ChannelDataComposite.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RootCallback.h>
+#include <latticefx/DBUtils.h>
 
 #include <osg/Group>
 #include <osg/Notify>
@@ -45,7 +46,6 @@ DataSet::DataSet()
     _dirtyFlags( ALL_DIRTY )
 {
     RootCallback* rootcb( new RootCallback() );
-    rootcb->addTimeSeriesParent( _sceneGraph.get() );
     _sceneGraph->setUpdateCallback( rootcb );
 
     PageData* pageData( new PageData );
@@ -253,31 +253,58 @@ bool DataSet::updateRenderer()
 {
     if( _renderer != NULL )
     {
-        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
-        PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
-        unsigned int childIndex( 0 );
-        double minTime( FLT_MAX ), maxTime( -FLT_MAX );
-
-        ChannelDataList::iterator maskIt = _maskList.begin();
         TimeSet timeSet( getTimeSet() );
-        BOOST_FOREACH( double time, timeSet )
+        if( timeSet.size() > 1 )
         {
-            // Get the data at the current time and assign as inputs to the Renderer.
-            ChannelDataList currentData( getDataAtTime( time ) );
+            RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
+            rootcb->addTimeSeriesParent( _sceneGraph.get() );
+            PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
+            pageData->setRangeMode( lfx::PageData::TIME_RANGE );
+            unsigned int childIndex( 0 );
+
+            ChannelDataList::iterator maskIt = _maskList.begin();
+            BOOST_FOREACH( double time, timeSet )
+            {
+                // Get the data at the current time and assign as inputs to the Renderer.
+                ChannelDataList currentData( getDataAtTime( time ) );
+                setInputs( _renderer, currentData );
+
+                osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
+                if( newChild != NULL )
+                {
+                    PageData::RangeData rangeData( time, 0. );
+                    rangeData._status = PageData::RangeData::UNLOADED;
+                    rangeData._dbKey = generateDBKey();
+                    pageData->setRangeData( childIndex++, rangeData );
+
+                    if( _sceneGraph->getNumChildren() == 0 )
+                    {
+                        // Always add the first child
+                        _sceneGraph->addChild( newChild );
+                        rangeData._status = PageData::RangeData::ACTIVE;
+                    }
+                    else
+                    {
+                        // Add stub Group node for paging.
+                        _sceneGraph->addChild( new osg::Group );
+                    }
+
+                    storeSubGraph( newChild, rangeData._dbKey );
+                }
+                ++maskIt;
+            }
+        }
+        else
+        {
+            // Simplified scene graph creation when not using time series.
+            ChannelDataList currentData( getDataAtTime( 0. ) );
             setInputs( _renderer, currentData );
 
-            PageData::RangeData rangeData( time, 0. );
-            rangeData._status = PageData::RangeData::ACTIVE;
-            pageData->setRangeData( childIndex, rangeData );
-            ++childIndex;
-
-            // TBD Renderer::getSceneGraph() could encounter an error and return NULL.
-            // We need to handle that more robustly.
-            _sceneGraph->addChild( _renderer->getSceneGraph( *maskIt ) );
-            ++maskIt;
-
-            minTime = osg::minimum( minTime, time );
-            maxTime = osg::maximum( maxTime, time );
+            ChannelDataList::iterator maskIt = _maskList.begin();
+            const double time( *( timeSet.begin() ) );
+            osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
+            if( newChild != NULL )
+                _sceneGraph->addChild( newChild );
         }
 
         _sceneGraph->setStateSet( _renderer->getRootState() );

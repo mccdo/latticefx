@@ -13,6 +13,7 @@ set( _headerFiles
     ChannelDataComposite.h
     ChannelDataOSGArray.h
     DataSet.h
+    DBUtils.h
     OperationBase.h
     PageData.h
     PagingThread.h
@@ -34,6 +35,7 @@ set( _sourceFiles
     ChannelDataComposite.cpp
     ChannelDataOSGArray.cpp
     DataSet.cpp
+    DBUtils.cpp
     OperationBase.cpp
     PageData.cpp
     PagingThread.cpp

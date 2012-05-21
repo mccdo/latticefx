@@ -101,10 +101,10 @@ PageData::RangeData::RangeData()
     _status( UNLOADED )
 {
 }
-PageData::RangeData::RangeData( double minVal, double maxVal, const std::string& fileName )
+PageData::RangeData::RangeData( double minVal, double maxVal, const DBKey& dbKey )
   : _childIndex( 0 ),
     _rangeValues( RangeValues( minVal, maxVal ) ),
-    _fileName( fileName ),
+    _dbKey( dbKey ),
     _status( UNLOADED )
 {
 }

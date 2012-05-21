@@ -31,6 +31,7 @@
 
 
 #include <latticefx/Export.h>
+#include <latticefx/DBUtils.h>
 #include <osg/observer_ptr>
 #include <osg/Object>
 #include <osg/Group>
@@ -86,18 +87,15 @@ public:
     of these per pageable child using PageData::setRangeData().
     
     Stored information includes the child index, range values for which this child is
-    valie, and a file name to page in when needed. Also contains an enum that describes
-    the current page status of the child.
-    
-    TBD. In the future, we should probably also support paging in a child from a database?
-    If so, we need to store a DB key in this struct. */
+    valie, and a database key to load the child. Also contains an enum that describes
+    the current page status of the child. */
     struct LATTICEFX_EXPORT RangeData {
         RangeData();
-        RangeData( double minVal, double maxVal, const std::string& fileName=std::string( "" ) );
+        RangeData( double minVal, double maxVal, const DBKey& dbKey=DBKey( "" ) );
 
         unsigned int _childIndex;
         RangeValues _rangeValues;
-        std::string _fileName;
+        DBKey _dbKey;
 
         /** \brief Enum for current page status.
         \li UNLOADED        Child is en empty stub Group.

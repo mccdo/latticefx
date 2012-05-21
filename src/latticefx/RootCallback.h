@@ -86,10 +86,6 @@ public:
     \c _pageParentList, modifying the children of each added osg::Group if
     necessary based on the PageData stored in \c parent's UserData.
 
-    TBD If the parent is time series, implicitly call addTimeSeriesParent.
-    For now, app must manually call addTimeSeriesParent regardless of
-    whether the parent is paged or not.
-    
     Requirement: \c parent must have a PageData stored in its UserData. */
     void addPageParent( osg::Group* parent );
 
@@ -115,14 +111,14 @@ public:
 
     /** \brief Set the paging time range.
     \details Children are paged in if their time value falls within the
-    specified \c validRange around the current animation time, though they are
+    specified \c timeRange around the current animation time, though they are
     displayed only when their time value matches the current animation time.
-    Times in \c validRange are relative to the current animation time. For
+    Times in \c timeRange are relative to the current animation time. For
     example: RangeValues( -.5, 1. ) pages in children whose time values are
     0.5 seconds before and 1.0 seconds after the current animation time.
 
     Default: RangeValues( -0.5, 0.5 ). */
-    void setTimeRange( const PageData::RangeValues& validRange );
+    void setTimeRange( const PageData::RangeValues& timeRange );
     /** \brief Get the paging time range. */
     PageData::RangeValues getTimeRange() const;
 
@@ -146,6 +142,10 @@ protected:
     the area of a circle with that radius. */
     double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView );
 
+    /** \brief Return \c time, biased into the given time range.
+    \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */
+    static double getWrappedTime( const double& time, const double& minTime, const double& maxTime );
+
     /** \brief Return true if \c validRange and \c childRange overlap.
     \details If the paging RangeMode is PIXEL_SIZE_RANGE, both min and max values of
     \c validRange are set to the return value of computePixelSize() and \c childRange
@@ -159,7 +159,7 @@ protected:
     osg::ref_ptr< osg::Camera > _camera;
 
     double _animationTime;
-    PageData::RangeValues _validRange;
+    PageData::RangeValues _timeRange;
 
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;
@@ -172,8 +172,15 @@ protected:
 
 bool RootCallback::inRange( const PageData::RangeValues& validRange, const PageData::RangeValues& childRange )
 {
-    return( ( childRange.second >= validRange.first ) &&
-            ( childRange.first < validRange.second ) );
+    const bool childFirstGood( childRange.first < validRange.second );
+    const bool childSecondGood( childRange.second >= validRange.first );
+    if( validRange.first < validRange.second )
+        // Typical case: first (min) < second (max).
+        return( childSecondGood && childFirstGood );
+    else
+        // First (min) might be greater than second (max) due to
+        // wrapping of animation time.
+        return( childSecondGood || childFirstGood );
 }
 
 

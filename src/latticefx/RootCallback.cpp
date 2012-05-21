@@ -40,14 +40,14 @@ namespace lfx {
 
 RootCallback::RootCallback()
   : _animationTime( 0. ),
-    _validRange( PageData::RangeValues( -0.5, 0.5 ) )
+    _timeRange( PageData::RangeValues( -0.5, 0.5 ) )
 {
 }
 RootCallback::RootCallback( const RootCallback& rhs )
   : osg::NodeCallback( rhs ),
     _camera( rhs._camera ),
     _animationTime( rhs._animationTime ),
-    _validRange( rhs._validRange ),
+    _timeRange( rhs._timeRange ),
     _pageParentList( rhs._pageParentList ),
     _timeSeriesParentList( rhs._timeSeriesParentList )
 {
@@ -62,7 +62,15 @@ void RootCallback::addPageParent( osg::Group* parent )
 }
 void RootCallback::addTimeSeriesParent( osg::Group* parent )
 {
+    // Seems like we should only be able to support one time series parent.
+    // Might be wrong. Leaving this as a list, but clearing it so that we
+    // can have only one time series parent.
+    _timeSeriesParentList.clear();
     _timeSeriesParentList.push_back( parent );
+
+    // TBD Hm. Could possibly get added multiple times!
+    _pageParentList.clear(); // Yuck. Need to fix this situation very soon.
+    addPageParent( parent );
 }
 
 void RootCallback::setCamera( osg::Camera* camera )
@@ -77,13 +85,13 @@ double RootCallback::getAnimationTime() const
 {
     return( _animationTime );
 }
-void RootCallback::setTimeRange( const PageData::RangeValues& validRange )
+void RootCallback::setTimeRange( const PageData::RangeValues& timeRange )
 {
-    _validRange = validRange;
+    _timeRange = timeRange;
 }
 PageData::RangeValues RootCallback::getTimeRange() const
 {
-    return( _validRange );
+    return( _timeRange );
 }
 
 void RootCallback::updatePaging( const osg::Matrix& modelView )
@@ -128,8 +136,16 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             // This is different from pixel size paging because the time step (and therefore valid child)
             // is expected to change quite rapidly, so wee need to page in a buffer around the current
             // play time to help ensure a smooth animation free ofpaging bottlenecks.
-            validRange = _validRange;
-            //validRange = PageData::RangeValues( -1., 10. );
+            //
+            // The current animation time could be anything, but we want a time range around it with
+            // min and max values between the PageData's min and max time values. Note that when the
+            // animation reaches the end, it's possible that the min validRange value could be greater than
+            // the max validRange value to support smooth playback as time wraps around.
+            const double minTime( /*TBD*/ 0. );
+            const double maxTime( /*TBD*/ 8. );
+
+            validRange.first = getWrappedTime( _timeRange.first + getAnimationTime(), minTime, maxTime );
+            validRange.second = getWrappedTime( _timeRange.second + getAnimationTime(), minTime, maxTime );
         }
 
         // removeExpired is initially false and only set to true if we add a child.
@@ -164,7 +180,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 {
                     // Child state is UNLOADED, but it's in range. Add a request to the PagingThread.
                     pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
-                        rangeData._fileName );
+                        rangeData._dbKey );
                     rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                 }
                 break;
@@ -200,6 +216,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             }
             }
         }
+        pageThread->debugChechReturnsEmpty();
 
         // Remove any expired children. Do *not* remove any children with status LOADED;
         // these are the children we just added! Instead, set their status to ACTIVE.
@@ -225,6 +242,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 {
                 case PageData::RangeData::LOAD_REQUESTED:
                 {
+                    /*
                     if( !inRange( validRange, childRange ) )
                     {
                         // Cancel request. Note there's a possible thread safety issue
@@ -232,6 +250,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                         pageThread->cancelLoadRequest( pageData->getParent()->getChild( childIndex ) );
                         rangeData._status = PageData::RangeData::UNLOADED;
                     }
+                    */
                     break;
                 }
                 case PageData::RangeData::ACTIVE:
@@ -297,9 +316,10 @@ void RootCallback::updateTimeSeries()
     }
     if( bestChild == NULL )
     {
-        OSG_WARN << "RootCallback::updateTimeSeries(): No best child available." << std::endl;
-        OSG_WARN << "\tCheck to make sure there is at least one ACTIVE child." << std::endl;
-        return;
+        // On first frame, might not have anything paged in yet. This is *not* an error.
+        //OSG_WARN << "RootCallback::updateTimeSeries(): No best child available." << std::endl;
+        //OSG_WARN << "\tCheck to make sure there is at least one ACTIVE child." << std::endl;
+        //return;
     }
     BOOST_FOREACH( GroupList::value_type grp, _timeSeriesParentList )
     {
@@ -364,6 +384,14 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
 
     // Circle area A = pi * r^2
     return( osg::PI * pixelRadius * pixelRadius );
+}
+
+double RootCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
+{
+    const double span( maxTime - minTime );
+    double intPart;
+    const double fractPart( modf( time / span, &intPart ) );
+    return( fractPart * span + minTime );
 }
 
 

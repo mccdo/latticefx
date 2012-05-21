@@ -31,6 +31,7 @@
 
 
 #include <latticefx/Export.h>
+#include <latticefx/DBUtils.h>
 #include <osg/Node>
 
 #include <boost/thread.hpp>
@@ -126,7 +127,7 @@ public:
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void addLoadRequest( osg::Node* location, const std::string& fileName );
+    void addLoadRequest( osg::Node* location, const DBKey& dbKey );
 
     /* \overload Add a request to load data from disk. */
     //void addRequest( const osg::Node* location, const int dbKey );
@@ -139,6 +140,7 @@ public:
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
     osg::Node* retrieveRequest( const osg::Node* location );
+    bool debugChechReturnsEmpty();
 
     /** \brief Cancel a load request.
     \details If \c location is found in any of the PagingThread's queues,
@@ -170,14 +172,12 @@ protected:
 
     struct LoadRequest {
         LoadRequest();
-        LoadRequest( osg::Node* location, const std::string& fileName );
-        LoadRequest( osg::Node* location, const int dbKey );
+        LoadRequest( osg::Node* location, const DBKey& dbKey );
 
         LoadRequest& operator=( const LoadRequest& rhs );
 
         osg::ref_ptr< osg::Node > _location;
-        std::string _fileName;
-        //const int _dbKey;
+        DBKey _dbKey;
 
         osg::ref_ptr< osg::Node > _loadedModel;
     };

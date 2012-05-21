@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/PagingThread.h>
+#include <latticefx/DBUtils.h>
 #include <osgDB/ReadFile>
 
 #include <iostream>
@@ -60,15 +61,25 @@ bool PagingThread::getHaltRequest() const
     return( _haltRequest );
 }
 
-void PagingThread::addLoadRequest( osg::Node* location, const std::string& fileName )
+void PagingThread::addLoadRequest( osg::Node* location, const DBKey& dbKey )
 {
     boost::mutex::scoped_lock lock( _requestMutex );
-    _loadRequestList.push_back( LoadRequest( location, fileName ) );
+    _loadRequestList.push_back( LoadRequest( location, dbKey ) );
 }
 
 osg::Node* PagingThread::retrieveRequest( const osg::Node* location )
 {
     return( retrieveAndRemove( location, _returnList, _retrieveMutex ) );
+}
+bool PagingThread::debugChechReturnsEmpty()
+{
+    boost::mutex::scoped_lock lock( _retrieveMutex );
+    if( _returnList.size() > 0 )
+    {
+        std::cout << "debugCheckReturnsEmpty(): List size: " << _returnList.size() << " should be zero." << std::endl;
+        return( false );
+    }
+    return( true );
 }
 
 bool PagingThread::cancelLoadRequest( const osg::Node* location )
@@ -102,18 +113,16 @@ void PagingThread::operator()()
                 boost::mutex::scoped_lock( _requestMutex );
                 request = *( _loadRequestList.begin() );
                 _loadRequestList.pop_front();
-                std::cout << "____Got a request for " << request._fileName << std::endl;
+                //std::cout << "____Got a request for " << request._dbKey << std::endl;
             }
 
-            if( !( request._fileName.empty() ) )
+            if( !( request._dbKey.empty() ) )
             {
-                request._loadedModel = osgDB::readNodeFile( request._fileName );
-                std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
+                request._loadedModel = loadSubGraph( request._dbKey );
+                //std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
                 boost::mutex::scoped_lock completedLock( _completedMutex );
                 _completedList.push_back( request );
             }
-            // else if dbKey valid
-            // TBD
         }
         else
         {
@@ -121,29 +130,28 @@ void PagingThread::operator()()
             boost::this_thread::sleep( boost::posix_time::milliseconds( 16 ) );
         }
 
-        // Only allow one request to be returned to the app for now,
+        // Only allow 16 requests to be returned to the app for now,
         // this will throttle how many OpenGL objects get created per frame.
-        bool needReturn;
+        int numReturnsAvailable;
         {
             boost::mutex::scoped_lock lock( _retrieveMutex );
-            needReturn = _returnList.empty();
+            numReturnsAvailable = 16 - (int)( _returnList.size() );
         }
-        if( needReturn )
+        if( numReturnsAvailable > 0 )
         {
-            bool returnAvailable;
-            LoadRequest completed;
+            LoadRequestList tempList;
             {
                 boost::mutex::scoped_lock lock( _completedMutex );
-                if( returnAvailable = !( _completedList.empty() ) )
+                while( ( --numReturnsAvailable >= 0 ) && ( !( _completedList.empty() ) ) )
                 {
-                    completed = *( _completedList.begin() );
+                    tempList.push_back( *( _completedList.begin() ) );
                     _completedList.pop_front();
                 }
             }
-            if( returnAvailable )
+            if( tempList.size() > 0 )
             {
                 boost::mutex::scoped_lock lock( _retrieveMutex );
-                _returnList.push_back( completed );
+                _returnList.insert( _returnList.end(), tempList.begin(), tempList.end() );
             }
         }
     }
@@ -174,28 +182,19 @@ osg::Node* PagingThread::retrieveAndRemove( const osg::Node* location,
 
 PagingThread::LoadRequest::LoadRequest()
   : _location( NULL ),
-    _fileName( std::string( "" ) )
-    // _dbKey( 0 )
+    _dbKey( DBKey( "" ) )
 {
 }
-PagingThread::LoadRequest::LoadRequest( osg::Node* location, const std::string& fileName )
+PagingThread::LoadRequest::LoadRequest( osg::Node* location, const DBKey& dbKey )
   : _location( location ),
-    _fileName( fileName )
-    // _dbKey( 0 )
-{
-}
-PagingThread::LoadRequest::LoadRequest( osg::Node* location, const int dbKey )
-  : _location( location ),
-    _fileName( std::string( "" ) )
-    // dbKey is TBD
+    _dbKey( dbKey )
 {
 }
 
 PagingThread::LoadRequest& PagingThread::LoadRequest::operator=( const PagingThread::LoadRequest& rhs )
 {
     _location = rhs._location;
-    _fileName = rhs._fileName;
-    // dbKey is TBD.
+    _dbKey = rhs._dbKey;
 
     _loadedModel = rhs._loadedModel;
 
