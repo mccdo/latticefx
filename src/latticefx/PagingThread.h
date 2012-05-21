@@ -152,16 +152,13 @@ public:
     void addLoadRequest( const LoadRequestList& requests );
 
 
-    /** \brief Attempt to retrieve the result of a load request.
-    \details If the load request associated with \c dbKey has not yet completed,
-    retrieveRequest() returns a default LoadRequest (with
-    LoadRequest::_loadedModel == NULL). Otherwise, retrieveRequest() returns a
-    LoadRequest matching that passed to addLoadRequest(), but with
-    LoadRequest::_loadedModel pointing to the root node of the loaded data.
+    /** \brief Attempt to retrieve the results of previous load requests.
+    \details Returns a list containing all retrieved LoadRequests that have a \c _dbKey
+    in the specified \c keyList.
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    LoadRequest retrieveRequest( const DBKey& dbKey );
+    LoadRequestList retrieveLoadRequests( const DBKeyList& keyList );
 
     /** TBD remove when no longer needed. */
     bool debugChechReturnsEmpty();

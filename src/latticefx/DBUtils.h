@@ -31,6 +31,7 @@
 
 #include <latticefx/Export.h>
 #include <string>
+#include <list>
 
 
 #define DB_IMPL_FILESYSTEM 1
@@ -44,7 +45,8 @@ namespace lfx {
 
 
 #ifdef DB_IMPL_FILESYSTEM
-typedef std::string DBKey;
+    typedef std::string DBKey;
+    typedef std::list< DBKey > DBKeyList;
 #else
 #endif
 

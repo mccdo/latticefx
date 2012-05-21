@@ -29,6 +29,7 @@
 #include <latticefx/PagingThread.h>
 #include <latticefx/DBUtils.h>
 #include <osgDB/ReadFile>
+#include <boost/foreach.hpp>
 
 #include <iostream>
 
@@ -67,18 +68,21 @@ void PagingThread::addLoadRequest( const LoadRequestList& requests )
     _loadRequestList.insert( _loadRequestList.end(), requests.begin(), requests.end() );
 }
 
-PagingThread::LoadRequest PagingThread::retrieveRequest( const DBKey& dbKey )
+PagingThread::LoadRequestList PagingThread::retrieveLoadRequests( const DBKeyList& keyList )
 {
     boost::mutex::scoped_lock lock( _retrieveMutex );
 
-    LoadRequestList::iterator it( find( _returnList, dbKey ) );
-    if( it != _returnList.end() )
+    LoadRequestList returns;
+    BOOST_FOREACH( const DBKey& key, keyList )
     {
-        LoadRequest returnValue( *it );
-        _returnList.erase( it );
-        return( returnValue );
+        LoadRequestList::iterator it( find( _returnList, key ) );
+        if( it != _returnList.end() )
+        {
+            returns.push_back( *it );
+            _returnList.erase( it );
+        }
     }
-    return( LoadRequest() );
+    return( returns );
 }
 bool PagingThread::debugChechReturnsEmpty()
 {

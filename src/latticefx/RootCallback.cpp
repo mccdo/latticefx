@@ -151,6 +151,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         // PagingThread lets us send multiple requests at once, which helps reduce
         // locking and thread blocking.
         PagingThread::LoadRequestList addList;
+        DBKeyList retrieveList;
 
         // removeExpired is initially false and only set to true if we add a child.
         // This prevents us from removing expired children before the required children
@@ -191,26 +192,11 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             case PageData::RangeData::LOAD_REQUESTED:
             {
                 //std::cout << "    RangeData LOAD_REQUESTED" << std::endl;
-                // Check to see if our request has completed. If so, add it into the scene graph
-                // in place of the Group stub.
-                PagingThread::LoadRequest request( pageThread->retrieveRequest( rangeData._dbKey ) );
-                if( request._loadedModel != NULL )
-                {
-                    //std::cout << "      Retrieved: " << std::hex << loadedModel << std::endl;
-                    // Now that we know we have something in range to render, set removeExpired to true
-                    // so we can remove any expired children (avoids rendering no children).
-                    removeExpired = true;
-                    pageData->getParent()->setChild( request._childIndex, request._loadedModel.get() ); // Replaces Group stub at childIndex.
-                    rangeData._status = PageData::RangeData::LOADED;
-                }
+                // Add DBKey to retrieveList so we can retrieve multiple requests at once.
+                retrieveList.push_back( rangeData._dbKey );
                 break;
             }
             case PageData::RangeData::LOADED:
-            {
-                //std::cout << "    RangeData LOADED" << std::endl;
-                // Nothing to do.
-                break;
-            }
             case PageData::RangeData::ACTIVE:
             {
                 //std::cout << "    RangeData ACTIVE" << std::endl;
@@ -222,7 +208,37 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
 
         // Add all load requests with a single call.
         if( !( addList.empty() ) )
+        {
             pageThread->addLoadRequest( addList );
+        }
+
+        // If we have requested loads, see if they are available, and if so,
+        // put them in the scene graph.
+        if( !( retrieveList.empty() ) )
+        {
+            // Retrieve the requests with a single function call to minimize locking / blocking.
+            PagingThread::LoadRequestList requests( pageThread->retrieveLoadRequests( retrieveList ) );
+            if( !( requests.empty() ) )
+            {
+                BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+                {
+                    PageData::RangeData& rangeData( rangeDataPair.second );
+                    if ( rangeData._status != PageData::RangeData::LOAD_REQUESTED )
+                        continue;
+
+                    PagingThread::LoadRequestList::iterator request( PagingThread::find(
+                        requests, rangeData._dbKey ) );
+                    if( ( request != requests.end() ) && ( request->_loadedModel != NULL ) )
+                    {
+                        // Now that we know we have something in range to render, set removeExpired to true
+                        // so we can remove any expired children (avoids rendering no children).
+                        removeExpired = true;
+                        pageData->getParent()->setChild( request->_childIndex, request->_loadedModel.get() ); // Replaces Group stub at childIndex.
+                        rangeData._status = PageData::RangeData::LOADED;
+                    }
+                }
+            }
+        }
 
         // TBD Debug code. Remove when not needed.
         pageThread->debugChechReturnsEmpty();
