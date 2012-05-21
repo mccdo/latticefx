@@ -61,20 +61,24 @@ bool PagingThread::getHaltRequest() const
     return( _haltRequest );
 }
 
-void PagingThread::addLoadRequest( osg::Node* location, const DBKey& dbKey )
-{
-    boost::mutex::scoped_lock lock( _requestMutex );
-    _loadRequestList.push_back( LoadRequest( location, dbKey ) );
-}
 void PagingThread::addLoadRequest( const LoadRequestList& requests )
 {
     boost::mutex::scoped_lock lock( _requestMutex );
     _loadRequestList.insert( _loadRequestList.end(), requests.begin(), requests.end() );
 }
 
-osg::Node* PagingThread::retrieveRequest( const osg::Node* location )
+PagingThread::LoadRequest PagingThread::retrieveRequest( const DBKey& dbKey )
 {
-    return( retrieveAndRemove( location, _returnList, _retrieveMutex ) );
+    boost::mutex::scoped_lock lock( _retrieveMutex );
+
+    LoadRequestList::iterator it( find( _returnList, dbKey ) );
+    if( it != _returnList.end() )
+    {
+        LoadRequest returnValue( *it );
+        _returnList.erase( it );
+        return( returnValue );
+    }
+    return( LoadRequest() );
 }
 bool PagingThread::debugChechReturnsEmpty()
 {
@@ -121,10 +125,9 @@ void PagingThread::operator()()
                 //std::cout << "____Got a request for " << request._dbKey << std::endl;
             }
 
-            if( !( request._dbKey.empty() ) )
+            request._loadedModel = loadSubGraph( request._dbKey );
+            //std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
             {
-                request._loadedModel = loadSubGraph( request._dbKey );
-                //std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
                 boost::mutex::scoped_lock completedLock( _completedMutex );
                 _completedList.push_back( request );
             }
@@ -171,7 +174,7 @@ osg::Node* PagingThread::retrieveAndRemove( const osg::Node* location,
     LoadRequestList::iterator it;
     for( it = theList.begin(); it != theList.end(); ++it )
     {
-        if( it->_location == location )
+        if( false )
         {
             osg::ref_ptr< osg::Node > returnValue = it->_loadedModel;
             theList.erase( it );
@@ -186,24 +189,46 @@ osg::Node* PagingThread::retrieveAndRemove( const osg::Node* location,
 
 
 PagingThread::LoadRequest::LoadRequest()
-  : _location( NULL ),
+  : _childIndex( 0 ),
     _dbKey( DBKey( "" ) )
 {
 }
-PagingThread::LoadRequest::LoadRequest( osg::Node* location, const DBKey& dbKey )
-  : _location( location ),
+PagingThread::LoadRequest::LoadRequest( const unsigned int childIndex, const DBKey& dbKey )
+  : _childIndex( childIndex ),
     _dbKey( dbKey )
 {
 }
 
+
 PagingThread::LoadRequest& PagingThread::LoadRequest::operator=( const PagingThread::LoadRequest& rhs )
 {
-    _location = rhs._location;
+    _childIndex = rhs._childIndex;
     _dbKey = rhs._dbKey;
 
     _loadedModel = rhs._loadedModel;
 
     return( *this );
+}
+
+PagingThread::LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, const DBKey& dbKey )
+{
+    LoadRequestList::iterator it;
+    for( it = requestList.begin(); it != requestList.end(); ++it )
+    {
+        if( it->_dbKey == dbKey )
+            break;
+    }
+    return( it );
+}
+PagingThread::LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, const unsigned int childIndex )
+{
+    LoadRequestList::iterator it;
+    for( it = requestList.begin(); it != requestList.end(); ++it )
+    {
+        if( it->_childIndex == childIndex )
+            break;
+    }
+    return( it );
 }
 
 

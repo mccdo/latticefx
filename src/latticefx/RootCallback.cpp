@@ -183,8 +183,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 if( inRange( validRange, childRange ) )
                 {
                     // Child state is UNLOADED, but it's in range. Add a request to the PagingThread.
-                    addList.push_back( PagingThread::LoadRequest(
-                        pageData->getParent()->getChild( childIndex ), rangeData._dbKey ) );
+                    addList.push_back( PagingThread::LoadRequest( childIndex, rangeData._dbKey ) );
                     rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                 }
                 break;
@@ -194,14 +193,14 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 //std::cout << "    RangeData LOAD_REQUESTED" << std::endl;
                 // Check to see if our request has completed. If so, add it into the scene graph
                 // in place of the Group stub.
-                osg::Node* loadedModel( pageThread->retrieveRequest( pageData->getParent()->getChild( childIndex ) ) );
-                if( loadedModel != NULL )
+                PagingThread::LoadRequest request( pageThread->retrieveRequest( rangeData._dbKey ) );
+                if( request._loadedModel != NULL )
                 {
                     //std::cout << "      Retrieved: " << std::hex << loadedModel << std::endl;
                     // Now that we know we have something in range to render, set removeExpired to true
                     // so we can remove any expired children (avoids rendering no children).
                     removeExpired = true;
-                    pageData->getParent()->setChild( childIndex, loadedModel ); // Replaces Group stub at childIndex.
+                    pageData->getParent()->setChild( request._childIndex, request._loadedModel.get() ); // Replaces Group stub at childIndex.
                     rangeData._status = PageData::RangeData::LOADED;
                 }
                 break;

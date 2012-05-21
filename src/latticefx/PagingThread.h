@@ -69,7 +69,7 @@ longer valid are removed from the parent Group and empty Group placeholders adde
 their place.
 
 Note that the Group parent of pageable children initially has no bounding volume in the
-typical case where all   children are pageable and therefore initially are all stub Group
+typical case where all children are pageable and therefore initially are all stub Group
 placeholders. In order for RootCallback to know the spatial location of the parent Group,
 the application should call setInitialBound() on the parent Group.
 
@@ -112,16 +112,19 @@ public:
     PagingThread member lists of type LoadRequestList. */
     struct LoadRequest {
         LoadRequest();
-        LoadRequest( osg::Node* location, const DBKey& dbKey );
+        LoadRequest( const unsigned int childIndex, const DBKey& dbKey );
 
         LoadRequest& operator=( const LoadRequest& rhs );
 
-        osg::ref_ptr< osg::Node > _location;
+        unsigned int _childIndex;
         DBKey _dbKey;
 
         osg::ref_ptr< osg::Node > _loadedModel;
     };
     typedef std::list< LoadRequest > LoadRequestList;
+
+    static LoadRequestList::iterator find( LoadRequestList& requestList, const DBKey& dbKey );
+    static LoadRequestList::iterator find( LoadRequestList& requestList, const unsigned int childIndex );
 
     /** \brief Request that the paging thread stop execution.
     \details Sets \c _haltRequest to true. The paging thread queries
@@ -140,30 +143,25 @@ public:
     bool getHaltRequest() const;
 
 
-    /** \brief Add a request to load data from disk.
-    \details \c location is a unique address associated with the load request.
-    Client code should use it in subsequent retrieveRequest() calls.
+    /** \brief Add multiple load requests in a single call.
+    \details Adds requests with a single call, holding the mutex only once
+    to reduce blocking.
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void addLoadRequest( osg::Node* location, const DBKey& dbKey );
-    /** \overload
-    \details Adds multiple requests with a single call, holding the mutex only once
-    to reduce blocking. */
     void addLoadRequest( const LoadRequestList& requests );
 
 
-    /* \overload Add a request to load data from disk. */
-    //void addRequest( const osg::Node* location, const int dbKey );
-
     /** \brief Attempt to retrieve the result of a load request.
-    \details If the load request associated with \c location has not yet
-    completed, retrieveRequest() returns NULL. Otherwise, retrieveRequest()
-    returns the address of the loaded subgraph.
+    \details If the load request associated with \c dbKey has not yet completed,
+    retrieveRequest() returns a default LoadRequest (with
+    LoadRequest::_loadedModel == NULL). Otherwise, retrieveRequest() returns a
+    LoadRequest matching that passed to addLoadRequest(), but with
+    LoadRequest::_loadedModel pointing to the root node of the loaded data.
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    osg::Node* retrieveRequest( const osg::Node* location );
+    LoadRequest retrieveRequest( const DBKey& dbKey );
 
     /** TBD remove when no longer needed. */
     bool debugChechReturnsEmpty();
