@@ -105,6 +105,24 @@ public:
     static PagingThread* instance();
     virtual ~PagingThread();
 
+    /** \struct LoadRequest PagingThread.h <latticefx/PagingThread.h>
+    \brief Contains data related to loading a subgraph.
+    \details Loads a subgraph using the \c dbKey and references the root
+    of the subgraph in \c _loadedModel. LoadRequest is stored in multiple
+    PagingThread member lists of type LoadRequestList. */
+    struct LoadRequest {
+        LoadRequest();
+        LoadRequest( osg::Node* location, const DBKey& dbKey );
+
+        LoadRequest& operator=( const LoadRequest& rhs );
+
+        osg::ref_ptr< osg::Node > _location;
+        DBKey _dbKey;
+
+        osg::ref_ptr< osg::Node > _loadedModel;
+    };
+    typedef std::list< LoadRequest > LoadRequestList;
+
     /** \brief Request that the paging thread stop execution.
     \details Sets \c _haltRequest to true. The paging thread queries
     the status of \c _haltRequest with getHaltRequest() and stops execution
@@ -121,6 +139,7 @@ public:
     Thread safe. */
     bool getHaltRequest() const;
 
+
     /** \brief Add a request to load data from disk.
     \details \c location is a unique address associated with the load request.
     Client code should use it in subsequent retrieveRequest() calls.
@@ -128,6 +147,11 @@ public:
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
     void addLoadRequest( osg::Node* location, const DBKey& dbKey );
+    /** \overload
+    \details Adds multiple requests with a single call, holding the mutex only once
+    to reduce blocking. */
+    void addLoadRequest( const LoadRequestList& requests );
+
 
     /* \overload Add a request to load data from disk. */
     //void addRequest( const osg::Node* location, const int dbKey );
@@ -140,6 +164,8 @@ public:
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
     osg::Node* retrieveRequest( const osg::Node* location );
+
+    /** TBD remove when no longer needed. */
     bool debugChechReturnsEmpty();
 
     /** \brief Cancel a load request.
@@ -170,18 +196,6 @@ protected:
 
     bool _haltRequest;
 
-    struct LoadRequest {
-        LoadRequest();
-        LoadRequest( osg::Node* location, const DBKey& dbKey );
-
-        LoadRequest& operator=( const LoadRequest& rhs );
-
-        osg::ref_ptr< osg::Node > _location;
-        DBKey _dbKey;
-
-        osg::ref_ptr< osg::Node > _loadedModel;
-    };
-    typedef std::list< LoadRequest > LoadRequestList;
     LoadRequestList _loadRequestList;
     LoadRequestList _completedList;
     LoadRequestList _returnList;

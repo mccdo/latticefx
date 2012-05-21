@@ -148,6 +148,10 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             validRange.second = getWrappedTime( _timeRange.second + getAnimationTime(), minTime, maxTime );
         }
 
+        // PagingThread lets us send multiple requests at once, which helps reduce
+        // locking and thread blocking.
+        PagingThread::LoadRequestList addList;
+
         // removeExpired is initially false and only set to true if we add a child.
         // This prevents us from removing expired children before the required children
         // are available, which would render nothing for a couple frames.
@@ -179,8 +183,8 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 if( inRange( validRange, childRange ) )
                 {
                     // Child state is UNLOADED, but it's in range. Add a request to the PagingThread.
-                    pageThread->addLoadRequest( pageData->getParent()->getChild( childIndex ),
-                        rangeData._dbKey );
+                    addList.push_back( PagingThread::LoadRequest(
+                        pageData->getParent()->getChild( childIndex ), rangeData._dbKey ) );
                     rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                 }
                 break;
@@ -216,6 +220,12 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             }
             }
         }
+
+        // Add all load requests with a single call.
+        if( !( addList.empty() ) )
+            pageThread->addLoadRequest( addList );
+
+        // TBD Debug code. Remove when not needed.
         pageThread->debugChechReturnsEmpty();
 
         // Remove any expired children. Do *not* remove any children with status LOADED;

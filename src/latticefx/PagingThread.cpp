@@ -66,6 +66,11 @@ void PagingThread::addLoadRequest( osg::Node* location, const DBKey& dbKey )
     boost::mutex::scoped_lock lock( _requestMutex );
     _loadRequestList.push_back( LoadRequest( location, dbKey ) );
 }
+void PagingThread::addLoadRequest( const LoadRequestList& requests )
+{
+    boost::mutex::scoped_lock lock( _requestMutex );
+    _loadRequestList.insert( _loadRequestList.end(), requests.begin(), requests.end() );
+}
 
 osg::Node* PagingThread::retrieveRequest( const osg::Node* location )
 {
