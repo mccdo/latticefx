@@ -158,6 +158,8 @@ protected:
 
     osg::ref_ptr< osg::Camera > _camera;
 
+    osg::ref_ptr< osg::Group > _stubGroup;
+
     double _animationTime;
     PageData::RangeValues _timeRange;
 

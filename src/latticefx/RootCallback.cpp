@@ -39,13 +39,15 @@ namespace lfx {
 
 
 RootCallback::RootCallback()
-  : _animationTime( 0. ),
+  : _stubGroup( new osg::Group ),
+    _animationTime( 0. ),
     _timeRange( PageData::RangeValues( -0.5, 0.5 ) )
 {
 }
 RootCallback::RootCallback( const RootCallback& rhs )
   : osg::NodeCallback( rhs ),
     _camera( rhs._camera ),
+    _stubGroup( rhs._stubGroup ),
     _animationTime( rhs._animationTime ),
     _timeRange( rhs._timeRange ),
     _pageParentList( rhs._pageParentList ),
@@ -281,7 +283,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                     if( !inRange( validRange, childRange ) )
                     {
                         // Remove this expired child by placing a Group stub in its place.
-                        pageData->getParent()->setChild( childIndex, new osg::Group );
+                        pageData->getParent()->setChild( childIndex, _stubGroup.get() );
                         rangeData._status = PageData::RangeData::UNLOADED;
                     }
                     break;

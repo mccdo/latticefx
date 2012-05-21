@@ -261,6 +261,7 @@ bool DataSet::updateRenderer()
             PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
             pageData->setRangeMode( lfx::PageData::TIME_RANGE );
             unsigned int childIndex( 0 );
+            osg::ref_ptr< osg::Group > stubGroup( new osg::Group );
 
             ChannelDataList::iterator maskIt = _maskList.begin();
             BOOST_FOREACH( double time, timeSet )
@@ -286,7 +287,7 @@ bool DataSet::updateRenderer()
                     else
                     {
                         // Add stub Group node for paging.
-                        _sceneGraph->addChild( new osg::Group );
+                        _sceneGraph->addChild( stubGroup.get() );
                     }
 
                     storeSubGraph( newChild, rangeData._dbKey );
