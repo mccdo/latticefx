@@ -164,18 +164,13 @@ public:
     bool debugChechReturnsEmpty();
 
     /** \brief Cancel a load request.
-    \details If \c location is found in any of the PagingThread's queues,
+    \details If \c dbKey is found in any of the PagingThread's queues,
     it is removed and cancelLoadRequest() returns true. Otherwise, cancelLoadRequest()
     returns false.
 
-    TBD. Possible bug: Seems plausible that the paging thread could take a request
-    off the \c _loadRequestList and start loading it. Before completion, the client code
-    could cancel the load. Then the paging thread would complete the load and add the
-    request to \c _completedList. This should be fixed.
-
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    bool cancelLoadRequest( const osg::Node* location );
+    bool cancelLoadRequest( const DBKey& dbKey );
 
     /** \brief Main loop executed by the paging thread.
     \details Obtains requests from the \c _loadRequestList, loads the data, then adds the

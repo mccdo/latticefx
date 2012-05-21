@@ -267,15 +267,13 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 {
                 case PageData::RangeData::LOAD_REQUESTED:
                 {
-                    /*
                     if( !inRange( validRange, childRange ) )
                     {
                         // Cancel request. Note there's a possible thread safety issue
                         // with this (see PagingThread::cancelLoadRequest() for more info.
-                        pageThread->cancelLoadRequest( pageData->getParent()->getChild( childIndex ) );
+                        pageThread->cancelLoadRequest( rangeData._dbKey );
                         rangeData._status = PageData::RangeData::UNLOADED;
                     }
-                    */
                     break;
                 }
                 case PageData::RangeData::ACTIVE:

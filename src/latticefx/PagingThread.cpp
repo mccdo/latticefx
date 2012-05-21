@@ -95,14 +95,33 @@ bool PagingThread::debugChechReturnsEmpty()
     return( true );
 }
 
-bool PagingThread::cancelLoadRequest( const osg::Node* location )
+bool PagingThread::cancelLoadRequest( const DBKey& dbKey )
 {
-    if( retrieveAndRemove( location, _loadRequestList, _requestMutex ) != NULL )
+    LoadRequestList::iterator it;
+    boost::mutex::scoped_lock lock( _requestMutex );
+    {
+        boost::mutex::scoped_lock lock( _completedMutex );
+        {
+            boost::mutex::scoped_lock lock( _retrieveMutex );
+            if( ( it = find( _returnList, dbKey ) ) != _returnList.end() )
+            {
+                _returnList.erase( it );
+                return( true );
+            }
+        }
+
+        if( ( it = find( _completedList, dbKey ) ) != _completedList.end() )
+        {
+            _completedList.erase( it );
+            return( true );
+        }
+    }
+
+    if( ( it = find( _loadRequestList, dbKey ) ) != _loadRequestList.end() )
+    {
+        _loadRequestList.erase( it );
         return( true );
-    else if( retrieveAndRemove( location, _completedList, _completedMutex ) != NULL )
-        return( true );
-    else if( retrieveAndRemove( location, _returnList, _retrieveMutex ) != NULL )
-        return( true );
+    }
     else
         return( false );
 }
