@@ -73,10 +73,6 @@ typical case where all children are pageable and therefore initially are all stu
 placeholders. In order for RootCallback to know the spatial location of the parent Group,
 the application should call setInitialBound() on the parent Group.
 
-Note that the empty Group placeholders must be unique and not shared. Their addresses are used
-by the RootCallback to uniquely identify the page requests sent to the PagingThread, and
-check for their load status.
-
 Work to be done (TBD):
 
 Need to implement a mechanism for intelligently deciding how many OpenGL objects to
@@ -91,8 +87,8 @@ limiting the number created per frame based on amount of data sent over the bus.
 /** \class PagingThread PagingThread.h <latticefx/PagingThread.h>
 \brief Class to manage paging thread
 \details
-PagingThread manages a boost thread that loads OSG subgraphs from disk file or
-from a database. PagingThread is a singleton so that it can oversee paging on
+PagingThread manages a boost thread that loads OSG subgraphs from
+a database. PagingThread is a singleton so that it can oversee paging on
 an application-wide basis and therefore avoid the possible bus contention that
 might occur if multiple paging threads were active.
 */
@@ -160,17 +156,13 @@ public:
     traversal. */
     LoadRequestList retrieveLoadRequests( const DBKeyList& keyList );
 
-    /** TBD remove when no longer needed. */
-    bool debugChechAvailableEmpty();
-
     /** \brief Cancel a load request.
-    \details If \c dbKey is found in any of the PagingThread's queues,
-    it is removed and cancelLoadRequest() returns true. Otherwise, cancelLoadRequest()
-    returns false.
+    \details Add a dbKey to the \c _cancelList for later processing by
+    PagingThread::processCancellations(), which is called by the page thread.
 
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    bool cancelLoadRequest( const DBKey& dbKey );
+    void cancelLoadRequest( const DBKey& dbKey );
 
     /** \brief Main loop executed by the paging thread.
     \details Obtains requests from the \c _requestList, loads the data, then adds the
@@ -181,14 +173,24 @@ public:
     void operator()();
 
 protected:
+    /** \brief Process pending canceled LoadRequests.
+    \details Iterates over all database keys stored in the _cancelList. For each each, all
+    internal lists (_requestList, _completedList, and _availableList) are searched. If a
+    LoadRequest with the matching key is found on any list, the LoadRequest is removed.
+
+    This function should be called by the page thread. _requestMutex must be locked before
+    calling this function. */
+    void processCancellations();
+
     boost::thread* _thread;
-    mutable boost::mutex _requestMutex, _completedMutex, _availableMutex;
+    mutable boost::mutex _requestMutex, _availableMutex, _cancelMutex;
 
     bool _haltRequest;
 
     LoadRequestList _requestList;
     LoadRequestList _completedList;
     LoadRequestList _availableList;
+    DBKeyList _cancelList;
 };
 
 

@@ -84,76 +84,51 @@ PagingThread::LoadRequestList PagingThread::retrieveLoadRequests( const DBKeyLis
     }
     return( returns );
 }
-bool PagingThread::debugChechAvailableEmpty()
+
+void dump( const std::string& header, const PagingThread::LoadRequestList& requests )
 {
-    boost::mutex::scoped_lock lock( _availableMutex );
-    if( _availableList.size() > 0 )
+    std::cout << header << std::endl;
+    BOOST_FOREACH( const PagingThread::LoadRequest& req, requests )
     {
-        std::cout << "debugCheckAvailableEmpty(): List size: " << _availableList.size() << " should be zero." << std::endl;
-        return( false );
+        std::cout << "\t" << req._dbKey << std::endl;
     }
-    return( true );
 }
 
-bool PagingThread::cancelLoadRequest( const DBKey& dbKey )
+void PagingThread::cancelLoadRequest( const DBKey& dbKey )
 {
-    LoadRequestList::iterator it;
-    boost::mutex::scoped_lock lock( _requestMutex );
-    {
-        boost::mutex::scoped_lock lock( _completedMutex );
-        {
-            boost::mutex::scoped_lock lock( _availableMutex );
-            if( ( it = find( _availableList, dbKey ) ) != _availableList.end() )
-            {
-                _availableList.erase( it );
-                return( true );
-            }
-        }
-
-        if( ( it = find( _completedList, dbKey ) ) != _completedList.end() )
-        {
-            _completedList.erase( it );
-            return( true );
-        }
-    }
-
-    if( ( it = find( _requestList, dbKey ) ) != _requestList.end() )
-    {
-        _requestList.erase( it );
-        return( true );
-    }
-    else
-        return( false );
+    boost::mutex::scoped_lock cancelLock( _cancelMutex );
+    _cancelList.push_back( dbKey );
 }
 
 void PagingThread::operator()()
 {
     while( !getHaltRequest() )
     {
+        LoadRequest request;
         bool requestAvailable;
         {
-            boost::mutex::scoped_lock( _requestMutex );
+            boost::mutex::scoped_lock requestLock( _requestMutex );
             //std::cout << "__thread " << _requestList.size() << " " << _completedList.size() <<
             //    " " << _availableList.size() << std::endl;
-            requestAvailable = !( _requestList.empty() );
-        }
 
-        if( requestAvailable )
-        {
-            LoadRequest request;
+            // Process cancellations stored on the _cancelList. Must hold _requestMutex
+            // before calling this function.
+            processCancellations();
+
+            requestAvailable = !( _requestList.empty() );
+            if( requestAvailable )
             {
-                boost::mutex::scoped_lock( _requestMutex );
                 request = *( _requestList.begin() );
                 _requestList.pop_front();
                 //std::cout << "____Got a request for " << request._dbKey << std::endl;
             }
+        }
 
+        if( requestAvailable )
+        {
             request._loadedModel = loadSubGraph( request._dbKey );
             //std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
-            {
-                boost::mutex::scoped_lock completedLock( _completedMutex );
-                _completedList.push_back( request );
-            }
+            _completedList.push_back( request );
         }
         else
         {
@@ -165,27 +140,53 @@ void PagingThread::operator()()
         // this will throttle how many OpenGL objects get created per frame.
         int numReturnsAvailable;
         {
-            boost::mutex::scoped_lock lock( _availableMutex );
+            boost::mutex::scoped_lock availableLock( _availableMutex );
             numReturnsAvailable = 16 - (int)( _availableList.size() );
         }
         if( numReturnsAvailable > 0 )
         {
             LoadRequestList tempList;
+            while( ( --numReturnsAvailable >= 0 ) && ( !( _completedList.empty() ) ) )
             {
-                boost::mutex::scoped_lock lock( _completedMutex );
-                while( ( --numReturnsAvailable >= 0 ) && ( !( _completedList.empty() ) ) )
-                {
-                    tempList.push_back( *( _completedList.begin() ) );
-                    _completedList.pop_front();
-                }
+                tempList.push_back( *( _completedList.begin() ) );
+                _completedList.pop_front();
             }
             if( tempList.size() > 0 )
             {
-                boost::mutex::scoped_lock lock( _availableMutex );
+                boost::mutex::scoped_lock availableLock( _availableMutex );
                 _availableList.insert( _availableList.end(), tempList.begin(), tempList.end() );
             }
         }
     }
+}
+
+void PagingThread::processCancellations()
+{
+    boost::mutex::scoped_lock cancelLock( _cancelMutex );
+    if( _cancelList.empty() )
+        return;
+
+    // Calling code must lock the _requestMutex.
+    //boost::mutex::scoped_lock requestLock( _requestMutex );
+
+    boost::mutex::scoped_lock availableLock( _availableMutex );
+
+    BOOST_FOREACH( const DBKey& dbKey, _cancelList )
+    {
+        LoadRequestList::iterator it;
+        if( ( it = find( _requestList, dbKey ) ) != _requestList.end() )
+            _requestList.erase( it );
+        else if( ( it = find( _completedList, dbKey ) ) != _completedList.end() )
+            _completedList.erase( it );
+        else if( ( it = find( _availableList, dbKey ) ) != _availableList.end() )
+            _availableList.erase( it );
+        else
+            // Couldn't find the specified dbKey. This is an error. It means the client code
+            // requested cancellation for a LoadRequest that the PagingThread doesn't posess.
+            std::cout << "PagingThread::processCancellations(): Couldn't cancel \"" << dbKey << std::endl;
+    }
+
+    _cancelList.clear();
 }
 
 

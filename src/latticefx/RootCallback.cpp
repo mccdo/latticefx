@@ -242,9 +242,6 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             }
         }
 
-        // TBD Debug code. Remove when not needed.
-        pageThread->debugChechAvailableEmpty();
-
         // Remove any expired children. Do *not* remove any children with status LOADED;
         // these are the children we just added! Instead, set their status to ACTIVE.
         if( removeExpired )
