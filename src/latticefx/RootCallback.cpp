@@ -211,7 +211,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         // Add all load requests with a single call.
         if( !( addList.empty() ) )
         {
-            pageThread->addLoadRequest( addList );
+            pageThread->addLoadRequests( addList );
         }
 
         // If we have requested loads, see if they are available, and if so,
@@ -246,6 +246,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         // these are the children we just added! Instead, set their status to ACTIVE.
         if( removeExpired )
         {
+            DBKeyList cancelList;
             BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
             {
                 const unsigned int childIndex( rangeDataPair.first );
@@ -268,9 +269,8 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 {
                     if( !inRange( validRange, childRange ) )
                     {
-                        // Cancel request. Note there's a possible thread safety issue
-                        // with this (see PagingThread::cancelLoadRequest() for more info.
-                        pageThread->cancelLoadRequest( rangeData._dbKey );
+                        // Cancel request. Add to cancel list to batch-cancel multiple requests.
+                        cancelList.push_back( rangeData._dbKey );
                         rangeData._status = PageData::RangeData::UNLOADED;
                     }
                     break;
@@ -294,6 +294,12 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                     rangeData._status = PageData::RangeData::ACTIVE;
                 }
                 }
+            }
+
+            // Submit all cancellation requests with a single function call.
+            if( !( cancelList.empty() ) )
+            {
+                pageThread->cancelLoadRequests( cancelList );
             }
         }
     }

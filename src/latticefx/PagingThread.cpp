@@ -62,7 +62,7 @@ bool PagingThread::getHaltRequest() const
     return( _haltRequest );
 }
 
-void PagingThread::addLoadRequest( const LoadRequestList& requests )
+void PagingThread::addLoadRequests( const LoadRequestList& requests )
 {
     boost::mutex::scoped_lock lock( _requestMutex );
     _requestList.insert( _requestList.end(), requests.begin(), requests.end() );
@@ -94,10 +94,11 @@ void dump( const std::string& header, const PagingThread::LoadRequestList& reque
     }
 }
 
-void PagingThread::cancelLoadRequest( const DBKey& dbKey )
+void PagingThread::cancelLoadRequests( const DBKeyList& cancelList )
 {
     boost::mutex::scoped_lock cancelLock( _cancelMutex );
-    _cancelList.push_back( dbKey );
+    std::cout << cancelList.size() << std::endl;
+    _cancelList.insert( _cancelList.end(), cancelList.begin(), cancelList.end() );
 }
 
 void PagingThread::operator()()

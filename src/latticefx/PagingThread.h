@@ -62,7 +62,7 @@ pageable child. The app must add empty Group nodes as placeholders for each page
 
 During update, the RootCallback iterates over all PageData objects and checks child
 PageData::RangeData to see if an unloaded child needs to be loaded. If so, it calls
-PagingThread::addLoadRequest(). This causes the PagingThread to load the child and eventually
+PagingThread::addLoadRequests(). This causes the PagingThread to load the child and eventually
 return it. When the RootCallback detects that the load is complete, it adds the loaded
 child in place of the empty Group node placeholder. At that time, any children that are no
 longer valid are removed from the parent Group and empty Group placeholders added back in
@@ -145,7 +145,7 @@ public:
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void addLoadRequest( const LoadRequestList& requests );
+    void addLoadRequests( const LoadRequestList& requests );
 
 
     /** \brief Attempt to retrieve the results of previous load requests.
@@ -156,13 +156,13 @@ public:
     traversal. */
     LoadRequestList retrieveLoadRequests( const DBKeyList& keyList );
 
-    /** \brief Cancel a load request.
-    \details Add a dbKey to the \c _cancelList for later processing by
-    PagingThread::processCancellations(), which is called by the page thread.
+    /** \brief Cancel multiple load requests in a single call.
+    \details Adds all dbKey values in  \c cancelList to the internal \c _cancelList for
+    later processing by PagingThread::processCancellations(), which is called by the page thread.
 
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void cancelLoadRequest( const DBKey& dbKey );
+    void cancelLoadRequests( const DBKeyList& cancelList );
 
     /** \brief Main loop executed by the paging thread.
     \details Obtains requests from the \c _requestList, loads the data, then adds the
