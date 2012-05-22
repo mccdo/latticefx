@@ -161,7 +161,7 @@ public:
     LoadRequestList retrieveLoadRequests( const DBKeyList& keyList );
 
     /** TBD remove when no longer needed. */
-    bool debugChechReturnsEmpty();
+    bool debugChechAvailableEmpty();
 
     /** \brief Cancel a load request.
     \details If \c dbKey is found in any of the PagingThread's queues,
@@ -173,26 +173,22 @@ public:
     bool cancelLoadRequest( const DBKey& dbKey );
 
     /** \brief Main loop executed by the paging thread.
-    \details Obtains requests from the \c _loadRequestList, loads the data, then adds the
+    \details Obtains requests from the \c _requestList, loads the data, then adds the
     loaded data to the \c _completedList. In the current implementation, this function also
-    moves requests from \c _completedList to \c _returnList once per loop iteration. Once on the
-    \c _returnList, client code can retrieve the request. If there are no requests in the
-    \c _loadRequestList, the paging thread sleep for 16 milliseconds. */
+    moves requests from \c _completedList to \c _availableList once per loop iteration. Once on the
+    \c _availableList, client code can retrieve the request. If there are no requests in the
+    \c _requestList, the paging thread sleep for 16 milliseconds. */
     void operator()();
 
 protected:
     boost::thread* _thread;
-    mutable boost::mutex _requestMutex, _completedMutex, _retrieveMutex;
+    mutable boost::mutex _requestMutex, _completedMutex, _availableMutex;
 
     bool _haltRequest;
 
-    LoadRequestList _loadRequestList;
+    LoadRequestList _requestList;
     LoadRequestList _completedList;
-    LoadRequestList _returnList;
-
-
-    static osg::Node* retrieveAndRemove( const osg::Node* location, LoadRequestList& theList,
-            boost::mutex& theMutex );
+    LoadRequestList _availableList;
 };
 
 

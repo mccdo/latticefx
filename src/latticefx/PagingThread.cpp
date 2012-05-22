@@ -65,31 +65,31 @@ bool PagingThread::getHaltRequest() const
 void PagingThread::addLoadRequest( const LoadRequestList& requests )
 {
     boost::mutex::scoped_lock lock( _requestMutex );
-    _loadRequestList.insert( _loadRequestList.end(), requests.begin(), requests.end() );
+    _requestList.insert( _requestList.end(), requests.begin(), requests.end() );
 }
 
 PagingThread::LoadRequestList PagingThread::retrieveLoadRequests( const DBKeyList& keyList )
 {
-    boost::mutex::scoped_lock lock( _retrieveMutex );
+    boost::mutex::scoped_lock lock( _availableMutex );
 
     LoadRequestList returns;
     BOOST_FOREACH( const DBKey& key, keyList )
     {
-        LoadRequestList::iterator it( find( _returnList, key ) );
-        if( it != _returnList.end() )
+        LoadRequestList::iterator it( find( _availableList, key ) );
+        if( it != _availableList.end() )
         {
             returns.push_back( *it );
-            _returnList.erase( it );
+            _availableList.erase( it );
         }
     }
     return( returns );
 }
-bool PagingThread::debugChechReturnsEmpty()
+bool PagingThread::debugChechAvailableEmpty()
 {
-    boost::mutex::scoped_lock lock( _retrieveMutex );
-    if( _returnList.size() > 0 )
+    boost::mutex::scoped_lock lock( _availableMutex );
+    if( _availableList.size() > 0 )
     {
-        std::cout << "debugCheckReturnsEmpty(): List size: " << _returnList.size() << " should be zero." << std::endl;
+        std::cout << "debugCheckAvailableEmpty(): List size: " << _availableList.size() << " should be zero." << std::endl;
         return( false );
     }
     return( true );
@@ -102,10 +102,10 @@ bool PagingThread::cancelLoadRequest( const DBKey& dbKey )
     {
         boost::mutex::scoped_lock lock( _completedMutex );
         {
-            boost::mutex::scoped_lock lock( _retrieveMutex );
-            if( ( it = find( _returnList, dbKey ) ) != _returnList.end() )
+            boost::mutex::scoped_lock lock( _availableMutex );
+            if( ( it = find( _availableList, dbKey ) ) != _availableList.end() )
             {
-                _returnList.erase( it );
+                _availableList.erase( it );
                 return( true );
             }
         }
@@ -117,9 +117,9 @@ bool PagingThread::cancelLoadRequest( const DBKey& dbKey )
         }
     }
 
-    if( ( it = find( _loadRequestList, dbKey ) ) != _loadRequestList.end() )
+    if( ( it = find( _requestList, dbKey ) ) != _requestList.end() )
     {
-        _loadRequestList.erase( it );
+        _requestList.erase( it );
         return( true );
     }
     else
@@ -133,9 +133,9 @@ void PagingThread::operator()()
         bool requestAvailable;
         {
             boost::mutex::scoped_lock( _requestMutex );
-            //std::cout << "__thread " << _loadRequestList.size() << " " << _completedList.size() <<
-            //    " " << _returnList.size() << std::endl;
-            requestAvailable = !( _loadRequestList.empty() );
+            //std::cout << "__thread " << _requestList.size() << " " << _completedList.size() <<
+            //    " " << _availableList.size() << std::endl;
+            requestAvailable = !( _requestList.empty() );
         }
 
         if( requestAvailable )
@@ -143,8 +143,8 @@ void PagingThread::operator()()
             LoadRequest request;
             {
                 boost::mutex::scoped_lock( _requestMutex );
-                request = *( _loadRequestList.begin() );
-                _loadRequestList.pop_front();
+                request = *( _requestList.begin() );
+                _requestList.pop_front();
                 //std::cout << "____Got a request for " << request._dbKey << std::endl;
             }
 
@@ -165,8 +165,8 @@ void PagingThread::operator()()
         // this will throttle how many OpenGL objects get created per frame.
         int numReturnsAvailable;
         {
-            boost::mutex::scoped_lock lock( _retrieveMutex );
-            numReturnsAvailable = 16 - (int)( _returnList.size() );
+            boost::mutex::scoped_lock lock( _availableMutex );
+            numReturnsAvailable = 16 - (int)( _availableList.size() );
         }
         if( numReturnsAvailable > 0 )
         {
@@ -181,32 +181,12 @@ void PagingThread::operator()()
             }
             if( tempList.size() > 0 )
             {
-                boost::mutex::scoped_lock lock( _retrieveMutex );
-                _returnList.insert( _returnList.end(), tempList.begin(), tempList.end() );
+                boost::mutex::scoped_lock lock( _availableMutex );
+                _availableList.insert( _availableList.end(), tempList.begin(), tempList.end() );
             }
         }
     }
 }
-
-
-osg::Node* PagingThread::retrieveAndRemove( const osg::Node* location,
-        LoadRequestList& theList, boost::mutex& theMutex )
-{
-    boost::mutex::scoped_lock lock( theMutex );
-
-    LoadRequestList::iterator it;
-    for( it = theList.begin(); it != theList.end(); ++it )
-    {
-        if( false )
-        {
-            osg::ref_ptr< osg::Node > returnValue = it->_loadedModel;
-            theList.erase( it );
-            return( returnValue.release() );
-        }
-    }
-    return( NULL );
-}
-
 
 
 
