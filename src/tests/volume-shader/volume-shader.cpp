@@ -188,7 +188,7 @@ int main( int argc, char **argv )
 	// DL off and buffer objects on.
 	geom->setUseDisplayList( false );
 	geom->setUseVertexBufferObjects( true );
-	// OSG has no clue where out vertex shader will place the geometric data,
+	// OSG has no clue where our vertex shader will place the geometric data,
 	// so specify an initial bound to allow proper culling and near/far computation.
 	osg::BoundingBox bb( -60., -.60, -60., 60., 60., 60. );
 	geom->setInitialBound( bb );
