@@ -136,7 +136,7 @@ public:
 
     /** \brief Override base class lfx::Renderer.
     \details Invoked by DataSet to obtain a root node StateSet globally applicable to
-    all scene graphs creaTED BY getSceneGraph. Helps avoid redundant state setting. */
+    all scene graphs created by getSceneGraph. Helps avoid redundant state setting. */
     virtual osg::StateSet* getRootState();
 
 
