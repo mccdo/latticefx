@@ -18,10 +18,10 @@
 * Boston, MA 02111-1307, USA.
 *
 * -----------------------------------------------------------------
-* Date modified: $ $
-* Version:       $ $
-* Author:        $ $
-* Id:            $ $
+* Date modified: $Date$
+* Version:       $Rev$
+* Author:        $Author$
+* Id:            $Id$
 * -----------------------------------------------------------------
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
