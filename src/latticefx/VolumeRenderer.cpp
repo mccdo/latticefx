@@ -30,11 +30,14 @@
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/TextureUtils.h>
 
+#include <osgDB/ReadFile>
+
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/Texture1D>
 #include <osg/Texture2D>
 #include <osg/Texture3D>
+#include <osg/BlendFunc>
 #include <osg/Shader>
 #include <osg/Program>
 #include <osg/Uniform>
@@ -106,13 +109,37 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 	geom->setUseVertexBufferObjects( true );
 	// OSG has no clue where our vertex shader will place the geometric data,
 	// so specify an initial bound to allow proper culling and near/far computation.
-	osg::BoundingBox bb( osg::Vec3(VOLUME_DIMS) * -1.0, osg::Vec3(VOLUME_DIMS) ); // <<<>>> set from actual data range
+	osg::BoundingBox bb( osg::Vec3(VOLUME_DIMS) * -.5, osg::Vec3(VOLUME_DIMS) * .5 ); // <<<>>> set from actual data range
 	geom->setInitialBound( bb );
 	// Add geometric data and the PrimitiveSet. Specify numInstances as MAX_SLICES.
 	createDAIGeometry( *geom, MAX_SLICES );
 	geode->addDrawable( geom );
 
 	osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+
+
+    osg::Texture3D* volumeTexture = new osg::Texture3D(
+        osgDB::readImageFile( "HeadVolume.dds" ) );
+	volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
+	volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
+	volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE);
+	volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE);
+	volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE);
+    stateSet->setTextureAttributeAndModes(
+        getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
+
+	osg::Texture2D* transferTexture = new osg::Texture2D(
+        osgDB::readImageFile( "Spectrum.png" ) );
+	transferTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
+	transferTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
+	transferTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE);
+	transferTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE);
+
+    const unsigned int transTexUnit( getOrAssignTextureUnit( "transferHackTBD" ) );
+    stateSet->setTextureAttributeAndModes( transTexUnit, transferTexture );
+
+	osg::Uniform* transUni( new osg::Uniform( osg::Uniform::SAMPLER_2D, "TransferFunction" ) ); transUni->set( (int)transTexUnit );
+	stateSet->addUniform( transUni );
 
 
 	return( geode.release() );
@@ -138,8 +165,20 @@ osg::StateSet* VolumeRenderer::getRootState()
 	}
 
 	// <<<>>> need to setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing
+    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3( VOLUME_DIMS ) ) );
+    stateSet->addUniform( dimsUni );
+    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3( 0., 0., 0. ) ) );
+    stateSet->addUniform( centerUni );
+    osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", PLANE_SPACING ) );
+    stateSet->addUniform( spaceUni );
 
-	// Set base class transfer function and volume texture uniforms.
+	osg::BlendFunc *fn = new osg::BlendFunc();
+	fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
+	stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
+
+    stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+
+    // Set base class transfer function and volume texture uniforms.
 	addHardwareFeatureUniforms( stateSet.get() );
 
 	osg::Program* program = new osg::Program();
