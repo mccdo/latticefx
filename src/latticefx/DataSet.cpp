@@ -204,8 +204,19 @@ bool DataSet::updateRunTimeProcessing()
     // Create a new list of masks (one for each time step).
     _maskList.clear();
 
-    // Iterate over all time steps.
     TimeSet timeSet( getTimeSet() );
+    if( timeSet.empty() )
+    {
+        // Not the typical case.
+        osg::ByteArray* osgMask( new osg::ByteArray );
+        osgMask->resize( 1 );
+        ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
+        mask->setAll( (char)1 );
+        _maskList.push_back( mask );
+        return( true );
+    }
+
+    // Iterate over all time steps.
     BOOST_FOREACH( double time, timeSet )
     {
         // Get the data at the current time.
@@ -302,7 +313,7 @@ bool DataSet::updateRenderer()
             setInputs( _renderer, currentData );
 
             ChannelDataList::iterator maskIt = _maskList.begin();
-            const double time( *( timeSet.begin() ) );
+            const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
             osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
             if( newChild != NULL )
                 _sceneGraph->addChild( newChild );
