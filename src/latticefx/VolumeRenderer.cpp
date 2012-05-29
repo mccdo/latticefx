@@ -28,6 +28,7 @@
 
 #include <latticefx/VolumeRenderer.h>
 #include <latticefx/ChannelDataOSGArray.h>
+#include <latticefx/ChannelDataOSGImage.h>
 #include <latticefx/TextureUtils.h>
 
 #include <osgDB/ReadFile>
@@ -115,11 +116,20 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 	createDAIGeometry( *geom, MAX_SLICES );
 	geode->addDrawable( geom );
 
+
 	osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
+    ChannelDataPtr dataPtr( getInput( "volumedata" ) );
+    if( dataPtr == NULL )
+    {
+        OSG_WARN << "VolumeRenderer::getSceneGraph(): Unable to find required volumedata ChannelData." << std::endl;
+        return( NULL );
+    }
+    ChannelDataOSGImage* dataImagePtr( static_cast<
+        ChannelDataOSGImage* >( dataPtr.get() ) );
+    osg::Image* volumeImage( dataImagePtr->getImage() );
 
-    osg::Texture3D* volumeTexture = new osg::Texture3D(
-        osgDB::readImageFile( "HeadVolume.dds" ) );
+    osg::Texture3D* volumeTexture = new osg::Texture3D( volumeImage );
 	volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
 	volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
 	volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE);
@@ -127,6 +137,8 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 	volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE);
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
+    stateSet->setTextureAttributeAndModes(
+        getOrAssignTextureUnit( "tfInput" ), volumeTexture );
 
 	osg::Texture2D* transferTexture = new osg::Texture2D(
         osgDB::readImageFile( "Spectrum.png" ) );

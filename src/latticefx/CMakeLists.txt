@@ -12,6 +12,7 @@ set( _headerFiles
     ChannelData.h
     ChannelDataComposite.h
     ChannelDataOSGArray.h
+    ChannelDataOSGImage.h
     DataSet.h
     DBUtils.h
     OperationBase.h
@@ -34,6 +35,7 @@ set( _sourceFiles
     ChannelData.cpp
     ChannelDataComposite.cpp
     ChannelDataOSGArray.cpp
+    ChannelDataOSGImage.cpp
     DataSet.cpp
     DBUtils.cpp
     OperationBase.cpp

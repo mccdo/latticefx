@@ -28,7 +28,10 @@
 
 #include <latticefx/DataSet.h>
 #include <latticefx/VolumeRenderer.h>
+#include <latticefx/ChannelDataOSGImage.h>
+#include <latticefx/TransferFunctionUtils.h>
 
+#include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
@@ -38,11 +41,31 @@
 
 
 
-lfx::DataSetPtr prepareVolume()
+lfx::DataSetPtr prepareVolume( const std::string& fileName )
 {
+    osg::Image* image( osgDB::readImageFile( fileName ) );
+    if( image == NULL )
+    {
+        OSG_FATAL << "Can't read image from file \"" << fileName << "\"." << std::endl;
+        return( lfx::DataSetPtr( ( lfx::DataSet* )NULL ) );
+    }
+
+    lfx::ChannelDataOSGImagePtr volumeData( new lfx::ChannelDataOSGImage( "volumedata", image ) );
+
     lfx::DataSetPtr dsp( new lfx::DataSet() );
+    dsp->addChannel( volumeData );
+
     lfx::VolumeRendererPtr renderOp( new lfx::VolumeRenderer() );
+    renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
+
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "02.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
+    renderOp->setTransferFunctionInput( "" );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_ALPHA );
+
+    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_ALPHA );
+    renderOp->setHardwareMaskReference( 0. );
+    renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_GT );
 
     return( dsp );
 }
@@ -52,9 +75,12 @@ int main( int argc, char** argv )
 {
     osg::ArgumentParser arguments( &argc, argv );
 
+    std::string fileName( "HeadVolume.dds" );
+    arguments.read( "-f", fileName );
+
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    lfx::DataSetPtr dsp( prepareVolume() );
+    lfx::DataSetPtr dsp( prepareVolume( fileName ) );
     root->addChild( dsp->getSceneData() );
 
     /*
