@@ -52,19 +52,31 @@ namespace lfx {
 /** \def LFX_TEXUTILS_USE_PO2
 \brief Force texture dimensions to be powers of 2.
 \details Control flag for computeTexture3DDimensions(). */
-/** \def LFX_TEXUTILS_ALLOW_NONUNIFORM
+/** \def LFX_TEXUTILS_FORCE_UNIFORM
 \brief Force texture dimensions to be uniform in s, t, and p.
 \details Control flag for computeTexture3DDimensions(). */
 #define LFX_TEXUTILS_USE_PO2        ( 0x1 << 0 )
 #define LFX_TEXUTILS_FORCE_UNIFORM  ( 0x1 << 1 )
     
 /** \brief Computes optimal  dimensions for a Texture3D
-\details
-*/
+\details Useful for instanced rendering of \c numElements instances. Returns a Vec3
+of dimensions for a texture large enough to hold \c numElements elements.
+
+By default, the xyz return values are not necessarily powers of two, nor are they
+necessarily uniform (equal to each other). However, these conditions can be forced
+using the \c flags parameter.
+
+It is assumed that shader code will convert the gl_InstanceIDARB into a texture
+coordinate that will index into a texture with these dimensions. See
+data/lfx-pointsphere.vs for code that does this. */
 LATTICEFX_EXPORT osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags=0 );
 
 /** \brief Create a Texture3D from ChannelData for instanced rendering.
-\details EBD */
+\details Currently, \c source must be a ChannelDataOSGArray.
+
+This function creates a new Texture3D with dimensions computed by
+computeTexture3DDimensions(). Texture data is taken from \c source. It is expected
+that the texture will be used for instanced rendering. */
 LATTICEFX_EXPORT osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source );
 
 
