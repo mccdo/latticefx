@@ -51,6 +51,12 @@ public:
         return( new ReduceLOD );
     }
 
+    virtual ReturnCode operator()( lfx::ChannelDataPtr& newData )
+    {
+        newData = lfx::ChannelDataPtr( (lfx::ChannelData*)NULL );
+        return( lfx::Preprocess::IGNORE_DATA );
+    }
+
 protected:
 };
 

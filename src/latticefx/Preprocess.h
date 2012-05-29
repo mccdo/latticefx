@@ -32,6 +32,7 @@
 
 #include <latticefx/Export.h>
 #include <latticefx/OperationBase.h>
+#include <latticefx/ChannelData.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
@@ -52,6 +53,31 @@ public:
     Preprocess();
     Preprocess( const Preprocess& rhs );
     virtual ~Preprocess();
+
+    /** \brief Indicates how DataSet should handle the newly created ChannelData.
+    \details The operator() function optionally creates a new ChannelData of preprocessed data.
+    The ReturnCode indicates how DataSet should handle the newly created data.
+    \li ADD_DATA Add the new ChannelData to the DataSet.
+    \li REPLACE_DATA Replace the Preprocess input with the new ChannelData. If the Preprocess has
+    multiple inputs, the first input is replaced. Useful when creating a ChannelDataComposite.
+    \li IGNORE_DATA Ignore the new ChannelData. This is useful if the Preprocess is simply storing
+    the new data into the DB. */
+    typedef enum {
+        ADD_DATA,
+        REPLACE_DATA,
+        IGNORE_DATA
+    } ReturnCode;
+
+    /** \brief Create and return a new ChannelData from inputs.
+    \details The ReturnCode specifies how the owning DataSet should handle \c newData:
+    add it to the DataSet, replace the first input with \c newData, or ignore
+    \c newData. (IGNORE_DATA is useful if this function stores the data, in the DB for
+    example.) */
+    virtual ReturnCode operator()( ChannelDataPtr& newData )
+    {
+        newData = lfx::ChannelDataPtr( (lfx::ChannelData*)NULL );
+        return( lfx::Preprocess::IGNORE_DATA );
+    }
 
 protected:
 };

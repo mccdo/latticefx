@@ -68,6 +68,26 @@ ChannelDataPtr findChannelData( const std::string& name, const ChannelDataList& 
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
+void replaceChannelData( const ChannelDataPtr channel, ChannelDataList& dataList )
+{
+    const std::string name( channel->getName() );
+
+    size_t index( 0 );
+    while( index < dataList.size() )
+    {
+        if( dataList[ index ]->getName() == name )
+        {
+            dataList[ index ] = channel;
+            return;
+        }
+        ++index;
+    }
+
+    // If we get this far, we never found a ChannelData with the same name,
+    // so just tack the input onto the end of the list.
+    dataList.push_back( channel );
+}
+
 
 // lfx
 }

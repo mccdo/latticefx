@@ -90,11 +90,17 @@ public:
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
     void addChannel( const ChannelDataPtr channel, const double time=0. );
 
+    /** \brief Replaces a ChannelData with the same name as \c channel.
+    \details If no ChannelData can be found with the same name as \c channel, this function
+    behaves the same as addChannel. */
+    void replaceChannel( const ChannelDataPtr channel, const double time=0. );
+
     /** \brief Get a named channel for a specific time value \c time.
     \returns NULL if the named channel doesn't exist at the specified time. */
     ChannelDataPtr getChannel( const std::string& name, const double time=0. );
     /** \overload ChannelDataPtr getChannel(const std::string&,const double) */
     const ChannelDataPtr getChannel( const std::string& name, const double time=0. ) const;
+
 
 
     /** \brief Returns the min and max time extents of all attached data. */
@@ -106,6 +112,11 @@ public:
 
     /** \name Preprocessing & Caching section
     \details TBD */
+    ///\{
+    /** \brief TBD
+    \details TBD */
+    void addPreprocess( const PreprocessPtr pre );
+    ///\}
 
 
     /** \name Run-Time Operations Section

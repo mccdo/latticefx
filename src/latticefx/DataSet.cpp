@@ -73,6 +73,21 @@ void DataSet::addChannel( const ChannelDataPtr channel, const double time )
     _dataNames.insert( channel->getName() );
     setDirty( ALL_DIRTY );
 }
+void DataSet::replaceChannel( const ChannelDataPtr channel, const double time )
+{
+    ChannelDataTimeMap::iterator cdlIt( _data.find( time ) );
+    if( cdlIt == _data.end() )
+    {
+        // No data for this time at all. Just add 'channel' at this 'time'.
+        addChannel( channel, time );
+        return;
+    }
+    // Found a ChannelDataList for the specified 'time'. Now replace any
+    // existing ChannelData with 'channel' (or append 'channel' to the end).
+    replaceChannelData( channel, cdlIt->second );
+    setDirty( ALL_DIRTY );
+}
+
 ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
 {
     ChannelDataPtr cdp;
@@ -123,6 +138,14 @@ void DataSet::getTimeRange( double& minTime, double& maxTime ) const
     }
     minTime = *( timeSet.begin() );
     maxTime = *( timeSet.rbegin() );
+}
+
+
+
+void DataSet::addPreprocess( const PreprocessPtr pre )
+{
+    _preprocess.push_back( pre );
+    setDirty( PREPROCESS_DIRTY );
 }
 
 
@@ -196,7 +219,43 @@ bool DataSet::updateSceneGraph()
 
 bool DataSet::updatePreprocessing()
 {
-    // Not yet implemented.
+    TimeSet timeSet( getTimeSet() );
+    if( timeSet.empty() )
+        return( true );
+
+    // Iterate over all time steps.
+    BOOST_FOREACH( double time, timeSet )
+    {
+        // Get the data at the current time.
+        ChannelDataList currentData( getDataAtTime( time ) );
+
+        // Iterate over all attached preprocessing & caching objects.
+        BOOST_FOREACH( PreprocessPtr prePtr, _preprocess )
+        {
+            if( !( prePtr->getEnable() ) )
+                continue;
+
+            // Assign actual / current data to the prePtr OperationBase.
+            setInputs( prePtr, currentData );
+
+            ChannelDataPtr newData;
+            Preprocess::ReturnCode returnCode( (*prePtr)( newData ) );
+            switch( returnCode )
+            {
+            case Preprocess::ADD_DATA:
+                addChannel( newData, time );
+                break;
+            case Preprocess::REPLACE_DATA:
+                replaceChannel( newData, time );
+                break;
+            default:
+            case Preprocess::IGNORE_DATA:
+                // No-op. Do nothing.
+                break;
+            }
+        }
+    }
+
     return( true );
 }
 bool DataSet::updateRunTimeProcessing()
