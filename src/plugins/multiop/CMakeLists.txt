@@ -1,4 +1,7 @@
-_addLibrary( Plugin multiop
+# Required for ModuleInstall.cmake
+set( _libName multiop )
+
+_addLibrary( Plugin ${_libName}
     multiop.cpp
     LATTICEFX_LIBRARIES
         latticefx
