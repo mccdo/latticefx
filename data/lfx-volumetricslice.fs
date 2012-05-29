@@ -1,3 +1,6 @@
+#version 120
+
+
 //uniform vec4 fvAmbient;
 //uniform vec4 fvSpecular;
 //uniform vec4 fvDiffuse;

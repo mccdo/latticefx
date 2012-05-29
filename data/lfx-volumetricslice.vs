@@ -1,3 +1,8 @@
+#version 120
+
+#extension GL_ARB_draw_instanced : require
+
+
 //uniform vec3 fvLightPosition;
 //uniform vec3 fvEyePosition;
 //uniform vec4 vViewPosition;
@@ -135,7 +140,7 @@ void main( void )
    vec4 mvFarthestVertex;
    
    // below lines un-needed
-   //TexSample = 1.0 - (TexStart + TexSpacing * gl_InstanceID);
+   //TexSample = 1.0 - (TexStart + TexSpacing * gl_InstanceIDARB);
    //Texcoord    = gl_MultiTexCoord0.xyz;
 
    float cubeDiagonal = getCubeDiagonalLength() * .5;
@@ -144,7 +149,7 @@ void main( void )
    float nearVertMinDist = findNearestCubeVertexDist(mvNearestVertex);
    if (farVertDist > 0.0)
    {
-      float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceID;
+      float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
       if (curQuadDist > nearVertMinDist && curQuadDist > 0.0)
       {
          // All work to be done in view space
