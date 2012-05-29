@@ -124,6 +124,25 @@ macro( _addLibrary _category _libName )
     include( ModuleInstall REQUIRED )
 endmacro()
 
+# Supports LatticeFX plugin INI files, which must reside in the
+# same directory as the plugin shared libraries / DLLs. This means
+# they must be installed into the bin directory, but also they
+# must be copied into the CMake output build tree per config type.
+#
+macro( _addPluginINI _iniName )
+    # Copy .ini file to development bin directories.
+    # NOTE this is done during CMake config.
+    foreach( _configDir ${CMAKE_CONFIGURATION_TYPES} )
+        configure_file( ${_iniName}
+            ${PROJECT_BINARY_DIR}/bin/${_configDir}/${_iniName} COPYONLY )
+    endforeach()
+
+    # Install .ini file to bin directory.
+    install( FILES ${_iniName}
+        DESTINATION bin
+        COMPONENT latticefx-dev
+    )
+endmacro()
 
 # Usage:
 #   _addExecutable( <category> <executableName>
