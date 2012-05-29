@@ -44,32 +44,11 @@
 #include <osg/Uniform>
 #include <osgDB/FileUtils>
 
-
-// temporary, during integration
-
-
-///How many slices, maximum
-#define MAX_SLICES	1024
-
-// How far apart the slices will be, in world-units
-#define PLANE_SPACING 0.3f
-
-// size in world-units of the volume box
-#define VOLUME_DIMS 60.0f, 60.0f, 30.0f
-
-// location in world-units of the center of the volume
-#define VOLUME_ORIGIN 0.0f, 0.0f, -0.0f
-
-/// Texture unit for volume data
-#define TEXUNIT_VOL                 4
-/// Texture unit for transfer function
-#define TEXUNIT_XFR                 5
-
-
 namespace lfx {
 
 
 VolumeRenderer::VolumeRenderer()
+  : _maxSlices(1024), _planeSpacing(0.3f), _volumeDims(60.0f, 60.0f, 30.0f), _volumeOrigin(0.0f, 0.0f, 0.0f)
 {
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
@@ -110,10 +89,10 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 	geom->setUseVertexBufferObjects( true );
 	// OSG has no clue where our vertex shader will place the geometric data,
 	// so specify an initial bound to allow proper culling and near/far computation.
-	osg::BoundingBox bb( osg::Vec3(VOLUME_DIMS) * -.5, osg::Vec3(VOLUME_DIMS) * .5 ); // <<<>>> set from actual data range
+	osg::BoundingBox bb( _volumeDims * -.5, _volumeDims * .5 ); // <<<>>> incorporate origin
 	geom->setInitialBound( bb );
-	// Add geometric data and the PrimitiveSet. Specify numInstances as MAX_SLICES.
-	createDAIGeometry( *geom, MAX_SLICES );
+	// Add geometric data and the PrimitiveSet. Specify numInstances as _maxSlices.
+	createDAIGeometry( *geom, _maxSlices );
 	geode->addDrawable( geom );
 
 
@@ -177,11 +156,11 @@ osg::StateSet* VolumeRenderer::getRootState()
 	}
 
 	// <<<>>> need to setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing
-    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3( VOLUME_DIMS ) ) );
+    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", _volumeDims ) );
     stateSet->addUniform( dimsUni );
-    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3( 0., 0., 0. ) ) );
+    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", _volumeOrigin ) );
     stateSet->addUniform( centerUni );
-    osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", PLANE_SPACING ) );
+    osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", _planeSpacing ) );
     stateSet->addUniform( spaceUni );
 
 	osg::BlendFunc *fn = new osg::BlendFunc();
@@ -201,6 +180,22 @@ osg::StateSet* VolumeRenderer::getRootState()
 	return( stateSet.release() );
 }
 
+void VolumeRenderer::setMaxSlices( const unsigned int& maxSlices )
+{
+	_maxSlices = maxSlices;
+}
+unsigned int VolumeRenderer::getMaxSlices() const
+{
+	return( _maxSlices );
+}
 
+void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
+{
+	_planeSpacing = planeSpacing;
+}
+float VolumeRenderer::getPlaneSpacing() const
+{
+	return( _planeSpacing );
+}
 // lfx
 }

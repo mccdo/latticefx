@@ -60,7 +60,27 @@ public:
     scene graphs. */
     virtual osg::StateSet* getRootState();
 
+    /** \brief Set the maximum number of planes used to slice the volume.
+    \details The default is 1024. This must be set prior to calling getSceneGraph. */
+    void setMaxSlices( const unsigned int& maxSlices );
+    /** \brief Get the maximum number of planes used to slice the volume. */
+    unsigned int getMaxSlices() const;
+
+    /** \brief Set spacing (in world units) between each plane used to slice the volume.
+    \details The default is 0.3f. This can be varied on every draw. */
+    void setPlaneSpacing( const float& planeSpacing );
+    /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
+    float getPlaneSpacing() const;
+
+	// <<<>>> volume dims and origin
+
 protected:
+	unsigned int _maxSlices;
+	float _planeSpacing;
+	osg::Vec3f _volumeDims, _volumeOrigin;
+
+	// <<<>>> volume dims and origin
+
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;
