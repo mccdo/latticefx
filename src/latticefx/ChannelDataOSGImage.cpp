@@ -103,9 +103,15 @@ ChannelDataPtr ChannelDataOSGImage::getMaskedChannel( const ChannelDataPtr maskI
 
 void ChannelDataOSGImage::reset()
 {
-    OSG_WARN << "ChannelDataOSGImage::reset(): Copy image not yet implemented." << std::endl;
-    _workingImage = static_cast< osg::Image* >(
-        _image->clone( osg::CopyOp::DEEP_COPY_ALL ) );
+    if( _workingImage == NULL )
+    {
+        _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
+    }
+    else
+    {
+        memcpy( _workingImage->data(), _image->data(),
+            _image->getTotalSizeInBytes() );
+    }
 }
 
 
