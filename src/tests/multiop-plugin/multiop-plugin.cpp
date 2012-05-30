@@ -37,7 +37,7 @@ int main()
     lfx::PluginManager* plug( lfx::PluginManager::instance() );
     plug->loadConfigFiles();
 
-    // Load all plugins named "FactoryPluginTest".
+    // Load all plugins named "MultipleOperationsPluginTest".
     const std::string pluginName( "MultipleOperationsPluginTest" );
     if( !( plug->loadPlugins( pluginName ) ) )
     {
