@@ -266,11 +266,6 @@ bool DataSet::updateRunTimeProcessing()
     if( timeSet.empty() )
     {
         // Not the typical case.
-        osg::ByteArray* osgMask( new osg::ByteArray );
-        osgMask->resize( 1 );
-        ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
-        mask->setAll( (char)1 );
-        _maskList.push_back( mask );
         return( true );
     }
 
@@ -322,6 +317,9 @@ bool DataSet::updateRenderer()
 {
     if( _renderer != NULL )
     {
+        if( _maskList.empty() )
+            createFallbackMaskList();
+
         TimeSet timeSet( getTimeSet() );
         if( timeSet.size() > 1 )
         {
@@ -451,6 +449,15 @@ ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList
     osg::ByteArray* byteArray( new osg::ByteArray );
     byteArray->resize( size );
     return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( byteArray ) ) );
+}
+
+void DataSet::createFallbackMaskList()
+{
+    osg::ByteArray* osgMask( new osg::ByteArray );
+    osgMask->resize( 1 );
+    ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
+    mask->setAll( (char)1 );
+    _maskList.push_back( mask );
 }
 
 

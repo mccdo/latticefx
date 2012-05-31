@@ -198,6 +198,8 @@ protected:
     bool updateRunTimeProcessing();
     bool updateRenderer();
 
+    void createFallbackMaskList();
+
     TimeSet getTimeSet() const;
     ChannelDataList getDataAtTime( const double time );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
