@@ -238,9 +238,8 @@ bool DataSet::updatePreprocessing()
             // Assign actual / current data to the prePtr OperationBase.
             setInputs( prePtr, currentData );
 
-            ChannelDataPtr newData;
-            Preprocess::ReturnCode returnCode( (*prePtr)( newData ) );
-            switch( returnCode )
+            ChannelDataPtr newData( (*prePtr)() );
+            switch( prePtr->getActionType() )
             {
             case Preprocess::ADD_DATA:
                 addChannel( newData, time );

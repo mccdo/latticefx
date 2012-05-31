@@ -33,15 +33,26 @@ namespace lfx {
 
 
 Preprocess::Preprocess()
-  : OperationBase( OperationBase::PreprocessCacheType )
+  : OperationBase( OperationBase::PreprocessCacheType ),
+    _action( IGNORE_DATA )
 {
 }
 Preprocess::Preprocess( const Preprocess& rhs )
-  : OperationBase( rhs )
+  : OperationBase( rhs ),
+    _action( rhs._action )
 {
 }
 Preprocess::~Preprocess()
 {
+}
+
+void Preprocess::setActionType( const ActionType& action )
+{
+    _action = action;
+}
+Preprocess::ActionType Preprocess::getActionType() const
+{
+    return( _action );
 }
 
 

@@ -55,8 +55,8 @@ public:
     virtual ~Preprocess();
 
     /** \brief Indicates how DataSet should handle the newly created ChannelData.
-    \details The operator() function optionally creates a new ChannelData of preprocessed data.
-    The ReturnCode indicates how DataSet should handle the newly created data.
+    \details The operator() function returns a ChannelDataPtr of preprocessed data.
+    The ActionType indicates how DataSet should handle the newly created data.
     \li ADD_DATA Add the new ChannelData to the DataSet.
     \li REPLACE_DATA Replace the Preprocess input with the new ChannelData. If the Preprocess has
     multiple inputs, the first input is replaced. Useful when creating a ChannelDataComposite.
@@ -66,20 +66,27 @@ public:
         ADD_DATA,
         REPLACE_DATA,
         IGNORE_DATA
-    } ReturnCode;
+    } ActionType;
+
+    /** \brief TBD
+    \details TBD */
+    void setActionType( const ActionType& action );
+    /** \brief TBD
+    \details TBD */
+    ActionType getActionType() const;
 
     /** \brief Create and return a new ChannelData from inputs.
     \details The ReturnCode specifies how the owning DataSet should handle \c newData:
     add it to the DataSet, replace the first input with \c newData, or ignore
     \c newData. (IGNORE_DATA is useful if this function stores the data, in the DB for
     example.) */
-    virtual ReturnCode operator()( ChannelDataPtr& newData )
+    virtual ChannelDataPtr operator()()
     {
-        newData = lfx::ChannelDataPtr( (lfx::ChannelData*)NULL );
-        return( lfx::Preprocess::IGNORE_DATA );
+        return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
     }
 
 protected:
+    ActionType _action;
 };
 
 typedef boost::shared_ptr< Preprocess > PreprocessPtr;

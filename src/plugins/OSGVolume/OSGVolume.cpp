@@ -89,7 +89,7 @@ public:
         return( new Downsample );
     }
 
-    virtual ReturnCode operator()( lfx::ChannelDataPtr& newData )
+    virtual lfx::ChannelDataPtr operator()()
     {
         lfx::ChannelDataPtr cdp;
         if( !( _inputs.empty() ) )
@@ -97,7 +97,7 @@ public:
         if( cdp == NULL )
         {
             OSG_WARN << "OSGVolume ReduceLOD: NULL input." << std::endl;
-            return( lfx::Preprocess::IGNORE_DATA );
+            return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
         }
         lfx::ChannelDataOSGImage* dataImage( static_cast<
             lfx::ChannelDataOSGImage* >( cdp.get() ) );
@@ -105,7 +105,7 @@ public:
         if( srcImage == NULL )
         {
             OSG_WARN << "OSGVolume ReduceLOD: NULL source image." << std::endl;
-            return( lfx::Preprocess::IGNORE_DATA );
+            return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
         }
 
         osg::Image* newImage( downsample( srcImage ) );
@@ -113,9 +113,9 @@ public:
         // Debug.
         osgDB::writeImageFile( *newImage, "out.ive" );
 
-        newData = lfx::ChannelDataOSGImagePtr(
+        lfx::ChannelDataOSGImagePtr newData(
             new lfx::ChannelDataOSGImage( dataImage->getName(), newImage ) );
-        return( lfx::Preprocess::IGNORE_DATA );
+        return( newData);
     }
 
 protected:
