@@ -176,7 +176,7 @@ bool RootCallback::inRange( const RangeValues& validRange, const RangeValues& ch
 {
     const bool childFirstGood( childRange.first < validRange.second );
     const bool childSecondGood( childRange.second >= validRange.first );
-    if( validRange.first < validRange.second )
+    if( validRange.first <= validRange.second )
         // Typical case: first (min) < second (max).
         return( childSecondGood && childFirstGood );
     else
