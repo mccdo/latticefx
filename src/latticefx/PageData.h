@@ -65,10 +65,6 @@ based on time as well as pixel size, interaction with PagingThread and RootCallb
 class LATTICEFX_EXPORT PageData : public osg::Object
 {
 public:
-    PageData();
-    PageData( const PageData& rhs, const osg::CopyOp& copyOp=osg::CopyOp::SHALLOW_COPY );
-    META_Object( lfx, PageData );
-
     /** \brief Enum for the mode of paging operation.
     \details All children must page the same way, either based on their pixel size (derived
     from transform matrices and viewport) or their current time in a time series data set.
@@ -78,6 +74,11 @@ public:
         PIXEL_SIZE_RANGE,
         TIME_RANGE
     } RangeMode;
+
+    PageData( const RangeMode rangeMode=UNSPECIFIED_RANGE );
+    PageData( const PageData& rhs, const osg::CopyOp& copyOp=osg::CopyOp::SHALLOW_COPY );
+    META_Object( lfx, PageData );
+
     /** \brief set the RangeMode for the owning Group parent.
     \details Default is UNSPECIFIED_RANGE resulting in undefined behavior. Apps should
     change this default to either PIXEL_SIZE_RANGE or TIME_RANGE. */

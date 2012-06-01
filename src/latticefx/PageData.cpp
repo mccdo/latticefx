@@ -34,9 +34,9 @@
 namespace lfx {
 
 
-PageData::PageData()
+PageData::PageData( const RangeMode rangeMode )
   : osg::Object(),
-    _rangeMode( UNSPECIFIED_RANGE ),
+    _rangeMode( rangeMode ),
     _parent( NULL )
 {
 }
