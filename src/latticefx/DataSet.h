@@ -200,6 +200,10 @@ protected:
 
     void createFallbackMaskList();
 
+    /** \brief TBD
+    \details TBD */
+    osg::Node* recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask );
+
     TimeSet getTimeSet() const;
     ChannelDataList getDataAtTime( const double time );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );

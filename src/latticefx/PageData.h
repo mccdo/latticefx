@@ -95,6 +95,7 @@ public:
     the current page status of the child. */
     struct LATTICEFX_EXPORT RangeData {
         RangeData();
+        RangeData( RangeValues rangeValues, const DBKey& dbKey=DBKey( "" ) );
         RangeData( double minVal, double maxVal, const DBKey& dbKey=DBKey( "" ) );
 
         RangeValues _rangeValues;

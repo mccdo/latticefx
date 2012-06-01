@@ -11,6 +11,8 @@ set( _headerFiles
     BoundUtils.h
     ChannelData.h
     ChannelDataComposite.h
+    ChannelDataImageSet.h
+    ChannelDataLOD.h
     ChannelDataOSGArray.h
     ChannelDataOSGImage.h
     DataSet.h
@@ -34,6 +36,8 @@ set( _sourceFiles
     BoundUtils.cpp
     ChannelData.cpp
     ChannelDataComposite.cpp
+    ChannelDataImageSet.cpp
+    ChannelDataLOD.cpp
     ChannelDataOSGArray.cpp
     ChannelDataOSGImage.cpp
     DataSet.cpp

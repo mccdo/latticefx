@@ -47,19 +47,20 @@ namespace lfx {
 
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
-\details This class allows ChannelData per level of detail.
+\details This class allows multiple ChannelData objects and is used for level of detail
+and texture bricking / subtextures.
 
 In typical usage, a Preprocess operation stores one or more concrete ChannelData objects
-in a ChannelDataComposite, one for each level of details. Concrete ChannelData
-classes are ChannelData objects that store actual data, such as ChannelDataOSGArray, or
-(TBD not yet implemented) ChannelDataDBKey.
+in a ChannelDataComposite, one for each level of detail or texture octant. Concrete ChannelData
+classes are ChannelData objects that store actual data, such as ChannelDataOSGArray,
+ChannelDataOSGImage, or (TBD not yet implemented) ChannelDataDBKey.
+
+ChannelDataComposite is a base class. Preprocess operations will deal directly with the
+derived classes, ChannelDataLOD and ChannelDataImageSet.
 
 RTPOperation has no special handling for ChannelDataComposite and should never
 encounter one in practice. The DataSet will invoke an RTPOperation only with concrete
-ChannelData.
-
-Renderer operations need to support ChannelDataComposite LOD data during scene graph
-creation. */
+ChannelData. */
 class LATTICEFX_EXPORT ChannelDataComposite : public lfx::ChannelData
 {
 public:
@@ -68,15 +69,19 @@ public:
     virtual ~ChannelDataComposite();
 
 
-    /** \brief Add a data channel to the ChannelDataList for a specific \c level of detail. */
-    void addChannel( const ChannelDataPtr channel, const unsigned int level=0 );
+    /** \brief Add a data channel to the ChannelDataList.
+    \details Returns the index of \channel. */
+    unsigned int addChannel( const ChannelDataPtr channel );
 
-    /** \brief Get a channel for a specific \c level of detail.
-    \returns ChannelData for the specified \c level. If the exact level doesn't
-    have a ChannelData, this function returns NULL. */
-    ChannelDataPtr getChannel( const unsigned int level=0 );
+    /** \brief Get the total number of ChannelData inside this composite. */
+    unsigned int getNumChannels() const;
+
+    /** \brief Get a channel at a specific \c index.
+    \returns ChannelData for the specified \c index. If the index is out
+    of renge, this function returns NULL. */
+    ChannelDataPtr getChannel( const unsigned int index );
     /** \overload */
-    const ChannelDataPtr getChannel( const unsigned int level=0 ) const;
+    const ChannelDataPtr getChannel( const unsigned int index ) const;
 
 
     /** \brief
@@ -87,11 +92,6 @@ public:
     \details */
     virtual void setAll( const char value ) {}
     virtual void setAll( const float value ) {}
-
-    /** \brief Boolean AND \c rhs with the existing data.
-    \details Assumes both the existing data and \c rhs are osg::ByteArray type, zero
-    representing false and non-zero representing true. */
-    virtual void andValues( const ChannelData* rhs ) {}
 
     /** \brief Prepare the ChannelData for processing by the DataSet.
     \details Prior to processing ChannelData in the LatticeFX data pipeline,
@@ -108,7 +108,6 @@ public:
     virtual void resize( size_t size ) {}
 
 protected:
-    // TBD will need to change to store data by LOD level.
     ChannelDataList _data;
 };
 

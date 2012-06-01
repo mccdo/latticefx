@@ -80,7 +80,7 @@ public:
     add it to the DataSet, replace the first input with \c newData, or ignore
     \c newData. (IGNORE_DATA is useful if this function stores the data, in the DB for
     example.) */
-    virtual ChannelDataPtr operator()()
+    virtual lfx::ChannelDataPtr operator()()
     {
         return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
     }

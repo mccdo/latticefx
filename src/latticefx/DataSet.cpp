@@ -27,7 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/DataSet.h>
-#include <latticefx/ChannelDataComposite.h>
+#include <latticefx/ChannelDataLOD.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RootCallback.h>
 #include <latticefx/DBUtils.h>
@@ -375,8 +375,7 @@ bool DataSet::updateRenderer()
 
             ChannelDataList::iterator maskIt = _maskList.begin();
 
-            setInputs( _renderer, currentData );
-            osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
+            osg::Node* newChild( recurseGetSceneGraph( currentData, *maskIt ) );
 
             if( newChild != NULL )
                 _sceneGraph->addChild( newChild );
@@ -389,6 +388,51 @@ bool DataSet::updateRenderer()
     return( false );
 }
 
+osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask )
+{
+    ChannelDataLOD* cdLOD( dynamic_cast< ChannelDataLOD* >( data[ 0 ].get() ) );
+    if( cdLOD == NULL )
+    {
+        setInputs( _renderer, data );
+        return( _renderer->getSceneGraph( mask ) );
+    }
+
+    else
+    {
+        osg::ref_ptr< osg::Group > parent( new osg::Group );
+        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
+        rootcb->addPageParent( parent.get() );
+        osg::ref_ptr< PageData > pageData( new PageData( lfx::PageData::PIXEL_SIZE_RANGE ) );
+        parent->setUserData( pageData.get() );
+        pageData->setParent( parent.get() );
+        unsigned int childIndex( 0 );
+        osg::ref_ptr< osg::Group > stubGroup( new osg::Group );
+
+        unsigned int idx;
+        for( idx=0; idx < cdLOD->getNumChannels(); idx++ )
+        {
+            ChannelDataList newDataList;
+            newDataList.push_back( cdLOD->getChannel( idx ) );
+            osg::Node* child( recurseGetSceneGraph( newDataList, mask ) );
+
+            if( child != NULL )
+            {
+                PageData::RangeData rangeData( cdLOD->getRange( idx ) );
+                rangeData._status = PageData::RangeData::UNLOADED;
+                rangeData._dbKey = generateDBKey();
+                pageData->setRangeData( childIndex++, rangeData );
+
+                parent->addChild( stubGroup.get() );
+                osg::BoundingSphere bs( parent->getInitialBound() );
+                bs.expandBy( child->getBound() );
+                parent->setInitialBound( bs );
+
+                storeSubGraph( child, rangeData._dbKey );
+            }
+        }
+        return( parent.release() );
+    }
+}
 
 void DataSet::setDirty( const DirtyFlags flags )
 {

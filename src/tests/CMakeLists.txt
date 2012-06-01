@@ -1,3 +1,4 @@
+add_subdirectory( composite )
 add_subdirectory( multiop-plugin )
 add_subdirectory( page0 )
 add_subdirectory( preprocess )

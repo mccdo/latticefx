@@ -48,21 +48,31 @@ ChannelDataComposite::~ChannelDataComposite()
 {
 }
 
-void ChannelDataComposite::addChannel( const ChannelDataPtr channel, const unsigned int level )
+unsigned int ChannelDataComposite::addChannel( const ChannelDataPtr channel )
 {
-    OSG_WARN << "Composite LOD not yet supported." << std::endl;
+    unsigned int index( _data.size() );
+    _data.push_back( channel );
+    return( index );
 }
 
-ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int level )
+unsigned int ChannelDataComposite::getNumChannels() const
 {
-    OSG_WARN << "Composite LOD not yet supported." << std::endl;
+    return( _data.size() );
+}
+
+ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int index )
+{
+    if( index < _data.size() )
+        return( _data[ index ] );
+
+    OSG_WARN << "ChannelDataComposite::getChannel(): Warning: Invalid index: " << index << ". _data.size()=" << _data.size() << std::endl;
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
-const ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int level ) const
+const ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int index ) const
 {
     ChannelDataComposite* nonConstThis = const_cast< ChannelDataComposite* >( this );
-    return( nonConstThis->getChannel( level ) );
+    return( nonConstThis->getChannel( index ) );
 }
 
 void ChannelDataComposite::getDimensions( unsigned int& x, unsigned int& y, unsigned int& z )
