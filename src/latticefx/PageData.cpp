@@ -96,14 +96,12 @@ osg::Group* PageData::getParent()
 
 
 PageData::RangeData::RangeData()
-  : _childIndex( 0 ),
-    _rangeValues( RangeValues( 0., FLT_MAX ) ),
+  : _rangeValues( RangeValues( 0., FLT_MAX ) ),
     _status( UNLOADED )
 {
 }
 PageData::RangeData::RangeData( double minVal, double maxVal, const DBKey& dbKey )
-  : _childIndex( 0 ),
-    _rangeValues( RangeValues( minVal, maxVal ) ),
+  : _rangeValues( RangeValues( minVal, maxVal ) ),
     _dbKey( dbKey ),
     _status( UNLOADED )
 {

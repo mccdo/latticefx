@@ -96,7 +96,6 @@ public:
         RangeData();
         RangeData( double minVal, double maxVal, const DBKey& dbKey=DBKey( "" ) );
 
-        unsigned int _childIndex;
         RangeValues _rangeValues;
         DBKey _dbKey;
 
