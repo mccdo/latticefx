@@ -139,18 +139,29 @@ protected:
     std::string _name;
 };
 
-typedef std::vector< ChannelDataPtr > ChannelDataList;
 
 
-/** \brief Finds and returns the ChannelData named \c name.
-\details If there is no ChannelData with name \c name in \c dataList, returns NULL. */
-LATTICEFX_EXPORT ChannelDataPtr findChannelData( const std::string& name, const ChannelDataList& dataList );
+/** \class ChannelDataList ChannelData.h <latticefx/ChannelData.h>
+\brief TBD
+\details TBD */
+typedef std::vector< ChannelDataPtr > ChannelDataListBase;
+class LATTICEFX_EXPORT ChannelDataList : public ChannelDataListBase
+{
+public:
+    ChannelDataList();
+    ChannelDataList( const ChannelDataList& rhs );
+    ~ChannelDataList();
 
-/** \brief Replaces ChannelData with \c channel.
-\details Finds a ChannelData (in \c dataList) with the same name as \c channel, then
-replaces the found ChannelData with \c channel. If no ChannelData can be found with
-the same name as \c channel, this function adds \c channel to the end of \c dataList. */
-LATTICEFX_EXPORT void replaceChannelData( const ChannelDataPtr channel, ChannelDataList& dataList );
+    /** \brief Finds and returns the ChannelData named \c name.
+    \details If there is no ChannelData with name, returns NULL. */
+    ChannelDataPtr findData( const std::string& name );
+
+    /** \brief Replaces ChannelData with \c channel.
+    \details Finds a ChannelData with the same name as \c channel, then
+    replaces the found ChannelData with \c channel. If no ChannelData can be found with
+    the same name as \c channel, this function adds \c channel to the end of the list. */
+    void replaceData( const ChannelDataPtr channel );
+};
 
 
 // lfx

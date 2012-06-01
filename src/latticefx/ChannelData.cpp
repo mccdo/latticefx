@@ -58,9 +58,21 @@ const std::string& ChannelData::getName() const
 
 
 
-ChannelDataPtr findChannelData( const std::string& name, const ChannelDataList& dataList )
+ChannelDataList::ChannelDataList()
+  : ChannelDataListBase()
 {
-    BOOST_FOREACH( ChannelDataPtr cdp, dataList )
+}
+ChannelDataList::ChannelDataList( const ChannelDataList& rhs )
+  : ChannelDataListBase( rhs )
+{
+}
+ChannelDataList::~ChannelDataList()
+{
+}
+
+ChannelDataPtr ChannelDataList::findData( const std::string& name )
+{
+    BOOST_FOREACH( ChannelDataPtr cdp, *this )
     {
         if( cdp->getName() == name )
             return( cdp );
@@ -68,16 +80,16 @@ ChannelDataPtr findChannelData( const std::string& name, const ChannelDataList& 
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
-void replaceChannelData( const ChannelDataPtr channel, ChannelDataList& dataList )
+void ChannelDataList::replaceData( const ChannelDataPtr channel )
 {
     const std::string name( channel->getName() );
 
     size_t index( 0 );
-    while( index < dataList.size() )
+    while( index < size() )
     {
-        if( dataList[ index ]->getName() == name )
+        if( (*this)[ index ]->getName() == name )
         {
-            dataList[ index ] = channel;
+            (*this)[ index ] = channel;
             return;
         }
         ++index;
@@ -85,7 +97,7 @@ void replaceChannelData( const ChannelDataPtr channel, ChannelDataList& dataList
 
     // If we get this far, we never found a ChannelData with the same name,
     // so just tack the input onto the end of the list.
-    dataList.push_back( channel );
+    push_back( channel );
 }
 
 

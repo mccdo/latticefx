@@ -84,28 +84,28 @@ void DataSet::replaceChannel( const ChannelDataPtr channel, const double time )
     }
     // Found a ChannelDataList for the specified 'time'. Now replace any
     // existing ChannelData with 'channel' (or append 'channel' to the end).
-    replaceChannelData( channel, cdlIt->second );
+    cdlIt->second.replaceData( channel );
     setDirty( ALL_DIRTY );
 }
 
 ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
 {
     ChannelDataPtr cdp;
-    ChannelDataTimeMap::const_iterator cdlIt( _data.find( time ) );
+    ChannelDataTimeMap::iterator cdlIt( _data.find( time ) );
     if( cdlIt != _data.end() )
-        cdp = findChannelData( name, cdlIt->second );
+        cdp = cdlIt->second.findData( name );
 
     if( cdp == NULL )
     {
         // No data found for this exact time. Search data prior to the specified
         // time by starting at the end of time and searching backwards.
-        ChannelDataTimeMap::const_reverse_iterator crt( _data.rbegin() );
+        ChannelDataTimeMap::reverse_iterator crt( _data.rbegin() );
         while( crt != _data.rend() )
         {
             if( crt->first < time )
             {
                 // Found some data just before time.
-                cdp = findChannelData( name, crt->second );
+                cdp = crt->second.findData( name );
                 if( cdp != NULL )
                     break;
             }
@@ -432,7 +432,7 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
     const OperationBase::StringList& inputs( opPtr->getInputNames() );
     BOOST_FOREACH( const std::string& inputName, inputs )
     {
-        ChannelDataPtr cdp( lfx::findChannelData( inputName, currentData ) );
+        ChannelDataPtr cdp( currentData.findData( inputName ) );
         if( cdp == NULL )
             OSG_WARN << "DataSet::setInputs(): Could not find data named \"" << inputName << "\"." << std::endl;
         newList.push_back( cdp );
