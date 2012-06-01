@@ -118,9 +118,9 @@ public:
     0.5 seconds before and 1.0 seconds after the current animation time.
 
     Default: RangeValues( -0.5, 0.5 ). */
-    void setTimeRange( const PageData::RangeValues& timeRange );
+    void setTimeRange( const RangeValues& timeRange );
     /** \brief Get the paging time range. */
-    PageData::RangeValues getTimeRange() const;
+    RangeValues getTimeRange() const;
 
     /** \brief Dynamically load and unload data using the paging thread.
     \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
@@ -154,14 +154,14 @@ protected:
     If the paging RangeMode is TIME_RANGE, \c validRange is a range of time values specified
     by the application, and both min and max values of \c childRange are set to the time
     value of the child node. */
-    static inline bool inRange( const PageData::RangeValues& validRange, const PageData::RangeValues& childRange );
+    static inline bool inRange( const RangeValues& validRange, const RangeValues& childRange );
 
     osg::ref_ptr< osg::Camera > _camera;
 
     osg::ref_ptr< osg::Group > _stubGroup;
 
     double _animationTime;
-    PageData::RangeValues _timeRange;
+    RangeValues _timeRange;
 
     typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
     GroupList _pageParentList;
@@ -172,7 +172,7 @@ protected:
 /**@}*/
 
 
-bool RootCallback::inRange( const PageData::RangeValues& validRange, const PageData::RangeValues& childRange )
+bool RootCallback::inRange( const RangeValues& validRange, const RangeValues& childRange )
 {
     const bool childFirstGood( childRange.first < validRange.second );
     const bool childSecondGood( childRange.second >= validRange.first );

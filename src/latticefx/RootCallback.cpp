@@ -41,7 +41,7 @@ namespace lfx {
 RootCallback::RootCallback()
   : _stubGroup( new osg::Group ),
     _animationTime( 0. ),
-    _timeRange( PageData::RangeValues( -0.5, 0.5 ) )
+    _timeRange( RangeValues( -0.5, 0.5 ) )
 {
 }
 RootCallback::RootCallback( const RootCallback& rhs )
@@ -87,11 +87,11 @@ double RootCallback::getAnimationTime() const
 {
     return( _animationTime );
 }
-void RootCallback::setTimeRange( const PageData::RangeValues& timeRange )
+void RootCallback::setTimeRange( const RangeValues& timeRange )
 {
     _timeRange = timeRange;
 }
-PageData::RangeValues RootCallback::getTimeRange() const
+RangeValues RootCallback::getTimeRange() const
 {
     return( _timeRange );
 }
@@ -111,7 +111,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
         lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
         //std::cout << "  PageData." << std::endl;
 
-        PageData::RangeValues validRange;
+        RangeValues validRange;
         if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
         {
             if( _camera == NULL )
@@ -128,7 +128,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
 
             // Valid range is only the pixelSize. We'll see if it's inside the childRange,
             // which is a min and max pixelSize to display the child.
-            validRange = PageData::RangeValues( pixelSize, pixelSize );
+            validRange = RangeValues( pixelSize, pixelSize );
             //std::cout << "Pixel size: " << testValue << std::endl;
         }
         else if( pageData->getRangeMode() == PageData::TIME_RANGE )
@@ -164,7 +164,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
 
-            PageData::RangeValues childRange;
+            RangeValues childRange;
             if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
             {
                 // Child-specific PageData::RangeData contains min and max pixel size values as a std::pair.
@@ -175,7 +175,7 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 // If paging based on time, only the min value of the range -- the time for
                 // the child -- is relevant. We'll see if it's inside the validRange (a
                 // range around the current play time).
-                childRange = PageData::RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
+                childRange = RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
             }
 
             switch( rangeData._status )
@@ -253,14 +253,14 @@ void RootCallback::updatePaging( const osg::Matrix& modelView )
                 PageData::RangeData& rangeData( rangeDataPair.second );
 
                 // Get childRange just as we did previously.
-                PageData::RangeValues childRange;
+                RangeValues childRange;
                 if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
                 {
                     childRange = rangeData._rangeValues;
                 }
                 else
                 {
-                    childRange = PageData::RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
+                    childRange = RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
                 }
 
                 switch( rangeData._status )

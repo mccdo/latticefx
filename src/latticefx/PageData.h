@@ -36,8 +36,9 @@
 #include <osg/Object>
 #include <osg/Group>
 
-#include <map>
 #include <string>
+#include <map>
+#include <vector>
 
 
 namespace lfx {
@@ -45,6 +46,13 @@ namespace lfx {
 
 /** \addtogroup PagingSupport */
 /**@{*/
+
+
+/** \brief Stores values used to determine whether a child should be paged in or out.
+\details For PIXEL_SIZE_RANGE, \c first must be the minimum pixel size and \c second must be
+the maximum pixel size. for TIME_TANGE, \c first is the time, and \c second is ignored. */
+typedef std::pair< double, double > RangeValues;
+typedef std::vector< RangeValues > RangeValueList;
 
 
 /** \class PageData PageData.h <latticefx/PageData.h>
@@ -76,11 +84,6 @@ public:
     void setRangeMode( const RangeMode rangeMode );
     /** \brief Retrieve the RangeMode. */
     RangeMode getRangeMode() const;
-
-    /** \brief Stores values used to determine whether a child should be paged in or out.
-    \details For PIXEL_SIZE_RANGE, \c first must be the minimum pixel size and \c second must be
-    the maximum pixel size. for TIME_TANGE, \c first is the time, and \c second is ignored. */
-    typedef std::pair< double, double > RangeValues;
 
     /** \brief Data for each pageable child.
     \details Contains information required for paging. Client code should add one
