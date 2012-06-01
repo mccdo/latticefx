@@ -239,6 +239,11 @@ bool DataSet::updatePreprocessing()
             setInputs( prePtr, currentData );
 
             ChannelDataPtr newData( (*prePtr)() );
+
+            // The Proprocessor object tells us how to handle the new data
+            // we just got back. This is so that apps can configure the Preprocessor
+            // directly. In the future, we might have to support adding the returned
+            // data to the DB.
             switch( prePtr->getActionType() )
             {
             case Preprocess::ADD_DATA:
@@ -365,12 +370,14 @@ bool DataSet::updateRenderer()
         else
         {
             // Simplified scene graph creation when not using time series.
-            ChannelDataList currentData( getDataAtTime( 0. ) );
-            setInputs( _renderer, currentData );
+            const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
+            ChannelDataList currentData( getDataAtTime( time ) );
 
             ChannelDataList::iterator maskIt = _maskList.begin();
-            const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
+
+            setInputs( _renderer, currentData );
             osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
+
             if( newChild != NULL )
                 _sceneGraph->addChild( newChild );
         }
