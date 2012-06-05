@@ -176,12 +176,29 @@ public:
     /** \overload */
     const RendererPtr getRenderer() const;
 
-    /** \brief Get the OSG scene graph. */
+    /** \brief Get the OSG scene graph.
+    \details implicitly calls updateAll(), then returns the \c _sceneGraph
+    member variable. */
     osg::Node* getSceneData();
 
-    /** \brief Execute all operations (process all data and create scene graph). */
-    bool updateSceneGraph();
 
+    /** Interface to tell DataSet to use an experimental method to
+    construct a scene graph that doesn't page geometry, pages only
+    texture data instead. */
+    void setSceneGraphPagesTexturesOnly();
+    ///\}
+
+
+    /** \brief Execute all operations (process all data and create scene graph).
+    \details Runs all Preprocessing & Caching, Run-Time Processing, and
+    Rendering Framework operations.
+
+    To preprocess data as an offline step, apps can attach ChannelData objects and
+    Preprocess objects, then call this function. If no Renderer is attached (for
+    example, setRenderer(NULL) ), then DataSet will not create a scene graph. */
+    bool updateAll();
+
+    /** \brief Dirty flags used by updateAll() to determine which operations to run. */
     typedef enum {
         NOT_DIRTY        = ( 0 ),
         PREPROCESS_DIRTY = ( 0x1 << 0 ),
@@ -191,15 +208,18 @@ public:
     } DirtyFlags;
     void setDirty( const DirtyFlags flags=ALL_DIRTY );
     DirtyFlags getDirty() const;
-    ///\}
 
 protected:
     bool updatePreprocessing();
     bool updateRunTimeProcessing();
+    bool updateRendererPagingTexturesOnly();
     bool updateRenderer();
 
     void createFallbackMaskList();
 
+    /** \brief TBD
+    \details TBD */
+    osg::Node* recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& data, ChannelDataPtr mask );
     /** \brief TBD
     \details TBD */
     osg::Node* recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask );
@@ -227,6 +247,7 @@ protected:
 
     osg::ref_ptr< osg::Group > _sceneGraph;
     DirtyFlags _dirtyFlags;
+    bool _sceneGraphPagesTexturesOnly;
 };
 
 typedef boost::shared_ptr< DataSet > DataSetPtr;

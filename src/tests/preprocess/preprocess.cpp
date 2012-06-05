@@ -91,7 +91,7 @@ int main( int argc, char** argv )
     arguments.read( "-f", fileName );
 
     lfx::DataSetPtr dsp( preprocess( fileName ) );
-    dsp->updateSceneGraph();
+    dsp->updateAll();
 
     return( 0 );
 }

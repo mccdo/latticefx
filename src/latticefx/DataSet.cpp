@@ -43,7 +43,8 @@ namespace lfx {
 
 DataSet::DataSet()
   : _sceneGraph( new osg::Group ),
-    _dirtyFlags( ALL_DIRTY )
+    _dirtyFlags( ALL_DIRTY ),
+    _sceneGraphPagesTexturesOnly( false )
 {
     RootCallback* rootcb( new RootCallback() );
     _sceneGraph->setUpdateCallback( rootcb );
@@ -60,7 +61,8 @@ DataSet::DataSet( const DataSet& rhs )
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
     _maskList( rhs._maskList ),
-    _dirtyFlags( ALL_DIRTY )
+    _dirtyFlags( ALL_DIRTY ),
+    _sceneGraphPagesTexturesOnly( rhs._sceneGraphPagesTexturesOnly )
 {
 }
 DataSet::~DataSet()
@@ -173,12 +175,12 @@ const RendererPtr DataSet::getRenderer() const
 
 osg::Node* DataSet::getSceneData()
 {
-    updateSceneGraph();
+    updateAll();
 
     return( _sceneGraph.get() );
 }
 
-bool DataSet::updateSceneGraph()
+bool DataSet::updateAll()
 {
     if( _dirtyFlags == NOT_DIRTY )
         return( true );
@@ -210,7 +212,10 @@ bool DataSet::updateSceneGraph()
     if( ( _dirtyFlags & ALL_DIRTY ) != 0 )
     {
         _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
-        updateRenderer();
+        if( _sceneGraphPagesTexturesOnly )
+            updateRendererPagingTexturesOnly();
+        else
+            updateRenderer();
     }
 
     _dirtyFlags = NOT_DIRTY;
@@ -318,6 +323,35 @@ bool DataSet::updateRunTimeProcessing()
     }
     return( true );
 }
+
+bool DataSet::updateRendererPagingTexturesOnly()
+{
+    if( _renderer == NULL )
+        return( false );
+
+    if( _maskList.empty() )
+        createFallbackMaskList();
+
+    TimeSet timeSet( getTimeSet() );
+    if( timeSet.size() == 1 )
+    {
+        // Simplified scene graph creation when not using time series.
+        const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
+        ChannelDataList currentData( getDataAtTime( time ) );
+        ChannelDataList::iterator maskIt = _maskList.begin();
+
+        osg::Node* newChild( recurseGetSceneGraphPagingTexturesOnly( currentData, *maskIt ) );
+
+        if( newChild != NULL )
+            _sceneGraph->addChild( newChild );
+    }
+    else
+    {
+        OSG_WARN << "DataSet: TimeSet size > 1 not yet supported in 'page textures only' mode." << std::endl;
+    }
+
+    return( false );
+}
 bool DataSet::updateRenderer()
 {
     if( _renderer != NULL )
@@ -388,6 +422,10 @@ bool DataSet::updateRenderer()
     return( false );
 }
 
+osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& data, ChannelDataPtr mask )
+{
+    return( NULL );
+}
 osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask )
 {
     ChannelDataLOD* cdLOD( dynamic_cast< ChannelDataLOD* >( data[ 0 ].get() ) );
@@ -509,6 +547,11 @@ void DataSet::createFallbackMaskList()
     ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
     mask->setAll( (char)1 );
     _maskList.push_back( mask );
+}
+
+void DataSet::setSceneGraphPagesTexturesOnly()
+{
+    _sceneGraphPagesTexturesOnly = true;
 }
 
 
