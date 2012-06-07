@@ -251,7 +251,7 @@ protected:
 };
 
 typedef boost::shared_ptr< DataSet > DataSetPtr;
-typedef std::list< RTPOperationPtr > DataSetList;
+typedef std::list< DataSetPtr > DataSetList;
 
 
 // lfx
