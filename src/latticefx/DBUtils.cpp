@@ -63,6 +63,15 @@ osg::Node* loadSubGraph( const DBKey& dbKey )
     return( osgDB::readNodeFile( dbKey ) );
 }
 
+bool storeImage( const osg::Image* image, const DBKey& dbKey )
+{
+    return( osgDB::writeImageFile( *image, dbKey ) );
+}
+osg::Image* loadImage( const DBKey& dbKey )
+{
+    return( osgDB::readImageFile( dbKey ) );
+}
+
 #else
 
 DBKey generateDBKey()
