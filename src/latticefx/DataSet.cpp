@@ -554,6 +554,11 @@ void DataSet::setSceneGraphPagesTexturesOnly()
     _sceneGraphPagesTexturesOnly = true;
 }
 
+void DataSet::useCustomRootCallback( lfx::RootCallback* rootcb )
+{
+    _sceneGraph->setUpdateCallback( rootcb );
+}
+
 
 // lfx
 }

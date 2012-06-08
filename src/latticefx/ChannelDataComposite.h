@@ -44,6 +44,10 @@
 namespace lfx {
 
 
+//forwards
+class ChannelDataImageSet;
+class ChannelDataLOD;
+
 
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
@@ -64,9 +68,19 @@ ChannelData. */
 class LATTICEFX_EXPORT ChannelDataComposite : public lfx::ChannelData
 {
 public:
-    ChannelDataComposite( const std::string& name=std::string( "" ) );
+    typedef enum {
+        UNSPECIFIED,
+        COMPOSITE_LOD,
+        COMPOSITE_SET
+    } CompositeType;
+
+    ChannelDataComposite( const CompositeType compositeType, const std::string& name=std::string( "" ) );
     ChannelDataComposite( const ChannelDataComposite& rhs );
     virtual ~ChannelDataComposite();
+
+    CompositeType getCompositeType() const;
+    virtual ChannelDataImageSet* getAsSet() { return( NULL ); }
+    virtual ChannelDataLOD* getAsLOD() { return( NULL ); }
 
 
     /** \brief Add a data channel to the ChannelDataList.
@@ -108,6 +122,8 @@ public:
     virtual void resize( size_t size ) {}
 
 protected:
+    CompositeType _compositeType;
+
     ChannelDataList _data;
 };
 

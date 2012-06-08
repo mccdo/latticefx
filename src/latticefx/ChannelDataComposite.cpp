@@ -36,16 +36,23 @@
 namespace lfx {
 
 
-ChannelDataComposite::ChannelDataComposite( const std::string& name )
-  : ChannelData( name )
+ChannelDataComposite::ChannelDataComposite( const CompositeType compositeType, const std::string& name )
+  : ChannelData( name ),
+    _compositeType( compositeType )
 {
 }
 ChannelDataComposite::ChannelDataComposite( const ChannelDataComposite& rhs )
-  : ChannelData( rhs )
+  : ChannelData( rhs ),
+    _compositeType( rhs._compositeType )
 {
 }
 ChannelDataComposite::~ChannelDataComposite()
 {
+}
+
+ChannelDataComposite::CompositeType ChannelDataComposite::getCompositeType() const
+{
+    return( _compositeType );
 }
 
 unsigned int ChannelDataComposite::addChannel( const ChannelDataPtr channel )

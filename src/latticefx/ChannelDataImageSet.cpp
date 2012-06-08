@@ -37,7 +37,7 @@ namespace lfx {
 
 
 ChannelDataImageSet::ChannelDataImageSet( const std::string& name )
-  : ChannelDataComposite( name )
+    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name )
 {
 }
 ChannelDataImageSet::ChannelDataImageSet( const ChannelDataImageSet& rhs )

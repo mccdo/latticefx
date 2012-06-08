@@ -37,7 +37,7 @@ namespace lfx {
 
 
 ChannelDataLOD::ChannelDataLOD( const std::string& name )
-  : ChannelDataComposite( name )
+    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_LOD, name )
 {
 }
 ChannelDataLOD::ChannelDataLOD( const ChannelDataLOD& rhs )

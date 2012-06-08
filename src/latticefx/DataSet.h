@@ -51,6 +51,9 @@
 namespace osg {
     class Group;
 }
+namespace lfx {
+    class RootCallback;
+}
 
 
 namespace lfx {
@@ -186,6 +189,8 @@ public:
     construct a scene graph that doesn't page geometry, pages only
     texture data instead. */
     void setSceneGraphPagesTexturesOnly();
+
+    void useCustomRootCallback( lfx::RootCallback* rootcb );
     ///\}
 
 
