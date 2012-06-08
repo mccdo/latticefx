@@ -43,7 +43,7 @@
 #include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
 
-#include <vtkLookupTable.h>
+//#include <vtkLookupTable.h>
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 

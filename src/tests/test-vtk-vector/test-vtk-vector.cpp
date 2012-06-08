@@ -128,7 +128,8 @@ vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAl
     {
         //m_geometryFilter->SetInputConnection( input );
         //return m_geometryFilter->GetOutputPort();
-        vtkDataSetSurfaceFilter* m_surfaceFilter = vtkDataSetSurfaceFilter::New();
+        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+            vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( input );
         return m_surfaceFilter->GetOutputPort();
     }
@@ -173,7 +174,7 @@ lfx::DataSetPtr prepareDataSet()
     return( dsp );
 }
 ////////////////////////////////////////////////////////////////////////////////
-vtkDataObject* LoadDataSet( std::string filename )
+lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
 {
     lfx::vtk_utils::DataSet* tempDataSet = new lfx::vtk_utils::DataSet();
     tempDataSet->SetFileName( filename );
@@ -229,7 +230,7 @@ vtkDataObject* LoadDataSet( std::string filename )
         //}
         //m_datafileLoaded( tempDataSetFilename );
     }
-    return tempVtkDataSet;
+    return tempDataSet;
 }
 ////////////////////////////////////////////////////////////////////////////////
 osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
@@ -238,10 +239,30 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
     c2p->SetInput( tempVtkDataSet );
     //c2p->Update();
     
-    // get every nth point from the dataSet data
-    vtkAlgorithmOutput* tempAlgo = ApplyGeometryFilterNew( tempVtkDataSet, c2p->GetOutputPort() );
     vtkMaskPoints* ptmask = vtkMaskPoints::New();
-    ptmask->SetInputConnection( tempAlgo );
+
+    if( tempVtkDataSet->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+            vtkCompositeDataGeometryFilter::New();
+        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_multiGroupGeomFilter->GetOutputPort(0);
+        ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+        m_multiGroupGeomFilter->Delete();
+    }
+    else
+    {
+        //m_geometryFilter->SetInputConnection( input );
+        //return m_geometryFilter->GetOutputPort();
+        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+            vtkDataSetSurfaceFilter::New();
+        m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_surfaceFilter->GetOutputPort();
+        ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+        m_surfaceFilter->Delete();
+    }
+    
+    // get every nth point from the dataSet data
     ptmask->SetOnRatio( 1.0 );
     ptmask->Update();
 
@@ -270,7 +291,7 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
 #endif
         c2p->Delete();
         ptmask->Delete();
-        tempAlgo->Delete();
+        //tempAlgo->Delete();
         //this->updateFlag = true;
         return tempGeode.release();
     }
@@ -278,7 +299,7 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
     {
         c2p->Delete();
         ptmask->Delete();
-        tempAlgo->Delete();
+        //tempAlgo->Delete();
         //mapper->Delete();
         //mapper = vtkPolyDataMapper::New();
         //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
@@ -293,10 +314,11 @@ int main( int argc, char** argv )
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
 
-    vtkDataObject* tempVtkDataSet = LoadDataSet( argv[ 1 ] );
+    lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
+    vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
     osg::Geode* tempGeode = CreatePolyData( tempVtkDataSet );
-    tempVtkDataSet->Delete();
-
+    //tempVtkDataSet->Delete();
+    delete tempDataSet;
     // Create an example data set.
     //lfx::DataSetPtr dsp( prepareDataSet() );
 
