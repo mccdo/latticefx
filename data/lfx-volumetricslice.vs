@@ -56,11 +56,13 @@ vec4 rotatePointToVector(vec4 point, vec4 vector)
    return rotPoint;
 }
 
-float findNearestCubeVertexDist(out vec4 mvNearestVertex)
+void findNearFarCubeVertexDist(out vec4 mvNearestVertex, out vec4 mvFarthestVertex, out float nearVertDist, out float farVertDist)
 {
-   float distMin = 100000.0;
+   nearVertDist = 100000.0;
+   farVertDist = -100000.0;
    vec4 cubeVertex = vec4(0.0, 0.0, 0.0, 1.0);
-   mvNearestVertex = vec4(0.0, 0.0, 0.0, distMin);
+   mvNearestVertex = vec4(0.0, 0.0, 0.0, nearVertDist);
+   mvFarthestVertex = vec4(0.0, 0.0, 0.0, farVertDist);
    
    for (int cubeX = 0; cubeX < 2; ++cubeX)
    {
@@ -75,56 +77,22 @@ float findNearestCubeVertexDist(out vec4 mvNearestVertex)
             cubeVertex.z = VolumeCenter.z;
             cubeVertex.z += (cubeZ == 1 ? VolumeDims.z * .5: -VolumeDims.z * .5);
             vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
+
             // In view space -z is in front of the camera
-            if (mvCubeVertex.z < 0.0)
-            {
-               float vertDist = length(mvCubeVertex);
-               if (vertDist < distMin)
-               {
-                  distMin = vertDist;
-                  mvNearestVertex = mvCubeVertex;
-               }
-            }
+             float vertDist = length(mvCubeVertex);
+             if (vertDist < nearVertDist)
+             {
+                nearVertDist = vertDist;
+                mvNearestVertex = mvCubeVertex;
+             }
+             if (vertDist > farVertDist)
+             {
+                farVertDist = vertDist;
+                mvFarthestVertex = mvCubeVertex;
+             }
          }
       }
    }
-   return distMin;
-}
-
-float findFarthestCubeVertexDist(out vec4 mvFarthestVertex)
-{
-   float distMax = -100000.0;
-   vec4 cubeVertex = vec4(0.0, 0.0, 0.0, 1.0);
-   mvFarthestVertex = vec4(0.0, 0.0, 0.0, distMax);
-
-   
-   for (int cubeX = 0; cubeX < 2; ++cubeX)
-   {
-      cubeVertex.x = VolumeCenter.x;
-      cubeVertex.x += (cubeX == 1 ? VolumeDims.x * .5: -VolumeDims.x * .5);
-      for (int cubeY = 0; cubeY < 2; ++cubeY)
-      {
-         cubeVertex.y = VolumeCenter.y;
-         cubeVertex.y += (cubeY == 1 ? VolumeDims.y * .5: -VolumeDims.y * .5);
-         for (int cubeZ = 0; cubeZ < 2; ++cubeZ)
-         {
-            cubeVertex.z = VolumeCenter.z;
-            cubeVertex.z += (cubeZ == 1 ? VolumeDims.z * .5: -VolumeDims.z * .5);
-            vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
-            // In view space -z is in front of the camera
-            if (mvCubeVertex.z < 0.0)
-            {
-               float vertDist = length(mvCubeVertex);
-               if (vertDist > distMax)
-               {
-                  distMax = vertDist;
-                  mvFarthestVertex = mvCubeVertex;
-               }
-            }
-         }
-      }
-   }
-   return distMax;
 }
 
 float getCubeDiagonalLength(void)
@@ -133,24 +101,28 @@ float getCubeDiagonalLength(void)
    return length(diagonalVec);
 }
 
+/*
+convert to using only the View matrix, Chris says.
+osg_ViewMatrix and osg_ViewMatrixInverse are available in vertex shader.
+According to Paul, model matrix can be extracted from the ModelView matrix since OSG provides both the VIew and Inverse View matrices independet of the gl_ModelView:
+    mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
+*/
+
 void main( void )
 {
    vec4 newVertexPos = gl_Vertex;
    vec4 mvNearestVertex;
    vec4 mvFarthestVertex;
    
-   // below lines un-needed
-   //TexSample = 1.0 - (TexStart + TexSpacing * gl_InstanceIDARB);
-   //Texcoord    = gl_MultiTexCoord0.xyz;
-
    float cubeDiagonal = getCubeDiagonalLength() * .5;
    
-   float farVertDist = findFarthestCubeVertexDist(mvFarthestVertex);
-   float nearVertMinDist = findNearestCubeVertexDist(mvNearestVertex);
+   float farVertDist, nearVertDist;
+   findNearFarCubeVertexDist(mvNearestVertex, mvFarthestVertex, nearVertDist, farVertDist);
+   
    if (farVertDist > 0.0)
    {
       float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
-      if (curQuadDist > nearVertMinDist && curQuadDist > 0.0)
+      if (curQuadDist > nearVertDist)
       {
          // All work to be done in view space
          // Find center of cube in model space where the origin is the camera location
