@@ -65,5 +65,17 @@ const RangeValues& ChannelDataLOD::getRange( const unsigned int index ) const
 }
 
 
+// Static
+bool ChannelDataLOD::allLODData( const ChannelDataList& data )
+{
+    BOOST_FOREACH( const ChannelDataPtr cdp, data )
+    {
+        if( dynamic_cast< ChannelDataLOD* >( cdp.get() ) == NULL )
+            return( false );
+    }
+    return( true );
+}
+
+
 // lfx
 }

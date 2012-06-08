@@ -54,6 +54,9 @@ public:
     virtual ~ChannelDataLOD();
 
 
+    virtual ChannelDataLOD* getAsLOD() { return( this ); }
+
+
     /** \brief TBD
     \details TBD */
     void setRange( const unsigned int index, const RangeValues& value );
@@ -74,6 +77,10 @@ public:
     against such destruction. reset() allows the ChannelData to refresh the
     working copy of the data from the original. */
     virtual void reset() {}
+
+    /** \brief TBD
+    \details TBD */
+    static bool allLODData( const ChannelDataList& data );
 
 protected:
     RangeValueList _ranges;

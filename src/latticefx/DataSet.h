@@ -231,6 +231,7 @@ protected:
 
     TimeSet getTimeSet() const;
     ChannelDataList getDataAtTime( const double time );
+    ChannelDataList getCompositeChannels( ChannelDataList data, const unsigned int index );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
     ChannelDataOSGArrayPtr createSizedMask(  const ChannelDataList& dataList );

@@ -49,5 +49,17 @@ ChannelDataImageSet::~ChannelDataImageSet()
 }
 
 
+// Static
+bool ChannelDataImageSet::allImageSetData( const ChannelDataList& data )
+{
+    BOOST_FOREACH( const ChannelDataPtr cdp, data )
+    {
+        if( dynamic_cast< ChannelDataImageSet* >( cdp.get() ) == NULL )
+            return( false );
+    }
+    return( true );
+}
+
+
 // lfx
 }

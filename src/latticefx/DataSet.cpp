@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/DataSet.h>
+#include <latticefx/ChannelDataImageSet.h>
 #include <latticefx/ChannelDataLOD.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/RootCallback.h>
@@ -340,10 +341,10 @@ bool DataSet::updateRendererPagingTexturesOnly()
         ChannelDataList currentData( getDataAtTime( time ) );
         ChannelDataList::iterator maskIt = _maskList.begin();
 
-        osg::Node* newChild( recurseGetSceneGraphPagingTexturesOnly( currentData, *maskIt ) );
+        osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraphPagingTexturesOnly( currentData, *maskIt ) );
 
         if( newChild != NULL )
-            _sceneGraph->addChild( newChild );
+            _sceneGraph->addChild( newChild.get() );
     }
     else
     {
@@ -424,6 +425,75 @@ bool DataSet::updateRenderer()
 
 osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& data, ChannelDataPtr mask )
 {
+    ChannelDataImageSet* imageData( NULL );
+    ChannelDataLOD* lodData( NULL );
+    if( !( data.empty() ) )
+    {
+        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( data[ 0 ].get() ) );
+        if( comp != NULL )
+        {
+            imageData = comp->getAsSet();
+            lodData = comp->getAsLOD();
+        }
+    }
+
+    if( imageData != NULL )
+    {
+        if( !( ChannelDataImageSet::allImageSetData( data ) ) )
+        {
+            OSG_WARN << "recurseGetSceneGraphPagingTexturesOnly: All data must be ChannelDataImageSet." << std::endl;
+            return( NULL );
+        }
+
+        OSG_NOTICE << "ImageSet only partially supported." << std::endl;
+
+        osg::ref_ptr< osg::Group > parent( new osg::Group );
+        unsigned int idx;
+        for( idx=0; idx < lodData->getNumChannels(); idx++ )
+        {
+            ChannelDataList currentData( getCompositeChannels( data, idx ) );
+            parent->addChild( recurseGetSceneGraphPagingTexturesOnly( currentData, mask ) );
+        }
+        return( parent.release() );
+    }
+    else if( lodData != NULL )
+    {
+        if( !( ChannelDataLOD::allLODData( data ) ) )
+        {
+            OSG_WARN << "recurseGetSceneGraphPagingTexturesOnly: All data must be ChannelDataLOD." << std::endl;
+            return( NULL );
+        }
+
+        osg::ref_ptr< osg::Group > parent( new osg::Group );
+        osg::ref_ptr< PageData > pageData( new PageData( lfx::PageData::PIXEL_SIZE_RANGE ) );
+        parent->setUserData( pageData.get() );
+        pageData->setParent( parent.get() );
+
+        unsigned int childIndex( 0 );
+        unsigned int idx;
+        for( idx=0; idx < lodData->getNumChannels(); idx++ )
+        {
+            ChannelDataList currentData( getCompositeChannels( data, idx ) );
+            osg::Node* child( recurseGetSceneGraphPagingTexturesOnly( currentData, mask ) );
+
+            if( child != NULL )
+            {
+                PageData::RangeData rangeData( lodData->getRange( idx ) );
+                rangeData._status = PageData::RangeData::UNLOADED;
+                rangeData._dbKey = generateDBKey();
+                pageData->setRangeData( childIndex++, rangeData );
+
+                parent->addChild( child );
+            }
+        }
+        return( parent.release() );
+    }
+    else
+    {
+        setInputs( _renderer, data );
+        return( _renderer->getSceneGraph( mask ) );
+    }
+
     return( NULL );
 }
 osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask )
@@ -507,6 +577,17 @@ ChannelDataList DataSet::getDataAtTime( const double time )
     }
     return( cdl );
 }
+ChannelDataList DataSet::getCompositeChannels( ChannelDataList data, const unsigned int index )
+{
+    ChannelDataList cdl;
+    BOOST_FOREACH( ChannelDataPtr cdp, data )
+    {
+        ChannelDataComposite* comp( static_cast< ChannelDataComposite* >( cdp.get() ) );
+        cdl.push_back( comp->getChannel( index ) );
+    }
+    return( cdl );
+}
+
 
 void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
 {

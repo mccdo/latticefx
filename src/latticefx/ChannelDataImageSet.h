@@ -56,6 +56,9 @@ public:
     virtual ~ChannelDataImageSet();
 
 
+    virtual ChannelDataImageSet* getAsSet() { return( this ); }
+
+
     /** \brief Prepare the ChannelData for processing by the DataSet.
     \details Prior to processing ChannelData in the LatticeFX data pipeline,
     the DataSet calls ChannelData::reset() on all attached ChannelData
@@ -65,6 +68,10 @@ public:
     against such destruction. reset() allows the ChannelData to refresh the
     working copy of the data from the original. */
     virtual void reset() {}
+
+    /** \brief TBD
+    \details TBD */
+    static bool allImageSetData( const ChannelDataList& data );
 
 protected:
 };
