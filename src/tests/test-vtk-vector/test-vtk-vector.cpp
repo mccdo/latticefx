@@ -52,6 +52,9 @@
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkMaskPoints.h>
+#include <vtkCompositeDataPipeline.h>
+#include <vtkAlgorithm.h>
+#include <vtkAlgorithmOutput.h>
 
 #include "OSGVectorStage.h"
 
@@ -202,6 +205,8 @@ vtkDataObject* LoadDataSet( std::string filename )
     else*/
     {
         tempDataSet->LoadData();
+        tempDataSet->SetActiveVector( 0 );
+        tempDataSet->SetActiveScalar( 0 );
     }
 
     vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
@@ -227,15 +232,16 @@ vtkDataObject* LoadDataSet( std::string filename )
     return tempVtkDataSet;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void CreatePolyData( vtkDataObject* tempVtkDataSet )
+osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
 {
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDataSet );
     //c2p->Update();
     
     // get every nth point from the dataSet data
+    vtkAlgorithmOutput* tempAlgo = ApplyGeometryFilterNew( tempVtkDataSet, c2p->GetOutputPort() );
     vtkMaskPoints* ptmask = vtkMaskPoints::New();
-    ptmask->SetInputConnection( ApplyGeometryFilterNew( tempVtkDataSet, c2p->GetOutputPort() ) );
+    ptmask->SetInputConnection( tempAlgo );
     ptmask->SetOnRatio( 1.0 );
     ptmask->Update();
 
@@ -244,9 +250,7 @@ void CreatePolyData( vtkDataObject* tempVtkDataSet )
         OSGVectorStage* tempStage = new OSGVectorStage();
         
         osg::ref_ptr< osg::Geode > tempGeode = 
-            tempStage->createInstanced( ptmask->GetOutput(), 
-                                   "vectorName",  
-                                   "scalarName", 1.0 );
+            tempStage->createInstanced( ptmask->GetOutput(), "Momentum", "Density", 1.0 );
         delete tempStage;
         
         osg::ref_ptr< osg::Uniform > warpScaleUniform =
@@ -264,27 +268,42 @@ void CreatePolyData( vtkDataObject* tempVtkDataSet )
 #if WRITE_IMAGE_DATA            
         osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
+        c2p->Delete();
+        ptmask->Delete();
+        tempAlgo->Delete();
         //this->updateFlag = true;
+        return tempGeode.release();
     }
     catch( std::bad_alloc )
     {
+        c2p->Delete();
+        ptmask->Delete();
+        tempAlgo->Delete();
         //mapper->Delete();
         //mapper = vtkPolyDataMapper::New();
         //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
         //    << std::endl << vprDEBUG_FLUSH;
-    }            
+    }       
+    return 0;     
 }
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
+    vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
+    prototype->Delete();
+
     vtkDataObject* tempVtkDataSet = LoadDataSet( argv[ 1 ] );
-    
+    osg::Geode* tempGeode = CreatePolyData( tempVtkDataSet );
+    tempVtkDataSet->Delete();
+
     // Create an example data set.
-    lfx::DataSetPtr dsp( prepareDataSet() );
+    //lfx::DataSetPtr dsp( prepareDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
-    viewer.setSceneData( dsp->getSceneData() );
+    //viewer.setSceneData( dsp->getSceneData() );
+    viewer.setSceneData( tempGeode );
     return( viewer.run() );
 }
