@@ -31,8 +31,9 @@ void main( void )
    if (Texcoord.x > 0.0 && Texcoord.x < 1.0 && Texcoord.y > 0.0 && Texcoord.y < 1.0 && Texcoord.z > 0.0 && Texcoord.z < 1.0)
    {
       fvBaseColor      = texture3D( VolumeTexture, modTexCoord );
-      fvBaseColor.a = fvBaseColor.r;
-      fvBaseColor.rgb      = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) ).rgb;
+      //fvBaseColor.a = fvBaseColor.r;
+      //fvBaseColor.rgb      = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) ).rgb;
+      fvBaseColor      = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
    }
    else
    {
@@ -43,6 +44,11 @@ void main( void )
    //vec4  fvTotalDiffuse   = fvDiffuse * fNDotL * fvBaseColor; 
    //vec4  fvTotalSpecular  = fvSpecular * ( pow( fRDotV, fSpecularPower ) );
   
+   float alphaThresh = 1.0/255.0;
+   if (fvBaseColor.a < alphaThresh)
+   {
+     discard;
+   }
    gl_FragColor = ( fvBaseColor );
        
 }
