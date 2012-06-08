@@ -32,6 +32,8 @@
 #include <latticefx/Renderer.h>
 #include <latticefx/TextureUtils.h>
 #include <latticefx/BoundUtils.h>
+#include <latticefx/VectorRenderer.h>
+#include <latticefx/TransferFunctionUtils.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -58,62 +60,85 @@
 
 #include "OSGVectorStage.h"
 
-class InstancedVectors : public lfx::Renderer
+lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
 {
-public:
-    InstancedVectors() : lfx::Renderer()
-    {}
-    virtual ~InstancedVectors()
-    {}
+    vtkPoints* points = tempVtkPD->GetPoints();
+    size_t dataSize = points->GetNumberOfPoints();
 
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    vtkPointData* pointData = tempVtkPD->GetPointData();
+    vtkDataArray* vectorArray = pointData->GetVectors(vectorName.c_str());
+    vtkDataArray* scalarArray = pointData->GetScalars(scalarName.c_str());
+    
+    double x[3];
+    double val;
+    //double rgb[3];
+    
+    osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
+    vertArray->resize( dataSize );
+    osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
+    dirArray->resize( dataSize );
+    osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
+    colorArray->resize( dataSize );
+
+    for( size_t i = 0; i < dataSize; ++i )
     {
-        const osg::Array* sourceArray( _inputs[ 0 ]->asOSGArray() );
-        const osg::Vec3Array* positions( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
+        {
+            //Get Position data
+            points->GetPoint( i, x );
+            (*vertArray)[ i ].set( x[0], x[1], x[2] );
 
-        osg::ref_ptr< osg::Geode > geode( new osg::Geode );
-
-        osg::Geometry* geom( osgwTools::makeArrow() );
-        geom->setUseDisplayList( false );
-        geom->setUseVertexBufferObjects( true );
-        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
-        geode->addDrawable( geom );
-
-        // Set the number of instances.
-        const unsigned int numElements( sourceArray->getNumElements() );
-        for( unsigned int idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
-            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
-
-        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( getInput( "positions" ) ) );
-        stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
-        stateSet->addUniform( posUni );
-
-        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( getInput( "directions" ) ) );
-        stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
-        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
-        stateSet->addUniform( dirUni );
-
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
-        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
-        stateSet->addUniform( texDim );
-
-        osg::Program* program = new osg::Program();
-        stateSet->setAttribute( program );
-        osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.vs" ) );
-        program->addShader( vertexShader );
-        osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.fs" ) );
-        program->addShader( fragmentShader );
-
-        return( geode.release() );
+            if( scalarArray )
+            {
+                //Setup the color array
+                scalarArray->GetTuple( i, &val );
+                (*colorArray)[ i ] = val;
+                //lut->GetColor( val, rgb );
+                //*scalarI++ = val;//rgb[0];
+                //*scalarI++ = rgb[1];
+                //*scalarI++ = rgb[2];
+            }
+            
+            if( vectorArray )
+            {
+                //Get Vector data
+                vectorArray->GetTuple( i, x );
+                osg::Vec3 v( x[0], x[1], x[2] );
+                v.normalize();
+                (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
+            }
+        }
     }
+    
+    
+    lfx::DataSetPtr dsp( new lfx::DataSet() );
 
-protected:
-};
+    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    dsp->addChannel( vertData );
+    
+    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    dsp->addChannel( dirData );
+    
+    // Add RTP operation to create a depth channel to use as input to the transfer function.
+    //DepthComputation* dc( new DepthComputation() );
+    //dc->addInput( "positions" );
+    //dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+    
+    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
+    renderOp->addInput( "positions" );
+    renderOp->addInput( "directions" );
+    //renderOp->addInput( "depth" ); // From DepthComputation channel creator
+    
+    // Configure transfer function.
+    /*renderOp->setTransferFunctionInput( "depth" );
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );*/
+    
+    dsp->setRenderer( renderOp );
+    
+    return( dsp );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAlgorithmOutput* input )
 {
@@ -135,7 +160,7 @@ vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAl
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-lfx::DataSetPtr prepareDataSet()
+/*lfx::DataSetPtr prepareDataSet()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
@@ -172,7 +197,7 @@ lfx::DataSetPtr prepareDataSet()
     dsp->setRenderer( renderOp );
 
     return( dsp );
-}
+}*/
 ////////////////////////////////////////////////////////////////////////////////
 lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
 {
@@ -233,7 +258,7 @@ lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
     return tempDataSet;
 }
 ////////////////////////////////////////////////////////////////////////////////
-osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
+lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
 {
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDataSet );
@@ -268,22 +293,16 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
 
     try
     {
-        OSGVectorStage* tempStage = new OSGVectorStage();
+        /*OSGVectorStage* tempStage = new OSGVectorStage();
         
         osg::ref_ptr< osg::Geode > tempGeode = 
             tempStage->createInstanced( ptmask->GetOutput(), "Momentum", "Density", 1.0 );
-        delete tempStage;
+        delete tempStage;*/
         
-        osg::ref_ptr< osg::Uniform > warpScaleUniform =
-            tempGeode->getDrawable( 0 )->getStateSet()->getUniform( "scalarMinMax" );
-        
+        lfx::DataSetPtr templfxDataSet = prepareDirectionVectors( ptmask->GetOutput(), "Momentum", "Density" );
+
         double scalarRange[ 2 ] = {0,1.0};
         //GetActiveDataSet()->GetUserRange( scalarRange );
-        osg::Vec2 opacityValVec;
-        warpScaleUniform->get( opacityValVec );
-        opacityValVec[ 0 ] = scalarRange[ 0 ];
-        opacityValVec[ 1 ] = scalarRange[ 1 ];
-        warpScaleUniform->set( opacityValVec );
         
         //geodes.push_back( tempGeode.get() );
 #if WRITE_IMAGE_DATA            
@@ -293,7 +312,7 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
         ptmask->Delete();
         //tempAlgo->Delete();
         //this->updateFlag = true;
-        return tempGeode.release();
+        return templfxDataSet;
     }
     catch( std::bad_alloc )
     {
@@ -305,7 +324,7 @@ osg::Geode* CreatePolyData( vtkDataObject* tempVtkDataSet )
         //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
         //    << std::endl << vprDEBUG_FLUSH;
     }       
-    return 0;     
+    return lfx::DataSetPtr();     
 }
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
@@ -316,7 +335,7 @@ int main( int argc, char** argv )
 
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
     vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
-    osg::Geode* tempGeode = CreatePolyData( tempVtkDataSet );
+    lfx::DataSetPtr testlfxDataSet = CreatePolyData( tempVtkDataSet );
     //tempVtkDataSet->Delete();
     delete tempDataSet;
     // Create an example data set.
@@ -325,7 +344,6 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
-    //viewer.setSceneData( dsp->getSceneData() );
-    viewer.setSceneData( tempGeode );
+    viewer.setSceneData( testlfxDataSet->getSceneData() );
     return( viewer.run() );
 }
