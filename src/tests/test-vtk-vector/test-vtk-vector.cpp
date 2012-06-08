@@ -47,6 +47,13 @@
 #include <vtk_utils/readWriteVtkThings.h>
 #include <vtk_utils/DataSet.h>
 
+#include <vtkDataObject.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkMaskPoints.h>
+
+#include "OSGVectorStage.h"
 
 class InstancedVectors : public lfx::Renderer
 {
@@ -104,7 +111,26 @@ public:
 
 protected:
 };
-
+////////////////////////////////////////////////////////////////////////////////
+vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAlgorithmOutput* input )
+{
+    if( tempVtkDataSet->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+            vtkCompositeDataGeometryFilter::New();
+        m_multiGroupGeomFilter->SetInputConnection( input );
+        return m_multiGroupGeomFilter->GetOutputPort(0);
+    }
+    else
+    {
+        //m_geometryFilter->SetInputConnection( input );
+        //return m_geometryFilter->GetOutputPort();
+        vtkDataSetSurfaceFilter* m_surfaceFilter = vtkDataSetSurfaceFilter::New();
+        m_surfaceFilter->SetInputConnection( input );
+        return m_surfaceFilter->GetOutputPort();
+    }
+}
+////////////////////////////////////////////////////////////////////////////////
 lfx::DataSetPtr prepareDataSet()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
@@ -143,66 +169,116 @@ lfx::DataSetPtr prepareDataSet()
 
     return( dsp );
 }
-
-void loadDataSet()
+////////////////////////////////////////////////////////////////////////////////
+vtkDataObject* LoadDataSet( std::string filename )
 {
     lfx::vtk_utils::DataSet* tempDataSet = new lfx::vtk_utils::DataSet();
-    tempDataSet->SetFileName( "filename" );
+    tempDataSet->SetFileName( filename );
     tempDataSet->SetUUID( "VTK_DATA_FILE", "test" );
     //ves::open::xml::DataValuePairPtr stringDVP =
     //    tempInfoPacket->GetProperty( "VTK_ACTIVE_DATA_ARRAYS" );
     /*std::vector< std::string > vecStringArray;
     if( stringDVP )
     {
-        ves::open::xml::OneDStringArrayPtr stringArray =
-        boost::dynamic_pointer_cast <
-        ves::open::xml::OneDStringArray > (
-                                           stringDVP->GetDataXMLObject() );
-        vecStringArray = stringArray->GetArray();
-        tempDataSet->SetActiveDataArrays( vecStringArray );
+    ves::open::xml::OneDStringArrayPtr stringArray =
+    boost::dynamic_pointer_cast <
+    ves::open::xml::OneDStringArray > (
+    stringDVP->GetDataXMLObject() );
+    vecStringArray = stringArray->GetArray();
+    tempDataSet->SetActiveDataArrays( vecStringArray );
     }*/
-            const std::string tempDataSetFilename =
-        tempDataSet->GetFileName();
-        std::cout << "|\tLoading data for file "
-        << tempDataSetFilename
-        << std::endl;
-        //tempDataSet->SetArrow(
-        //                        ves::xplorer::ModelHandler::instance()->GetArrow() );
-        //Check and see if the data is part of a transient series
-        /*if( tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" ) )
-        {
-            std::string precomputedSurfaceDir =
-            tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" )->
-            GetDataString();
-            lastDataAdded->LoadTransientData( precomputedSurfaceDir );
-        }
-        else*/
-        {
-            tempDataSet->LoadData();
-        }
-        //If the data load failed
-        /*if( !tempDataSet->GetDataSet() )
-        {
-            std::cout << "|\tData failed to load." << std::endl;
-            //_activeModel->DeleteDataSet( tempDataSetFilename );
-        }
-        else
-        {
-            std::cout << "|\tData is loaded for file "
+    const std::string tempDataSetFilename = tempDataSet->GetFileName();
+    std::cout << "|\tLoading data for file " << tempDataSetFilename << std::endl;
+    //tempDataSet->SetArrow(
+    //                        ves::xplorer::ModelHandler::instance()->GetArrow() );
+    //Check and see if the data is part of a transient series
+    /*if( tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" ) )
+    {
+    std::string precomputedSurfaceDir =
+    tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" )->
+    GetDataString();
+    lastDataAdded->LoadTransientData( precomputedSurfaceDir );
+    }
+    else*/
+    {
+        tempDataSet->LoadData();
+    }
+
+    vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
+    //If the data load failed
+    if( !tempVtkDataSet )
+    {
+        std::cout << "|\tData failed to load." << std::endl;
+        //_activeModel->DeleteDataSet( tempDataSetFilename );
+    }
+    else
+    {
+        std::cout << "|\tData is loaded for file "
             << tempDataSetFilename
             << std::endl;
-            if( lastDataAdded->GetParent() == lastDataAdded )
-            {
-                _activeModel->GetDCS()->
-                AddChild( lastDataAdded->GetDCS() );
-                _activeModel->SetActiveDataSet( 0 );
-            }
-            m_datafileLoaded( tempDataSetFilename );
-        }*/
+        //if( lastDataAdded->GetParent() == lastDataAdded )
+        //{
+        //_activeModel->GetDCS()->
+        //AddChild( lastDataAdded->GetDCS() );
+        //_activeModel->SetActiveDataSet( 0 );
+        //}
+        //m_datafileLoaded( tempDataSetFilename );
+    }
+    return tempVtkDataSet;
 }
+////////////////////////////////////////////////////////////////////////////////
+void CreatePolyData( vtkDataObject* tempVtkDataSet )
+{
+    vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+    c2p->SetInput( tempVtkDataSet );
+    //c2p->Update();
+    
+    // get every nth point from the dataSet data
+    vtkMaskPoints* ptmask = vtkMaskPoints::New();
+    ptmask->SetInputConnection( ApplyGeometryFilterNew( tempVtkDataSet, c2p->GetOutputPort() ) );
+    ptmask->SetOnRatio( 1.0 );
+    ptmask->Update();
 
+    try
+    {
+        OSGVectorStage* tempStage = new OSGVectorStage();
+        
+        osg::ref_ptr< osg::Geode > tempGeode = 
+            tempStage->createInstanced( ptmask->GetOutput(), 
+                                   "vectorName",  
+                                   "scalarName", 1.0 );
+        delete tempStage;
+        
+        osg::ref_ptr< osg::Uniform > warpScaleUniform =
+            tempGeode->getDrawable( 0 )->getStateSet()->getUniform( "scalarMinMax" );
+        
+        double scalarRange[ 2 ] = {0,1.0};
+        //GetActiveDataSet()->GetUserRange( scalarRange );
+        osg::Vec2 opacityValVec;
+        warpScaleUniform->get( opacityValVec );
+        opacityValVec[ 0 ] = scalarRange[ 0 ];
+        opacityValVec[ 1 ] = scalarRange[ 1 ];
+        warpScaleUniform->set( opacityValVec );
+        
+        //geodes.push_back( tempGeode.get() );
+#if WRITE_IMAGE_DATA            
+        osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
+#endif
+        //this->updateFlag = true;
+    }
+    catch( std::bad_alloc )
+    {
+        //mapper->Delete();
+        //mapper = vtkPolyDataMapper::New();
+        //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
+        //    << std::endl << vprDEBUG_FLUSH;
+    }            
+}
+////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    vtkDataObject* tempVtkDataSet = LoadDataSet( argv[ 1 ] );
+    
     // Create an example data set.
     lfx::DataSetPtr dsp( prepareDataSet() );
 
