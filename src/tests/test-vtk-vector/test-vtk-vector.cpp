@@ -44,6 +44,8 @@
 
 #include <osgwTools/Shapes.h>
 
+#include <vtk_utils/readWriteVtkThings.h>
+#include <vtk_utils/DataSet.h>
 
 
 class InstancedVectors : public lfx::Renderer
@@ -142,7 +144,62 @@ lfx::DataSetPtr prepareDataSet()
     return( dsp );
 }
 
-
+void loadDataSet()
+{
+    lfx::vtk_utils::DataSet* tempDataSet = new lfx::vtk_utils::DataSet();
+    tempDataSet->SetFileName( "filename" );
+    tempDataSet->SetUUID( "VTK_DATA_FILE", "test" );
+    //ves::open::xml::DataValuePairPtr stringDVP =
+    //    tempInfoPacket->GetProperty( "VTK_ACTIVE_DATA_ARRAYS" );
+    /*std::vector< std::string > vecStringArray;
+    if( stringDVP )
+    {
+        ves::open::xml::OneDStringArrayPtr stringArray =
+        boost::dynamic_pointer_cast <
+        ves::open::xml::OneDStringArray > (
+                                           stringDVP->GetDataXMLObject() );
+        vecStringArray = stringArray->GetArray();
+        tempDataSet->SetActiveDataArrays( vecStringArray );
+    }*/
+            const std::string tempDataSetFilename =
+        tempDataSet->GetFileName();
+        std::cout << "|\tLoading data for file "
+        << tempDataSetFilename
+        << std::endl;
+        //tempDataSet->SetArrow(
+        //                        ves::xplorer::ModelHandler::instance()->GetArrow() );
+        //Check and see if the data is part of a transient series
+        /*if( tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" ) )
+        {
+            std::string precomputedSurfaceDir =
+            tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" )->
+            GetDataString();
+            lastDataAdded->LoadTransientData( precomputedSurfaceDir );
+        }
+        else*/
+        {
+            tempDataSet->LoadData();
+        }
+        //If the data load failed
+        /*if( !tempDataSet->GetDataSet() )
+        {
+            std::cout << "|\tData failed to load." << std::endl;
+            //_activeModel->DeleteDataSet( tempDataSetFilename );
+        }
+        else
+        {
+            std::cout << "|\tData is loaded for file "
+            << tempDataSetFilename
+            << std::endl;
+            if( lastDataAdded->GetParent() == lastDataAdded )
+            {
+                _activeModel->GetDCS()->
+                AddChild( lastDataAdded->GetDCS() );
+                _activeModel->SetActiveDataSet( 0 );
+            }
+            m_datafileLoaded( tempDataSetFilename );
+        }*/
+}
 
 int main( int argc, char** argv )
 {
