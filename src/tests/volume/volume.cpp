@@ -35,6 +35,7 @@
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
+#include <osg/MatrixTransform>
 
 #include <iostream>
 
@@ -79,9 +80,16 @@ int main( int argc, char** argv )
     arguments.read( "-f", fileName );
 
     // Create an example data set.
-    osg::Group* root( new osg::Group );
+    osg::MatrixTransform* root( new osg::MatrixTransform );
     lfx::DataSetPtr dsp( prepareVolume( fileName ) );
     root->addChild( dsp->getSceneData() );
+
+	// Test Matrix position/scale
+	osg::Matrix transform;
+	// the translate will occur in the unscaled units, and the scaling will occur around the new origin.
+	transform *= osg::Matrixd::translate(1.0, 2.0, 3.0);
+	transform *= osg::Matrixd::scale(10.0, 5.0, 2.5);
+	root->setMatrix(transform);
 
     /*
     // Test hardware clip planes
