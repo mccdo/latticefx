@@ -44,9 +44,6 @@
 #include <osgViewer/Viewer>
 #include <osgDB/FileUtils>
 
-#include <osgwTools/Shapes.h>
-
-#include <vtk_utils/readWriteVtkThings.h>
 #include <vtk_utils/DataSet.h>
 
 #include <vtkDataObject.h>
@@ -58,8 +55,7 @@
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
 #include <vtkMath.h>
-
-#include "OSGVectorStage.h"
+#include <vtkPointData.h>
 
 lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
 {
