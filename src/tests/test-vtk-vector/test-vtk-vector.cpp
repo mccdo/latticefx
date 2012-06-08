@@ -57,6 +57,7 @@
 #include <vtkCompositeDataPipeline.h>
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
+#include <vtkMath.h>
 
 #include "OSGVectorStage.h"
 
@@ -68,6 +69,9 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
     vtkPointData* pointData = tempVtkPD->GetPointData();
     vtkDataArray* vectorArray = pointData->GetVectors(vectorName.c_str());
     vtkDataArray* scalarArray = pointData->GetScalars(scalarName.c_str());
+    
+    double scalarRange[ 2 ] = {0,1.0};
+    scalarArray->GetRange( scalarRange );
     
     double x[3];
     double val;
@@ -82,30 +86,29 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
 
     for( size_t i = 0; i < dataSize; ++i )
     {
-        {
-            //Get Position data
-            points->GetPoint( i, x );
-            (*vertArray)[ i ].set( x[0], x[1], x[2] );
+        //Get Position data
+        points->GetPoint( i, x );
+        (*vertArray)[ i ].set( x[0], x[1], x[2] );
 
-            if( scalarArray )
-            {
-                //Setup the color array
-                scalarArray->GetTuple( i, &val );
-                (*colorArray)[ i ] = val;
-                //lut->GetColor( val, rgb );
-                //*scalarI++ = val;//rgb[0];
-                //*scalarI++ = rgb[1];
-                //*scalarI++ = rgb[2];
-            }
-            
-            if( vectorArray )
-            {
-                //Get Vector data
-                vectorArray->GetTuple( i, x );
-                osg::Vec3 v( x[0], x[1], x[2] );
-                v.normalize();
-                (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
-            }
+        if( scalarArray )
+        {
+            //Setup the color array
+            scalarArray->GetTuple( i, &val );
+            val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+            (*colorArray)[ i ] = val;
+            //lut->GetColor( val, rgb );
+            //*scalarI++ = val;//rgb[0];
+            //*scalarI++ = rgb[1];
+            //*scalarI++ = rgb[2];
+        }
+        
+        if( vectorArray )
+        {
+            //Get Vector data
+            vectorArray->GetTuple( i, x );
+            osg::Vec3 v( x[0], x[1], x[2] );
+            v.normalize();
+            (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
         }
     }
     
@@ -118,6 +121,9 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
     lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
     dsp->addChannel( dirData );
     
+    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    dsp->addChannel( colorData );
+
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     //DepthComputation* dc( new DepthComputation() );
     //dc->addInput( "positions" );
@@ -127,12 +133,12 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
     renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
-    //renderOp->addInput( "depth" ); // From DepthComputation channel creator
+    renderOp->addInput( "scalar" );
     
     // Configure transfer function.
-    /*renderOp->setTransferFunctionInput( "depth" );
+    renderOp->setTransferFunctionInput( "scalar" );
     renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );*/
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
     
     dsp->setRenderer( renderOp );
     
@@ -159,45 +165,6 @@ vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAl
         return m_surfaceFilter->GetOutputPort();
     }
 }
-////////////////////////////////////////////////////////////////////////////////
-/*lfx::DataSetPtr prepareDataSet()
-{
-    osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
-    osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
-    const unsigned int w( 4 ), h( 1 ), d( 1 );
-    vertArray->resize( w*h*d );
-    dirArray->resize( w*h*d );
-    unsigned int wIdx, hIdx, dIdx, index( 0 );
-    for( wIdx=0; wIdx<w; ++wIdx )
-    {
-        for( hIdx=0; hIdx<h; ++hIdx )
-        {
-            for( dIdx=0; dIdx<d; ++dIdx )
-            {
-                const float x( ((double)wIdx)/(w-1.) * 4. - 2. );
-                const float y( 0. );
-                const float z( 0. );
-                (*vertArray)[ index ].set( x, y, z );
-                (*dirArray)[ index ].set( sin(x), .5, .5 );
-                ++index;
-            }
-        }
-    }
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-
-    // Create a data set and add the vertex and direction data.
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
-    dsp->addChannel( vertData );
-    dsp->addChannel( dirData );
-
-    lfx::RendererPtr renderOp( new InstancedVectors() );
-    renderOp->addInput( vertData->getName() );
-    renderOp->addInput( dirData->getName() );
-    dsp->setRenderer( renderOp );
-
-    return( dsp );
-}*/
 ////////////////////////////////////////////////////////////////////////////////
 lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
 {
@@ -293,18 +260,8 @@ lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
 
     try
     {
-        /*OSGVectorStage* tempStage = new OSGVectorStage();
-        
-        osg::ref_ptr< osg::Geode > tempGeode = 
-            tempStage->createInstanced( ptmask->GetOutput(), "Momentum", "Density", 1.0 );
-        delete tempStage;*/
-        
         lfx::DataSetPtr templfxDataSet = prepareDirectionVectors( ptmask->GetOutput(), "Momentum", "Density" );
 
-        double scalarRange[ 2 ] = {0,1.0};
-        //GetActiveDataSet()->GetUserRange( scalarRange );
-        
-        //geodes.push_back( tempGeode.get() );
 #if WRITE_IMAGE_DATA            
         osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
