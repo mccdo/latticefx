@@ -14,4 +14,6 @@ file(GLOB_RECURSE _sourceFiles ${HEADER_PATH}/*.cxx )
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
+    LATTICEFX_LIBRARIES
+        ${_vtkLibraries}
 )

@@ -59,6 +59,7 @@ endif()
 #        vtkexpat
 #        VPIC
 #        Cosmo
+message( ${_vtkLibraries} )
 
 set( _requiredDependencyIncludes
     ${POCO_INCLUDE_DIR}
@@ -75,7 +76,7 @@ set( _requiredDependencyLibraries
     ${Boost_LIBRARIES}
 	${OSGWORKS_LIBRARIES}
     ${OSG_LIBRARIES}
-    ${_vtkLibraries}
+    #${_vtkLibraries}
 )
 
 
