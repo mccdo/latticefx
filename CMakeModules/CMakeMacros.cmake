@@ -59,22 +59,26 @@ endif()
 #        vtkexpat
 #        VPIC
 #        Cosmo
-message( ${_vtkLibraries} )
+#message( ${_vtkLibraries} )
 
 set( _requiredDependencyIncludes
     ${POCO_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
-	${OSGWORKS_INCLUDE_DIR}
+	#${OSGWORKS_INCLUDE_DIR}
     ${OSG_INCLUDE_DIRS}
 )
 set( _projectIncludes
     ${PROJECT_SOURCE_DIR}/src
 )
 
+set(_osgWorksLibraries
+    osgwTools
+)
+
 set( _requiredDependencyLibraries
     ${POCO_LIBRARIES}
     ${Boost_LIBRARIES}
-	${OSGWORKS_LIBRARIES}
+	${_osgWorksLibraries}
     ${OSG_LIBRARIES}
     #${_vtkLibraries}
 )
