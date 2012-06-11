@@ -80,16 +80,35 @@ int main( int argc, char** argv )
     arguments.read( "-f", fileName );
 
     // Create an example data set.
-    osg::MatrixTransform* root( new osg::MatrixTransform );
+	osg::Group* root (new osg::Group);
+    osg::MatrixTransform* mtA( new osg::MatrixTransform );
+	osg::MatrixTransform* mtB( new osg::MatrixTransform );
+	osg::MatrixTransform* mtC( new osg::MatrixTransform );
     lfx::DataSetPtr dsp( prepareVolume( fileName ) );
-    root->addChild( dsp->getSceneData() );
 
 	// Test Matrix position/scale
-	osg::Matrix transform;
+	osg::Matrix transformA, transformB, transformC;
 	// the translate will occur in the unscaled units, and the scaling will occur around the new origin.
-	transform *= osg::Matrixd::translate(1.0, 2.0, 3.0);
-	transform *= osg::Matrixd::scale(10.0, 5.0, 2.5);
-	root->setMatrix(transform);
+	// A is just translate and nominal scale
+	transformA *= osg::Matrixd::translate(5.0, 0.0, 0.0);
+	transformA *= osg::Matrixd::scale(1.0, 1.0, 0.5);
+	mtA->setMatrix(transformA);
+	// B: scale but no translate
+	transformB *= osg::Matrixd::translate(0.0, 0.0, 0.0);
+	transformB *= osg::Matrixd::scale(2.0, 2.0, 2.0);
+	mtB->setMatrix(transformB);
+	// C: translate, scale AND rotate
+	transformC *= osg::Matrixd::translate(10.0, 10.0, 10.0);
+	transformC *= osg::Matrixd::scale(2.0, 2.0, 1.0);
+	transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 0.0, 1.0); // 45 degrees about +Z axis
+	mtC->setMatrix(transformB);
+	root->addChild(mtA);
+	root->addChild(mtB);
+	root->addChild(mtC);
+	// multi-parent the same scene data
+	mtA->addChild( dsp->getSceneData() );
+	mtB->addChild( dsp->getSceneData() );
+	mtC->addChild( dsp->getSceneData() );
 
     /*
     // Test hardware clip planes
