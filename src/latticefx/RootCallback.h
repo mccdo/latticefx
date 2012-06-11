@@ -98,6 +98,7 @@ public:
     \details The Camera is used to transform pageable child bounding volumes
     into screen space to determine their pixel size. */
     void setCamera( osg::Camera* camera );
+    const osg::Camera* getCamera() const;
 
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.

@@ -79,6 +79,10 @@ void RootCallback::setCamera( osg::Camera* camera )
 {
     _camera = camera;
 }
+const osg::Camera* RootCallback::getCamera() const
+{
+    return( _camera.get() );
+}
 void RootCallback::setAnimationTime( const double time )
 {
     _animationTime = time;
