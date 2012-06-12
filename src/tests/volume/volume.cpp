@@ -90,18 +90,19 @@ int main( int argc, char** argv )
 	osg::Matrix transformA, transformB, transformC;
 	// the translate will occur in the unscaled units, and the scaling will occur around the new origin.
 	// A is just translate and nominal scale
-	transformA *= osg::Matrixd::translate(5.0, 0.0, 0.0);
 	transformA *= osg::Matrixd::scale(1.0, 1.0, 0.5);
+	transformA *= osg::Matrixd::translate(-50.0, 0.0, 0.0);
 	mtA->setMatrix(transformA);
 	// B: scale but no translate
-	transformB *= osg::Matrixd::translate(0.0, 0.0, 0.0);
+	transformB *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 1.0, 0.0); // 45 degrees about +Z axis
 	transformB *= osg::Matrixd::scale(2.0, 2.0, 2.0);
+	transformB *= osg::Matrixd::translate(0.0, 0.0, 0.0);
 	mtB->setMatrix(transformB);
 	// C: translate, scale AND rotate
-	transformC *= osg::Matrixd::translate(10.0, 10.0, 10.0);
+	transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 1.0, 0.0, 0.0); // 45 degrees about +Z axis
 	transformC *= osg::Matrixd::scale(2.0, 2.0, 1.0);
-	transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 0.0, 1.0); // 45 degrees about +Z axis
-	mtC->setMatrix(transformB);
+	transformC *= osg::Matrixd::translate(50.0, 0.0, 0.0);
+	mtC->setMatrix(transformC);
 	root->addChild(mtA);
 	root->addChild(mtB);
 	root->addChild(mtC);
