@@ -200,5 +200,24 @@ float VolumeRenderer::getPlaneSpacing() const
 {
 	return( _planeSpacing );
 }
+
+void VolumeRenderer::setVolumeDims( const osg::Vec3f& volDims)
+{
+	_volumeDims = volDims;
+}
+osg::Vec3f VolumeRenderer::getVolumeDims() const
+{
+	return( _volumeDims );
+}
+
+void VolumeRenderer::setVolumeOrigin( const osg::Vec3f& volOrigin)
+{
+	_volumeOrigin = volOrigin;
+}
+osg::Vec3f VolumeRenderer::getVolumeOrigin() const
+{
+	return( _volumeOrigin );
+}
+
 // lfx
 }

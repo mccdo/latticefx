@@ -72,7 +72,18 @@ public:
     /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
     float getPlaneSpacing() const;
 
-	// <<<>>> volume dims and origin
+	// volume dims and origin
+    /** \brief Set dimensions (in world units) of the volume box.
+    \details This can be varied on every draw. */
+	void setVolumeDims( const osg::Vec3f& volDims);
+    /** \brief Get dimensions (in world units) of the volume box. */
+    osg::Vec3f getVolumeDims() const;
+
+    /** \brief Set location (in world units) of the center of the volume box.
+    \details This can be varied on every draw. */
+	void setVolumeOrigin( const osg::Vec3f& volOrigin);
+    /** \brief Get the location (in world units) of the center of the volume box. */
+    osg::Vec3f getVolumeOrigin() const;
 
 protected:
 	unsigned int _maxSlices;
