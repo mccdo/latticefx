@@ -88,6 +88,9 @@ int main( int argc, char** argv )
 	osg::MatrixTransform* mtC( new osg::MatrixTransform );
     lfx::DataSetPtr dsp( prepareVolume( fileName ) );
 
+	osg::Vec3 volumeDimensions(60.0f, 60.0f, 30.0f), volumePosition(0.0f, 0.0f, 0.0f);
+	// unclear how to set these dimensions from here
+
 	// Test Matrix position/scale
 	osg::Matrix transformA, transformB, transformC;
 	// the translate will occur in the unscaled units, and the scaling will occur around the new origin.
@@ -95,13 +98,13 @@ int main( int argc, char** argv )
 	transformA *= osg::Matrixd::scale(1.0, 1.0, 0.5);
 	transformA *= osg::Matrixd::translate(-50.0, 0.0, 0.0);
 	mtA->setMatrix(transformA);
-	// B: scale but no translate
-	transformB *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 1.0, 0.0); // 45 degrees about +Z axis
+	// B: scale and rotate but no translate
+	transformB *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 1.0, 0.0); // 45 degrees about +Y axis
 	transformB *= osg::Matrixd::scale(2.0, 2.0, 2.0);
 	transformB *= osg::Matrixd::translate(0.0, 0.0, 0.0);
 	mtB->setMatrix(transformB);
 	// C: translate, scale AND rotate
-	transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 1.0, 0.0, 0.0); // 45 degrees about +Z axis
+	transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 1.0, 0.0, 0.0); // 45 degrees about +X axis
 	transformC *= osg::Matrixd::scale(2.0, 2.0, 1.0);
 	transformC *= osg::Matrixd::translate(50.0, 0.0, 0.0);
 	mtC->setMatrix(transformC);
