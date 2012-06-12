@@ -47,6 +47,10 @@ public:
           _rootcb( rootcb ),
           _pageThread( lfxdev::PagingThread::instance() )
     {
+        BOOST_FOREACH( osg::Node* node, nodes )
+        {
+            node->accept( *this );
+        }
     }
     ~UpdatePagingVisitor()
     {
@@ -62,7 +66,10 @@ public:
             return;
         }
 
-
+        const osg::Matrix matrix( osg::computeLocalToWorld( getNodePath(), false ) );
+        _rootcb->processPageableGroup( group, pageData, matrix );
+        // TBD Need to know which subgraphs to traverse,
+        // and how to set the node masks.
         traverse( group );
     }
 
@@ -87,8 +94,10 @@ RootCallback::~RootCallback()
 }
 
 
-void RootCallback::findValidChildrenForTime( NodeList& results, const osg::Group* parent )
+void RootCallback::findValidChildrenForTime( NodeList& results, osg::Group* parent )
 {
+    if( parent->getNumChildren() == 1 )
+        results.push_back( parent->getChild( 0 ) );
 }
 
 void RootCallback::updateTime( osg::Group* grp )
@@ -145,10 +154,26 @@ void RootCallback::updateTime( osg::Group* grp )
     }
 }
 
+void RootCallback::processPageableGroup( osg::Group& group, lfx::PageData* pageData, const osg::Matrix& xform )
+{
+    lfxdev::PagingThread* pageThread( lfxdev::PagingThread::instance() );
+
+    const osg::Matrix modelView( xform * _modelView );
+
+    // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
+    // to give it some spatial location and size. Retrieve that bound.
+    const osg::BoundingSphere& bSphere( group.getBound() );
+    double pixelSize( computePixelSize( bSphere, modelView ) );
+
+    // Valid range is only the pixelSize. We'll see if it's inside the childRange,
+    // which is a min and max pixelSize to display the child.
+    lfx::RangeValues validRange = lfx::RangeValues( pixelSize, pixelSize );
+
+    std::cout << "Custom RootCallback: processPageableGroup." << std::endl;
+}
+
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
-    std::cout << "Custom RootCallback: update." << std::endl;
-
     NodeList rootGroupsToTraverse;
     if( node->getUserData() != NULL )
     {
@@ -161,8 +186,19 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     else
         rootGroupsToTraverse.push_back( node );
 
-    // Traverse scene graph(s) to update pageable data.
-    UpdatePagingVisitor updatePaging( rootGroupsToTraverse, this );
+    if( getCamera() == NULL )
+    {
+        // Paging based on LOD calls computePixelSize(), which
+        // requires non-NULL _camera.
+        OSG_WARN << "RootCallback::updatePaging(): NULL _camera." << std::endl;
+        return;
+    }
+    else
+    {
+        // Traverse scene graph(s) to update pageable data.
+        _modelView = osg::computeLocalToWorld( nv->getNodePath(), false );
+        UpdatePagingVisitor updatePaging( rootGroupsToTraverse, this );
+    }
 
     // Find the appropriate child for the current time.
     updateTime( node->asGroup() );

@@ -29,6 +29,7 @@
 #include "RootCallback.h"
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelDataOSGArray.h>
+#include <latticefx/ChannelDataOSGImage.h>
 #include <latticefx/ChannelDataLOD.h>
 #include <latticefx/Preprocess.h>
 #include <latticefx/Renderer.h>
@@ -37,15 +38,17 @@
 #include <osgwTools/Shapes.h>
 #include <osg/Geode>
 #include <osg/Geometry>
+#include <osg/Image>
+#include <osg/Texture2D>
 
 #include <osgDB/WriteFile>
 #include <osgViewer/Viewer>
 
 
-class ColorProcess : public lfx::Preprocess
+class ImageProcess : public lfx::Preprocess
 {
 public:
-    ColorProcess()
+    ImageProcess()
       : lfx::Preprocess()
     {
         setActionType( lfx::Preprocess::REPLACE_DATA );
@@ -53,16 +56,16 @@ public:
 
     virtual lfx::ChannelDataPtr operator()()
     {
-        lfx::ChannelDataOSGArrayPtr input( boost::static_pointer_cast< lfx::ChannelDataOSGArray >( _inputs[ 0 ] ) );
+        lfx::ChannelDataOSGImagePtr input( boost::static_pointer_cast< lfx::ChannelDataOSGImage >( _inputs[ 0 ] ) );
 
-        osg::Vec3Array* color( new osg::Vec3Array );
-        color->push_back( osg::Vec3( 0., 1., 0. ) );
-        lfx::ChannelDataOSGArrayPtr newData( new lfx::ChannelDataOSGArray( color, input->getName() ) );
+        osg::Image* farImage( new osg::Image );
+        farImage->setFileName( "pagetex-far.png" );
+        lfx::ChannelDataOSGImagePtr newImage( new lfx::ChannelDataOSGImage( "texture", farImage ) );
 
         lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
             lfx::RangeValues( 0., 20000. ) );
-        cdLOD->setRange( cdLOD->addChannel( newData ),
+        cdLOD->setRange( cdLOD->addChannel( newImage ),
             lfx::RangeValues( 20000., FLT_MAX ) );
         return( cdLOD );
     }
@@ -73,16 +76,14 @@ class BoxRenderer : public lfx::Renderer
 public:
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataOSGArray* cda( static_cast< lfx::ChannelDataOSGArray* >( _inputs[ 0 ].get() ) );
-        osg::Vec3Array* c( static_cast< osg::Vec3Array* >( cda->asOSGArray() ) );
-
-        osg::Vec4Array* color( new osg::Vec4Array );
-        color->push_back( osg::Vec4( (*c)[ 0 ], 1.f ) );
+        lfx::ChannelDataOSGImage* cdi( static_cast< lfx::ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
+        osg::Image* image( cdi->getImage() );
 
         osg::Geode* geode( new osg::Geode() );
+        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+        stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( image ) );
 
         osg::Geometry* geom( osgwTools::makeBox( osg::Vec3( .5, .5, .5 ) ) );
-        geom->setColorArray( color );
         geom->setColorBinding( osg::Geometry::BIND_OVERALL );
         geode->addDrawable( geom );
 
@@ -92,21 +93,21 @@ public:
 
 lfx::DataSetPtr createDataSet()
 {
-    osg::Vec3Array* c( new osg::Vec3Array );
-    c->push_back( osg::Vec3( 1., 0., 0. ) );
-    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( c, "color" ) );
+    osg::Image* image( new osg::Image() );
+    image->setFileName( "pagetex-near0.png" );
+    lfx::ChannelDataOSGImagePtr imageData( new lfx::ChannelDataOSGImage( "texture", image ) );
 
     lfx::DataSetPtr dsp( new lfx::DataSet() );
     dsp->setSceneGraphPagesTexturesOnly();
     dsp->useCustomRootCallback( new lfxdev::RootCallback() );
-    dsp->addChannel( colorData );
+    dsp->addChannel( imageData );
 
-    ColorProcess* op( new ColorProcess );
-    op->addInput( "color" );
+    ImageProcess* op( new ImageProcess );
+    op->addInput( "texture" );
     dsp->addPreprocess( lfx::PreprocessPtr( op ) );
 
     BoxRenderer* renderOp( new BoxRenderer );
-    renderOp->addInput( "color" );
+    renderOp->addInput( "texture" );
     dsp->setRenderer( lfx::RendererPtr( renderOp ) );
 
     return( dsp );

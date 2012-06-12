@@ -85,6 +85,7 @@ public:
     RootCallback();
     RootCallback( const RootCallback& rhs );
 
+    void processPageableGroup( osg::Group& group, lfx::PageData* pageData, const osg::Matrix& xform );
 
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
@@ -106,7 +107,9 @@ protected:
     value of the child node. */
     static inline bool inRange( const lfx::RangeValues& validRange, const lfx::RangeValues& childRange );
 
-    void findValidChildrenForTime( NodeList& results, const osg::Group* parent );
+    void findValidChildrenForTime( NodeList& results, osg::Group* parent );
+
+    osg::Matrix _modelView;
 };
 
 
