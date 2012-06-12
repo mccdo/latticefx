@@ -43,6 +43,8 @@
 #include <osg/Program>
 #include <osg/Uniform>
 #include <osgDB/FileUtils>
+#include <osg/Depth>
+
 
 namespace lfx {
 
@@ -168,6 +170,10 @@ osg::StateSet* VolumeRenderer::getRootState()
 	stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
     stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+	// disable depth writes too
+	osg::Depth* depth = new osg::Depth;
+	depth->setWriteMask(false); // don't bother writing the depth buffer
+	stateSet->setAttributeAndModes(depth, osg::StateAttribute::ON );
 
     // Set base class transfer function and volume texture uniforms.
 	addHardwareFeatureUniforms( stateSet.get() );
