@@ -91,7 +91,7 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 	geom->setUseVertexBufferObjects( true );
 	// OSG has no clue where our vertex shader will place the geometric data,
 	// so specify an initial bound to allow proper culling and near/far computation.
-	osg::BoundingBox bb( _volumeDims * -.5, _volumeDims * .5 ); // <<<>>> incorporate origin
+	osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
 	geom->setInitialBound( bb );
 	// Add geometric data and the PrimitiveSet. Specify numInstances as _maxSlices.
 	createDAIGeometry( *geom, _maxSlices );
