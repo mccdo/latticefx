@@ -11,6 +11,9 @@
 uniform vec3 VolumeDims;
 uniform vec3 VolumeCenter;
 
+uniform mat4 osg_ViewMatrixInverse;
+uniform mat4 osg_ViewMatrix;
+
 uniform float PlaneSpacing;
 //uniform float TexStart;
 //uniform float TexSpacing;
@@ -56,7 +59,7 @@ vec4 rotatePointToVector(vec4 point, vec4 vector)
    return rotPoint;
 }
 
-void findNearFarCubeVertexDist(out vec4 mvNearestVertex, out vec4 mvFarthestVertex, out float nearVertDist, out float farVertDist)
+void findNearFarCubeVertexDist(vec3 cubeCenter, vec3 cubeDims, out vec4 mvNearestVertex, out vec4 mvFarthestVertex, out float nearVertDist, out float farVertDist)
 {
    nearVertDist = 100000.0;
    farVertDist = -100000.0;
@@ -66,17 +69,17 @@ void findNearFarCubeVertexDist(out vec4 mvNearestVertex, out vec4 mvFarthestVert
    
    for (int cubeX = 0; cubeX < 2; ++cubeX)
    {
-      cubeVertex.x = VolumeCenter.x;
-      cubeVertex.x += (cubeX == 1 ? VolumeDims.x * .5: -VolumeDims.x * .5);
+      cubeVertex.x = cubeCenter.x;
+      cubeVertex.x += (cubeX == 1 ? cubeDims.x * .5: -cubeDims.x * .5);
       for (int cubeY = 0; cubeY < 2; ++cubeY)
       {
-         cubeVertex.y = VolumeCenter.y;
-         cubeVertex.y += (cubeY == 1 ? VolumeDims.y * .5: -VolumeDims.y * .5);
+         cubeVertex.y = cubeCenter.y;
+         cubeVertex.y += (cubeY == 1 ? cubeDims.y * .5: -cubeDims.y * .5);
          for (int cubeZ = 0; cubeZ < 2; ++cubeZ)
          {
-            cubeVertex.z = VolumeCenter.z;
-            cubeVertex.z += (cubeZ == 1 ? VolumeDims.z * .5: -VolumeDims.z * .5);
-            vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
+            cubeVertex.z = cubeCenter.z;
+            cubeVertex.z += (cubeZ == 1 ? cubeDims.z * .5: -cubeDims.z * .5);
+            vec4 mvCubeVertex = osg_ViewMatrix * cubeVertex;
 
             // In view space -z is in front of the camera
              float vertDist = length(mvCubeVertex);
@@ -95,18 +98,25 @@ void findNearFarCubeVertexDist(out vec4 mvNearestVertex, out vec4 mvFarthestVert
    }
 }
 
-float getCubeDiagonalLength(void)
+vec3 getCubeScales(mat4 modelMat)
 {
-   vec3 diagonalVec = vec3(VolumeDims.x, VolumeDims.y, VolumeDims.z);
-   return length(diagonalVec);
+   vec3 modelMatScales;
+   modelMatScales.x = length(modelMat[0].xyz);
+   modelMatScales.y = length(modelMat[1].xyz);
+   modelMatScales.z = length(modelMat[2].xyz);
+   return modelMatScales;
 }
 
-/*
-convert to using only the View matrix, Chris says.
-osg_ViewMatrix and osg_ViewMatrixInverse are available in vertex shader.
-According to Paul, model matrix can be extracted from the ModelView matrix since OSG provides both the VIew and Inverse View matrices independet of the gl_ModelView:
-    mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
-*/
+float getCubeDiagonalLength(vec3 modelMatScales, out vec3 cubeDims)
+{
+   cubeDims = VolumeDims * modelMatScales;
+   return length(cubeDims);
+}
+
+vec3 getCubeCenterPos(vec3 modelMatTrans)
+{
+   return VolumeCenter + modelMatTrans;
+}
 
 void main( void )
 {
@@ -114,10 +124,15 @@ void main( void )
    vec4 mvNearestVertex;
    vec4 mvFarthestVertex;
    
-   float cubeDiagonal = getCubeDiagonalLength() * .5;
+   mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
+   vec3 modelTranslation = modelMat[3].xyz;
+   vec3 cubeDims;
+   
+   float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims) * .5;
+   vec3 cubeCenter = getCubeCenterPos(modelTranslation);
    
    float farVertDist, nearVertDist;
-   findNearFarCubeVertexDist(mvNearestVertex, mvFarthestVertex, nearVertDist, farVertDist);
+   findNearFarCubeVertexDist(cubeCenter, cubeDims, mvNearestVertex, mvFarthestVertex, nearVertDist, farVertDist);
    
    if (farVertDist > 0.0)
    {
@@ -126,7 +141,7 @@ void main( void )
       {
          // All work to be done in view space
          // Find center of cube in model space where the origin is the camera location
-         vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4(VolumeCenter, 1.0);
+         vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4(cubeCenter, 1.0);
          // find the view vector from camera to object
          vec4 mvCubeDirection = vec4(normalize(mvVolumeCenter.xyz), 1.0);
          // Find location of our new quad
@@ -153,8 +168,8 @@ void main( void )
          
          // Find the coordinates in model space relative to the data cube
          vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
-         Texcoord    = vec3(.5 + (vertexCopy.x - VolumeCenter.x) / VolumeDims.x,
-            .5 + (vertexCopy.y - VolumeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - VolumeCenter.z) / VolumeDims.z);
+         Texcoord    = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
+            .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
        }
       else
       {
