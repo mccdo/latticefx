@@ -81,6 +81,8 @@ int main( int argc, char** argv )
 
     // Create an example data set.
 	osg::Group* root (new osg::Group);
+    root->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
     osg::MatrixTransform* mtA( new osg::MatrixTransform );
 	osg::MatrixTransform* mtB( new osg::MatrixTransform );
 	osg::MatrixTransform* mtC( new osg::MatrixTransform );
