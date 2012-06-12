@@ -169,11 +169,8 @@ osg::StateSet* VolumeRenderer::getRootState()
 	fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
 	stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
-    stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
-	// disable depth writes too
-	osg::Depth* depth = new osg::Depth;
-	depth->setWriteMask(false); // don't bother writing the depth buffer
-	stateSet->setAttributeAndModes(depth, osg::StateAttribute::ON );
+    osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
+    stateSet->setAttributeAndModes( depth, osg::StateAttribute::ON );
 
     // Set base class transfer function and volume texture uniforms.
 	addHardwareFeatureUniforms( stateSet.get() );
