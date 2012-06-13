@@ -36,7 +36,7 @@ include( FindOSGHelper )
 PocoFinder()
 find_package( Boost REQUIRED thread date_time filesystem system)
 
-find_package( osgWorks REQUIRED )
+find_package( osgWorks 2.0.0 REQUIRED )
 if( osgWorks_FOUND )
     include( ${osgWorks_USE_FILE} )
 endif()
