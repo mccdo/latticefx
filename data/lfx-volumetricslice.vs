@@ -12,17 +12,13 @@ uniform vec3 VolumeDims;
 uniform vec3 VolumeCenter;
 
 uniform mat4 osg_ViewMatrixInverse;
-uniform mat4 osg_ViewMatrix;
 
 uniform float PlaneSpacing;
-//uniform float TexStart;
-//uniform float TexSpacing;
 
 varying vec3 Texcoord;
 //varying vec3 ViewDirection;
 //varying vec3 LightDirection;
 //varying vec3 Normal;
-//varying float TexSample;
 
 vec4 rotatePointToVector(vec4 point, vec4 vector)
 {
@@ -79,7 +75,7 @@ void findNearFarCubeVertexDist(vec3 cubeCenter, vec3 cubeDims, out vec4 mvNeares
          {
             cubeVertex.z = cubeCenter.z;
             cubeVertex.z += (cubeZ == 1 ? cubeDims.z * .5: -cubeDims.z * .5);
-            vec4 mvCubeVertex = osg_ViewMatrix * cubeVertex;
+            vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
 
             // In view space -z is in front of the camera
              float vertDist = length(mvCubeVertex);
@@ -101,9 +97,9 @@ void findNearFarCubeVertexDist(vec3 cubeCenter, vec3 cubeDims, out vec4 mvNeares
 vec3 getCubeScales(mat4 modelMat)
 {
    vec3 modelMatScales;
-   modelMatScales.x = length(modelMat[0].xyz);
-   modelMatScales.y = length(modelMat[1].xyz);
-   modelMatScales.z = length(modelMat[2].xyz);
+   modelMatScales.x = length(vec3(modelMat[0].x, modelMat[1].x, modelMat[2].x));
+   modelMatScales.y = length(vec3(modelMat[0].y, modelMat[1].y, modelMat[2].y));
+   modelMatScales.z = length(vec3(modelMat[0].z, modelMat[1].z, modelMat[2].z));
    return modelMatScales;
 }
 
@@ -125,7 +121,7 @@ void main( void )
    vec4 mvFarthestVertex;
    
    mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
-   vec3 modelTranslation = modelMat[3].xyz;
+   vec3 modelTranslation = vec3(modelMat[0].w, modelMat[1].w, modelMat[2].w);
    vec3 cubeDims;
    
    float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims) * .5;
