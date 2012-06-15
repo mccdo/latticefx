@@ -189,8 +189,6 @@ public:
     construct a scene graph that doesn't page geometry, pages only
     texture data instead. */
     void setSceneGraphPagesTexturesOnly();
-
-    void useCustomRootCallback( lfx::RootCallback* rootcb );
     ///\}
 
 
@@ -217,14 +215,10 @@ public:
 protected:
     bool updatePreprocessing();
     bool updateRunTimeProcessing();
-    bool updateRendererPagingTexturesOnly();
     bool updateRenderer();
 
     void createFallbackMaskList();
 
-    /** \brief TBD
-    \details TBD */
-    osg::Node* recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& data, ChannelDataPtr mask );
     /** \brief TBD
     \details TBD */
     osg::Node* recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask );
@@ -253,8 +247,6 @@ protected:
 
     osg::ref_ptr< osg::Group > _sceneGraph;
     DirtyFlags _dirtyFlags;
-    bool _sceneGraphPagesTexturesOnly;
-    osg::ref_ptr< lfx::RootCallback > _rootcb;
 };
 
 typedef boost::shared_ptr< DataSet > DataSetPtr;

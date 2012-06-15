@@ -28,10 +28,13 @@
 
 #include <latticefx/RootCallback.h>
 #include <latticefx/PagingThread.h>
+#include <latticefx/LoadRequest.h>
 #include <latticefx/PageData.h>
-#include <osg/Transform>
-#include <boost/foreach.hpp>
 
+#include <osg/NodeVisitor>
+#include <osg/Texture2D>
+
+#include <boost/foreach.hpp>
 #include <iostream>
 
 
@@ -39,50 +42,21 @@ namespace lfx {
 
 
 RootCallback::RootCallback()
-  : _stubGroup( new osg::Group ),
+  : osg::NodeCallback(),
     _animationTime( 0. ),
     _timeRange( RangeValues( -0.5, 0.5 ) )
 {
 }
 RootCallback::RootCallback( const RootCallback& rhs )
   : osg::NodeCallback( rhs ),
-    _camera( rhs._camera ),
-    _stubGroup( rhs._stubGroup ),
     _animationTime( rhs._animationTime ),
-    _timeRange( rhs._timeRange ),
-    _pageParentList( rhs._pageParentList ),
-    _timeSeriesParentList( rhs._timeSeriesParentList )
+    _timeRange( rhs._timeRange )
 {
 }
 RootCallback::~RootCallback()
 {
 }
 
-void RootCallback::addPageParent( osg::Group* parent )
-{
-    _pageParentList.push_back( parent );
-}
-void RootCallback::addTimeSeriesParent( osg::Group* parent )
-{
-    // Seems like we should only be able to support one time series parent.
-    // Might be wrong. Leaving this as a list, but clearing it so that we
-    // can have only one time series parent.
-    _timeSeriesParentList.clear();
-    _timeSeriesParentList.push_back( parent );
-
-    // TBD Hm. Could possibly get added multiple times!
-    _pageParentList.clear(); // Yuck. Need to fix this situation very soon.
-    addPageParent( parent );
-}
-
-void RootCallback::setCamera( osg::Camera* camera )
-{
-    _camera = camera;
-}
-osg::Camera* RootCallback::getCamera() const
-{
-    return( _camera.get() );
-}
 void RootCallback::setAnimationTime( const double time )
 {
     _animationTime = time;
@@ -100,242 +74,33 @@ RangeValues RootCallback::getTimeRange() const
     return( _timeRange );
 }
 
-void RootCallback::updatePaging( const osg::Matrix& modelView )
-{
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
 
-    // Add any new page requests.
-    BOOST_FOREACH( GroupList::value_type grp, _pageParentList )
-    {
-        if( grp->getUserData() == NULL )
-        {
-            OSG_WARN << "RootCallback::updatePaging(): page parent has NULL UserData. Should be ;fx::PageData." << std::endl;
-            continue;
-        }
-        lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
-        //std::cout << "  PageData." << std::endl;
-
-        RangeValues validRange;
-        if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
-        {
-            if( _camera == NULL )
-            {
-                // computePixelSize() requires non-NULL _camera.
-                OSG_WARN << "RootCallback::updatePaging(): NULL _camera." << std::endl;
-                return;
-            }
-
-            // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
-            // to give it some spatial location and size. Retrieve that bound.
-            const osg::BoundingSphere& bSphere( grp->getBound() );
-            double pixelSize( computePixelSize( bSphere, modelView ) );
-
-            // Valid range is only the pixelSize. We'll see if it's inside the childRange,
-            // which is a min and max pixelSize to display the child.
-            validRange = RangeValues( pixelSize, pixelSize );
-            //std::cout << "Pixel size: " << testValue << std::endl;
-        }
-        else if( pageData->getRangeMode() == PageData::TIME_RANGE )
-        {
-            // validRange is set by the application. The assumption is that this will be large enough
-            // to accomodate several children, only one of which will be displayed (by use of NodeMask).
-            // This is different from pixel size paging because the time step (and therefore valid child)
-            // is expected to change quite rapidly, so wee need to page in a buffer around the current
-            // play time to help ensure a smooth animation free ofpaging bottlenecks.
-            //
-            // The current animation time could be anything, but we want a time range around it with
-            // min and max values between the PageData's min and max time values. Note that when the
-            // animation reaches the end, it's possible that the min validRange value could be greater than
-            // the max validRange value to support smooth playback as time wraps around.
-            const double minTime( /*TBD*/ 0. );
-            const double maxTime( /*TBD*/ 8. );
-
-            validRange.first = getWrappedTime( _timeRange.first + getAnimationTime(), minTime, maxTime );
-            validRange.second = getWrappedTime( _timeRange.second + getAnimationTime(), minTime, maxTime );
-        }
-
-        // PagingThread lets us send multiple requests at once, which helps reduce
-        // locking and thread blocking.
-        PagingThread::LoadRequestList addList;
-        DBKeyList retrieveList;
-
-        // removeExpired is initially false and only set to true if we add a child.
-        // This prevents us from removing expired children before the required children
-        // are available, which would render nothing for a couple frames.
-        bool removeExpired( false );
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
-        {
-            const unsigned int childIndex( rangeDataPair.first );
-            PageData::RangeData& rangeData( rangeDataPair.second );
-
-            RangeValues childRange;
-            if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
-            {
-                // Child-specific PageData::RangeData contains min and max pixel size values as a std::pair.
-                childRange = rangeData._rangeValues;
-            }
-            else
-            {
-                // If paging based on time, only the min value of the range -- the time for
-                // the child -- is relevant. We'll see if it's inside the validRange (a
-                // range around the current play time).
-                childRange = RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
-            }
-
-            switch( rangeData._status )
-            {
-            case PageData::RangeData::UNLOADED:
-            {
-                //std::cout << "    RangeData UNLOADED" << std::endl;
-                if( inRange( validRange, childRange ) )
-                {
-                    // Child state is UNLOADED, but it's in range. Add a request to the PagingThread.
-                    addList.push_back( PagingThread::LoadRequest( childIndex, rangeData._dbKey ) );
-                    rangeData._status = PageData::RangeData::LOAD_REQUESTED;
-                }
-                break;
-            }
-            case PageData::RangeData::LOAD_REQUESTED:
-            {
-                //std::cout << "    RangeData LOAD_REQUESTED" << std::endl;
-                // Add DBKey to retrieveList so we can retrieve multiple requests at once.
-                retrieveList.push_back( rangeData._dbKey );
-                break;
-            }
-            case PageData::RangeData::LOADED:
-            case PageData::RangeData::ACTIVE:
-            {
-                //std::cout << "    RangeData ACTIVE" << std::endl;
-                // Nothing to do.
-                break;
-            }
-            }
-        }
-
-        // Add all load requests with a single call.
-        if( !( addList.empty() ) )
-        {
-            pageThread->addLoadRequests( addList );
-        }
-
-        // If we have requested loads, see if they are available, and if so,
-        // put them in the scene graph.
-        if( !( retrieveList.empty() ) )
-        {
-            // Retrieve the requests with a single function call to minimize locking / blocking.
-            PagingThread::LoadRequestList requests( pageThread->retrieveLoadRequests( retrieveList ) );
-            if( !( requests.empty() ) )
-            {
-                BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
-                {
-                    PageData::RangeData& rangeData( rangeDataPair.second );
-                    if ( rangeData._status != PageData::RangeData::LOAD_REQUESTED )
-                        continue;
-
-                    PagingThread::LoadRequestList::iterator request( PagingThread::find(
-                        requests, rangeData._dbKey ) );
-                    if( ( request != requests.end() ) && ( request->_loadedModel != NULL ) )
-                    {
-                        // Now that we know we have something in range to render, set removeExpired to true
-                        // so we can remove any expired children (avoids rendering no children).
-                        removeExpired = true;
-                        pageData->getParent()->setChild( request->_childIndex, request->_loadedModel.get() ); // Replaces Group stub at childIndex.
-                        rangeData._status = PageData::RangeData::LOADED;
-                    }
-                }
-            }
-        }
-
-        // Remove any expired children. Do *not* remove any children with status LOADED;
-        // these are the children we just added! Instead, set their status to ACTIVE.
-        if( removeExpired )
-        {
-            DBKeyList cancelList;
-            BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
-            {
-                const unsigned int childIndex( rangeDataPair.first );
-                PageData::RangeData& rangeData( rangeDataPair.second );
-
-                // Get childRange just as we did previously.
-                RangeValues childRange;
-                if( pageData->getRangeMode() == PageData::PIXEL_SIZE_RANGE )
-                {
-                    childRange = rangeData._rangeValues;
-                }
-                else
-                {
-                    childRange = RangeValues( rangeData._rangeValues.first, rangeData._rangeValues.first );
-                }
-
-                switch( rangeData._status )
-                {
-                case PageData::RangeData::LOAD_REQUESTED:
-                {
-                    if( !inRange( validRange, childRange ) )
-                    {
-                        // Cancel request. Add to cancel list to batch-cancel multiple requests.
-                        cancelList.push_back( rangeData._dbKey );
-                        rangeData._status = PageData::RangeData::UNLOADED;
-                    }
-                    break;
-                }
-                case PageData::RangeData::ACTIVE:
-                {
-                    if( !inRange( validRange, childRange ) )
-                    {
-                        // Remove this expired child by placing a Group stub in its place.
-                        pageData->getParent()->setChild( childIndex, _stubGroup.get() );
-                        rangeData._status = PageData::RangeData::UNLOADED;
-                    }
-                    break;
-                }
-                case PageData::RangeData::LOADED:
-                {
-                    // We just loaded this one. Change status to ACTIVE.
-                    // If it's no longer valid, we'll remove it the *next* time we
-                    // load something (unloading it now might leave a gap where
-                    // nothing is rendered).
-                    rangeData._status = PageData::RangeData::ACTIVE;
-                }
-                }
-            }
-
-            // Submit all cancellation requests with a single function call.
-            if( !( cancelList.empty() ) )
-            {
-                pageThread->cancelLoadRequests( cancelList );
-            }
-        }
-    }
-}
-
-void RootCallback::updateTimeSeries()
+void RootCallback::pageByTime( osg::Group* grp )
 {
     osg::Node* bestChild( NULL );
     double minTimeDifference( FLT_MAX );
 
-    // Iterate over all parents registered as time series parents,
-    // and find best child for current _animationTime.
-    BOOST_FOREACH( GroupList::value_type grp, _timeSeriesParentList )
     {
         if( grp->getUserData() == NULL )
         {
-            OSG_WARN << "RootCallback::updateTimeSeries: time series parent has NULL UserData. Should be ;fx::PageData." << std::endl;
+            OSG_WARN << "RootCallback::updateTimeSeries: time series parent has NULL UserData. Should be lfx::PageData." << std::endl;
             return;
         }
         lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
-        //std::cout << "  PageData." << std::endl;
-        if( pageData->getRangeMode() != PageData::TIME_RANGE )
+        //std::cout << "  lfx::PageData." << std::endl;
+        if( pageData->getRangeMode() != lfx::PageData::TIME_RANGE )
         {
             OSG_WARN << "RootCallback::updateTimeSeries: RangeMode is not TIME_RANGE." << std::endl;
             return;
         }
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            PageData::RangeData& rangeData( rangeDataPair.second );
-            if( rangeData._status != PageData::RangeData::ACTIVE )
+            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            if( rangeData._status != lfx::PageData::RangeData::ACTIVE )
+                // Currently trying to find the best child for the current time, so if
+                // the status isn't ACTIVE, we don't care about it.
                 continue;
 
             double timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
@@ -353,6 +118,7 @@ void RootCallback::updateTimeSeries()
         //OSG_WARN << "\tCheck to make sure there is at least one ACTIVE child." << std::endl;
         //return;
     }
+    /*
     BOOST_FOREACH( GroupList::value_type grp, _timeSeriesParentList )
     {
         unsigned int childIndex;
@@ -362,33 +128,295 @@ void RootCallback::updateTimeSeries()
             child->setNodeMask( ( child == bestChild ) ? 0xffffffff : 0x0 );
         }
     }
+    */
+}
+
+void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat, const osg::NodePath& nodePath )
+{
+    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+
+    osg::Matrix view, proj;
+    osg::ref_ptr< const osg::Viewport> vp;
+    pageThread->getTransforms( view, proj, vp );
+    osg::Matrix modelView( modelMat * view );
+
+    // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
+    // to give it some spatial location and size. Retrieve that bound.
+    const osg::BoundingSphere& bSphere( grp->getBound() );
+    const double pixelSize( computePixelSize( bSphere, modelView, proj, vp.get() ) );
+
+    // Valid range is only the pixelSize. We'll see if it's inside the childRange,
+    // which is a min and max pixelSize to display the child.
+    const lfx::RangeValues validRange( pixelSize, pixelSize );
+
+    osg::NodePath childPath( nodePath );
+
+    bool removeExpired( false );
+    lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    {
+        const unsigned int childIndex( rangeDataPair.first );
+        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+        osg::Node* child( grp->getChild( childIndex ) );
+        childPath.push_back( child );
+
+        const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+
+        switch( rangeData._status )
+        {
+        case lfx::PageData::RangeData::UNLOADED:
+            if( inRange )
+            {
+                lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
+                pageThread->addLoadRequest( request );
+                rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+            }
+            break;
+
+        case lfx::PageData::RangeData::LOAD_REQUESTED:
+            if( inRange )
+            {
+                lfx::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
+                if( request != NULL )
+                {
+                    enableImages( child, request );
+                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    removeExpired = true;
+                }
+            }
+            else
+                pageThread->cancelLoadRequest( childPath );
+
+        default:
+        case lfx::PageData::RangeData::LOADED:
+        case lfx::PageData::RangeData::ACTIVE:
+            // Nothing to do.
+            break;
+        }
+
+        childPath.pop_back();
+    }
+
+    if( removeExpired )
+    {
+        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        {
+            const unsigned int childIndex( rangeDataPair.first );
+            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            osg::Node* child( grp->getChild( childIndex ) );
+
+            const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+            switch( rangeData._status )
+            {
+            case lfx::PageData::RangeData::LOADED:
+                rangeData._status = lfx::PageData::RangeData::ACTIVE;
+                child->setNodeMask( ~0u );
+                break;
+            case lfx::PageData::RangeData::ACTIVE:
+                if( !inRange )
+                {
+                    reclaimImages( child );
+                    rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                }
+                // Intentional fallthrough.
+            default:
+                child->setNodeMask( 0u );
+                break;
+            }
+        }
+    }
 }
 
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
-    //std::cout << "Update." << std::endl;
-
-    if( !( _pageParentList.empty() ) )
+    if( node->getUserData() == NULL )
     {
-        // modelView matrix required for bounding sphere pixel size computation (LOD).
-        osg::Matrix modelMatrix( osg::computeLocalToWorld( nv->getNodePath() ) );
-        osg::Matrix modelView( ( _camera == NULL ) ? modelMatrix :
-            modelMatrix * _camera->getViewMatrix() );
-        updatePaging( modelView );
+        traverse( node, nv );
+        return;
     }
 
-    if( !( _timeSeriesParentList.empty() ) )
-        updateTimeSeries();
+    osg::Group* grp( node->asGroup() );
+    lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+    if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
+    {
+        pageByTime( grp );
+    }
+    else
+    {
+        // This is the model matrix only. OSG UpdateVisitor does not start
+        // traversal on root Camera node, so there is no 'view' component.
+        const osg::Matrix modelMat( osg::computeLocalToWorld( nv->getNodePath(), false ) );
+        pageByDistance( grp, modelMat, nv->getNodePath() );
+    }
 
-    // TBD Possible future update uniforms containing projection of volume vis into screen space.
-
+#if 1
     traverse( node, nv );
+    // TBD this is temporary. Traverse everyone. Will probably
+    // nor render correctly. OK for dev.
+    // 
+    // Probably want to traverse specific children based on
+    // the range data status, then afterwards, set the
+    // nodemask to all 1s for the active child and 0 for others.
+    // That way we only cull/draw the active scene graph branch.
+#else
+    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    {
+        const unsigned int childIndex( rangeDataPair.first );
+        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+
+        switch( rangeData._status )
+        {
+        case lfx::PageData::RangeData::LOAD_REQUESTED:
+            traverse( grp->getChild( childIndex ), nv );
+            break;
+
+        default:
+        case lfx::PageData::RangeData::UNLOADED:
+        case lfx::PageData::RangeData::LOADED:
+        case lfx::PageData::RangeData::ACTIVE:
+            break;
+        }
+    }
+#endif
 }
 
 
-double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView )
+class CollectImagesVisitor : public osg::NodeVisitor
 {
-    const osg::Vec3 ecCenter = bSphere.center() * modelView ;
+public:
+    CollectImagesVisitor()
+      : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
+        _request( lfx::LoadRequestImagePtr( new lfx::LoadRequestImage ) )
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        _request->_keys.push_back( key );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+
+    lfx::LoadRequestImagePtr _request;
+};
+
+lfx::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
+{
+    CollectImagesVisitor collect;
+    child->accept( collect );
+
+    LoadRequestImagePtr request( collect._request );
+    request->_path = childPath;
+    return( request );
+}
+
+class DistributeImagesVisitor : public osg::NodeVisitor
+{
+public:
+    DistributeImagesVisitor( lfx::LoadRequestImagePtr request )
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
+        _request( request )
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        osg::Image* image( _request->findAsImage( key ) );
+                        tex->setImage( 0, image );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+
+protected:
+    lfx::LoadRequestImagePtr _request;
+};
+
+void RootCallback::enableImages( osg::Node* child, lfx::LoadRequestPtr request )
+{
+    DistributeImagesVisitor distribute(
+        boost::static_pointer_cast< lfx::LoadRequestImage >( request ) );
+    child->accept( distribute );
+}
+
+class ReclaimImagesVisitor : public osg::NodeVisitor
+{
+public:
+    ReclaimImagesVisitor()
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN )
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        osg::Image* image( new osg::Image() );
+                        image->setFileName( key );
+                        tex->setImage( 0, image );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+};
+
+void RootCallback::reclaimImages( osg::Node* child )
+{
+    ReclaimImagesVisitor reclaim;
+    child->accept( reclaim );
+}
+
+double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
+        const osg::Matrix& proj, const osg::Viewport* vp )
+{
+    const osg::Vec3 ecCenter = bSphere.center() * mv ;
     if( -( ecCenter.z() ) < bSphere.radius() )
     {
         // Inside the bounding sphere.
@@ -397,17 +425,15 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
 
     // Compute pixelRadius, the sphere radius in pixels.
 
-    const osg::Viewport* vp( _camera->getViewport() );
-
     // Get clip coord center, then get NDX x value (div by w), then get window x value.
-    osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * _camera->getProjectionMatrix() );
+    osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * proj );
     ccCenter.x() /= ccCenter.w();
     double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
 
     // Repeast, but start with an eye coord point that is 'radius' units to the right of center.
     // Result is the pixel location of the rightmost edge of the bounding sphere.
     const osg::Vec4 ecRight( ecCenter.x() + bSphere.radius(), ecCenter.y(), ecCenter.z(), 1. );
-    osg::Vec4 ccRight( ecRight * _camera->getProjectionMatrix() );
+    osg::Vec4 ccRight( ecRight * proj );
     ccRight.x() /= ccRight.w();
     double rx( ( ( ccRight.x() + 1. ) * .5 ) * vp->width() + vp->x() );
 
@@ -417,6 +443,7 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
     // Circle area A = pi * r^2
     return( osg::PI * pixelRadius * pixelRadius );
 }
+
 
 double RootCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
 {

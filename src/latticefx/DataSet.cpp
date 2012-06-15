@@ -44,8 +44,7 @@ namespace lfx {
 
 DataSet::DataSet()
   : _sceneGraph( new osg::Group ),
-    _dirtyFlags( ALL_DIRTY ),
-    _sceneGraphPagesTexturesOnly( false )
+    _dirtyFlags( ALL_DIRTY )
 {
     RootCallback* rootcb( new RootCallback() );
     _sceneGraph->setUpdateCallback( rootcb );
@@ -62,8 +61,7 @@ DataSet::DataSet( const DataSet& rhs )
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
     _maskList( rhs._maskList ),
-    _dirtyFlags( ALL_DIRTY ),
-    _sceneGraphPagesTexturesOnly( rhs._sceneGraphPagesTexturesOnly )
+    _dirtyFlags( ALL_DIRTY )
 {
 }
 DataSet::~DataSet()
@@ -213,10 +211,7 @@ bool DataSet::updateAll()
     if( ( _dirtyFlags & ALL_DIRTY ) != 0 )
     {
         _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
-        if( _sceneGraphPagesTexturesOnly )
-            updateRendererPagingTexturesOnly();
-        else
-            updateRenderer();
+        updateRenderer();
     }
 
     _dirtyFlags = NOT_DIRTY;
@@ -325,7 +320,7 @@ bool DataSet::updateRunTimeProcessing()
     return( true );
 }
 
-bool DataSet::updateRendererPagingTexturesOnly()
+bool DataSet::updateRenderer()
 {
     if( _renderer == NULL )
         return( false );
@@ -339,91 +334,45 @@ bool DataSet::updateRendererPagingTexturesOnly()
         // Simplified scene graph creation when not using time series.
         const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
         ChannelDataList currentData( getDataAtTime( time ) );
-        ChannelDataList::iterator maskIt = _maskList.begin();
+        ChannelDataList::iterator maskIt( _maskList.begin() );
 
-        osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraphPagingTexturesOnly( currentData, *maskIt ) );
+        osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
 
         if( newChild != NULL )
             _sceneGraph->addChild( newChild.get() );
     }
     else
     {
-        OSG_WARN << "DataSet: TimeSet size > 1 not yet supported in 'page textures only' mode." << std::endl;
-    }
+        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
+        PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
+        pageData->setRangeMode( lfx::PageData::TIME_RANGE );
+        unsigned int childIndex( 0 );
 
-    return( false );
-}
-bool DataSet::updateRenderer()
-{
-    if( _renderer != NULL )
-    {
-        if( _maskList.empty() )
-            createFallbackMaskList();
-
-        TimeSet timeSet( getTimeSet() );
-        if( timeSet.size() > 1 )
+        ChannelDataList::iterator maskIt( _maskList.begin() );
+        BOOST_FOREACH( double time, timeSet )
         {
-            RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
-            rootcb->addTimeSeriesParent( _sceneGraph.get() );
-            PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
-            pageData->setRangeMode( lfx::PageData::TIME_RANGE );
-            unsigned int childIndex( 0 );
-            osg::ref_ptr< osg::Group > stubGroup( new osg::Group );
-
-            ChannelDataList::iterator maskIt = _maskList.begin();
-            BOOST_FOREACH( double time, timeSet )
-            {
-                // Get the data at the current time and assign as inputs to the Renderer.
-                ChannelDataList currentData( getDataAtTime( time ) );
-                setInputs( _renderer, currentData );
-
-                osg::Node* newChild( _renderer->getSceneGraph( *maskIt ) );
-                if( newChild != NULL )
-                {
-                    PageData::RangeData rangeData( time, 0. );
-                    rangeData._status = PageData::RangeData::UNLOADED;
-                    rangeData._dbKey = generateDBKey();
-                    pageData->setRangeData( childIndex++, rangeData );
-
-                    if( _sceneGraph->getNumChildren() == 0 )
-                    {
-                        // Always add the first child
-                        _sceneGraph->addChild( newChild );
-                        rangeData._status = PageData::RangeData::ACTIVE;
-                    }
-                    else
-                    {
-                        // Add stub Group node for paging.
-                        _sceneGraph->addChild( stubGroup.get() );
-                    }
-
-                    storeSubGraph( newChild, rangeData._dbKey );
-                }
-                ++maskIt;
-            }
-        }
-        else
-        {
-            // Simplified scene graph creation when not using time series.
-            const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
+            // Get the data at the current time and assign as inputs to the Renderer.
             ChannelDataList currentData( getDataAtTime( time ) );
 
-            ChannelDataList::iterator maskIt = _maskList.begin();
-
-            osg::Node* newChild( recurseGetSceneGraph( currentData, *maskIt ) );
-
+            osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
             if( newChild != NULL )
-                _sceneGraph->addChild( newChild );
+            {
+                PageData::RangeData rangeData( time, 0. );
+                rangeData._status = PageData::RangeData::UNLOADED;
+                pageData->setRangeData( childIndex++, rangeData );
+
+                newChild->setNodeMask( 0u );
+                _sceneGraph->addChild( newChild.get() );
+            }
+            ++maskIt;
         }
-
-        _sceneGraph->setStateSet( _renderer->getRootState() );
-
-        return( true );
     }
-    return( false );
+
+    _sceneGraph->setStateSet( _renderer->getRootState() );
+    return( true );
 }
 
-osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& data, ChannelDataPtr mask )
+osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask )
 {
     ChannelDataImageSet* imageData( NULL );
     ChannelDataLOD* lodData( NULL );
@@ -441,7 +390,7 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
     {
         if( !( ChannelDataImageSet::allImageSetData( data ) ) )
         {
-            OSG_WARN << "recurseGetSceneGraphPagingTexturesOnly: All data must be ChannelDataImageSet." << std::endl;
+            OSG_WARN << "recurseGetSceneGraph: All data must be ChannelDataImageSet." << std::endl;
             return( NULL );
         }
 
@@ -452,7 +401,7 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
         for( idx=0; idx < lodData->getNumChannels(); idx++ )
         {
             ChannelDataList currentData( getCompositeChannels( data, idx ) );
-            parent->addChild( recurseGetSceneGraphPagingTexturesOnly( currentData, mask ) );
+            parent->addChild( recurseGetSceneGraph( currentData, mask ) );
         }
         return( parent.release() );
     }
@@ -460,7 +409,7 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
     {
         if( !( ChannelDataLOD::allLODData( data ) ) )
         {
-            OSG_WARN << "recurseGetSceneGraphPagingTexturesOnly: All data must be ChannelDataLOD." << std::endl;
+            OSG_WARN << "recurseGetSceneGraph: All data must be ChannelDataLOD." << std::endl;
             return( NULL );
         }
 
@@ -469,21 +418,19 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
-        // TBD kind of ugly.
-        parent->setUpdateCallback( _rootcb->create() );
+        parent->setUpdateCallback( new lfx::RootCallback() );
 
         unsigned int childIndex( 0 );
         unsigned int idx;
         for( idx=0; idx < lodData->getNumChannels(); idx++ )
         {
             ChannelDataList currentData( getCompositeChannels( data, idx ) );
-            osg::Node* child( recurseGetSceneGraphPagingTexturesOnly( currentData, mask ) );
+            osg::Node* child( recurseGetSceneGraph( currentData, mask ) );
 
             if( child != NULL )
             {
                 PageData::RangeData rangeData( lodData->getRange( idx ) );
                 rangeData._status = PageData::RangeData::UNLOADED;
-                rangeData._dbKey = generateDBKey();
                 pageData->setRangeData( childIndex++, rangeData );
 
                 child->setNodeMask( 0u );
@@ -499,51 +446,6 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
     }
 
     return( NULL );
-}
-osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask )
-{
-    ChannelDataLOD* cdLOD( dynamic_cast< ChannelDataLOD* >( data[ 0 ].get() ) );
-    if( cdLOD == NULL )
-    {
-        setInputs( _renderer, data );
-        return( _renderer->getSceneGraph( mask ) );
-    }
-
-    else
-    {
-        osg::ref_ptr< osg::Group > parent( new osg::Group );
-        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
-        rootcb->addPageParent( parent.get() );
-        osg::ref_ptr< PageData > pageData( new PageData( lfx::PageData::PIXEL_SIZE_RANGE ) );
-        parent->setUserData( pageData.get() );
-        pageData->setParent( parent.get() );
-        unsigned int childIndex( 0 );
-        osg::ref_ptr< osg::Group > stubGroup( new osg::Group );
-
-        unsigned int idx;
-        for( idx=0; idx < cdLOD->getNumChannels(); idx++ )
-        {
-            ChannelDataList newDataList;
-            newDataList.push_back( cdLOD->getChannel( idx ) );
-            osg::Node* child( recurseGetSceneGraph( newDataList, mask ) );
-
-            if( child != NULL )
-            {
-                PageData::RangeData rangeData( cdLOD->getRange( idx ) );
-                rangeData._status = PageData::RangeData::UNLOADED;
-                rangeData._dbKey = generateDBKey();
-                pageData->setRangeData( childIndex++, rangeData );
-
-                parent->addChild( stubGroup.get() );
-                osg::BoundingSphere bs( parent->getInitialBound() );
-                bs.expandBy( child->getBound() );
-                parent->setInitialBound( bs );
-
-                storeSubGraph( child, rangeData._dbKey );
-            }
-        }
-        return( parent.release() );
-    }
 }
 
 void DataSet::setDirty( const DirtyFlags flags )
@@ -632,17 +534,6 @@ void DataSet::createFallbackMaskList()
     ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
     mask->setAll( (char)1 );
     _maskList.push_back( mask );
-}
-
-void DataSet::setSceneGraphPagesTexturesOnly()
-{
-    _sceneGraphPagesTexturesOnly = true;
-}
-
-void DataSet::useCustomRootCallback( lfx::RootCallback* rootcb )
-{
-    _rootcb = rootcb;
-    _sceneGraph->setUpdateCallback( _rootcb.get() );
 }
 
 

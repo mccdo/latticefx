@@ -17,6 +17,7 @@ set( _headerFiles
     ChannelDataOSGImage.h
     DataSet.h
     DBUtils.h
+    LoadRequest.h
     OperationBase.h
     PageData.h
     PagingThread.h
@@ -42,6 +43,7 @@ set( _sourceFiles
     ChannelDataOSGImage.cpp
     DataSet.cpp
     DBUtils.cpp
+    LoadRequest.cpp
     OperationBase.cpp
     PageData.cpp
     PagingThread.cpp

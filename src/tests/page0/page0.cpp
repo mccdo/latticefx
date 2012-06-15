@@ -32,16 +32,16 @@
 
 #include <osg/Geode>
 #include <osg/Geometry>
-#include <osg/BoundingSphere>
 #include <osgwTools/Shapes.h>
+
 #include <osgViewer/Viewer>
-#include <osgDB/WriteFile>
+#include <osgGA/TrackballManipulator>
 
 #include <string>
 
 
 
-void generateDataFiles()
+void generateDataFiles( osg::Group* root )
 {
     osg::Vec4Array* color0( new osg::Vec4Array );
     color0->push_back( osg::Vec4( 1., 1., 1., 1. ) );
@@ -53,7 +53,7 @@ void generateDataFiles()
     geom->setColorArray( color0 );
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-    osgDB::writeNodeFile( *geode, "page-white.osg" );
+    root->addChild( geode );
 
 
     osg::Vec4Array* color1( new osg::Vec4Array );
@@ -66,19 +66,14 @@ void generateDataFiles()
     geom->setColorArray( color1 );
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-    osgDB::writeNodeFile( *geode, "page-red.osg" );
+    root->addChild( geode );
 }
 
 int main( int argc, char** argv )
 {
-    // To generate the test data, page-red.osg and page-white.osg:
-    //generateDataFiles();
-
-    osg::BoundingSphere bound( osg::Vec3( 0., 0., 0. ), 1.5f );
-
     osg::ref_ptr< osg::Group > root( new osg::Group );
-    root->setInitialBound( bound );
     root->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+    generateDataFiles( root.get() );
 
     lfx::PageData* pageData( new lfx::PageData );
     pageData->setRangeMode( lfx::PageData::PIXEL_SIZE_RANGE );
@@ -87,9 +82,7 @@ int main( int argc, char** argv )
     pageData->setRangeData( 1, lfx::PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
     root->setUserData( pageData );
 
-    lfx::RootCallback* rootCallback( new lfx::RootCallback );
-    rootCallback->addPageParent( root.get() );
-    root->setUpdateCallback( rootCallback );
+    root->setUpdateCallback( new lfx::RootCallback() );
 
     root->addChild( new osg::Group );
     root->addChild( new osg::Group );
@@ -97,9 +90,20 @@ int main( int argc, char** argv )
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 450 );
+    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+
     viewer.setSceneData( root.get() );
 
-    rootCallback->setCamera( viewer.getCamera() );
+    // TBD. For now, we're paging with just one Camera, but eventually we'll
+    // need to page with multiple Cameras, for example during cull, to support
+    // proper paging in a CAVE.
+    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    pageThread->setTransforms( viewer.getCamera() );
 
-    return( viewer.run() );
+    while( !viewer.done() )
+    {
+        pageThread->setModelView( viewer.getCamera()->getViewMatrix() );
+        viewer.frame();
+    }
+    return( 0 );
 }

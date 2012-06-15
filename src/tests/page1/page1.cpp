@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include "RootCallback.h"
-#include "PagingThread.h"
+#include <latticefx/RootCallback.h>
+#include <latticefx/PagingThread.h>
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/ChannelDataOSGImage.h>
@@ -42,7 +42,6 @@
 #include <osg/Image>
 #include <osg/Texture2D>
 
-#include <osgDB/WriteFile>
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 
@@ -100,8 +99,6 @@ lfx::DataSetPtr createDataSet()
     lfx::ChannelDataOSGImagePtr imageData( new lfx::ChannelDataOSGImage( "texture", image ) );
 
     lfx::DataSetPtr dsp( new lfx::DataSet() );
-    dsp->setSceneGraphPagesTexturesOnly();
-    dsp->useCustomRootCallback( new lfxdev::RootCallback() );
     dsp->addChannel( imageData );
 
     ImageProcess* op( new ImageProcess );
@@ -126,14 +123,12 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
 
-    osg::Node* root( dsp->getSceneData() );
-    osgDB::writeNodeFile( *root, "out.osg" );
-    viewer.setSceneData( root );
+    viewer.setSceneData( dsp->getSceneData() );
 
     // TBD. For now, we're paging with just one Camera, but eventually we'll
     // need to page with multiple Cameras, for example during cull, to support
     // proper paging in a CAVE.
-    lfxdev::PagingThread* pageThread( lfxdev::PagingThread::instance() );
+    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
     pageThread->setTransforms( viewer.getCamera() );
 
     while( !viewer.done() )

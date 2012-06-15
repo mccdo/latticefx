@@ -31,10 +31,15 @@
 
 
 #include <latticefx/Export.h>
+#include <latticefx/LoadRequest.h>
 #include <latticefx/DBUtils.h>
-#include <osg/Node>
+#include <osg/Camera>
+#include <osg/Viewport>
 
 #include <boost/thread.hpp>
+
+#include <list>
+#include <vector>
 
 
 namespace lfx {
@@ -101,26 +106,8 @@ public:
     static PagingThread* instance();
     virtual ~PagingThread();
 
-    /** \struct LoadRequest PagingThread.h <latticefx/PagingThread.h>
-    \brief Contains data related to loading a subgraph.
-    \details Loads a subgraph using the \c dbKey and references the root
-    of the subgraph in \c _loadedModel. LoadRequest is stored in multiple
-    PagingThread member lists of type LoadRequestList. */
-    struct LoadRequest {
-        LoadRequest();
-        LoadRequest( const unsigned int childIndex, const DBKey& dbKey );
 
-        LoadRequest& operator=( const LoadRequest& rhs );
-
-        unsigned int _childIndex;
-        DBKey _dbKey;
-
-        osg::ref_ptr< osg::Node > _loadedModel;
-    };
-    typedef std::list< LoadRequest > LoadRequestList;
-
-    static LoadRequestList::iterator find( LoadRequestList& requestList, const DBKey& dbKey );
-    static LoadRequestList::iterator find( LoadRequestList& requestList, const unsigned int childIndex );
+    static LoadRequestList::iterator find( LoadRequestList& requestList, const osg::NodePath& path );
 
     /** \brief Request that the paging thread stop execution.
     \details Sets \c _haltRequest to true. The paging thread queries
@@ -139,30 +126,29 @@ public:
     bool getHaltRequest() const;
 
 
-    /** \brief Add multiple load requests in a single call.
-    \details Adds requests with a single call, holding the mutex only once
-    to reduce blocking.
+    /** \brief Adds a request to load data in the PagingThread.
+    \details Pushes \c request onto the end of the \c _requestList.
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void addLoadRequests( const LoadRequestList& requests );
+    void addLoadRequest( LoadRequestPtr request );
 
 
-    /** \brief Attempt to retrieve the results of previous load requests.
-    \details Returns a list containing all retrieved LoadRequests that have a \c _dbKey
-    in the specified \c keyList.
+    /** \brief Attempt to retrieve the result of a previous load request.
+    \details Returns a pointer to the LoadRequest identified by \c path, or
+    a pointer to NULL of the LoadRequest can't be found or is not yet complete.
     
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    LoadRequestList retrieveLoadRequests( const DBKeyList& keyList );
+    LoadRequestPtr retrieveLoadRequest( const osg::NodePath& path );
 
-    /** \brief Cancel multiple load requests in a single call.
-    \details Adds all dbKey values in  \c cancelList to the internal \c _cancelList for
-    later processing by PagingThread::processCancellations(), which is called by the page thread.
+    /** \brief Cancel the specified load request.
+    \details Adds \c path to the internal \c _cancelList for later processing
+    by PagingThread::processCancellations(), which is called by the page thread.
 
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
-    void cancelLoadRequests( const DBKeyList& cancelList );
+    void cancelLoadRequest( const osg::NodePath& path );
 
     /** \brief Main loop executed by the paging thread.
     \details Obtains requests from the \c _requestList, loads the data, then adds the
@@ -171,6 +157,12 @@ public:
     \c _availableList, client code can retrieve the request. If there are no requests in the
     \c _requestList, the paging thread sleep for 16 milliseconds. */
     void operator()();
+
+    void setModelView( const osg::Matrix& mv );
+    void setTransforms( const osg::Camera* camera );
+    void setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp );
+    void getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+        osg::ref_ptr< const osg::Viewport >& vp ) const;
 
 protected:
     /** \brief Process pending canceled LoadRequests.
@@ -190,7 +182,11 @@ protected:
     LoadRequestList _requestList;
     LoadRequestList _completedList;
     LoadRequestList _availableList;
-    DBKeyList _cancelList;
+    osg::NodePathList _cancelList;
+
+    mutable boost::mutex _transformMutex;
+    osg::Matrix _mv, _proj;
+    osg::ref_ptr< const osg::Viewport > _vp;
 };
 
 

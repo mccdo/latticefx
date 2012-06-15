@@ -26,14 +26,14 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include "LoadRequest.h"
+#include <latticefx/LoadRequest.h>
 #include <latticefx/DBUtils.h>
 #include <boost/foreach.hpp>
 
 #include <iostream>
 
 
-namespace lfxdev {
+namespace lfx {
 
 
 LoadRequest::LoadRequest()
@@ -80,24 +80,6 @@ bool LoadRequestImage::load()
 osg::Image* LoadRequestImage::findAsImage( const lfx::DBKey& dbKey )
 {
     return( static_cast< osg::Image* >( find( dbKey ) ) );
-}
-
-
-bool LoadRequestNode::load()
-{
-    bool result( true );
-    BOOST_FOREACH( const lfx::DBKey key, _keys )
-    {
-        osg::Node* node( lfx::loadSubGraph( key ) );
-        if( node == NULL )
-            result = false;
-        _results[ key ] = node;
-    }
-    return( result );
-}
-osg::Node* LoadRequestNode::findAsNode( const lfx::DBKey& dbKey )
-{
-    return( static_cast< osg::Node* >( find( dbKey ) ) );
 }
 
 

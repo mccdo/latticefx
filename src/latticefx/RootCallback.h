@@ -31,6 +31,8 @@
 
 
 #include <latticefx/Export.h>
+#include <latticefx/LoadRequest.h>
+
 #include <osg/NodeCallback>
 #include <osg/Group>
 #include <osg/Camera>
@@ -82,26 +84,6 @@ public:
 
     virtual lfx::RootCallback* create() { return( new lfx::RootCallback() ); }
 
-    /** \brief Register a scene graph node as the parent of pageable children.
-    \details This function adds \c parent to \c _pageParentList. During update,
-    RootCallback::operator()(osg::Node*,osg::NodeVisitor*) iterates over
-    \c _pageParentList, modifying the children of each added osg::Group if
-    necessary based on the PageData stored in \c parent's UserData.
-
-    Requirement: \c parent must have a PageData stored in its UserData. */
-    void addPageParent( osg::Group* parent );
-
-    /** \brief Register a scene graph node as the parent of time series data.
-    \details TBD.
-    */
-    void addTimeSeriesParent( osg::Group* parent );
-
-    /** \brief Specify a Camera for use in LOD computations.
-    \details The Camera is used to transform pageable child bounding volumes
-    into screen space to determine their pixel size. */
-    void setCamera( osg::Camera* camera );
-    osg::Camera* getCamera() const;
-
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.
     This function does not need to be called if time series data is not being
@@ -125,25 +107,33 @@ public:
     /** \brief Get the paging time range. */
     RangeValues getTimeRange() const;
 
-    /** \brief Dynamically load and unload data using the paging thread.
-    \details See RootCallback.cpp for the definition of RootCallback::updatePaging(),
-    which describes paging in detail. */
-    void updatePaging( const osg::Matrix& modelView );
-
-    /** \brief Select the appropriate child for the current animation time.
-    \details TBD
-    */
-    void updateTimeSeries();
-
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
     virtual ~RootCallback();
 
+    /** \brief TBD
+    \details TBD */
+    void pageByTime( osg::Group* grp );
+    /** \brief TBD
+    \details TBD */
+    void pageByDistance( osg::Group* grp, const osg::Matrix& modelMat, const osg::NodePath& nodePath );
+
+    /** \brief TBD
+    \details TBD */
+    lfx::LoadRequestPtr createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
+    /** \brief TBD
+    \details TBD */
+    void enableImages( osg::Node* child, lfx::LoadRequestPtr request );
+    /** \brief TBD
+    \details TBD */
+    void reclaimImages( osg::Node* child );
+
     /** \brief Return the pixel size of \c bSphere.
     \details Computes the pixel radius of the bounding sphere, then returns
     the area of a circle with that radius. */
-    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& modelView );
+    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
+        const osg::Matrix& proj, const osg::Viewport* vp );
 
     /** \brief Return \c time, biased into the given time range.
     \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */
@@ -159,16 +149,9 @@ protected:
     value of the child node. */
     static inline bool inRange( const RangeValues& validRange, const RangeValues& childRange );
 
-    osg::ref_ptr< osg::Camera > _camera;
-
-    osg::ref_ptr< osg::Group > _stubGroup;
 
     double _animationTime;
     RangeValues _timeRange;
-
-    typedef std::vector< osg::ref_ptr< osg::Group > > GroupList;
-    GroupList _pageParentList;
-    GroupList _timeSeriesParentList;
 };
 
 

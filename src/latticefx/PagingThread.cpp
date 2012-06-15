@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/PagingThread.h>
+#include <latticefx/LoadRequest.h>
 #include <latticefx/DBUtils.h>
 #include <osgDB/ReadFile>
 #include <boost/foreach.hpp>
@@ -62,50 +63,46 @@ bool PagingThread::getHaltRequest() const
     return( _haltRequest );
 }
 
-void PagingThread::addLoadRequests( const LoadRequestList& requests )
+void PagingThread::addLoadRequest( LoadRequestPtr request )
 {
     boost::mutex::scoped_lock lock( _requestMutex );
-    _requestList.insert( _requestList.end(), requests.begin(), requests.end() );
+    _requestList.push_back( request );
 }
 
-PagingThread::LoadRequestList PagingThread::retrieveLoadRequests( const DBKeyList& keyList )
+LoadRequestPtr PagingThread::retrieveLoadRequest( const osg::NodePath& path )
 {
     boost::mutex::scoped_lock lock( _availableMutex );
 
-    LoadRequestList returns;
-    BOOST_FOREACH( const DBKey& key, keyList )
+    LoadRequestList::iterator it( find( _availableList, path ) );
+    if( it != _availableList.end() )
     {
-        LoadRequestList::iterator it( find( _availableList, key ) );
-        if( it != _availableList.end() )
-        {
-            returns.push_back( *it );
-            _availableList.erase( it );
-        }
+        LoadRequestPtr result( *it );
+        _availableList.erase( it );
+        return( result );
     }
-    return( returns );
+    return( LoadRequestPtr( (LoadRequest*)NULL ) );
 }
 
-void dump( const std::string& header, const PagingThread::LoadRequestList& requests )
+void dump( const std::string& header, const LoadRequestList& requests )
 {
     std::cout << header << std::endl;
-    BOOST_FOREACH( const PagingThread::LoadRequest& req, requests )
+    BOOST_FOREACH( const LoadRequestPtr req, requests )
     {
-        std::cout << "\t" << req._dbKey << std::endl;
+        std::cout << "\t" << req->_keys.size() << std::endl;
     }
 }
 
-void PagingThread::cancelLoadRequests( const DBKeyList& cancelList )
+void PagingThread::cancelLoadRequest( const osg::NodePath& path )
 {
     boost::mutex::scoped_lock cancelLock( _cancelMutex );
-    std::cout << cancelList.size() << std::endl;
-    _cancelList.insert( _cancelList.end(), cancelList.begin(), cancelList.end() );
+    _cancelList.push_back( path );
 }
 
 void PagingThread::operator()()
 {
     while( !getHaltRequest() )
     {
-        LoadRequest request;
+        LoadRequestPtr request;
         bool requestAvailable;
         {
             boost::mutex::scoped_lock requestLock( _requestMutex );
@@ -127,8 +124,8 @@ void PagingThread::operator()()
 
         if( requestAvailable )
         {
-            request._loadedModel = loadSubGraph( request._dbKey );
-            //std::cout << "__    loaded: " << std::hex << request._loadedModel.get() << std::endl;
+            request->load();
+            //std::cout << "__    loaded: " << std::hex << request._loadedImage.get() << std::endl;
             _completedList.push_back( request );
         }
         else
@@ -172,65 +169,60 @@ void PagingThread::processCancellations()
 
     boost::mutex::scoped_lock availableLock( _availableMutex );
 
-    BOOST_FOREACH( const DBKey& dbKey, _cancelList )
+    BOOST_FOREACH( const osg::NodePath& path, _cancelList )
     {
         LoadRequestList::iterator it;
-        if( ( it = find( _requestList, dbKey ) ) != _requestList.end() )
+        if( ( it = find( _requestList, path ) ) != _requestList.end() )
             _requestList.erase( it );
-        else if( ( it = find( _completedList, dbKey ) ) != _completedList.end() )
+        else if( ( it = find( _completedList, path ) ) != _completedList.end() )
             _completedList.erase( it );
-        else if( ( it = find( _availableList, dbKey ) ) != _availableList.end() )
+        else if( ( it = find( _availableList, path ) ) != _availableList.end() )
             _availableList.erase( it );
         else
-            // Couldn't find the specified dbKey. This is an error. It means the client code
+            // Couldn't find the specified path. This is an error. It means the client code
             // requested cancellation for a LoadRequest that the PagingThread doesn't posess.
-            std::cout << "PagingThread::processCancellations(): Couldn't cancel \"" << dbKey << std::endl;
+            std::cout << "PagingThread::processCancellations(): Couldn't cancel path." << std::endl;
     }
 
     _cancelList.clear();
 }
 
-
-
-
-PagingThread::LoadRequest::LoadRequest()
-  : _childIndex( 0 ),
-    _dbKey( DBKey( "" ) )
+void PagingThread::setModelView( const osg::Matrix& mv )
 {
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    _mv = mv;
 }
-PagingThread::LoadRequest::LoadRequest( const unsigned int childIndex, const DBKey& dbKey )
-  : _childIndex( childIndex ),
-    _dbKey( dbKey )
+void PagingThread::setTransforms( const osg::Camera* camera )
 {
+    setTransforms( camera->getViewMatrix(),
+        camera->getProjectionMatrix(),
+        camera->getViewport() );
 }
-
-
-PagingThread::LoadRequest& PagingThread::LoadRequest::operator=( const PagingThread::LoadRequest& rhs )
+void PagingThread::setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp )
 {
-    _childIndex = rhs._childIndex;
-    _dbKey = rhs._dbKey;
-
-    _loadedModel = rhs._loadedModel;
-
-    return( *this );
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    _mv = mv;
+    _proj = proj;
+    _vp = vp;
+}
+void PagingThread::getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+    osg::ref_ptr< const osg::Viewport >& vp ) const
+{
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    mv = _mv;
+    proj = _proj;
+    vp = _vp;
 }
 
-PagingThread::LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, const DBKey& dbKey )
+
+
+// static
+LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, const osg::NodePath& path )
 {
     LoadRequestList::iterator it;
     for( it = requestList.begin(); it != requestList.end(); ++it )
     {
-        if( it->_dbKey == dbKey )
-            break;
-    }
-    return( it );
-}
-PagingThread::LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, const unsigned int childIndex )
-{
-    LoadRequestList::iterator it;
-    for( it = requestList.begin(); it != requestList.end(); ++it )
-    {
-        if( it->_childIndex == childIndex )
+        if( (*it)->_path == path )
             break;
     }
     return( it );

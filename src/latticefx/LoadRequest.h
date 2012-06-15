@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_DEV_LOAD_REQUEST_H__
-#define __LATTICEFX_DEV_LOAD_REQUEST_H__ 1
+#ifndef __LATTICEFX_LOAD_REQUEST_H__
+#define __LATTICEFX_LOAD_REQUEST_H__ 1
 
 
 //#include <latticefx/Export.h>
@@ -41,7 +41,7 @@
 #include <vector>
 
 
-namespace lfxdev {
+namespace lfx {
 
 
 /** \addtogroup PagingSupport */
@@ -88,19 +88,6 @@ struct LoadRequestImage : public LoadRequest
 typedef boost::shared_ptr< LoadRequestImage > LoadRequestImagePtr;
 
 
-
-/** \struct LoadRequestNode LoadRequest.h <latticefx/LoadRequest.h>
-Primarily for debugging, as latticefx only loads Images. */
-struct LoadRequestNode : public LoadRequest
-{
-    virtual bool load();
-
-    osg::Node* findAsNode( const lfx::DBKey& dbKey );
-};
-
-typedef boost::shared_ptr< LoadRequestNode > LoadRequestNodePtr;
-
-
 /**@}*/
 
 
@@ -108,5 +95,5 @@ typedef boost::shared_ptr< LoadRequestNode > LoadRequestNodePtr;
 }
 
 
-// __LATTICEFX_DEV_LOAD_REQUEST_H__
+// __LATTICEFX_LOAD_REQUEST_H__
 #endif
