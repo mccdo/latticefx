@@ -102,10 +102,13 @@ protected:
 
     /** \brief TBD
     \details TBD */
-    lfxdev::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
+    lfxdev::LoadRequestPtr createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
     /** \brief TBD
     \details TBD */
-    void enableTextures( osg::Node* child, lfxdev::LoadRequestPtr request );
+    void enableImages( osg::Node* child, lfxdev::LoadRequestPtr request );
+    /** \brief TBD
+    \details TBD */
+    void reclaimImages( osg::Node* child );
 
     /** \brief TBD
     \details TBD */

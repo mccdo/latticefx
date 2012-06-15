@@ -157,7 +157,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
                 lfxdev::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
                 if( request != NULL )
                 {
-                    enableTextures( child, request );
+                    enableImages( child, request );
                     rangeData._status = lfx::PageData::RangeData::LOADED;
                     removeExpired = true;
                 }
@@ -193,7 +193,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             case lfx::PageData::RangeData::ACTIVE:
                 if( !inRange )
                 {
-                    // TBD garbage collect
+                    reclaimImages( child );
                     rangeData._status = lfx::PageData::RangeData::UNLOADED;
                 }
                 // Intentional fallthrough.
@@ -259,10 +259,10 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 }
 
 
-class CollectTexturesVisitor : public osg::NodeVisitor
+class CollectImagesVisitor : public osg::NodeVisitor
 {
 public:
-    CollectTexturesVisitor()
+    CollectImagesVisitor()
       : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
         _request( lfxdev::LoadRequestImagePtr( new lfxdev::LoadRequestImage ) )
     {
@@ -297,7 +297,7 @@ public:
 
 lfxdev::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
 {
-    CollectTexturesVisitor collect;
+    CollectImagesVisitor collect;
     child->accept( collect );
 
     LoadRequestImagePtr request( collect._request );
@@ -305,10 +305,10 @@ lfxdev::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const 
     return( request );
 }
 
-class DistributeTexturesVisitor : public osg::NodeVisitor
+class DistributeImagesVisitor : public osg::NodeVisitor
 {
 public:
-    DistributeTexturesVisitor( lfxdev::LoadRequestImagePtr request )
+    DistributeImagesVisitor( lfxdev::LoadRequestImagePtr request )
         : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
         _request( request )
     {
@@ -343,11 +343,52 @@ protected:
     lfxdev::LoadRequestImagePtr _request;
 };
 
-void RootCallback::enableTextures( osg::Node* child, lfxdev::LoadRequestPtr request )
+void RootCallback::enableImages( osg::Node* child, lfxdev::LoadRequestPtr request )
 {
-    DistributeTexturesVisitor distribute(
+    DistributeImagesVisitor distribute(
         boost::static_pointer_cast< lfxdev::LoadRequestImage >( request ) );
     child->accept( distribute );
+}
+
+class ReclaimImagesVisitor : public osg::NodeVisitor
+{
+public:
+    ReclaimImagesVisitor()
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN )
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        osg::Image* image( new osg::Image() );
+                        image->setFileName( key );
+                        tex->setImage( 0, image );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+};
+
+void RootCallback::reclaimImages( osg::Node* child )
+{
+    ReclaimImagesVisitor reclaim;
+    child->accept( reclaim );
 }
 
 double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
