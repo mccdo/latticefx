@@ -486,6 +486,7 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
                 rangeData._dbKey = generateDBKey();
                 pageData->setRangeData( childIndex++, rangeData );
 
+                child->setNodeMask( 0u );
                 parent->addChild( child );
             }
         }

@@ -107,8 +107,10 @@ void ChannelDataOSGImage::reset()
     {
         _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
     }
-    else
+    else if( _workingImage->data() != NULL )
     {
+        // Only do the copy if _workingImage has data. It will not have any data
+        // if the image has not yet been paged in.
         memcpy( _workingImage->data(), _image->data(),
             _image->getTotalSizeInBytes() );
     }

@@ -188,7 +188,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             {
             case lfx::PageData::RangeData::LOADED:
                 rangeData._status = lfx::PageData::RangeData::ACTIVE;
-                child->setNodeMask( ~0U );
+                child->setNodeMask( ~0u );
                 break;
             case lfx::PageData::RangeData::ACTIVE:
                 if( !inRange )
@@ -198,7 +198,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
                 }
                 // Intentional fallthrough.
             default:
-                child->setNodeMask( 0U );
+                child->setNodeMask( 0u );
                 break;
             }
         }
@@ -331,8 +331,6 @@ public:
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                         osg::Image* image( _request->findAsImage( key ) );
-                        //stateSet->setTextureAttribute( unit,
-                        //    new osg::Texture2D( image ) );
                         tex->setImage( 0, image );
                     }
                 }
