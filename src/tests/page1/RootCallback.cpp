@@ -187,7 +187,8 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             switch( rangeData._status )
             {
             case lfx::PageData::RangeData::LOADED:
-                child->setNodeMask( 0xffffffff );
+                rangeData._status = lfx::PageData::RangeData::ACTIVE;
+                child->setNodeMask( ~0U );
                 break;
             case lfx::PageData::RangeData::ACTIVE:
                 if( !inRange )
@@ -197,7 +198,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
                 }
                 // Intentional fallthrough.
             default:
-                child->setNodeMask( 0x0 );
+                child->setNodeMask( 0U );
                 break;
             }
         }
@@ -262,9 +263,12 @@ class CollectTexturesVisitor : public osg::NodeVisitor
 {
 public:
     CollectTexturesVisitor()
-        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
+      : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
         _request( lfxdev::LoadRequestImagePtr( new lfxdev::LoadRequestImage ) )
-    {}
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
 
     virtual void apply( osg::Node& node )
     {
@@ -307,7 +311,10 @@ public:
     DistributeTexturesVisitor( lfxdev::LoadRequestImagePtr request )
         : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
         _request( request )
-    {}
+    {
+        // Always traverse every node.
+        setNodeMaskOverride( ~0u );
+    }
 
     virtual void apply( osg::Node& node )
     {
