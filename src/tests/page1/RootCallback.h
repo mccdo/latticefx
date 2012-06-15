@@ -31,6 +31,7 @@
 
 
 //#include <latticefx/Export.h>
+#include "LoadRequest.h"
 #include <latticefx/RootCallback.h>
 #include <latticefx/PageData.h>
 #include <osg/NodeCallback>
@@ -85,49 +86,35 @@ public:
     RootCallback();
     RootCallback( const RootCallback& rhs );
 
-    void processPageableGroup( osg::Group& group, lfx::PageData* pageData, const osg::Matrix& xform );
+    virtual lfx::RootCallback* create() { return( new lfxdev::RootCallback() ); }
 
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
     virtual ~RootCallback();
 
-    /** \brief Select the appropriate child for the current animation time.
-    \details TBD
-    */
-    void updateTime( osg::Group* grp );
+    /** \brief TBD
+    \details TBD */
+    void pageByTime( osg::Group* grp );
+    /** \brief TBD
+    \details TBD */
+    void pageByDistance( osg::Group* grp, const osg::Matrix& modelMat, const osg::NodePath& nodePath );
 
-    /** \brief Return true if \c validRange and \c childRange overlap.
-    \details If the paging RangeMode is PIXEL_SIZE_RANGE, both min and max values of
-    \c validRange are set to the return value of computePixelSize() and \c childRange
-    comes from the child-specific PageData::RangeData.
+    /** \brief TBD
+    \details TBD */
+    lfxdev::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
+    /** \brief TBD
+    \details TBD */
+    void enableTextures( osg::Node* child, lfxdev::LoadRequestPtr request );
 
-    If the paging RangeMode is TIME_RANGE, \c validRange is a range of time values specified
-    by the application, and both min and max values of \c childRange are set to the time
-    value of the child node. */
-    static inline bool inRange( const lfx::RangeValues& validRange, const lfx::RangeValues& childRange );
-
-    void findValidChildrenForTime( NodeList& results, osg::Group* parent );
-
-    osg::Matrix _modelView;
+    /** \brief TBD
+    \details TBD */
+    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
+        const osg::Matrix& proj, const osg::Viewport* vp );
 };
 
 
 /**@}*/
-
-
-bool RootCallback::inRange( const lfx::RangeValues& validRange, const lfx::RangeValues& childRange )
-{
-    const bool childFirstGood( childRange.first < validRange.second );
-    const bool childSecondGood( childRange.second >= validRange.first );
-    if( validRange.first <= validRange.second )
-        // Typical case: first (min) < second (max).
-        return( childSecondGood && childFirstGood );
-    else
-        // First (min) might be greater than second (max) due to
-        // wrapping of animation time.
-        return( childSecondGood || childFirstGood );
-}
 
 
 // lfx

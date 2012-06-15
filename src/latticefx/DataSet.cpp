@@ -469,6 +469,9 @@ osg::Node* DataSet::recurseGetSceneGraphPagingTexturesOnly( ChannelDataList& dat
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
+        // TBD kind of ugly.
+        parent->setUpdateCallback( _rootcb->create() );
+
         unsigned int childIndex( 0 );
         unsigned int idx;
         for( idx=0; idx < lodData->getNumChannels(); idx++ )
@@ -637,7 +640,8 @@ void DataSet::setSceneGraphPagesTexturesOnly()
 
 void DataSet::useCustomRootCallback( lfx::RootCallback* rootcb )
 {
-    _sceneGraph->setUpdateCallback( rootcb );
+    _rootcb = rootcb;
+    _sceneGraph->setUpdateCallback( _rootcb.get() );
 }
 
 

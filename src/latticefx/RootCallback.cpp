@@ -79,7 +79,7 @@ void RootCallback::setCamera( osg::Camera* camera )
 {
     _camera = camera;
 }
-const osg::Camera* RootCallback::getCamera() const
+osg::Camera* RootCallback::getCamera() const
 {
     return( _camera.get() );
 }

@@ -254,6 +254,7 @@ protected:
     osg::ref_ptr< osg::Group > _sceneGraph;
     DirtyFlags _dirtyFlags;
     bool _sceneGraphPagesTexturesOnly;
+    osg::ref_ptr< lfx::RootCallback > _rootcb;
 };
 
 typedef boost::shared_ptr< DataSet > DataSetPtr;

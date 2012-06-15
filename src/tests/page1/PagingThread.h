@@ -33,7 +33,8 @@
 //#include <latticefx/Export.h>
 #include "LoadRequest.h"
 #include <latticefx/DBUtils.h>
-#include <osg/Image>
+#include <osg/Camera>
+#include <osg/Viewport>
 
 #include <boost/thread.hpp>
 
@@ -157,6 +158,12 @@ public:
     \c _requestList, the paging thread sleep for 16 milliseconds. */
     void operator()();
 
+    void setModelView( const osg::Matrix& mv );
+    void setTransforms( const osg::Camera* camera );
+    void setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp );
+    void getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+        osg::ref_ptr< const osg::Viewport >& vp ) const;
+
 protected:
     /** \brief Process pending canceled LoadRequests.
     \details Iterates over all database keys stored in the _cancelList. For each each, all
@@ -176,6 +183,10 @@ protected:
     LoadRequestList _completedList;
     LoadRequestList _availableList;
     osg::NodePathList _cancelList;
+
+    mutable boost::mutex _transformMutex;
+    osg::Matrix _mv, _proj;
+    osg::ref_ptr< const osg::Viewport > _vp;
 };
 
 

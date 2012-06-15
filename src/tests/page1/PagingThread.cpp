@@ -187,6 +187,33 @@ void PagingThread::processCancellations()
     _cancelList.clear();
 }
 
+void PagingThread::setModelView( const osg::Matrix& mv )
+{
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    _mv = mv;
+}
+void PagingThread::setTransforms( const osg::Camera* camera )
+{
+    setTransforms( camera->getViewMatrix(),
+        camera->getProjectionMatrix(),
+        camera->getViewport() );
+}
+void PagingThread::setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp )
+{
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    _mv = mv;
+    _proj = proj;
+    _vp = vp;
+}
+void PagingThread::getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+    osg::ref_ptr< const osg::Viewport >& vp ) const
+{
+    boost::mutex::scoped_lock cancelLock( _transformMutex );
+    mv = _mv;
+    proj = _proj;
+    vp = _vp;
+}
+
 
 
 // static

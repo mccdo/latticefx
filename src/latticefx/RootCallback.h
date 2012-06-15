@@ -80,6 +80,8 @@ public:
     RootCallback();
     RootCallback( const RootCallback& rhs );
 
+    virtual lfx::RootCallback* create() { return( new lfx::RootCallback() ); }
+
     /** \brief Register a scene graph node as the parent of pageable children.
     \details This function adds \c parent to \c _pageParentList. During update,
     RootCallback::operator()(osg::Node*,osg::NodeVisitor*) iterates over
@@ -98,7 +100,7 @@ public:
     \details The Camera is used to transform pageable child bounding volumes
     into screen space to determine their pixel size. */
     void setCamera( osg::Camera* camera );
-    const osg::Camera* getCamera() const;
+    osg::Camera* getCamera() const;
 
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.

@@ -30,54 +30,15 @@
 #include "PagingThread.h"
 #include "LoadRequest.h"
 #include <latticefx/PageData.h>
-#include <osg/NodeVisitor>
-#include <boost/foreach.hpp>
 
+#include <osg/NodeVisitor>
+#include <osg/Texture2D>
+
+#include <boost/foreach.hpp>
 #include <iostream>
 
 
 namespace lfxdev {
-
-
-class UpdatePagingVisitor : public osg::NodeVisitor
-{
-public:
-    UpdatePagingVisitor( NodeList nodes, lfxdev::RootCallback* rootcb )
-        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN ),
-          _rootcb( rootcb ),
-          _pageThread( lfxdev::PagingThread::instance() )
-    {
-        BOOST_FOREACH( osg::Node* node, nodes )
-        {
-            node->accept( *this );
-        }
-    }
-    ~UpdatePagingVisitor()
-    {
-    }
-    
-    void apply( osg::Group& group )
-    {
-        lfx::PageData* pageData = static_cast< lfx::PageData* >( group.getUserData() );
-        if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() != lfx::PageData::PIXEL_SIZE_RANGE ) )
-        {
-            traverse( group );
-            return;
-        }
-
-        const osg::Matrix matrix( osg::computeLocalToWorld( getNodePath(), false ) );
-        _rootcb->processPageableGroup( group, pageData, matrix );
-        // TBD Need to know which subgraphs to traverse,
-        // and how to set the node masks.
-        traverse( group );
-    }
-
-protected:
-    osg::ref_ptr< lfxdev::RootCallback > _rootcb;
-    lfxdev::PagingThread* _pageThread;
-};
-
 
 
 
@@ -94,13 +55,7 @@ RootCallback::~RootCallback()
 }
 
 
-void RootCallback::findValidChildrenForTime( NodeList& results, osg::Group* parent )
-{
-    if( parent->getNumChildren() == 1 )
-        results.push_back( parent->getChild( 0 ) );
-}
-
-void RootCallback::updateTime( osg::Group* grp )
+void RootCallback::pageByTime( osg::Group* grp )
 {
     osg::Node* bestChild( NULL );
     double minTimeDifference( FLT_MAX );
@@ -154,6 +109,102 @@ void RootCallback::updateTime( osg::Group* grp )
     }
 }
 
+void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat, const osg::NodePath& nodePath )
+{
+    lfxdev::PagingThread* pageThread( lfxdev::PagingThread::instance() );
+
+    osg::Matrix view, proj;
+    osg::ref_ptr< const osg::Viewport> vp;
+    pageThread->getTransforms( view, proj, vp );
+    osg::Matrix modelView( modelMat * view );
+
+    // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
+    // to give it some spatial location and size. Retrieve that bound.
+    const osg::BoundingSphere& bSphere( grp->getBound() );
+    const double pixelSize( computePixelSize( bSphere, modelView, proj, vp.get() ) );
+
+    // Valid range is only the pixelSize. We'll see if it's inside the childRange,
+    // which is a min and max pixelSize to display the child.
+    const lfx::RangeValues validRange( pixelSize, pixelSize );
+
+    osg::NodePath childPath( nodePath );
+
+    bool removeExpired( false );
+    lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    {
+        const unsigned int childIndex( rangeDataPair.first );
+        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+        osg::Node* child( grp->getChild( childIndex ) );
+        childPath.push_back( child );
+
+        const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+
+        switch( rangeData._status )
+        {
+        case lfx::PageData::RangeData::UNLOADED:
+            if( inRange )
+            {
+                lfxdev::LoadRequestPtr request( createLoadRequest( child, childPath ) );
+                pageThread->addLoadRequest( request );
+                rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+            }
+            break;
+
+        case lfx::PageData::RangeData::LOAD_REQUESTED:
+            if( inRange )
+            {
+                lfxdev::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
+                if( request != NULL )
+                {
+                    enableTextures( child, request );
+                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    removeExpired = true;
+                }
+            }
+            else
+                pageThread->cancelLoadRequest( childPath );
+
+        default:
+        case lfx::PageData::RangeData::LOADED:
+        case lfx::PageData::RangeData::ACTIVE:
+            // Nothing to do.
+            break;
+        }
+
+        childPath.pop_back();
+    }
+
+    if( removeExpired )
+    {
+        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        {
+            const unsigned int childIndex( rangeDataPair.first );
+            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            osg::Node* child( grp->getChild( childIndex ) );
+
+            const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+            switch( rangeData._status )
+            {
+            case lfx::PageData::RangeData::LOADED:
+                child->setNodeMask( 0xffffffff );
+                break;
+            case lfx::PageData::RangeData::ACTIVE:
+                if( !inRange )
+                {
+                    // TBD garbage collect
+                    rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                }
+                // Intentional fallthrough.
+            default:
+                child->setNodeMask( 0x0 );
+                break;
+            }
+        }
+    }
+}
+
+#if 0
 void RootCallback::processPageableGroup( osg::Group& group, lfx::PageData* pageData, const osg::Matrix& xform )
 {
     lfxdev::PagingThread* pageThread( lfxdev::PagingThread::instance() );
@@ -171,42 +222,178 @@ void RootCallback::processPageableGroup( osg::Group& group, lfx::PageData* pageD
 
     std::cout << "Custom RootCallback: processPageableGroup." << std::endl;
 }
+#endif
 
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
-    NodeList rootGroupsToTraverse;
-    if( node->getUserData() != NULL )
+    if( node->getUserData() == NULL )
     {
-        lfx::PageData* pageData( static_cast< lfx::PageData* >( node->getUserData() ) );
-        if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
-            findValidChildrenForTime( rootGroupsToTraverse, node->asGroup() );
-        else
-            rootGroupsToTraverse.push_back( node );
-    }
-    else
-        rootGroupsToTraverse.push_back( node );
-
-    if( getCamera() == NULL )
-    {
-        // Paging based on LOD calls computePixelSize(), which
-        // requires non-NULL _camera.
-        OSG_WARN << "RootCallback::updatePaging(): NULL _camera." << std::endl;
+        traverse( node, nv );
         return;
     }
+
+    osg::Group* grp( node->asGroup() );
+    lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+    if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
+    {
+        pageByTime( grp );
+    }
     else
     {
-        // Traverse scene graph(s) to update pageable data.
-        _modelView = osg::computeLocalToWorld( nv->getNodePath(), false );
-        UpdatePagingVisitor updatePaging( rootGroupsToTraverse, this );
+        // This is the model matrix only. OSG UpdateVisitor does not start
+        // traversal on root Camera node, so there is no 'view' component.
+        const osg::Matrix modelMat( osg::computeLocalToWorld( nv->getNodePath(), false ) );
+        pageByDistance( grp, modelMat, nv->getNodePath() );
     }
 
-    // Find the appropriate child for the current time.
-    updateTime( node->asGroup() );
-
-
-    // TBD Possible future update uniforms containing projection of volume vis into screen space.
-
+#if 1
     traverse( node, nv );
+    // TBD this is temporary. Traverse everyone. Will probably
+    // nor render correctly. OK for dev.
+    // 
+    // Probably want to traverse specific children based on
+    // the range data status, then afterwards, set the
+    // nodemask to all 1s for the active child and 0 for others.
+    // That way we only cull/draw the active scene graph branch.
+#else
+    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    {
+        const unsigned int childIndex( rangeDataPair.first );
+        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+
+        switch( rangeData._status )
+        {
+        case lfx::PageData::RangeData::LOAD_REQUESTED:
+            traverse( grp->getChild( childIndex ), nv );
+            break;
+
+        default:
+        case lfx::PageData::RangeData::UNLOADED:
+        case lfx::PageData::RangeData::LOADED:
+        case lfx::PageData::RangeData::ACTIVE:
+            break;
+        }
+    }
+#endif
+}
+
+
+class CollectTexturesVisitor : public osg::NodeVisitor
+{
+public:
+    CollectTexturesVisitor()
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
+        _request( lfxdev::LoadRequestImagePtr( new lfxdev::LoadRequestImage ) )
+    {}
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        _request->_keys.push_back( key );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+
+    lfxdev::LoadRequestImagePtr _request;
+};
+
+lfxdev::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
+{
+    CollectTexturesVisitor collect;
+    child->accept( collect );
+
+    LoadRequestImagePtr request( collect._request );
+    request->_path = childPath;
+    return( request );
+}
+
+class DistributeTexturesVisitor : public osg::NodeVisitor
+{
+public:
+    DistributeTexturesVisitor( lfxdev::LoadRequestImagePtr request )
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN ),
+        _request( request )
+    {}
+
+    virtual void apply( osg::Node& node )
+    {
+        if( node.getUserData() == NULL )
+        {
+            osg::StateSet* stateSet( node.getStateSet() );
+            if( stateSet != NULL )
+            {
+                for( unsigned int unit=0; unit<16; unit++ )
+                {
+                    osg::Texture* tex( static_cast< osg::Texture* >(
+                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    {
+                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        osg::Image* image( _request->findAsImage( key ) );
+                        stateSet->setTextureAttribute( unit,
+                            new osg::Texture2D( image ) );
+                        //tex->setImage( 0, image );
+                    }
+                }
+            }
+        }
+        traverse( node );
+    }
+
+protected:
+    lfxdev::LoadRequestImagePtr _request;
+};
+
+void RootCallback::enableTextures( osg::Node* child, lfxdev::LoadRequestPtr request )
+{
+    DistributeTexturesVisitor distribute(
+        boost::static_pointer_cast< lfxdev::LoadRequestImage >( request ) );
+    child->accept( distribute );
+}
+
+double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
+        const osg::Matrix& proj, const osg::Viewport* vp )
+{
+    const osg::Vec3 ecCenter = bSphere.center() * mv ;
+    if( -( ecCenter.z() ) < bSphere.radius() )
+    {
+        // Inside the bounding sphere.
+        return( FLT_MAX );
+    }
+
+    // Compute pixelRadius, the sphere radius in pixels.
+
+    // Get clip coord center, then get NDX x value (div by w), then get window x value.
+    osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * proj );
+    ccCenter.x() /= ccCenter.w();
+    double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+
+    // Repeast, but start with an eye coord point that is 'radius' units to the right of center.
+    // Result is the pixel location of the rightmost edge of the bounding sphere.
+    const osg::Vec4 ecRight( ecCenter.x() + bSphere.radius(), ecCenter.y(), ecCenter.z(), 1. );
+    osg::Vec4 ccRight( ecRight * proj );
+    ccRight.x() /= ccRight.w();
+    double rx( ( ( ccRight.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+
+    // Pixel radius is the rightmost edge of the sphere minus the center.
+    const double pixelRadius( rx - cx );
+
+    // Circle area A = pi * r^2
+    return( osg::PI * pixelRadius * pixelRadius );
 }
 
 
