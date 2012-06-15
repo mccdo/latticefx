@@ -65,10 +65,10 @@ public:
         lfx::ChannelDataOSGImagePtr newImage( new lfx::ChannelDataOSGImage( "texture", farImage ) );
 
         lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
-        cdLOD->setRange( cdLOD->addChannel( input ),
-            lfx::RangeValues( 0., 20000. ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
-            lfx::RangeValues( 20000., FLT_MAX ) );
+            lfx::RangeValues( 0., 100000. ) );
+        cdLOD->setRange( cdLOD->addChannel( input ),
+            lfx::RangeValues( 100000., FLT_MAX ) );
         return( cdLOD );
     }
 };

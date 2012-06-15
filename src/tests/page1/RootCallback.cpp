@@ -204,26 +204,6 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
     }
 }
 
-#if 0
-void RootCallback::processPageableGroup( osg::Group& group, lfx::PageData* pageData, const osg::Matrix& xform )
-{
-    lfxdev::PagingThread* pageThread( lfxdev::PagingThread::instance() );
-
-    const osg::Matrix modelView( xform * _modelView );
-
-    // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
-    // to give it some spatial location and size. Retrieve that bound.
-    const osg::BoundingSphere& bSphere( group.getBound() );
-    double pixelSize( computePixelSize( bSphere, modelView ) );
-
-    // Valid range is only the pixelSize. We'll see if it's inside the childRange,
-    // which is a min and max pixelSize to display the child.
-    lfx::RangeValues validRange = lfx::RangeValues( pixelSize, pixelSize );
-
-    std::cout << "Custom RootCallback: processPageableGroup." << std::endl;
-}
-#endif
-
 void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     if( node->getUserData() == NULL )
@@ -344,9 +324,9 @@ public:
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                         osg::Image* image( _request->findAsImage( key ) );
-                        stateSet->setTextureAttribute( unit,
-                            new osg::Texture2D( image ) );
-                        //tex->setImage( 0, image );
+                        //stateSet->setTextureAttribute( unit,
+                        //    new osg::Texture2D( image ) );
+                        tex->setImage( 0, image );
                     }
                 }
             }
