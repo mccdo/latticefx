@@ -132,8 +132,8 @@ protected:
     /** \brief Return the pixel size of \c bSphere.
     \details Computes the pixel radius of the bounding sphere, then returns
     the area of a circle with that radius. */
-    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
-        const osg::Matrix& proj, const osg::Viewport* vp );
+    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
+        const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp );
 
     /** \brief Return \c time, biased into the given time range.
     \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */

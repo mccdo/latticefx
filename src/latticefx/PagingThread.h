@@ -158,10 +158,11 @@ public:
     \c _requestList, the paging thread sleep for 16 milliseconds. */
     void operator()();
 
-    void setModelView( const osg::Matrix& mv );
-    void setTransforms( const osg::Camera* camera );
-    void setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp );
-    void getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+    void setTransforms( const osg::Vec3& wcEyePosition );
+    void setTransforms( const osg::Matrix& proj, const osg::Viewport* vp );
+    void setTransforms( const osg::Vec3& wcEyePosition, const osg::Matrix& proj,
+        const osg::Viewport* vp );
+    void getTransforms( osg::Vec3& wcEyePosition, osg::Matrix& proj,
         osg::ref_ptr< const osg::Viewport >& vp ) const;
 
 protected:
@@ -185,7 +186,8 @@ protected:
     osg::NodePathList _cancelList;
 
     mutable boost::mutex _transformMutex;
-    osg::Matrix _mv, _proj;
+    osg::Vec3 _wcEyePosition;
+    osg::Matrix _proj;
     osg::ref_ptr< const osg::Viewport > _vp;
 };
 

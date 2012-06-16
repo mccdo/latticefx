@@ -187,29 +187,30 @@ void PagingThread::processCancellations()
     _cancelList.clear();
 }
 
-void PagingThread::setModelView( const osg::Matrix& mv )
+void PagingThread::setTransforms( const osg::Vec3& wcEyePosition )
 {
-    boost::mutex::scoped_lock cancelLock( _transformMutex );
-    _mv = mv;
+    boost::mutex::scoped_lock transformLock( _transformMutex );
+    _wcEyePosition = wcEyePosition;
 }
-void PagingThread::setTransforms( const osg::Camera* camera )
+void PagingThread::setTransforms( const osg::Matrix& proj, const osg::Viewport* vp )
 {
-    setTransforms( camera->getViewMatrix(),
-        camera->getProjectionMatrix(),
-        camera->getViewport() );
-}
-void PagingThread::setTransforms( const osg::Matrix& mv, const osg::Matrix& proj, const osg::Viewport* vp )
-{
-    boost::mutex::scoped_lock cancelLock( _transformMutex );
-    _mv = mv;
+    boost::mutex::scoped_lock transformLock( _transformMutex );
     _proj = proj;
     _vp = vp;
 }
-void PagingThread::getTransforms( osg::Matrix& mv, osg::Matrix& proj,
+void PagingThread::setTransforms( const osg::Vec3& wcEyePosition, const osg::Matrix& proj,
+        const osg::Viewport* vp )
+{
+    boost::mutex::scoped_lock transformLock( _transformMutex );
+    _wcEyePosition = wcEyePosition;
+    _proj = proj;
+    _vp = vp;
+}
+void PagingThread::getTransforms( osg::Vec3& wcEyePosition, osg::Matrix& proj,
     osg::ref_ptr< const osg::Viewport >& vp ) const
 {
-    boost::mutex::scoped_lock cancelLock( _transformMutex );
-    mv = _mv;
+    boost::mutex::scoped_lock transformLock( _transformMutex );
+    wcEyePosition = _wcEyePosition;
     proj = _proj;
     vp = _vp;
 }

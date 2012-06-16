@@ -124,15 +124,17 @@ int main( int argc, char** argv )
 
     viewer.setSceneData( dsp->getSceneData() );
 
-    // TBD. For now, we're paging with just one Camera, but eventually we'll
-    // need to page with multiple Cameras, for example during cull, to support
-    // proper paging in a CAVE.
+    // Really we would need to change the projection matrix and viewport
+    // in an event handler that catches window size changes. We're cheating.
     lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
-    pageThread->setTransforms( viewer.getCamera() );
+    const osg::Camera* cam( viewer.getCamera() );
+    pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 
+    osg::Vec3d eye, center, up;
     while( !viewer.done() )
     {
-        pageThread->setModelView( viewer.getCamera()->getViewMatrix() );
+        cam->getViewMatrixAsLookAt( eye, center, up );
+        pageThread->setTransforms( osg::Vec3( eye ) );
         viewer.frame();
     }
     return( 0 );

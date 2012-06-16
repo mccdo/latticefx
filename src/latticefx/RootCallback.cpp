@@ -135,15 +135,15 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
 {
     lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
 
-    osg::Matrix view, proj;
+    osg::Vec3 wcEyePosition;
+    osg::Matrix proj;
     osg::ref_ptr< const osg::Viewport> vp;
-    pageThread->getTransforms( view, proj, vp );
-    osg::Matrix modelView( modelMat * view );
+    pageThread->getTransforms( wcEyePosition, proj, vp );
 
     // If the owning parent Group has nothing but paged children, it must use Node::setInitialBound()
     // to give it some spatial location and size. Retrieve that bound.
     const osg::BoundingSphere& bSphere( grp->getBound() );
-    const double pixelSize( computePixelSize( bSphere, modelView, proj, vp.get() ) );
+    const double pixelSize( computePixelSize( bSphere, modelMat, wcEyePosition, proj, vp.get() ) );
 
     // Valid range is only the pixelSize. We'll see if it's inside the childRange,
     // which is a min and max pixelSize to display the child.
@@ -413,11 +413,12 @@ void RootCallback::reclaimImages( osg::Node* child )
     child->accept( reclaim );
 }
 
-double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& mv,
-        const osg::Matrix& proj, const osg::Viewport* vp )
+double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
+        const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp )
 {
-    const osg::Vec3 ecCenter = bSphere.center() * mv ;
-    if( -( ecCenter.z() ) < bSphere.radius() )
+    const osg::Vec3 wcCenter = bSphere.center() * model;
+    const float ecDistance( ( wcCenter - wcEyePosition ).length() );
+    if( ecDistance < bSphere.radius() )
     {
         // Inside the bounding sphere.
         return( FLT_MAX );
@@ -426,19 +427,26 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
     // Compute pixelRadius, the sphere radius in pixels.
 
     // Get clip coord center, then get NDX x value (div by w), then get window x value.
-    osg::Vec4 ccCenter( osg::Vec4( ecCenter, 1. ) * proj );
+#if 1
+    // Optimized computation for bounding sphere at view center.
+    const double winCenter( .5 * vp->width() + vp->x() );
+#else
+    // This is the unoptimized general case for the above "if 1" code path.
+    const osg::Vec4 ecCenter( 0., 0., ecDistance, 1. );
+    osg::Vec4 ccCenter( ecCenter * proj );
     ccCenter.x() /= ccCenter.w();
-    double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+    const double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+#endif
 
     // Repeast, but start with an eye coord point that is 'radius' units to the right of center.
     // Result is the pixel location of the rightmost edge of the bounding sphere.
-    const osg::Vec4 ecRight( ecCenter.x() + bSphere.radius(), ecCenter.y(), ecCenter.z(), 1. );
+    const osg::Vec4 ecRight( bSphere.radius(), 0., ecDistance, 1. );
     osg::Vec4 ccRight( ecRight * proj );
     ccRight.x() /= ccRight.w();
-    double rx( ( ( ccRight.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+    const double winRight( ( ( ccRight.x() + 1. ) * .5 ) * vp->width() + vp->x() );
 
     // Pixel radius is the rightmost edge of the sphere minus the center.
-    const double pixelRadius( rx - cx );
+    const double pixelRadius( winCenter - winRight );
 
     // Circle area A = pi * r^2
     return( osg::PI * pixelRadius * pixelRadius );
