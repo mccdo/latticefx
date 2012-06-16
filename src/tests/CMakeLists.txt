@@ -11,4 +11,5 @@ add_subdirectory( volume-shader )
 
 if( VTK_FOUND )
     add_subdirectory( test-vtk-vector )
+    add_subdirectory( test-time-vtk-points )
 endif()
