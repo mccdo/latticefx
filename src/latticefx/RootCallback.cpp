@@ -160,7 +160,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
         osg::Node* child( grp->getChild( childIndex ) );
         childPath.push_back( child );
 
-        const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+        const bool inRange( this->inRange( validRange, rangeData._rangeValues ) );
 
         switch( rangeData._status )
         {
@@ -205,7 +205,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             lfx::PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
-            const bool inRange( inRange( validRange, rangeData._rangeValues ) );
+            const bool inRange( this->inRange( validRange, rangeData._rangeValues ) );
             switch( rangeData._status )
             {
             case lfx::PageData::RangeData::LOADED:
