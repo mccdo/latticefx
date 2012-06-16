@@ -9,7 +9,7 @@ set( HEADER_PATH ${PROJECT_SOURCE_DIR}/src/vtk_utils )
 
 file(GLOB_RECURSE _headerFiles ${HEADER_PATH}/*.h )
 
-file(GLOB_RECURSE _sourceFiles ${HEADER_PATH}/*.cxx )
+file(GLOB_RECURSE _sourceFiles ${HEADER_PATH}/*.cpp )
 
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
