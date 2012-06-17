@@ -166,7 +166,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
         // All mask values are 1. No masking. Return the input array.
         return( shared_from_this() );
 
-    osg::Array* sourceArray( this->asOSGArray() );
+    osg::Array* sourceArray( asOSGArray() );
     switch( sourceArray->getType() )
     {
     case osg::Array::FloatArrayType:

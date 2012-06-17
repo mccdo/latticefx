@@ -160,12 +160,12 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
         osg::Node* child( grp->getChild( childIndex ) );
         childPath.push_back( child );
 
-        const bool inRange( this->inRange( validRange, rangeData._rangeValues ) );
+        const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
 
         switch( rangeData._status )
         {
         case lfx::PageData::RangeData::UNLOADED:
-            if( inRange )
+            if( isInRange )
             {
                 lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
                 pageThread->addLoadRequest( request );
@@ -174,7 +174,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             break;
 
         case lfx::PageData::RangeData::LOAD_REQUESTED:
-            if( inRange )
+            if( isInRange )
             {
                 lfx::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
                 if( request != NULL )
@@ -205,7 +205,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
             lfx::PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
-            const bool inRange( this->inRange( validRange, rangeData._rangeValues ) );
+            const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
             switch( rangeData._status )
             {
             case lfx::PageData::RangeData::LOADED:
@@ -213,7 +213,7 @@ void RootCallback::pageByDistance( osg::Group* grp, const osg::Matrix& modelMat,
                 child->setNodeMask( ~0u );
                 break;
             case lfx::PageData::RangeData::ACTIVE:
-                if( !inRange )
+                if( !isInRange )
                 {
                     reclaimImages( child );
                     rangeData._status = lfx::PageData::RangeData::UNLOADED;
