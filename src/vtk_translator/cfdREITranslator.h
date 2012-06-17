@@ -34,7 +34,7 @@
 #define _CFD_REI_TRANS_H_
 
 
-#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
+#include <vtk_translator/cfdTranslatorToVTK.h>
 #include <set>
 
 namespace ves

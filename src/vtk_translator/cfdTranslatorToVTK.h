@@ -199,5 +199,4 @@ protected:
 };
 }
 }
-}
 #endif //_CFD_TRANSLATOR_TO_VTK_H_

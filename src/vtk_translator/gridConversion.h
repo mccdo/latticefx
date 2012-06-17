@@ -38,18 +38,15 @@ class vtkStructuredGrid;
 class vtkUnstructuredGrid;
 class vtkDataSet;
 
-namespace ves
+namespace lfx
 {
-namespace builder
-{
-namespace DataLoader
+namespace vtk_translator
 {
 // allow conversion of any kind of vtkDataSet to a vtkUnstructuredGrid
 vtkUnstructuredGrid* convertToUnstructuredGrid( vtkDataSet* rgrid );
 
 // allow conversion of vtkRectilinearGrids to vtkStructuredGrids
 vtkStructuredGrid* convertToStructuredGrid( vtkRectilinearGrid* rgrid );
-}
 }
 }
 #endif //GRID_CONVERSION_H

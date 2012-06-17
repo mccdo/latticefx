@@ -1,4 +1,4 @@
-/*************** <auto-copyright.rb BEGIN do not edit this line> **************
+vtk_translator/*************** <auto-copyright.rb BEGIN do not edit this line> **************
  *
  * VE-Suite is (C) Copyright 1998-2012 by Iowa State University
  *
@@ -40,7 +40,7 @@ class vtkUnstructuredGridWriter;
 class vtkUnstructuredGrid;
 class vtkAppendFilter;
 
-#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
+#include <vtk_translator/cfdTranslatorToVTK.h>
 
 namespace ves
 {

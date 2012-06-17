@@ -36,14 +36,11 @@
 class vtkFloatArray;
 class vtkPointData;
 
-namespace ves
+namespace lfx
 {
-namespace builder
-{
-namespace DataLoader
+namespace vtk_translator
 {
 extern void letUsersAddParamsToField( const int numParams, vtkFloatArray** data, vtkPointData* pointData, int verbose = 1 );
-}
 }
 }
 #endif    // CONVERTER_H

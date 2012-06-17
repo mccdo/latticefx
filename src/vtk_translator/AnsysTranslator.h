@@ -34,7 +34,7 @@
 #define ANSYS_TRANSLATOR_H_
 
 
-#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
+#include <vtk_translator/cfdTranslatorToVTK.h>
 
 namespace ves
 {
