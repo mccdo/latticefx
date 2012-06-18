@@ -183,8 +183,8 @@ macro( _addExecutable _category _exeName )
         ${libs}
         ${_requiredDependencyLibraries}
     )
-    
-    if( _category STREQUAL "App" )
+
+    if( ${_category} STREQUAL "App" )
         install(
             TARGETS ${_exeName}
             RUNTIME DESTINATION bin COMPONENT latticefx
