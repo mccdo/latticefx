@@ -278,7 +278,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
+        osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
+
         const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
 
@@ -290,7 +291,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             return( NULL );
         }
         const ChannelDataPtr dirChannel( dirAlias->getMaskedChannel( maskIn ) );
-        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( dirChannel ) );
+        osg::Texture3D* dirTex( createDummyDBTexture( dirChannel ) );
         const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
         stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
 
@@ -309,7 +310,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+            osg::Texture3D* tfInputTex( createDummyDBTexture( tfInputChannel ) );
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
@@ -327,7 +328,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
+            osg::Texture3D* hmInputTex( createDummyDBTexture( hmInputChannel ) );
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
         }
