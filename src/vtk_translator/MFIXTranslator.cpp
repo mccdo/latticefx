@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/MFIXTranslator.h>
+#include <vtk_translator/MFIXTranslator.h>
 #include <vtkDataSet.h>
 #include <vtkMFIXReader.h>
 #include <vtkUnstructuredGrid.h>
@@ -38,8 +38,7 @@
 
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////

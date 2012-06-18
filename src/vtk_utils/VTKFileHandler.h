@@ -32,8 +32,8 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #ifndef CFD_VTK_FILE_HANDLER_H
 #define CFD_VTK_FILE_HANDLER_H
-/*!\file cfdVTKFileHandler.h
-cfdVTKFileHandler API
+/*!\file VTKFileHandler.h
+VTKFileHandler API
 */
 
 /*!\class lfx::vtk_utils::VTKFileHandler

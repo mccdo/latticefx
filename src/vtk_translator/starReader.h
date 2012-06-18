@@ -36,11 +36,9 @@
 #include <string>
 
 class vtkUnstructuredGrid;
-namespace ves
+namespace lfx
 {
-namespace builder
-{
-namespace DataLoader
+namespace vtk_translator
 {
 class starReader
 {
@@ -78,7 +76,6 @@ private:
     int   scaleIndex;
     float scaleFactor;
 };
-}
 }
 }
 #endif

@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/cfdREITranslator.h>
+#include <vtk_translator/cfdREITranslator.h>
 #include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkDICOMImageReader.h>
@@ -42,15 +42,14 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
-#include <ves/xplorer/util/fileIO.h>
-#include <ves/builder/DataLoader/converter.h>      // for "letUsersAddParamsToField>
-#include <ves/builder/DataLoader/gridConversion.h>
+#include <vtk_utils/fileIO.h>
+#include <vtk_translator/converter.h>      // for "letUsersAddParamsToField>
+#include <vtk_translator/gridConversion.h>
 
 #include <iostream>
 
-using namespace ves::xplorer::util;
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_utils;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////

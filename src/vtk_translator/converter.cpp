@@ -30,16 +30,16 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/converter.h>
+#include <vtk_translator/converter.h>
 
 #include <iostream>
 
 #include <vtkPointData.h>
 #include <vtkFloatArray.h>
 
-using namespace ves::builder::DataLoader;
+using namespace lfx::vtk_translator;
 
-void ves::builder::DataLoader::letUsersAddParamsToField( const int numParams, vtkFloatArray** data,
+void lfx::vtk_translator::letUsersAddParamsToField( const int numParams, vtkFloatArray** data,
         vtkPointData* pointData, int verbose )
 {
     int debug  = 0;

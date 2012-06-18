@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/starReader.h>
+#include <vtk_translator/starReader.h>
 
 #include <iostream>
 #include <fstream>
@@ -43,13 +43,12 @@
 #include <vtkCellType.h>
 #include <vtkIdList.h>
 
-#include <ves/builder/DataLoader/converter.h>     // for "letUsersAddParamsToField>
-#include <ves/xplorer/util/fileIO.h>       // for "getTagAndValue>
-#include <ves/xplorer/util/readWriteVtkThings.h>
+#include <vtk_translator/converter.h>     // for "letUsersAddParamsToField>
+#include <vtk_utils/fileIO.h>       // for "getTagAndValue>
+#include <vtk_utils/readWriteVtkThings.h>
 
-using namespace ves::xplorer::util;
-using std::istringstream;
-using namespace ves::builder::DataLoader;
+using namespace lfx::vtk_translator;
+using namespace lfx::vtk_utils;
 
 starReader::starReader( std::string paramFile )
 {

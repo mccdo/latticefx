@@ -30,6 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
+#include <vtk_translator/plot3dReader.h>
+
 #include <vtkStructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkUnstructuredGrid.h>
@@ -46,18 +48,15 @@
 #include <vtkStructuredGridGeometryFilter.h>
 #include <vtkAppendPolyData.h>
 
-#include <ves/builder/DataLoader/plot3dReader.h>
-//#include <fstream>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <ves/xplorer/util/fileIO.h>
-#include <ves/xplorer/util/cfdGrid2Surface.h>
-#include <ves/xplorer/util/readWriteVtkThings.h>
+#include <vtk_utils/fileIO.h>
+#include <vtk_utils/Grid2Surface.h>
+#include <vtk_utils/readWriteVtkThings.h>
 
-using namespace ves::xplorer::util;
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_utils;
+using namespace lfx::vtk_translator;
 
 plot3dReader::plot3dReader( void )
 {

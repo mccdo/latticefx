@@ -36,14 +36,12 @@
 
 #include <vtk_translator/cfdTranslatorToVTK.h>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS cfdDICOMTranslator:
-    public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT cfdDICOMTranslator:
+    public lfx::vtk_translator::cfdTranslatorToVTK
 {
 
 public:
@@ -52,7 +50,7 @@ public:
     ///Display help for the DICOM translator
     virtual void DisplayHelp( void );
 
-    class VE_USER_BUILDER_EXPORTS DICOMTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT DICOMTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         DICOMTranslateCbk()
@@ -69,7 +67,7 @@ public:
 
     protected:
     };
-    class VE_USER_BUILDER_EXPORTS DICOMPreTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT DICOMPreTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         DICOMPreTranslateCbk()
@@ -82,7 +80,6 @@ protected:
     DICOMPreTranslateCbk _cmdParser;
     DICOMTranslateCbk _dicomToVTK;
 };
-}
 }
 }
 #endif//_CFD_DICOM_TRANSLATOR_H_

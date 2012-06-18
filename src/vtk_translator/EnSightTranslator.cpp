@@ -30,10 +30,10 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/EnSightTranslator.h>
+#include <vtk_translator/EnSightTranslator.h>
 
-#include <ves/builder/DataLoader/converter.h>
-#include <ves/xplorer/util/cfdVTKFileHandler.h>
+#include <vtk_translator/converter.h>
+#include <vtk_utils/VTKFileHandler.h>
 
 #include <vtkDataSet.h>
 #include <vtkGenericEnSightReader.h>          // will open any ensight file
@@ -59,8 +59,7 @@
 #include <iomanip>
 #include <sstream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////
@@ -222,7 +221,7 @@ void EnSightTranslator::EnSightTranslateCbk::Translate( vtkDataObject*& outputDa
                              << std::setw( 6 )
                              << j << ".vtu";
 
-                        ves::xplorer::util::cfdVTKFileHandler* trans = new ves::xplorer::util::cfdVTKFileHandler();
+                        lfx::vtk_utils::VTKFileHandler* trans = new lfx::vtk_utils::VTKFileHandler();
                         trans->WriteDataSet( outputDataset, strm.str() );
                         delete trans;
                         outputDataset->Delete();
@@ -245,7 +244,7 @@ void EnSightTranslator::EnSightTranslateCbk::Translate( vtkDataObject*& outputDa
                             << std::setw( 6 )
                             << j << ".vtm";
 
-                    ves::xplorer::util::cfdVTKFileHandler* trans = new ves::xplorer::util::cfdVTKFileHandler();
+                    lfx::vtk_utils::VTKFileHandler* trans = new ves::xplorer::util::cfdVTKFileHandler();
                     trans->WriteDataSet( tempDataSet, strm.str() );
                     delete trans;*/
                     tempDataSet->Delete();

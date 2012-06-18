@@ -46,24 +46,19 @@
 
 class vtkDataObject;
 
-namespace ves
+namespace lfx
 {
-namespace builder
-{
-namespace cfdTranslatorToVTK
+namespace vtk_translator
 {
 class cfdTranslatorToVTK;
 }
 }
-}
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS DataLoader
+class LATTICEFX_VTK_TRANSLATOR_EXPORT DataLoader
 {
 public:
     ///Constructor
@@ -77,7 +72,7 @@ private:
     DataLoader& operator= ( const DataLoader& );
 public:
     ///Get the active translator for the data that is loaded.
-    ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* GetActiveTranslator( void );
+    lfx::vtk_translator::cfdTranslatorToVTK* GetActiveTranslator( void );
 
     ///Set the data file name to be translated.
     ///\param inputData The file name of the data to be loaded.
@@ -97,13 +92,12 @@ private:
     ///The name of the input data dir.
     std::string inputDataDir;
     ///The pointer to the active loader
-    ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* activeLoader;
+    lfx::vtk_translator::cfdTranslatorToVTK* activeLoader;
     ///Map the translators to a filename or extension, must be unique
-    std::map< std::string, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* > translatorMap;
+    std::map< std::string, lfx::vtk_translator::cfdTranslatorToVTK* > translatorMap;
     ///The active scalars to load
     std::vector< std::string > m_activeArrays;
 };
-}
 }
 }
 #endif// _DATA_LOADER_H_

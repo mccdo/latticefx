@@ -35,14 +35,12 @@
 
 #include <vtk_translator/cfdTranslatorToVTK.h>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS EnSightTranslator:
-    public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT EnSightTranslator:
+    public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     EnSightTranslator();
@@ -50,7 +48,7 @@ public:
     ///Display help for the EnSight translator
     virtual void DisplayHelp( void );
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS EnSightTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT EnSightTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         EnSightTranslateCbk()
@@ -66,7 +64,7 @@ public:
         //appropriately by the translate callback.      //
         //////////////////////////////////////////////////
         virtual void Translate( vtkDataObject*& outputDataset,
-                                ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK,
+                                lfx::vtk_translator::cfdTranslatorToVTK* toVTK,
                                 vtkAlgorithm*& dataReader );
 
         ///This creates additional scalars from vector components
@@ -74,8 +72,8 @@ public:
         void AddScalarsFromVectors( vtkDataObject*& outputDataset );
     };
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS EnSightPreTranslateCbk:
-        public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT EnSightPreTranslateCbk:
+        public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         EnSightPreTranslateCbk()
@@ -86,13 +84,12 @@ public:
         {
             ;
         }
-        void Preprocess( int argc, char** argv, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK );
+        void Preprocess( int argc, char** argv, lfx::vtk_translator::cfdTranslatorToVTK* toVTK );
     };
 protected:
     EnSightPreTranslateCbk cmdParser;
     EnSightTranslateCbk ensightToVTK;
 };
-}
 }
 }
 #endif//_ENSIGHT_TRANSLATOR_H_

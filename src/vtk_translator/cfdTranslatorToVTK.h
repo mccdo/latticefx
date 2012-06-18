@@ -79,7 +79,7 @@ public:
     ////////////////////////////////////////////////////////
     //Any preprocessing can be easily setup to happen here//
     ////////////////////////////////////////////////////////
-    class VE_BUILDER_EXPORTS PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT PreTranslateCallback
     {
     public:
         PreTranslateCallback()
@@ -93,7 +93,7 @@ public:
     /////////////////////////////////////////////////////////
     //translate callback must be defined or nothing happens//
     /////////////////////////////////////////////////////////
-    class VE_BUILDER_EXPORTS TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT TranslateCallback
     {
     public:
         TranslateCallback()
@@ -112,7 +112,7 @@ public:
     ///////////////////////////////////////////////////////////
     //Any post-processing can be easily setup to happen here //
     ///////////////////////////////////////////////////////////
-    class VE_BUILDER_EXPORTS PostTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT PostTranslateCallback
     {
     public:
         PostTranslateCallback()

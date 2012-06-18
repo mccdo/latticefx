@@ -49,7 +49,7 @@
 
 //#include <ves/xplorer/data/DatasetPropertySet.h>
 
-//#include <ves/builder/DataLoader/DataLoader.h>
+//#include <vtk_translator/DataLoader.h>
 //#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
 
 //#include <ves/open/xml/Command.h>

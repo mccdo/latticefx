@@ -64,7 +64,7 @@ class vtkDataSet;
 class vtkDataObject;
 class vtkAlgorithm;
 
-namespace ves
+namespace lfx
 {
 namespace xplorer
 {
@@ -83,7 +83,7 @@ class VTKFileHandler;
 }
 }
 
-/*namespace ves
+/*namespace lfx
 {
 namespace builder
 {
@@ -429,7 +429,7 @@ private:
     ///Tell other classes that this dataset is part of a transient domain
     int partOfTransientSeries;
     ///Translator interface
-    //ves::builder::DataLoader::DataLoader* m_externalFileLoader;
+    //lfx::vtk_translator::DataLoader::DataLoader* m_externalFileLoader;
 
     ///Easy way to tell if this dataset is a child of a composite dataset
     bool m_isPartOfCompositeDataset;

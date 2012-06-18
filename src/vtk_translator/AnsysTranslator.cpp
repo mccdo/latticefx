@@ -30,15 +30,14 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/AnsysTranslator.h>
-#include <ves/builder/DataLoader/ansysReader.h>
+#include <vtk_translator/AnsysTranslator.h>
+#include <vtk_translator/ansysReader.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////

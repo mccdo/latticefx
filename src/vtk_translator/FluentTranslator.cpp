@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/FluentTranslator.h>
-#include <ves/xplorer/util/fileIO.h>
+#include <vtk_translator/FluentTranslator.h>
+#include <vtk_utils/fileIO.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
@@ -46,8 +46,7 @@
 #include <vtkXMLMultiBlockDataWriter.h>
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 
 FluentTranslator::FluentTranslator()
 {
@@ -82,7 +81,7 @@ void FluentTranslator::FluentTranslateCbk::Translate( vtkDataObject*& outputData
     ///remove extension
     std::string casFileMinusExtension( casFile, 0, period );
     casFileMinusExtension.append( ".dat" );
-    if( !ves::xplorer::util::fileIO::isFileReadable( casFileMinusExtension ) )
+    if( !lfx::vtk_utils::fileIO::isFileReadable( casFileMinusExtension ) )
     {
         std::cerr << "FLUENT dat file is not present with cas file."
                   << std::endl;

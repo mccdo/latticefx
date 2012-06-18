@@ -1,4 +1,4 @@
-vtk_translator/*************** <auto-copyright.rb BEGIN do not edit this line> **************
+/*************** <auto-copyright.rb BEGIN do not edit this line> **************
  *
  * VE-Suite is (C) Copyright 1998-2012 by Iowa State University
  *
@@ -30,8 +30,8 @@ vtk_translator/*************** <auto-copyright.rb BEGIN do not edit this line> *
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef PLOT3DREADER_H
-#define PLOT3DREADER_H
+#ifndef LFX_PLOT3DREADER_H
+#define LFX_PLOT3DREADER_H
 
 class vtkStructuredGridWriter;
 class vtkStructuredGrid;
@@ -42,13 +42,11 @@ class vtkAppendFilter;
 
 #include <vtk_translator/cfdTranslatorToVTK.h>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class  VE_USER_BUILDER_EXPORTS plot3dReader: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class  LATTICEFX_VTK_TRANSLATOR_EXPORT plot3dReader: public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     plot3dReader( void );
@@ -57,7 +55,7 @@ public:
     ///Display help for the Plot3D translator
     virtual void DisplayHelp( void );
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS Plot3DTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT Plot3DTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         Plot3DTranslateCbk()
@@ -73,7 +71,7 @@ public:
         //appropriately by the translate callback.      //
         //////////////////////////////////////////////////
         virtual void Translate( vtkDataObject*& outputDataset,
-                                ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK,
+                                lfx::vtk_translator::cfdTranslatorToVTK* toVTK,
                                 vtkAlgorithm*& dataReader );
 
         ///This creates additional scalars from vector components
@@ -92,8 +90,8 @@ public:
         int   numOfSurfaceGrids;
     };
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS Plot3DPreTranslateCbk:
-        public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT Plot3DPreTranslateCbk:
+        public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         Plot3DPreTranslateCbk()
@@ -104,7 +102,7 @@ public:
         {
             ;
         }
-        void Preprocess( int argc, char** argv, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK );
+        void Preprocess( int argc, char** argv, lfx::vtk_translator::cfdTranslatorToVTK* toVTK );
         std::string GetIBlankFlag( void );
         std::string GetNumberOfDimensions( void );
         std::string GetMultigridFlag( void );
@@ -144,7 +142,6 @@ protected:
     Plot3DPreTranslateCbk cmdParser;
     Plot3DTranslateCbk plot3dToVTK;
 };
-}
 }
 }
 #endif

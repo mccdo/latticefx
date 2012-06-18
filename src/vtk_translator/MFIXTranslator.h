@@ -35,14 +35,12 @@
 
 #include <vtk_translator/cfdTranslatorToVTK.h>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS MFIXTranslator:
-    public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT MFIXTranslator:
+    public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     MFIXTranslator();
@@ -50,7 +48,7 @@ public:
     ///Display help for the MFIX translator
     virtual void DisplayHelp( void );
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS MFIXTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT MFIXTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         MFIXTranslateCbk()
@@ -71,8 +69,8 @@ public:
 
     };
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS MFIXPreTranslateCbk:
-        public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT MFIXPreTranslateCbk:
+        public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         MFIXPreTranslateCbk()
@@ -83,13 +81,12 @@ public:
         {
             ;
         }
-        void Preprocess( int argc, char** argv, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK );
+        void Preprocess( int argc, char** argv, lfx::vtk_translator::cfdTranslatorToVTK* toVTK );
     };
 protected:
     MFIXPreTranslateCbk cmdParser;
     MFIXTranslateCbk mfixToVTK;
 };
-}
 }
 }
 #endif//_MFIX_TRANSLATOR_H_

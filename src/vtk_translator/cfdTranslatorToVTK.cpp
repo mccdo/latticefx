@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
+#include <vtk_translator/cfdTranslatorToVTK.h>
 #include <bitset>
 #include <sstream>
 #include <iostream>
@@ -38,9 +38,9 @@
 
 #include <vtkDataObject.h>
 #include <vtkAlgorithm.h>
-#include <ves/xplorer/util/readWriteVtkThings.h>
-#include <ves/xplorer/util/fileIO.h>
-using namespace lfx::vtk_translator::cfdTranslatorToVTK;
+#include <vtk_utils/readWriteVtkThings.h>
+#include <vtk_utils/fileIO.h>
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructor                         //
 ////////////////////////////////////////
@@ -83,7 +83,7 @@ void cfdTranslatorToVTK::SetInputDirectory( std::string inDir )
 {
     baseFileNames.clear();
     _inputDir = inDir;
-    _infileNames = ves::xplorer::util::fileIO::GetFilesInDirectory( inDir, _fileExtension );
+    _infileNames = lfx::vtk_utils::fileIO::GetFilesInDirectory( inDir, _fileExtension );
     for( size_t i = 0; i < _infileNames.size(); i++ )
     {
         ExtractBaseName( _infileNames.at( i ) );
@@ -264,7 +264,7 @@ bool cfdTranslatorToVTK::_writeToVTK( unsigned int fileNum )
             _outfileNames.push_back( tempName.str() );
         }
 
-        ves::xplorer::util::writeVtkThing( _outputDataset,
+        lfx::vtk_utils::writeVtkThing( _outputDataset,
                                            ( char* )_outfileNames.at( fileNum ).c_str(), 1 );
         return true;
     }

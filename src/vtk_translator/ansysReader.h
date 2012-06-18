@@ -42,11 +42,9 @@ class vtkUnstructuredGrid;
 class vtkIntArray;
 class vtkDoubleArray;
 
-namespace ves
+namespace lfx
 {
-namespace builder
-{
-namespace DataLoader
+namespace vtk_translator
 {
 class ansysReader
 {
@@ -171,7 +169,6 @@ private:
     vtkIntArray* pointerToMidPlaneNode;
     int32 int32MaximumFileLength;
 };
-}
 }
 }
 #endif

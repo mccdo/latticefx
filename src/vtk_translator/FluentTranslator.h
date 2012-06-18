@@ -37,14 +37,12 @@
 
 class vtkDataSet;
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS FluentTranslator:
-    public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT FluentTranslator:
+    public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     FluentTranslator();
@@ -52,7 +50,7 @@ public:
     ///Display help for the Fluent translator
     virtual void DisplayHelp( void );
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS FluentTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT FluentTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         FluentTranslateCbk()
@@ -74,8 +72,8 @@ public:
                                 vtkAlgorithm*& dataReader );
     };
     //////////////////////////////////////////////////////
-    class VE_USER_BUILDER_EXPORTS FluentPreTranslateCbk:
-        public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT FluentPreTranslateCbk:
+        public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         FluentPreTranslateCbk()
@@ -86,13 +84,12 @@ public:
         {
             ;
         }
-        void Preprocess( int argc, char** argv, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK );
+        void Preprocess( int argc, char** argv, lfx::vtk_translator::cfdTranslatorToVTK* toVTK );
     };
 protected:
     FluentPreTranslateCbk cmdParser;
     FluentTranslateCbk fluentToVTK;
 };
-}
 }
 }
 #endif//_FLUENT_TRANSLATOR_H_

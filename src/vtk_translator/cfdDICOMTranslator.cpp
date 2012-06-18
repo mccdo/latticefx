@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/cfdDICOMTranslator.h>
+#include <vtk_translator/cfdDICOMTranslator.h>
 #include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkDICOMImageReader.h>
@@ -40,8 +40,7 @@
 
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////

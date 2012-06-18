@@ -30,15 +30,14 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/StarCDTranslator.h>
-#include <ves/builder/DataLoader/starReader.h>
+#include <vtk_translator/StarCDTranslator.h>
+#include <vtk_translator/starReader.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructors                        //
 ////////////////////////////////////////

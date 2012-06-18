@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <ves/builder/DataLoader/ansysReader.h>
+#include <vtk_translator/ansysReader.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -39,7 +39,7 @@
 #ifndef WIN32
 #include <netinet/in.h>
 #endif
-#include <ves/xplorer/util/fileIO.h>
+#include <vtk_utils/fileIO.h>
 #include <vtkExtractUnstructuredGrid.h>
 
 #include <vtkUnstructuredGrid.h>
@@ -60,8 +60,8 @@
 #define PRINT(x) \
     std::cout << std::setw(PRINT_WIDTH-3) << #x << " = " << x << std::endl;
 #endif
-using namespace ves::xplorer::util;
-using namespace ves::builder::DataLoader;
+using namespace lfx::vtk_utils;
+using namespace lfx::vtk_translator;
 
 ansysReader::ansysReader( std::string input )
 {

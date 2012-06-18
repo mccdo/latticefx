@@ -36,14 +36,12 @@
 
 #include <vtk_translator/cfdTranslatorToVTK.h>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS AVSTranslator:
-    public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT AVSTranslator:
+    public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     AVSTranslator();
@@ -51,7 +49,7 @@ public:
     ///Display help for the AVS translator
     virtual void DisplayHelp( void );
 
-    class VE_USER_BUILDER_EXPORTS AVSTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT AVSTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         AVSTranslateCbk()
@@ -68,21 +66,20 @@ public:
 
     protected:
     };
-    class VE_USER_BUILDER_EXPORTS AVSPreTranslateCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT AVSPreTranslateCbk: public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         AVSPreTranslateCbk()
         {};
         virtual ~AVSPreTranslateCbk()
         {};
-        void Preprocess( int argc, char** argv, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* toVTK );
+        void Preprocess( int argc, char** argv, lfx::vtk_translator::cfdTranslatorToVTK* toVTK );
     protected:
     };
 protected:
     AVSPreTranslateCbk _cmdParser;
     AVSTranslateCbk _AVSToVTK;
 };
-}
 }
 }
 #endif//_AVS_TRANSLATOR_H_

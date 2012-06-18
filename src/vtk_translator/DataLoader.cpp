@@ -30,26 +30,25 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/DataLoader.h>
-#include <ves/builder/DataLoader/FluentTranslator.h>
-#include <ves/builder/DataLoader/MFIXTranslator.h>
-#include <ves/builder/DataLoader/EnSightTranslator.h>
-#include <ves/builder/DataLoader/AVSTranslator.h>
-#include <ves/builder/DataLoader/cfdREITranslator.h>
-#include <ves/builder/DataLoader/cfdDICOMTranslator.h>
-#include <ves/builder/DataLoader/plot3dReader.h>
-#include <ves/builder/DataLoader/StarCDTranslator.h>
-//#include <ves/builder/DataLoader/AnsysTranslator.h>
-#include <ves/builder/DataLoader/STLTranslator.h>
+#include <vtk_translator/DataLoader.h>
+#include <vtk_translator/FluentTranslator.h>
+#include <vtk_translator/MFIXTranslator.h>
+#include <vtk_translator/EnSightTranslator.h>
+#include <vtk_translator/AVSTranslator.h>
+#include <vtk_translator/cfdREITranslator.h>
+#include <vtk_translator/cfdDICOMTranslator.h>
+#include <vtk_translator/plot3dReader.h>
+#include <vtk_translator/StarCDTranslator.h>
+//#include <vtk_translator/AnsysTranslator.h>
+#include <vtk_translator/STLTranslator.h>
 
-#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
+#include <vtk_translator/cfdTranslatorToVTK.h>
 
-#include <ves/xplorer/util/fileIO.h>
+#include <vtk_utils/fileIO.h>
 #include <vtkDataObject.h>
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 //////////////////////
 //Constructor       //
 //////////////////////
@@ -106,7 +105,7 @@ DataLoader& DataLoader::operator=( const DataLoader& input )
 vtkDataObject* DataLoader::GetVTKDataSet( int argc, char** argv )
 {
     //Data processing loop
-    std::string fileExtension = ves::xplorer::util::fileIO::getExtension( inputDataName );
+    std::string fileExtension = lfx::vtk_utils::fileIO::getExtension( inputDataName );
     if( fileExtension.empty() )
     {
         // an example of this would be rei data
@@ -122,7 +121,7 @@ vtkDataObject* DataLoader::GetVTKDataSet( int argc, char** argv )
     }
     else
     {
-        std::map< std::string, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* >::iterator iter;
+        std::map< std::string, lfx::vtk_translator::cfdTranslatorToVTK* >::iterator iter;
         for( iter = translatorMap.begin(); iter != translatorMap.end(); ++iter )
         {
             iter->second->DisplayHelp();
@@ -130,7 +129,7 @@ vtkDataObject* DataLoader::GetVTKDataSet( int argc, char** argv )
         return 0;
     }
     //Check and see if we have a loader
-    std::map< std::string, ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK* >::iterator iter;
+    std::map< std::string, lfx::vtk_translator::cfdTranslatorToVTK* >::iterator iter;
     iter = translatorMap.find( fileExtension );
     if( iter == translatorMap.end() )
     {

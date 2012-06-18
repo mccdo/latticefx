@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/gridConversion.h>
+#include <vtk_translator/gridConversion.h>
 
 #include <iostream>
 
@@ -40,9 +40,9 @@
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <vtkPointData.h>
-using namespace ves::builder::DataLoader;
+using namespace lfx::vtk_translator;
 
-vtkUnstructuredGrid* ves::builder::DataLoader::convertToUnstructuredGrid( vtkDataSet* rgrid )
+vtkUnstructuredGrid* lfx::vtk_translator::convertToUnstructuredGrid( vtkDataSet* rgrid )
 {
     int debug = 0;
 
@@ -122,7 +122,7 @@ vtkUnstructuredGrid* ves::builder::DataLoader::convertToUnstructuredGrid( vtkDat
     return ugrid;
 }
 
-vtkStructuredGrid* ves::builder::DataLoader::convertToStructuredGrid( vtkRectilinearGrid* rGrid )
+vtkStructuredGrid* lfx::vtk_translator::convertToStructuredGrid( vtkRectilinearGrid* rGrid )
 {
     int debug = 0;
 

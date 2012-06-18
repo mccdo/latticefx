@@ -44,7 +44,7 @@
  * ves/xplorer/DataSet.h must be included, too.
  */
 /*
-namespace ves
+namespace lfx
 {
 namespace xplorer
 {

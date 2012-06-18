@@ -66,6 +66,7 @@ add_subdirectory( src/plugins )
 
 if( VTK_FOUND )
     add_subdirectory( src/vtk_utils )
+    add_subdirectory( src/vtk_translator )
 endif()
 
 add_subdirectory( src/tests )

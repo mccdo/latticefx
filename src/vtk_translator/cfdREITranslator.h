@@ -37,13 +37,11 @@
 #include <vtk_translator/cfdTranslatorToVTK.h>
 #include <set>
 
-namespace ves
+namespace lfx
 {
-namespace builder
+namespace vtk_translator
 {
-namespace DataLoader
-{
-class VE_USER_BUILDER_EXPORTS cfdREITranslator: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK
+class LATTICEFX_VTK_TRANSLATOR_EXPORT cfdREITranslator: public lfx::vtk_translator::cfdTranslatorToVTK
 {
 public:
     cfdREITranslator();
@@ -51,7 +49,7 @@ public:
     ///Display help for the REI translator
     virtual void DisplayHelp( void );
 
-    class VE_USER_BUILDER_EXPORTS REITranslatorCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::TranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT REITranslatorCbk: public lfx::vtk_translator::cfdTranslatorToVTK::TranslateCallback
     {
     public:
         REITranslatorCbk()
@@ -69,7 +67,7 @@ public:
         int debug;
     protected:
     };
-    class VE_USER_BUILDER_EXPORTS REIPreTranslatorCbk: public ves::builder::cfdTranslatorToVTK::cfdTranslatorToVTK::PreTranslateCallback
+    class LATTICEFX_VTK_TRANSLATOR_EXPORT REIPreTranslatorCbk: public lfx::vtk_translator::cfdTranslatorToVTK::PreTranslateCallback
     {
     public:
         REIPreTranslatorCbk()
@@ -83,7 +81,6 @@ protected:
     REIPreTranslatorCbk _cmdParser;
     REITranslatorCbk _reiTranslator;
 };
-}
 }
 }
 #endif//_CFD_REI_TRANS_H_

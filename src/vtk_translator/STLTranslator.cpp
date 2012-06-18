@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <ves/builder/DataLoader/STLTranslator.h>
-#include <ves/xplorer/util/fileIO.h>
+#include <vtk_translator/STLTranslator.h>
+#include <vtk_utils/fileIO.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
@@ -44,8 +44,7 @@
 #include <vtkXMLMultiBlockDataWriter.h>
 #include <iostream>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 
 STLTranslator::STLTranslator()
 {
