@@ -82,8 +82,6 @@ public:
     RootCallback();
     RootCallback( const RootCallback& rhs );
 
-    virtual lfx::RootCallback* create() { return( new lfx::RootCallback() ); }
-
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.
     This function does not need to be called if time series data is not being
@@ -111,13 +109,6 @@ public:
 
 protected:
     virtual ~RootCallback();
-
-    /** \brief TBD
-    \details TBD */
-    void pageByTime( osg::Group* grp );
-    /** \brief TBD
-    \details TBD */
-    void pageByDistance( osg::Group* grp, const osg::Matrix& modelMat, const osg::NodePath& nodePath );
 
     /** \brief TBD
     \details TBD */

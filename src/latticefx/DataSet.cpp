@@ -46,13 +46,6 @@ DataSet::DataSet()
   : _sceneGraph( new osg::Group ),
     _dirtyFlags( ALL_DIRTY )
 {
-    RootCallback* rootcb( new RootCallback() );
-    _sceneGraph->setUpdateCallback( rootcb );
-
-    PageData* pageData( new PageData );
-    pageData->setRangeMode( PageData::TIME_RANGE );
-    pageData->setParent( _sceneGraph.get() );
-    _sceneGraph->setUserData( pageData );
 }
 DataSet::DataSet( const DataSet& rhs )
   : _data( rhs._data ),
@@ -343,11 +336,16 @@ bool DataSet::updateRenderer()
     }
     else
     {
-        RootCallback* rootcb( static_cast< RootCallback* >( _sceneGraph->getUpdateCallback() ) );
-        PageData* pageData( static_cast< PageData* >( _sceneGraph->getUserData() ) );
-        pageData->setRangeMode( lfx::PageData::TIME_RANGE );
-        unsigned int childIndex( 0 );
+        RootCallback* rootcb( new RootCallback() );
+        _sceneGraph->setUpdateCallback( rootcb );
 
+        PageData* pageData( new PageData );
+        pageData->setRangeMode( PageData::TIME_RANGE );
+        pageData->setMinMaxTime( *( timeSet.begin() ), *( timeSet.rbegin() ) );
+        pageData->setParent( _sceneGraph.get() );
+        _sceneGraph->setUserData( pageData );
+
+        unsigned int childIndex( 0 );
         ChannelDataList::iterator maskIt( _maskList.begin() );
         BOOST_FOREACH( double time, timeSet )
         {
@@ -357,7 +355,7 @@ bool DataSet::updateRenderer()
             osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
             if( newChild != NULL )
             {
-                PageData::RangeData rangeData( time, 0. );
+                PageData::RangeData rangeData( time, time );
                 rangeData._status = PageData::RangeData::UNLOADED;
                 pageData->setRangeData( childIndex++, rangeData );
 
@@ -418,7 +416,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
-        parent->setUpdateCallback( new lfx::RootCallback() );
+        parent->setUpdateCallback( new RootCallback() );
 
         unsigned int childIndex( 0 );
         unsigned int idx;

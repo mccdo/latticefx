@@ -60,6 +60,17 @@ PageData::RangeMode PageData::getRangeMode() const
     return( _rangeMode );
 }
 
+void PageData::setMinMaxTime( const double minTime, const double maxTime )
+{
+    _minTime = minTime;
+    _maxTime = maxTime;
+}
+void PageData::getMinMaxTime( double& minTime, double& maxTime )
+{
+    minTime = _minTime;
+    maxTime = _maxTime;
+}
+
 
 void PageData::setRangeData( const unsigned int childIndex, const RangeData& rangeData )
 {

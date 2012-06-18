@@ -86,6 +86,11 @@ public:
     /** \brief Retrieve the RangeMode. */
     RangeMode getRangeMode() const;
 
+    /** \brief For TIME_RANGE, the min and max time values of the entire time series.
+    \details Called by DataSet during scene graph creation. */
+    void setMinMaxTime( const double minTime, const double maxTime );
+    void getMinMaxTime( double& minTime, double& maxTime );
+
     /** \brief Data for each pageable child.
     \details Contains information required for paging. Client code should add one
     of these per pageable child using PageData::setRangeData().
@@ -145,6 +150,8 @@ protected:
     virtual ~PageData();
 
     RangeMode _rangeMode;
+    double _minTime, _maxTime;
+
     RangeDataMap _rangeDataMap;
     osg::observer_ptr< osg::Group > _parent;
 };
