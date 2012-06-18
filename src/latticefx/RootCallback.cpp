@@ -235,18 +235,135 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         return;
     }
 
-    osg::Group* grp( node->asGroup() );
-    lfx::PageData* pageData( static_cast< lfx::PageData* >( grp->getUserData() ) );
+    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+
+    RangeValues validRange;
+    lfx::PageData* pageData( static_cast< lfx::PageData* >( node->getUserData() ) );
     if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
     {
-        pageByTime( grp );
+        const double time( getAnimationTime() );
+        validRange = RangeValues( time + getTimeRange().first,
+            time + getTimeRange().second );
     }
     else
     {
-        // This is the model matrix only. OSG UpdateVisitor does not start
-        // traversal on root Camera node, so there is no 'view' component.
+        osg::Vec3 wcEyePosition;
+        osg::Matrix proj;
+        osg::ref_ptr< const osg::Viewport> vp;
+        pageThread->getTransforms( wcEyePosition, proj, vp );
+
         const osg::Matrix modelMat( osg::computeLocalToWorld( nv->getNodePath(), false ) );
-        pageByDistance( grp, modelMat, nv->getNodePath() );
+        const osg::BoundingSphere& bSphere( node->getBound() );
+        const double pixelSize( computePixelSize( bSphere, modelMat, wcEyePosition, proj, vp.get() ) );
+
+        validRange = RangeValues( pixelSize, pixelSize );
+    }
+
+    osg::Group* grp( node->asGroup() );
+    osg::NodePath childPath( nv->getNodePath() );
+
+    bool removeExpired( false );
+    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    {
+        const unsigned int childIndex( rangeDataPair.first );
+        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+        osg::Node* child( grp->getChild( childIndex ) );
+        childPath.push_back( child );
+
+        const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
+
+        switch( rangeData._status )
+        {
+        case lfx::PageData::RangeData::UNLOADED:
+            if( isInRange )
+            {
+                lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
+                pageThread->addLoadRequest( request );
+                rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+            }
+            break;
+
+        case lfx::PageData::RangeData::LOAD_REQUESTED:
+            if( isInRange )
+            {
+                lfx::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
+                if( request != NULL )
+                {
+                    enableImages( child, request );
+                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    removeExpired = true;
+                }
+            }
+            else
+                pageThread->cancelLoadRequest( childPath );
+
+        default:
+        case lfx::PageData::RangeData::LOADED:
+        case lfx::PageData::RangeData::ACTIVE:
+            // Nothing to do.
+            break;
+        }
+
+        childPath.pop_back();
+    }
+
+    if( removeExpired )
+    {
+        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        {
+            const unsigned int childIndex( rangeDataPair.first );
+            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            osg::Node* child( grp->getChild( childIndex ) );
+
+            const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
+            switch( rangeData._status )
+            {
+            case lfx::PageData::RangeData::LOADED:
+                rangeData._status = lfx::PageData::RangeData::ACTIVE;
+                child->setNodeMask( ~0u );
+                break;
+            case lfx::PageData::RangeData::ACTIVE:
+                if( !isInRange )
+                {
+                    reclaimImages( child );
+                    rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                }
+                // Intentional fallthrough.
+            default:
+                child->setNodeMask( 0u );
+                break;
+            }
+        }
+    }
+
+    if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
+    {
+        osg::Node* bestChild( grp->getChild( 0 ) );
+        double minTimeDifference( FLT_MAX );
+
+        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        {
+            const unsigned int childIndex( rangeDataPair.first );
+            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            if( rangeData._status != lfx::PageData::RangeData::ACTIVE )
+                // Currently trying to find the best child for the current time, so if
+                // the status isn't ACTIVE, we don't care about it.
+                continue;
+
+            double timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
+            if( timeDifference < minTimeDifference )
+            {
+                minTimeDifference = timeDifference;
+                bestChild = pageData->getParent()->getChild( childIndex );
+            }
+        }
+
+        unsigned int childIndex;
+        for( childIndex=0; childIndex < grp->getNumChildren(); ++childIndex )
+        {
+            osg::Node* child( grp->getChild( childIndex ) );
+            child->setNodeMask( ( child == bestChild ) ? 0xffffffff : 0x0 );
+        }
     }
 
 #if 1
