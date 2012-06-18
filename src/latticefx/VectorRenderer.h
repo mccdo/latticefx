@@ -38,6 +38,12 @@
 #include <map>
 
 
+// Forward
+namespace osg {
+    class Texture3D;
+}
+
+
 namespace lfx {
 
 
@@ -172,6 +178,8 @@ public:
     std::string getInputTypeAlias( const InputType& inputType ) const;
 
 protected:
+    static osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
+
     PointStyle _pointStyle;
     InputTypeMap _inputTypeMap;
 };

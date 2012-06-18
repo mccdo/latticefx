@@ -187,22 +187,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         stateSet->addUniform( texDim );
 
         // Create image data and store in DB.
-        osg::Texture3D* posTex;
-        {
-            osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( posChannel ) );
-            DBKey key( generateDBKey() );
-            image->setFileName( key );
-            storeImage( image.get(), key );
-
-            // Create dummy Texture / Image as placeholder until real image data is paged in.
-            posTex = new osg::Texture3D;
-            posTex->setResizeNonPowerOfTwoHint( false );
-            posTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-            posTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
-            osg::Image* dummyImage( new osg::Image );
-            dummyImage->setFileName( key );
-            posTex->setImage( dummyImage );
-        }
+        osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
 
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
@@ -217,22 +202,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
 
         // Create image data and store in DB.
-        osg::Texture3D* radTex;
-        {
-            osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( radChannel ) );
-            DBKey key( generateDBKey() );
-            image->setFileName( key );
-            storeImage( image.get(), key );
-
-            // Create dummy Texture / Image as placeholder until real image data is paged in.
-            radTex = new osg::Texture3D;
-            radTex->setResizeNonPowerOfTwoHint( false );
-            radTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-            radTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
-            osg::Image* dummyImage = new osg::Image;
-            dummyImage->setFileName( key );
-            radTex->setImage( dummyImage );
-        }
+        osg::Texture3D* radTex( createDummyDBTexture( radChannel ) );
 
         const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
         stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
@@ -252,7 +222,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* tfInputTex( lfx::createTexture3DForInstancedRenderer( tfInputChannel ) );
+
+            osg::Texture3D* tfInputTex( createDummyDBTexture( tfInputChannel ) );
+
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
@@ -270,7 +242,9 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* hmInputTex( lfx::createTexture3DForInstancedRenderer( hmInputChannel ) );
+
+            osg::Texture3D* hmInputTex( createDummyDBTexture( hmInputChannel ) );
+
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
         }
@@ -496,6 +470,26 @@ std::string VectorRenderer::getInputTypeAlias( const InputType& inputType ) cons
     else
         // Should never happen, as the constructor assigns defaults.
         return( "" );
+}
+
+
+osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
+{
+    osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
+    const DBKey key( generateDBKey() );
+    image->setFileName( key );
+    storeImage( image.get(), key );
+
+    // Create dummy Texture / Image as placeholder until real image data is paged in.
+    osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
+    tex->setResizeNonPowerOfTwoHint( false );
+    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+    osg::Image* dummyImage( new osg::Image );
+    dummyImage->setFileName( key );
+    tex->setImage( dummyImage );
+
+    return( tex.release() );
 }
 
 

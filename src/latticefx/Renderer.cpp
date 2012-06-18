@@ -185,6 +185,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 1;
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
+        tf1dTex->setName( "donotpage" );
         const unsigned int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
         stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
 
@@ -197,6 +198,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 2;
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
+        tf2dTex->setName( "donotpage" );
         const unsigned int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
         stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
 
@@ -209,6 +211,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 3;
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
+        tf3dTex->setName( "donotpage" );
         const unsigned int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
         stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
 

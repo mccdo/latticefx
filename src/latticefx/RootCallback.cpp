@@ -284,7 +284,8 @@ public:
                 {
                     osg::Texture* tex( static_cast< osg::Texture* >(
                         stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
-                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) &&
+                    if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
+                        ( tex->getImage( 0 ) != NULL ) &&
                         ( tex->getImage( 0 )->data() == NULL ))
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
@@ -331,9 +332,12 @@ public:
                 {
                     osg::Texture* tex( static_cast< osg::Texture* >(
                         stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
-                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
+                        ( tex->getImage( 0 ) != NULL ) )
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                        if( key.empty() )
+                            OSG_WARN << "Got empty key." << std::endl;
                         osg::Image* image( _request->findAsImage( key ) );
                         if( image != NULL )
                             tex->setImage( 0, image );
@@ -376,7 +380,8 @@ public:
                 {
                     osg::Texture* tex( static_cast< osg::Texture* >(
                         stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
-                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
+                        ( tex->getImage( 0 ) != NULL ) )
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                         osg::Image* image( new osg::Image() );
