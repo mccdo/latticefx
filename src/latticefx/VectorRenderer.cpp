@@ -30,6 +30,7 @@
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/TextureUtils.h>
 #include <latticefx/BoundUtils.h>
+#include <latticefx/DBUtils.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -185,7 +186,24 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( posChannel ) );
+        // Create image data and store in DB.
+        osg::Texture3D* posTex;
+        {
+            osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( posChannel ) );
+            DBKey key( generateDBKey() );
+            image->setFileName( key );
+            storeImage( image.get(), key );
+
+            // Create dummy Texture / Image as placeholder until real image data is paged in.
+            posTex = new osg::Texture3D;
+            posTex->setResizeNonPowerOfTwoHint( false );
+            posTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+            posTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+            osg::Image* dummyImage( new osg::Image );
+            dummyImage->setFileName( key );
+            posTex->setImage( dummyImage );
+        }
+
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
 
@@ -197,7 +215,25 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             return( NULL );
         }
         const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
-        osg::Texture3D* radTex( lfx::createTexture3DForInstancedRenderer( radChannel ) );
+
+        // Create image data and store in DB.
+        osg::Texture3D* radTex;
+        {
+            osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( radChannel ) );
+            DBKey key( generateDBKey() );
+            image->setFileName( key );
+            storeImage( image.get(), key );
+
+            // Create dummy Texture / Image as placeholder until real image data is paged in.
+            radTex = new osg::Texture3D;
+            radTex->setResizeNonPowerOfTwoHint( false );
+            radTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+            radTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+            osg::Image* dummyImage = new osg::Image;
+            dummyImage->setFileName( key );
+            radTex->setImage( dummyImage );
+        }
+
         const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
         stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
 

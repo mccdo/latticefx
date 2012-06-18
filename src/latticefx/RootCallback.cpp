@@ -241,9 +241,22 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     lfx::PageData* pageData( static_cast< lfx::PageData* >( node->getUserData() ) );
     if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
     {
+        // validRange is set by the application. The assumption is that this will be large enough
+        // to accomodate several children, only one of which will be displayed (by use of NodeMask).
+        // This is different from pixel size paging because the time step (and therefore valid child)
+        // is expected to change quite rapidly, so wee need to page in a buffer around the current
+        // play time to help ensure a smooth animation free ofpaging bottlenecks.
+        //
+        // The current animation time could be anything, but we want a time range around it with
+        // min and max values between the PageData's min and max time values. Note that when the
+        // animation reaches the end, it's possible that the min validRange value could be greater than
+        // the max validRange value to support smooth playback as time wraps around.
+        const double minTime( /*TBD*/ 0. );
+        const double maxTime( /*TBD*/ 8. );
+
         const double time( getAnimationTime() );
-        validRange = RangeValues( time + getTimeRange().first,
-            time + getTimeRange().second );
+        validRange.first = getWrappedTime( _timeRange.first + time, minTime, maxTime );
+        validRange.second = getWrappedTime( _timeRange.second + time, minTime, maxTime );
     }
     else
     {
@@ -295,7 +308,10 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 }
             }
             else
+            {
                 pageThread->cancelLoadRequest( childPath );
+                rangeData._status = lfx::PageData::RangeData::UNLOADED;
+            }
 
         default:
         case lfx::PageData::RangeData::LOADED:
@@ -420,7 +436,8 @@ public:
                 {
                     osg::Texture* tex( static_cast< osg::Texture* >(
                         stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
-                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) )
+                    if( ( tex != NULL ) && ( tex->getImage( 0 ) != NULL ) &&
+                        ( tex->getImage( 0 )->data() == NULL ))
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                         _request->_keys.push_back( key );
@@ -470,7 +487,8 @@ public:
                     {
                         lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                         osg::Image* image( _request->findAsImage( key ) );
-                        tex->setImage( 0, image );
+                        if( image != NULL )
+                            tex->setImage( 0, image );
                     }
                 }
             }

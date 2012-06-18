@@ -35,6 +35,7 @@
 #include <osg/Vec3>
 
 namespace osg {
+    class Image;
     class Texture;
     class Texture2D;
     class Texture3D;
@@ -78,6 +79,10 @@ This function creates a new Texture3D with dimensions computed by
 computeTexture3DDimensions(). Texture data is taken from \c source. It is expected
 that the texture will be used for instanced rendering. */
 LATTICEFX_EXPORT osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source );
+
+/** \brief Generate osg::Image for createTexture3DForInstancedRenderer().
+\details */
+LATTICEFX_EXPORT osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source );
 
 
 /**@}*/

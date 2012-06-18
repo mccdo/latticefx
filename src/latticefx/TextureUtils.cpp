@@ -98,6 +98,19 @@ osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int 
 
 osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source )
 {
+    osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( source ) );
+    if( image == NULL )
+        return( NULL );
+
+    osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D( image.get() ) );
+    tex->setResizeNonPowerOfTwoHint( false );
+    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+    return( tex.release() );
+}
+
+osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
+{
     const osg::Array* sourceArray( source->asOSGArray() );
     if( sourceArray == NULL )
     {
@@ -154,11 +167,7 @@ osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source
     image->setInternalTextureFormat( intFormat );
     image->setDataType( dataType );
 
-    osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D( image.get() ) );
-    tex->setResizeNonPowerOfTwoHint( false );
-    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
-    return( tex.release() );
+    return( image.release() );
 }
 
 
