@@ -61,16 +61,8 @@ endif()
 
 #
 # Add all of the libraries to the build system
-add_subdirectory( src/latticefx )
-add_subdirectory( src/plugins )
-
-if( VTK_FOUND )
-    add_subdirectory( src/vtk_utils )
-    add_subdirectory( src/vtk_translator )
-endif()
-
-add_subdirectory( src/tests )
 add_subdirectory( data )
+add_subdirectory( src )
 
 #
 # Doxygen

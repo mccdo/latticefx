@@ -32,12 +32,11 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <ves/builder/DataLoader/DataLoader.h>
+#include <vtk_translator/DataLoader.h>
 
 #include <vtkDataObject.h>
 
-using namespace ves::builder::DataLoader;
-using namespace ves::builder::cfdTranslatorToVTK;
+using namespace lfx::vtk_translator;
 ///////////////////////////////////////////////////////////////////
 //Example of how to read dicom files and create vtk files for the//
 //dicom data                                                     //
