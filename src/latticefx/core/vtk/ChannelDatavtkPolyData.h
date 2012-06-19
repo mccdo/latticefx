@@ -30,7 +30,7 @@
 #define __LATTICEFX_CHANNEL_DATA_VTKPOLYDATA_H__ 1
 
 
-#include <latticefx/Export.h>
+#include <latticefx/core/vtk/Export.h>
 #include <latticefx/ChannelData.h>
 
 #include <boost/shared_ptr.hpp>
@@ -39,6 +39,9 @@ class vtkPolyData;
 
 namespace lfx {
 
+namespace core {
+    
+namespace vtk {
 
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
@@ -56,7 +59,7 @@ derived classes, ChannelDataLOD and ChannelDataImageSet.
 RTPOperation has no special handling for ChannelDataComposite and should never
 encounter one in practice. The DataSet will invoke an RTPOperation only with concrete
 ChannelData. */
-class LATTICEFX_EXPORT ChannelDatavtkPolyData : public lfx::ChannelData
+class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkPolyData : public lfx::ChannelData
 {
 public:
 
@@ -73,6 +76,8 @@ protected:
 typedef boost::shared_ptr< ChannelDatavtkPolyData > ChannelDatavtkPolyDataPtr;
 
 
+}
+}
 // lfx
 }
 

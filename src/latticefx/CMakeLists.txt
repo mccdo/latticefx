@@ -1,3 +1,6 @@
+#add_subdirectory( utils )
+#add_subdirectory( translators )
+add_subdirectory( core )
 
 set( _libName latticefx )
 
@@ -33,10 +36,6 @@ set( _headerFiles
     VolumeRenderer.h
 )
 
-if(VTK_FOUND)
-    list(APPEND _headerFiles ChannelDatavtkPolyData.h ChannelDatavtkDataObject.h)
-endif(VTK_FOUND)
-
 set( _sourceFiles
     BoundUtils.cpp
     ChannelData.cpp
@@ -62,10 +61,6 @@ set( _sourceFiles
     VectorRenderer.cpp
     VolumeRenderer.cpp
 )
-
-if(VTK_FOUND)
-    list(APPEND _sourceFiles ChannelDatavtkPolyData.cpp ChannelDatavtkDataObject.cpp)
-endif(VTK_FOUND)
 
 _addLibrary( Lib ${_libName}
     ${_headerFiles}

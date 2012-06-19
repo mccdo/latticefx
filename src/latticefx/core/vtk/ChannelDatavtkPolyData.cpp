@@ -26,12 +26,16 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 
 #include <vtkPolyData.h>
 
 namespace lfx {
 
+namespace core {
+
+namespace vtk {
+    
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyData::ChannelDatavtkPolyData( vtkPolyData* pd, const std::string& name )
     : 
@@ -62,5 +66,7 @@ vtkPolyData* ChannelDatavtkPolyData::GetPolyData()
     return m_pd;
 }
 ////////////////////////////////////////////////////////////////////////////////
+}
+}
 // lfx
 }

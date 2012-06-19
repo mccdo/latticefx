@@ -26,12 +26,16 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/ChannelDatavtkDataObject.h>
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
 #include <vtkDataObject.h>
 
 namespace lfx {
 
+namespace core {
+
+namespace vtk {
+    
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const std::string& name )
     : 
@@ -56,5 +60,7 @@ vtkDataObject* ChannelDatavtkDataObject::GetDataObject()
     return m_dobj;
 }
 ////////////////////////////////////////////////////////////////////////////////
+}
+}
 // lfx
 }
