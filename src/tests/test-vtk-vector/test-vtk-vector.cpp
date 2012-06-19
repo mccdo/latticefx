@@ -76,7 +76,7 @@ public:
     virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
     {
         vtkDataObject* tempVtkDO = 
-            boost::dynamic_pointer_cast< lfx::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) )->GetDataObject();
+            boost::static_pointer_cast< lfx::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) )->GetDataObject();
 
         vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
         c2p->SetInput( tempVtkDO );
@@ -155,7 +155,7 @@ public:
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
     {
         vtkPolyData* tempVtkPD = 
-            boost::dynamic_pointer_cast< lfx::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
+            boost::static_pointer_cast< lfx::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
 
         vtkPoints* points = tempVtkPD->GetPoints();
         size_t dataSize = points->GetNumberOfPoints();
