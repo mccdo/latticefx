@@ -28,6 +28,8 @@
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelData.h>
 #include <latticefx/ChannelDataOSGArray.h>
+#include <latticefx/ChannelDatavtkPolyData.h>
+#include <latticefx/ChannelDatavtkDataObject.h>
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/TextureUtils.h>
@@ -56,6 +58,199 @@
 #include <vtkAlgorithmOutput.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
+
+class VTKVectorFieldRTP : public lfx::RTPOperation
+{
+public:
+    VTKVectorFieldRTP()
+        : 
+        lfx::RTPOperation( lfx::RTPOperation::Channel )
+    {}
+    virtual ~VTKVectorFieldRTP()
+    {
+        ;
+    }
+    
+    ///We are going to be creating a ChannelDatavtkPolyData so we override the 
+    ///channel method since we do not have a ChannelData already
+    virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
+    {
+        vtkDataObject* tempVtkDO = 
+            boost::dynamic_pointer_cast< lfx::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) )->GetDataObject();
+
+        vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+        c2p->SetInput( tempVtkDO );
+        //c2p->Update();
+
+        vtkMaskPoints* ptmask = vtkMaskPoints::New();
+        
+        if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
+        {
+            vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+                vtkCompositeDataGeometryFilter::New();
+            m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+            //return m_multiGroupGeomFilter->GetOutputPort(0);
+            ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+            m_multiGroupGeomFilter->Delete();
+        }
+        else
+        {
+            //m_geometryFilter->SetInputConnection( input );
+            //return m_geometryFilter->GetOutputPort();
+            vtkDataSetSurfaceFilter* m_surfaceFilter = 
+                vtkDataSetSurfaceFilter::New();
+            m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
+            //return m_surfaceFilter->GetOutputPort();
+            ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+            m_surfaceFilter->Delete();
+        }
+
+        // get every nth point from the dataSet data
+        ptmask->SetOnRatio( 1.0 );
+        ptmask->Update();
+
+        lfx::ChannelDatavtkPolyDataPtr cdpd( new lfx::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
+
+        ptmask->Delete();
+        c2p->Delete();
+
+        return( cdpd );
+    }
+    
+protected:
+};
+
+typedef boost::shared_ptr< VTKVectorFieldRTP > VTKVectorFieldRTPPtr;
+
+class VTKVectorRenderer : public lfx::VectorRenderer
+{
+public:
+    ///Default constructor
+    ///We are really a fancy lfx::VectorRenderer specific to VTK data
+    VTKVectorRenderer() 
+        : 
+        lfx::VectorRenderer()
+    {}
+    
+    ///Destructor
+    virtual ~VTKVectorRenderer()
+    {}
+    
+    ///Set the active vector name to tell the render what to put in the textures
+    ///\param activeVector The active vector name to use
+    void SetActiveVector( const std::string& activeVector )
+    {
+        m_activeVector = activeVector;
+    }
+
+    ///Set the active scalar name to tell the render what to put in the textures
+    ///\param activeScalar The active scalar name to use
+    void SetActiveScalar( const std::string& activeScalar )
+    {
+        m_activeScalar = activeScalar;
+    }
+
+    ///We are overriding the lfx::VectorRenderer method and then calling it 
+    ///once we have given it all of the data it needs.
+    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    {
+        vtkPolyData* tempVtkPD = 
+            boost::dynamic_pointer_cast< lfx::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
+
+        vtkPoints* points = tempVtkPD->GetPoints();
+        size_t dataSize = points->GetNumberOfPoints();
+
+        vtkPointData* pointData = tempVtkPD->GetPointData();
+        vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
+        vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
+        
+        double scalarRange[ 2 ] = {0,1.0};
+        scalarArray->GetRange( scalarRange );
+        
+        double x[3];
+        double val;
+        //double rgb[3];
+        
+        osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
+        vertArray->resize( dataSize );
+        osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
+        dirArray->resize( dataSize );
+        osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
+        colorArray->resize( dataSize );
+        
+        for( size_t i = 0; i < dataSize; ++i )
+        {
+            //Get Position data
+            points->GetPoint( i, x );
+            (*vertArray)[ i ].set( x[0], x[1], x[2] );
+            
+            if( scalarArray )
+            {
+                //Setup the color array
+                scalarArray->GetTuple( i, &val );
+                val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+                (*colorArray)[ i ] = val;
+                //lut->GetColor( val, rgb );
+                //*scalarI++ = val;//rgb[0];
+                //*scalarI++ = rgb[1];
+                //*scalarI++ = rgb[2];
+            }
+            
+            if( vectorArray )
+            {
+                //Get Vector data
+                vectorArray->GetTuple( i, x );
+                osg::Vec3 v( x[0], x[1], x[2] );
+                v.normalize();
+                (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
+            }
+        }
+        
+        
+        //lfx::DataSetPtr dsp( new lfx::DataSet() );
+        
+        lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
+        //dsp->addChannel( vertData );
+        
+        lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+        //dsp->addChannel( dirData );
+        
+        lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+        //dsp->addChannel( colorData );
+        
+        // Add RTP operation to create a depth channel to use as input to the transfer function.
+        //DepthComputation* dc( new DepthComputation() );
+        //dc->addInput( "positions" );
+        //dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+        
+        //lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+        setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
+        addInput( "positions" );
+        addInput( "directions" );
+        addInput( "scalar" );
+        
+        //by this stage of the game the render has already had setInputs called 
+        //on it by lfx::DataSet therefore we can modify the _inputs array
+        addInput( vertData );
+        addInput( dirData );
+        addInput( colorData );
+        
+        // Configure transfer function.
+        setTransferFunctionInput( "scalar" );
+        setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+        setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+
+        return( lfx::VectorRenderer::getSceneGraph( maskIn ) );
+    }
+    
+protected:
+    ///The active vector to set which vector to use for rendering
+    std::string m_activeVector;
+    ///The active scalar to set which scalar to use for rendering
+    std::string m_activeScalar;
+};
+
+typedef boost::shared_ptr< VTKVectorRenderer > VTKVectorRendererPtr;
 
 lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
 {
@@ -282,21 +477,43 @@ lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    //Pre work specific to VTK
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
 
+    //Load the VTK data
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
-    vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
-    lfx::DataSetPtr testlfxDataSet = CreatePolyData( tempVtkDataSet );
-    //tempVtkDataSet->Delete();
-    delete tempDataSet;
-    // Create an example data set.
-    //lfx::DataSetPtr dsp( prepareDataSet() );
+    
+    //Create the DataSet for this visualization with VTK
+    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    
+    //1st Step
+    lfx::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
+    dsp->addChannel( dobjPtr );
+    
+    //2nd Step
+    VTKVectorFieldRTPPtr vectorRTP( new VTKVectorFieldRTP() );
+    vectorRTP->addInput( "vtkDataObject" );
+    dsp->addOperation( vectorRTP );
+    
+    //3rd Step
+    VTKVectorRendererPtr renderOp( new VTKVectorRenderer() );
+    renderOp->SetActiveVector( "Momentum" );
+    renderOp->SetActiveScalar( "Density" );
+    renderOp->addInput( "vtkPolyData" );
+    dsp->setRenderer( renderOp );
+    std::cout << "lfx...creating data..." << std::endl;
+    osg::Node* sceneNode = dsp->getSceneData();
+    std::cout << "...finished creating data. " << std::endl;
 
+    //Clean up the raw vtk memory
+    delete tempDataSet;
+    
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
-    viewer.setSceneData( testlfxDataSet->getSceneData() );
+    viewer.setSceneData( sceneNode );
+
     return( viewer.run() );
 }

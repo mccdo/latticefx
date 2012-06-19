@@ -33,6 +33,10 @@ set( _headerFiles
     VolumeRenderer.h
 )
 
+if(VTK_FOUND)
+    list(APPEND _headerFiles ChannelDatavtkPolyData.h ChannelDatavtkDataObject.h)
+endif(VTK_FOUND)
+
 set( _sourceFiles
     BoundUtils.cpp
     ChannelData.cpp
@@ -59,8 +63,14 @@ set( _sourceFiles
     VolumeRenderer.cpp
 )
 
+if(VTK_FOUND)
+    list(APPEND _sourceFiles ChannelDatavtkPolyData.cpp ChannelDatavtkDataObject.cpp)
+endif(VTK_FOUND)
 
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
+    LATTICEFX_LIBRARIES
+        ${_vtkLibraries}
 )
+
