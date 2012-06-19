@@ -59,6 +59,7 @@
 #include <vtkMath.h>
 #include <vtkPointData.h>
 
+////////////////////////////////////////////////////////////////////////////////
 class VTKVectorFieldRTP : public lfx::RTPOperation
 {
 public:
@@ -122,6 +123,7 @@ protected:
 
 typedef boost::shared_ptr< VTKVectorFieldRTP > VTKVectorFieldRTPPtr;
 
+////////////////////////////////////////////////////////////////////////////////
 class VTKVectorRenderer : public lfx::VectorRenderer
 {
 public:
@@ -206,22 +208,17 @@ public:
             }
         }
 
-        lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-        
-        lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-        
-        lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-        
-        //lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
         setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
-        addInput( "positions" );
-        addInput( "directions" );
-        addInput( "scalar" );
         
         //by this stage of the game the render has already had setInputs called 
         //on it by lfx::DataSet therefore we can modify the _inputs array
+        lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
         addInput( vertData );
+
+        lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
         addInput( dirData );
+
+        lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
         addInput( colorData );
         
         // Configure transfer function.
@@ -229,6 +226,10 @@ public:
         setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
 
+#if WRITE_IMAGE_DATA            
+        //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
+#endif
+        
         return( lfx::VectorRenderer::getSceneGraph( maskIn ) );
     }
     
@@ -241,110 +242,6 @@ protected:
 
 typedef boost::shared_ptr< VTKVectorRenderer > VTKVectorRendererPtr;
 
-lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
-{
-    vtkPoints* points = tempVtkPD->GetPoints();
-    size_t dataSize = points->GetNumberOfPoints();
-
-    vtkPointData* pointData = tempVtkPD->GetPointData();
-    vtkDataArray* vectorArray = pointData->GetVectors(vectorName.c_str());
-    vtkDataArray* scalarArray = pointData->GetScalars(scalarName.c_str());
-    
-    double scalarRange[ 2 ] = {0,1.0};
-    scalarArray->GetRange( scalarRange );
-    
-    double x[3];
-    double val;
-    //double rgb[3];
-    
-    osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
-    vertArray->resize( dataSize );
-    osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
-    dirArray->resize( dataSize );
-    osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
-    colorArray->resize( dataSize );
-
-    for( size_t i = 0; i < dataSize; ++i )
-    {
-        //Get Position data
-        points->GetPoint( i, x );
-        (*vertArray)[ i ].set( x[0], x[1], x[2] );
-
-        if( scalarArray )
-        {
-            //Setup the color array
-            scalarArray->GetTuple( i, &val );
-            val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
-            (*colorArray)[ i ] = val;
-            //lut->GetColor( val, rgb );
-            //*scalarI++ = val;//rgb[0];
-            //*scalarI++ = rgb[1];
-            //*scalarI++ = rgb[2];
-        }
-        
-        if( vectorArray )
-        {
-            //Get Vector data
-            vectorArray->GetTuple( i, x );
-            osg::Vec3 v( x[0], x[1], x[2] );
-            v.normalize();
-            (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
-        }
-    }
-    
-    
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
-
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    dsp->addChannel( vertData );
-    
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-    dsp->addChannel( dirData );
-    
-    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-    dsp->addChannel( colorData );
-
-    // Add RTP operation to create a depth channel to use as input to the transfer function.
-    //DepthComputation* dc( new DepthComputation() );
-    //dc->addInput( "positions" );
-    //dsp->addOperation( lfx::RTPOperationPtr( dc ) );
-    
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
-    renderOp->addInput( "positions" );
-    renderOp->addInput( "directions" );
-    renderOp->addInput( "scalar" );
-    
-    // Configure transfer function.
-    renderOp->setTransferFunctionInput( "scalar" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
-    
-    dsp->setRenderer( renderOp );
-    
-    return( dsp );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-vtkAlgorithmOutput* ApplyGeometryFilterNew( vtkDataObject* tempVtkDataSet, vtkAlgorithmOutput* input )
-{
-    if( tempVtkDataSet->IsA( "vtkCompositeDataSet" ) )
-    {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
-            vtkCompositeDataGeometryFilter::New();
-        m_multiGroupGeomFilter->SetInputConnection( input );
-        return m_multiGroupGeomFilter->GetOutputPort(0);
-    }
-    else
-    {
-        //m_geometryFilter->SetInputConnection( input );
-        //return m_geometryFilter->GetOutputPort();
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
-            vtkDataSetSurfaceFilter::New();
-        m_surfaceFilter->SetInputConnection( input );
-        return m_surfaceFilter->GetOutputPort();
-    }
-}
 ////////////////////////////////////////////////////////////////////////////////
 lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
 {
@@ -403,65 +300,6 @@ lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
         //m_datafileLoaded( tempDataSetFilename );
     }
     return tempDataSet;
-}
-////////////////////////////////////////////////////////////////////////////////
-lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
-{
-    vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
-    c2p->SetInput( tempVtkDataSet );
-    //c2p->Update();
-    
-    vtkMaskPoints* ptmask = vtkMaskPoints::New();
-
-    if( tempVtkDataSet->IsA( "vtkCompositeDataSet" ) )
-    {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
-            vtkCompositeDataGeometryFilter::New();
-        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
-        //return m_multiGroupGeomFilter->GetOutputPort(0);
-        ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
-        m_multiGroupGeomFilter->Delete();
-    }
-    else
-    {
-        //m_geometryFilter->SetInputConnection( input );
-        //return m_geometryFilter->GetOutputPort();
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
-            vtkDataSetSurfaceFilter::New();
-        m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
-        //return m_surfaceFilter->GetOutputPort();
-        ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
-        m_surfaceFilter->Delete();
-    }
-    
-    // get every nth point from the dataSet data
-    ptmask->SetOnRatio( 1.0 );
-    ptmask->Update();
-
-    try
-    {
-        lfx::DataSetPtr templfxDataSet = prepareDirectionVectors( ptmask->GetOutput(), "Momentum", "Density" );
-
-#if WRITE_IMAGE_DATA            
-        osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
-#endif
-        c2p->Delete();
-        ptmask->Delete();
-        //tempAlgo->Delete();
-        //this->updateFlag = true;
-        return templfxDataSet;
-    }
-    catch( std::bad_alloc )
-    {
-        c2p->Delete();
-        ptmask->Delete();
-        //tempAlgo->Delete();
-        //mapper->Delete();
-        //mapper = vtkPolyDataMapper::New();
-        //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
-        //    << std::endl << vprDEBUG_FLUSH;
-    }       
-    return lfx::DataSetPtr();     
 }
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
