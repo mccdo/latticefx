@@ -111,7 +111,6 @@ DataSet::DataSet()
     m_greyscaleFlag( false ),
     lut( vtkLookupTable::New() ),
     m_dataSet( 0 ),
-    mDataReader( 0 ),
     datasetType( -1 ),
     activeScalar( -1 ),
     activeVector( -1 ),
@@ -184,13 +183,11 @@ DataSet::~DataSet()
     delete [] this->range;
     this->range = NULL;
 
-    int i;
-
     if( this->numScalars > 0 )
     {
         scalarName.clear();
 
-        for( i = 0; i < this->numScalars; i++ )
+        for( int i = 0; i < this->numScalars; i++ )
         {
             delete [] this->actualScalarRange[i];
             delete [] this->displayedScalarRange[i];
@@ -208,6 +205,20 @@ DataSet::~DataSet()
         delete [] this->vectorMagRange;
         this->vectorMagRange = NULL;
     }
+
+    for( std::map<std::string, lfx::vtk_utils::DataObjectHandler::DatasetOperatorCallback* >::const_iterator 
+        iter = m_dataObjectOps.begin(); iter != m_dataObjectOps.end(); ++iter )
+    {
+        delete iter->second;
+    }
+    m_dataObjectOps.clear();
+
+    for( size_t i = 0; i < m_childDataSets.size(); ++i )
+    {
+        delete m_childDataSets.at( i );
+        //m_tempModel->DeleteDataSet( m_childDataSets.at( i )->GetFileName() );
+    }
+    m_childDataSets.clear();
 
     /*if( this->x_planes != NULL )
     {
@@ -236,8 +247,9 @@ DataSet::~DataSet()
         if( !m_isPartOfCompositeDataset )
         {
             this->m_dataSet->Delete();
-            this->m_dataSet = NULL;
         }
+
+        this->m_dataSet = NULL;
     }
 
     if( _vtkFHndlr )
@@ -257,18 +269,6 @@ DataSet::~DataSet()
         delete m_dataObjectHandler;
         m_dataObjectHandler = 0;
     }
-
-    if( mDataReader )
-    {
-        mDataReader->Delete();
-        mDataReader = 0;
-    }
-
-    /*for( size_t i = 0; i < m_childDataSets.size(); ++i )
-    {
-        m_tempModel->DeleteDataSet( m_childDataSets.at( i )->GetFileName() );
-    }*/
-    m_childDataSets.clear();
 
     if( dcs.valid() )
     {

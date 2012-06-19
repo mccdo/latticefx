@@ -337,7 +337,10 @@ int main( int argc, char** argv )
 
     //Clean up the raw vtk memory
     delete tempDataSet;
-    
+
+    //And do not forget to cleanup the algorithm executive prototype
+    vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
+
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.

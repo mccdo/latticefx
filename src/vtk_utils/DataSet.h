@@ -382,8 +382,7 @@ private:
     vtkLookupTable* lut;
     ///Original piece of vtk data
     vtkDataObject* m_dataSet;
-    ///holder for new vtk pipeline
-    vtkAlgorithm* mDataReader;
+
     ///used by gui to place in appropriate column
     int datasetType;
 
