@@ -89,11 +89,11 @@ void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     lfx::PageData* pageData( static_cast< lfx::PageData* >( node->getUserData() ) );
     if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
     {
-        // validRange is set by the application. The assumption is that this will be large enough
+        // _timeRange is set by the application. The assumption is that this will be large enough
         // to accomodate several children, only one of which will be displayed (by use of NodeMask).
         // This is different from pixel size paging because the time step (and therefore valid child)
-        // is expected to change quite rapidly, so wee need to page in a buffer around the current
-        // play time to help ensure a smooth animation free ofpaging bottlenecks.
+        // is expected to change quite rapidly, so we need to page in a buffer around the current
+        // play time to help ensure a smooth animation free of paging bottlenecks.
         //
         // The current animation time could be anything, but we want a time range around it with
         // min and max values between the PageData's min and max time values. Note that when the
@@ -444,6 +444,8 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
 double RootCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
 {
     const double span( maxTime - minTime );
+    if( span == 0 )
+        return( time );
     double intPart;
     const double fractPart( modf( time / span, &intPart ) );
     return( fractPart * span + minTime );

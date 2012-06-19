@@ -321,48 +321,44 @@ bool DataSet::updateRenderer()
         createFallbackMaskList();
 
     TimeSet timeSet( getTimeSet() );
-    if( timeSet.size() == 1 )
+    if( timeSet.size() == 0 )
     {
-        // Simplified scene graph creation when not using time series.
-        const double time( timeSet.empty() ? 0. : *( timeSet.begin() ) );
+        // No ChannelData was added to the DataSet.
+        // It would be nice, for dev purposes, if we had a way to handle this
+        // case. But for now, just do nothing, which is probably the right thing
+        // to do for production code anyway.
+        OSG_WARN << "DataSet: timeSet.size() == 0." << std::endl;
+        return( false );
+    }
+
+
+    RootCallback* rootcb( new RootCallback() );
+    _sceneGraph->setUpdateCallback( rootcb );
+
+    PageData* pageData( new PageData );
+    pageData->setRangeMode( PageData::TIME_RANGE );
+    pageData->setMinMaxTime( *( timeSet.begin() ), *( timeSet.rbegin() ) );
+    pageData->setParent( _sceneGraph.get() );
+    _sceneGraph->setUserData( pageData );
+
+    unsigned int childIndex( 0 );
+    ChannelDataList::iterator maskIt( _maskList.begin() );
+    BOOST_FOREACH( double time, timeSet )
+    {
+        // Get the data at the current time and assign as inputs to the Renderer.
         ChannelDataList currentData( getDataAtTime( time ) );
-        ChannelDataList::iterator maskIt( _maskList.begin() );
 
         osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
-
         if( newChild != NULL )
-            _sceneGraph->addChild( newChild.get() );
-    }
-    else
-    {
-        RootCallback* rootcb( new RootCallback() );
-        _sceneGraph->setUpdateCallback( rootcb );
-
-        PageData* pageData( new PageData );
-        pageData->setRangeMode( PageData::TIME_RANGE );
-        pageData->setMinMaxTime( *( timeSet.begin() ), *( timeSet.rbegin() ) );
-        pageData->setParent( _sceneGraph.get() );
-        _sceneGraph->setUserData( pageData );
-
-        unsigned int childIndex( 0 );
-        ChannelDataList::iterator maskIt( _maskList.begin() );
-        BOOST_FOREACH( double time, timeSet )
         {
-            // Get the data at the current time and assign as inputs to the Renderer.
-            ChannelDataList currentData( getDataAtTime( time ) );
+            PageData::RangeData rangeData( time, time );
+            rangeData._status = PageData::RangeData::UNLOADED;
+            pageData->setRangeData( childIndex++, rangeData );
 
-            osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
-            if( newChild != NULL )
-            {
-                PageData::RangeData rangeData( time, time );
-                rangeData._status = PageData::RangeData::UNLOADED;
-                pageData->setRangeData( childIndex++, rangeData );
-
-                newChild->setNodeMask( 0u );
-                _sceneGraph->addChild( newChild.get() );
-            }
-            ++maskIt;
+            newChild->setNodeMask( 0u );
+            _sceneGraph->addChild( newChild.get() );
         }
+        ++maskIt;
     }
 
     _sceneGraph->setStateSet( _renderer->getRootState() );
