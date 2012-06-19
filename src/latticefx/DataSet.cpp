@@ -187,7 +187,6 @@ bool DataSet::updateAll()
         }
     }
 
-
     // Preprocess & Cache (if dirty)
     if( _dirtyFlags & PREPROCESS_DIRTY )
     {
@@ -514,7 +513,9 @@ ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList
 
     BOOST_FOREACH( const ChannelDataPtr cdp, dataList )
     {
-        unsigned int x, y, z;
+        unsigned int x = 0, y = 0, z = 0;
+        //The default implementation of lfx::ChannelData::getDimensions does not
+        //return a default value therefore we must set our x,y,z to 0.
         cdp->getDimensions( x, y, z );
         const unsigned int total( x*y*z );
         size = osg::maximum( size, total );
