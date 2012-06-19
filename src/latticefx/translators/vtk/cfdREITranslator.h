@@ -34,7 +34,7 @@
 #define _CFD_REI_TRANS_H_
 
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 #include <set>
 
 namespace lfx

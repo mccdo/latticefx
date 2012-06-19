@@ -38,7 +38,7 @@
 
 class vtkAlgorithm;
 class vtkDataObject;
-#include <vtk_translator/Export.h>
+#include <latticefx/translators/vtk/Export.h>
 namespace lfx
 {
 namespace vtk_translator

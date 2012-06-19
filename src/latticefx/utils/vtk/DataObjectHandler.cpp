@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/DataObjectHandler.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>

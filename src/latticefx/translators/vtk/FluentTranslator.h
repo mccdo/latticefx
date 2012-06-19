@@ -33,7 +33,7 @@
 #ifndef _FLUENT_TRANSLATOR_H_
 #define _FLUENT_TRANSLATOR_H_
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 
 class vtkDataSet;
 

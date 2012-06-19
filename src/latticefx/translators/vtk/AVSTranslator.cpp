@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/AVSTranslator.h>
+#include <latticefx/translators/vtk/AVSTranslator.h>
 #include <vtkDataSet.h>
 #include <vtkAVSucdReader.h>
 #include <vtkUnstructuredGrid.h>

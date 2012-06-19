@@ -31,9 +31,9 @@
 
 
 #if defined( _MSC_VER ) || defined( __CYGWIN__ ) || defined( __MINGW32__ ) || defined( __BCPLUSPLUS__ ) || defined( __MWERKS__ )
-    #if defined( LATTICEFX_STATIC )
+    #if defined( LATTICEFX_TRANSLATORS_VTK_STATIC )
         #define LATTICEFX_VTK_TRANSLATOR_EXPORT
-    #elif defined( LATTICEFX_LIBRARY )
+    #elif defined( LATTICEFX_TRANSLATORS_VTK_LIBRARY )
         #define LATTICEFX_VTK_TRANSLATOR_EXPORT __declspec( dllexport )
     #else
         #define LATTICEFX_VTK_TRANSLATOR_EXPORT __declspec( dllimport )

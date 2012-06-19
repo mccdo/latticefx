@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/gridConversion.h>
+#include <latticefx/translators/vtk/gridConversion.h>
 
 #include <iostream>
 

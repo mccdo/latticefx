@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/starReader.h>
+#include <latticefx/translators/vtk/starReader.h>
 
 #include <iostream>
 #include <fstream>
@@ -43,9 +43,9 @@
 #include <vtkCellType.h>
 #include <vtkIdList.h>
 
-#include <vtk_translator/converter.h>     // for "letUsersAddParamsToField>
-#include <vtk_utils/fileIO.h>       // for "getTagAndValue>
-#include <vtk_utils/readWriteVtkThings.h>
+#include <latticefx/translators/vtk/converter.h>     // for "letUsersAddParamsToField>
+#include <latticefx/utils/vtk/fileIO.h>       // for "getTagAndValue>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
 
 using namespace lfx::vtk_translator;
 using namespace lfx::vtk_utils;

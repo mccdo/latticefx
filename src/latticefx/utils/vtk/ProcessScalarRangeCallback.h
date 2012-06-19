@@ -41,8 +41,8 @@ ProcessScalarRangeCallback API.
 */
 class vtkDataSet;
 
-#include <vtk_utils/Export.h>
-#include <vtk_utils/DataObjectHandler.h>
+#include <latticefx/utils/vtk/Export.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
 
 #include <vector>
 #include <string>

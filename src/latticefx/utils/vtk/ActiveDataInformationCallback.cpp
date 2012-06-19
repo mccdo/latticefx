@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_utils/ActiveDataInformationCallback.h>
+#include <latticefx/utils/vtk/ActiveDataInformationCallback.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>

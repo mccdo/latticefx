@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/ExtractGeometryCallback.h>
+#include <latticefx/utils/vtk/ExtractGeometryCallback.h>
 
 #include <vtkDataSet.h>
 #include <vtkMultiBlockDataSet.h>

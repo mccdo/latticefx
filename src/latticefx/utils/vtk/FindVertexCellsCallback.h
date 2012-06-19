@@ -42,8 +42,8 @@ class vtkDataSet;
 
 #include <vtkType.h>
 
-#include <vtk_utils/Export.h>
-#include <vtk_utils/DataObjectHandler.h>
+#include <latticefx/utils/vtk/Export.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
 
 #include <utility>
 #include <vector>

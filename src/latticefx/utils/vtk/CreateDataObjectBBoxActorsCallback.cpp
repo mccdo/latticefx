@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_utils/CreateDataObjectBBoxActorsCallback.h>
+#include <latticefx/utils/vtk/CreateDataObjectBBoxActorsCallback.h>
 #include <vtkDataSet.h>
 #include <vtkActor.h>
 #include <vtkOutlineFilter.h>

@@ -30,21 +30,21 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/DataLoader.h>
-#include <vtk_translator/FluentTranslator.h>
-#include <vtk_translator/MFIXTranslator.h>
-#include <vtk_translator/EnSightTranslator.h>
-#include <vtk_translator/AVSTranslator.h>
-#include <vtk_translator/cfdREITranslator.h>
-#include <vtk_translator/cfdDICOMTranslator.h>
-#include <vtk_translator/plot3dReader.h>
-#include <vtk_translator/StarCDTranslator.h>
-//#include <vtk_translator/AnsysTranslator.h>
-#include <vtk_translator/STLTranslator.h>
+#include <latticefx/translators/vtk/DataLoader.h>
+#include <latticefx/translators/vtk/FluentTranslator.h>
+#include <latticefx/translators/vtk/MFIXTranslator.h>
+#include <latticefx/translators/vtk/EnSightTranslator.h>
+#include <latticefx/translators/vtk/AVSTranslator.h>
+#include <latticefx/translators/vtk/cfdREITranslator.h>
+#include <latticefx/translators/vtk/cfdDICOMTranslator.h>
+#include <latticefx/translators/vtk/plot3dReader.h>
+#include <latticefx/translators/vtk/StarCDTranslator.h>
+//#include <latticefx/translators/vtk/AnsysTranslator.h>
+#include <latticefx/translators/vtk/STLTranslator.h>
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 
-#include <vtk_utils/fileIO.h>
+#include <latticefx/utils/vtk/fileIO.h>
 #include <vtkDataObject.h>
 #include <iostream>
 

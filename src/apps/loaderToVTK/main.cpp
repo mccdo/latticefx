@@ -32,7 +32,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <vtk_translator/DataLoader.h>
+#include <latticefx/translators/vtk/DataLoader.h>
 
 #include <vtkDataObject.h>
 

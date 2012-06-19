@@ -33,7 +33,7 @@
 #ifndef STL_TRANSLATOR_H_
 #define STL_TRANSLATOR_H_
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 
 class vtkDataSet;
 

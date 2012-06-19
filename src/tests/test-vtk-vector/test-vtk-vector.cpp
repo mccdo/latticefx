@@ -28,8 +28,8 @@
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelData.h>
 #include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/ChannelDatavtkPolyData.h>
-#include <latticefx/ChannelDatavtkDataObject.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 #include <latticefx/RTPOperation.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/TextureUtils.h>
@@ -46,7 +46,7 @@
 #include <osgViewer/Viewer>
 #include <osgDB/FileUtils>
 
-#include <vtk_utils/DataSet.h>
+#include <latticefx/utils/vtk/DataSet.h>
 
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
@@ -77,7 +77,7 @@ public:
     virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
     {
         vtkDataObject* tempVtkDO = 
-            boost::static_pointer_cast< lfx::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) )->GetDataObject();
+            boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) )->GetDataObject();
 
         vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
         c2p->SetInput( tempVtkDO );
@@ -110,7 +110,7 @@ public:
         ptmask->SetOnRatio( 1.0 );
         ptmask->Update();
 
-        lfx::ChannelDatavtkPolyDataPtr cdpd( new lfx::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
+        lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
 
         ptmask->Delete();
         c2p->Delete();
@@ -157,7 +157,7 @@ public:
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
     {
         vtkPolyData* tempVtkPD = 
-            boost::static_pointer_cast< lfx::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
+            boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
 
         vtkPoints* points = tempVtkPD->GetPoints();
         size_t dataSize = points->GetNumberOfPoints();
@@ -316,7 +316,7 @@ int main( int argc, char** argv )
     lfx::DataSetPtr dsp( new lfx::DataSet() );
     
     //1st Step
-    lfx::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     dsp->addChannel( dobjPtr );
     
     //2nd Step - the output of this is a ChannelData containing vtkPolyData

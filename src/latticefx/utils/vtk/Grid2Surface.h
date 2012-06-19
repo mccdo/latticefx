@@ -39,7 +39,7 @@
 class vtkDataObject;
 class vtkPolyData;
 
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 namespace lfx
 {

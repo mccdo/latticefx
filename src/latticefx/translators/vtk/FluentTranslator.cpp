@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/FluentTranslator.h>
-#include <vtk_utils/fileIO.h>
+#include <latticefx/translators/vtk/FluentTranslator.h>
+#include <latticefx/utils/vtk/fileIO.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>

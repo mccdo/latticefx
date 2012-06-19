@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_translator/ansysReader.h>
+#include <latticefx/translators/vtk/ansysReader.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -39,7 +39,7 @@
 #ifndef WIN32
 #include <netinet/in.h>
 #endif
-#include <vtk_utils/fileIO.h>
+#include <latticefx/utils/vtk/fileIO.h>
 #include <vtkExtractUnstructuredGrid.h>
 
 #include <vtkUnstructuredGrid.h>

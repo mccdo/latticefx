@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/cleanVtk.h>
+#include <latticefx/utils/vtk/cleanVtk.h>
 
 #include <iostream>
 #include <fstream>

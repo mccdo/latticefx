@@ -31,25 +31,25 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_utils/DataSet.h>
+#include <latticefx/utils/vtk/DataSet.h>
 
-#include <vtk_utils/AccessoryFunctions.h>
-#include <vtk_utils/fileIO.h>
-#include <vtk_utils/readWriteVtkThings.h>
-#include <vtk_utils/Grid2Surface.h>
-#include <vtk_utils/VTKFileHandler.h>
-#include <vtk_utils/ComputeVectorMagnitudeRangeCallback.h>
-#include <vtk_utils/ComputeDataObjectBoundsCallback.h>
-#include <vtk_utils/CountNumberOfParametersCallback.h>
-#include <vtk_utils/GetNumberOfPointsCallback.h>
-#include <vtk_utils/ProcessScalarRangeCallback.h>
-#include <vtk_utils/ActiveDataInformationCallback.h>
-#include <vtk_utils/CreateDataObjectBBoxActorsCallback.h>
-#include <vtk_utils/ComputeVectorMagnitudeAndScalarsCallback.h>
+#include <latticefx/utils/vtk/AccessoryFunctions.h>
+#include <latticefx/utils/vtk/fileIO.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
+#include <latticefx/utils/vtk/Grid2Surface.h>
+#include <latticefx/utils/vtk/VTKFileHandler.h>
+#include <latticefx/utils/vtk/ComputeVectorMagnitudeRangeCallback.h>
+#include <latticefx/utils/vtk/ComputeDataObjectBoundsCallback.h>
+#include <latticefx/utils/vtk/CountNumberOfParametersCallback.h>
+#include <latticefx/utils/vtk/GetNumberOfPointsCallback.h>
+#include <latticefx/utils/vtk/ProcessScalarRangeCallback.h>
+#include <latticefx/utils/vtk/ActiveDataInformationCallback.h>
+#include <latticefx/utils/vtk/CreateDataObjectBBoxActorsCallback.h>
+#include <latticefx/utils/vtk/ComputeVectorMagnitudeAndScalarsCallback.h>
 
 //#include <ves/xplorer/data/DatasetPropertySet.h>
 
-//#include <vtk_translator/DataLoader.h>
+//#include <latticefx/utils/vtk/DataLoader.h>
 //#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
 
 //#include <ves/open/xml/Command.h>

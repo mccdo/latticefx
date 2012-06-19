@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/converter.h>
+#include <latticefx/translators/vtk/converter.h>
 
 #include <iostream>
 

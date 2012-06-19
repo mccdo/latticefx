@@ -44,7 +44,7 @@
 #include <osgViewer/Viewer>
 #include <osgDB/FileUtils>
 
-#include <vtk_utils/DataSet.h>
+#include <latticefx/utils/vtk/DataSet.h>
 
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>

@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/AnsysTranslator.h>
-#include <vtk_translator/ansysReader.h>
+#include <latticefx/translators/vtk/AnsysTranslator.h>
+#include <latticefx/translators/vtk/ansysReader.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 

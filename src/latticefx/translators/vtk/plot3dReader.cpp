@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/plot3dReader.h>
+#include <latticefx/translators/vtk/plot3dReader.h>
 
 #include <vtkStructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -51,9 +51,9 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <vtk_utils/fileIO.h>
-#include <vtk_utils/Grid2Surface.h>
-#include <vtk_utils/readWriteVtkThings.h>
+#include <latticefx/utils/vtk/fileIO.h>
+#include <latticefx/utils/vtk/Grid2Surface.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
 
 using namespace lfx::vtk_utils;
 using namespace lfx::vtk_translator;

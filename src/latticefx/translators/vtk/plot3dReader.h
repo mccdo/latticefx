@@ -40,7 +40,7 @@ class vtkUnstructuredGridWriter;
 class vtkUnstructuredGrid;
 class vtkAppendFilter;
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 
 namespace lfx
 {

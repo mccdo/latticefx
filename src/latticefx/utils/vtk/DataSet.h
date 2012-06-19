@@ -33,11 +33,11 @@
 #ifndef VE_XPLORER_CFD_DATA_SET_H
 #define VE_XPLORER_CFD_DATA_SET_H
 
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 //#include <ves/xplorer/DataSetPtr.h>
 
-#include <vtk_utils/DataObjectHandler.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
 
 #include <osg/PositionAttitudeTransform>
 #include <osg/Group>

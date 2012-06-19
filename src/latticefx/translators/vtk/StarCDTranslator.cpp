@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/StarCDTranslator.h>
-#include <vtk_translator/starReader.h>
+#include <latticefx/translators/vtk/StarCDTranslator.h>
+#include <latticefx/translators/vtk/starReader.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 

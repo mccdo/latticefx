@@ -37,7 +37,7 @@ readWriteVtkThings API
 */
 class vtkDataSet;
 class vtkDataObject;
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 namespace lfx
 {

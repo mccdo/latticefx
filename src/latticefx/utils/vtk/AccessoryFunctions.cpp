@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_utils/AccessoryFunctions.h>
+#include <latticefx/utils/vtk/AccessoryFunctions.h>
 #include <vtkGenericCell.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>

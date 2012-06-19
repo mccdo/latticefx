@@ -42,8 +42,8 @@ CreateDataObjectBBoxActorsCallback API.
 class vtkDataSet;
 class vtkActor;
 
-#include <vtk_utils/Export.h>
-#include <vtk_utils/DataObjectHandler.h>
+#include <latticefx/utils/vtk/Export.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
 
 
 #include <vector>

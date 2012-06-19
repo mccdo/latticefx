@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/setScalarAndVector.h>
+#include <latticefx/utils/vtk/setScalarAndVector.h>
 #include <iostream>
 
 #include <vtkDataSet.h>

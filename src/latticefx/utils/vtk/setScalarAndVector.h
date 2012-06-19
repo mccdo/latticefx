@@ -35,7 +35,7 @@
 /*!\file setScalarAndVector.h
 setScalarAndVector API
 */
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 // class declarations
 class vtkDataSet;

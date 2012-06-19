@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/FindVertexCellsCallback.h>
+#include <latticefx/utils/vtk/FindVertexCellsCallback.h>
 
 #include <vtkDataSet.h>
 #include <vtkCell.h>

@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/VTKFileHandler.h>
+#include <latticefx/utils/vtk/VTKFileHandler.h>
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
 #include <vtkXMLFileReadTester.h>

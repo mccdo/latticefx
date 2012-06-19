@@ -32,7 +32,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <vtk_utils/Grid2Surface.h>
+#include <latticefx/utils/vtk/Grid2Surface.h>
 #include <vtkDataObject.h>
 #include <vtkPointData.h>
 #include <vtkContourFilter.h>

@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <vtk_utils/CountNumberOfParametersCallback.h>
+#include <latticefx/utils/vtk/CountNumberOfParametersCallback.h>
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>

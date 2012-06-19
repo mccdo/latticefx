@@ -2,7 +2,7 @@
 set( _libName latticefx_translators_vtk )
 
 if( BUILD_SHARED_LIBS )
-    add_definitions( -DLATTICEFX_LIBRARY )
+    add_definitions( -DLATTICEFX_TRANSLATORS_VTK_LIBRARY )
 endif()
 
 set( HEADER_PATH ${PROJECT_SOURCE_DIR}/src/latticefx/translators/vtk )
@@ -15,6 +15,6 @@ _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
     LATTICEFX_LIBRARIES
-        vtk_utils
+        latticefx_utils_vtk
         ${_vtkLibraries}
 )

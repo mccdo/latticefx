@@ -30,8 +30,8 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/ComputeVectorMagnitudeRangeCallback.h>
-#include <vtk_utils/AccessoryFunctions.h>
+#include <latticefx/utils/vtk/ComputeVectorMagnitudeRangeCallback.h>
+#include <latticefx/utils/vtk/AccessoryFunctions.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 

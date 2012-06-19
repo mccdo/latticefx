@@ -33,7 +33,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <vtk_utils/readWriteVtkThings.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
@@ -49,9 +49,9 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
-#include <vtk_utils/VTKFileHandler.h>
-#include <vtk_utils/DataObjectHandler.h>
-#include <vtk_utils/ComputeDataObjectBoundsCallback.h>
+#include <latticefx/utils/vtk/VTKFileHandler.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
+#include <latticefx/utils/vtk/ComputeDataObjectBoundsCallback.h>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>

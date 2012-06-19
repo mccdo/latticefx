@@ -45,7 +45,7 @@ class vtkDataObject;
 class vtkAlgorithm;
 class vtkXMLReader;
 
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 #include <string>
 #include <vector>
 

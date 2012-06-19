@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/MFIXTranslator.h>
+#include <latticefx/translators/vtk/MFIXTranslator.h>
 #include <vtkDataSet.h>
 #include <vtkMFIXReader.h>
 #include <vtkUnstructuredGrid.h>

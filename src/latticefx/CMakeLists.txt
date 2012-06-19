@@ -1,5 +1,5 @@
-#add_subdirectory( utils )
-#add_subdirectory( translators )
+add_subdirectory( utils )
+add_subdirectory( translators )
 add_subdirectory( core )
 
 set( _libName latticefx )

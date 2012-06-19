@@ -30,10 +30,10 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/EnSightTranslator.h>
+#include <latticefx/translators/vtk/EnSightTranslator.h>
 
-#include <vtk_translator/converter.h>
-#include <vtk_utils/VTKFileHandler.h>
+#include <latticefx/translators/vtk/converter.h>
+#include <latticefx/utils/vtk/VTKFileHandler.h>
 
 #include <vtkDataSet.h>
 #include <vtkGenericEnSightReader.h>          // will open any ensight file

@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 #include <bitset>
 #include <sstream>
 #include <iostream>
@@ -38,8 +38,8 @@
 
 #include <vtkDataObject.h>
 #include <vtkAlgorithm.h>
-#include <vtk_utils/readWriteVtkThings.h>
-#include <vtk_utils/fileIO.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
+#include <latticefx/utils/vtk/fileIO.h>
 using namespace lfx::vtk_translator;
 ////////////////////////////////////////
 //Constructor                         //

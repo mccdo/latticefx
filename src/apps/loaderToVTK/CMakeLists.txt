@@ -1,7 +1,7 @@
 _addExecutable( App loaderToVTK
     main.cpp
     LATTICEFX_LIBRARIES
-        vtk_utils
-        vtk_translator
+        latticefx_utils_vtk
+        latticefx_translators_vtk
         ${_vtkLibraries}
 )

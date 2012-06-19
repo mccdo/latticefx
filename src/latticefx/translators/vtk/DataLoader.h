@@ -39,7 +39,7 @@
  * This is an interface that allows you to load data into tool
  * in VE-Suite.
  */
-#include <vtk_translator/Export.h>
+#include <latticefx/translators/vtk/Export.h>
 #include <string>
 #include <map>
 #include <vector>

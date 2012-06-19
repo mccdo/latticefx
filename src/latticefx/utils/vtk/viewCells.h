@@ -35,7 +35,7 @@
 /*!\file viewCells.h
 viewCells API
 */
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 class vtkUnstructuredGrid;
 class vtkDataSet;

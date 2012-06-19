@@ -34,7 +34,7 @@
 #define _STARCD_TRANSLATOR_H_
 
 
-#include <vtk_translator/cfdTranslatorToVTK.h>
+#include <latticefx/translators/vtk/cfdTranslatorToVTK.h>
 
 namespace lfx
 {

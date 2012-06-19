@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/viewCells.h>
+#include <latticefx/utils/vtk/viewCells.h>
 #include <iostream>
 
 #include <vtkPoints.h>

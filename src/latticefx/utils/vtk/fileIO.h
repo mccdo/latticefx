@@ -41,7 +41,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include <vtk_utils/Export.h>
+#include <latticefx/utils/vtk/Export.h>
 
 
 namespace lfx

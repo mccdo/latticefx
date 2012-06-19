@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_utils/GetNumberOfPointsCallback.h>
+#include <latticefx/utils/vtk/GetNumberOfPointsCallback.h>
 
 #include <vtkDataSet.h>
 #include <vtkPointData.h>

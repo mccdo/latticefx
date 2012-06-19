@@ -30,7 +30,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <vtk_translator/cfdREITranslator.h>
+#include <latticefx/translators/vtk/cfdREITranslator.h>
 #include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkDICOMImageReader.h>
@@ -42,9 +42,9 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 
-#include <vtk_utils/fileIO.h>
-#include <vtk_translator/converter.h>      // for "letUsersAddParamsToField>
-#include <vtk_translator/gridConversion.h>
+#include <latticefx/utils/vtk/fileIO.h>
+#include <latticefx/translators/vtk/converter.h>      // for "letUsersAddParamsToField>
+#include <latticefx/translators/vtk/gridConversion.h>
 
 #include <iostream>
 
