@@ -32,6 +32,7 @@
 #include <latticefx/ChannelDataOSGArray.h>
 #include <latticefx/ChannelDataOSGImage.h>
 #include <latticefx/ChannelDataLOD.h>
+#include <latticefx/ChannelDataImageSet.h>
 #include <latticefx/Preprocess.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/PageData.h>
@@ -59,16 +60,55 @@ public:
     {
         lfx::ChannelDataOSGImagePtr input( boost::static_pointer_cast< lfx::ChannelDataOSGImage >( _inputs[ 0 ] ) );
 
-        osg::Image* farImage( new osg::Image );
-        farImage->setFileName( "pagetex-far.png" );
-        lfx::ChannelDataOSGImagePtr newImage( new lfx::ChannelDataOSGImage( "texture", farImage ) );
+        lfx::ChannelDataOSGImagePtr farImage( generateImageData( "pagetex-far.png" ) );
 
         lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
-        cdLOD->setRange( cdLOD->addChannel( newImage ),
+        cdLOD->setRange( cdLOD->addChannel( farImage ),
             lfx::RangeValues( 0., 100000. ) );
-        cdLOD->setRange( cdLOD->addChannel( input ),
+
+        lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( input->getName() ) );
+        {
+            lfx::ChannelDataOSGImagePtr brick;
+            
+            brick = generateImageData( "pagetex-near0.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( -1., -1., -1. ) );
+            brick = generateImageData( "pagetex-near1.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( 1., -1., -1. ) );
+            brick = generateImageData( "pagetex-near2.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( -1., 1., -1. ) );
+            brick = generateImageData( "pagetex-near3.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( 1., 1., -1. ) );
+            brick = generateImageData( "pagetex-near4.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( -1., -1., 1. ) );
+            brick = generateImageData( "pagetex-near5.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( 1., -1., 1. ) );
+            brick = generateImageData( "pagetex-near6.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( -1., 1., 1. ) );
+            brick = generateImageData( "pagetex-near7.png" );
+            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+                osg::Vec3( 1., 1., 1. ) );
+        }
+
+        cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
             lfx::RangeValues( 100000., FLT_MAX ) );
+
         return( cdLOD );
+    }
+
+protected:
+    lfx::ChannelDataOSGImagePtr generateImageData( const std::string& fileName )
+    {
+        osg::Image* image( new osg::Image );
+        image->setFileName( fileName );
+        return( lfx::ChannelDataOSGImagePtr(
+            new lfx::ChannelDataOSGImage( "texture", image ) ) );
     }
 };
 

@@ -33,6 +33,9 @@
 #include <latticefx/Export.h>
 #include <latticefx/ChannelDataComposite.h>
 
+#include <osg/Vec3>
+#include <osg/Array>
+
 #include <boost/shared_ptr.hpp>
 
 #include <string>
@@ -59,6 +62,17 @@ public:
     virtual ChannelDataImageSet* getAsSet() { return( this ); }
 
 
+    /** \brief TBD
+    \details TBD */
+    void setOffset( const unsigned int index, const osg::Vec3& offset );
+    /** \brief TBD
+    \details TBD */
+    osg::Vec3& getOffset( const unsigned int index );
+    /** \brief TBD
+    \details TBD */
+    const osg::Vec3& getOffset( const unsigned int index ) const;
+
+
     /** \brief Prepare the ChannelData for processing by the DataSet.
     \details Prior to processing ChannelData in the LatticeFX data pipeline,
     the DataSet calls ChannelData::reset() on all attached ChannelData
@@ -74,9 +88,10 @@ public:
     static bool allImageSetData( const ChannelDataList& data );
 
 protected:
+    osg::ref_ptr< osg::Vec3Array > _offsets;
 };
 
-typedef boost::shared_ptr< ChannelDataComposite > ChannelDataCompositePtr;
+typedef boost::shared_ptr< ChannelDataImageSet > ChannelDataImageSetPtr;
 
 
 // lfx

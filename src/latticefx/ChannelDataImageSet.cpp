@@ -37,15 +37,33 @@ namespace lfx {
 
 
 ChannelDataImageSet::ChannelDataImageSet( const std::string& name )
-    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name )
+  : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name ),
+    _offsets( new osg::Vec3Array )
 {
 }
 ChannelDataImageSet::ChannelDataImageSet( const ChannelDataImageSet& rhs )
-  : ChannelDataComposite( rhs )
+  : ChannelDataComposite( rhs ),
+    _offsets( rhs._offsets )
 {
 }
 ChannelDataImageSet::~ChannelDataImageSet()
 {
+}
+
+
+void ChannelDataImageSet::setOffset( const unsigned int index, const osg::Vec3& value )
+{
+    if( index >= _offsets->size() )
+        _offsets->resize( index+1 );
+    (*_offsets)[ index ] = value;
+}
+osg::Vec3& ChannelDataImageSet::getOffset( const unsigned int index )
+{
+    return( (*_offsets)[ index ] );
+}
+const osg::Vec3& ChannelDataImageSet::getOffset( const unsigned int index ) const
+{
+    return( (*_offsets)[ index ] );
 }
 
 

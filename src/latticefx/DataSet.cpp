@@ -34,6 +34,7 @@
 #include <latticefx/DBUtils.h>
 
 #include <osg/Group>
+#include <osg/MatrixTransform>
 #include <osg/Notify>
 
 #include <boost/foreach.hpp>
@@ -387,14 +388,22 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
             return( NULL );
         }
 
-        OSG_NOTICE << "ImageSet only partially supported." << std::endl;
-
         osg::ref_ptr< osg::Group > parent( new osg::Group );
         unsigned int idx;
-        for( idx=0; idx < lodData->getNumChannels(); idx++ )
+        for( idx=0; idx < imageData->getNumChannels(); idx++ )
         {
             ChannelDataList currentData( getCompositeChannels( data, idx ) );
-            parent->addChild( recurseGetSceneGraph( currentData, mask ) );
+            osg::Node* child( recurseGetSceneGraph( currentData, mask ) );
+
+            if( child != NULL )
+            {
+                const osg::Vec3 offset( imageData->getOffset( idx ) * .5 );
+                const osg::Matrix trans( osg::Matrix::translate( offset ) *
+                    osg::Matrix::scale( .5, .5, .5 ) );
+                osg::MatrixTransform* mt( new osg::MatrixTransform( trans ) );
+                mt->addChild( child );
+                parent->addChild( mt );
+            }
         }
         return( parent.release() );
     }
