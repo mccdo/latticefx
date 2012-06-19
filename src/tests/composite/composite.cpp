@@ -33,7 +33,7 @@
 #include <latticefx/Preprocess.h>
 #include <latticefx/Renderer.h>
 #include <latticefx/PageData.h>
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 
 #include <osgwTools/Shapes.h>
 #include <osg/Geode>

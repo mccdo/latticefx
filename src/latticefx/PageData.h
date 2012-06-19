@@ -60,7 +60,7 @@ typedef std::vector< RangeValues > RangeValueList;
 \details This class allows an osg::Group to have pageable children. An instance of
 PageData should be attached to the Group as UserData. The Group then becomes analogous
 to the osg::PagedLOD node, but supports the paging requirements of LatticeFX (paging
-based on time as well as pixel size, interaction with PagingThread and RootCallback, etc).
+based on time as well as pixel size, interaction with PagingThread and PagingCallback, etc).
 */
 class LATTICEFX_EXPORT PageData : public osg::Object
 {
@@ -136,14 +136,14 @@ public:
     /** \brief Maps of child index numbers to RangeData structs. */
     typedef std::map< unsigned int, RangeData > RangeDataMap;
     /** \brief Obtain the RangeDataMap.
-    \details Used by RootCallback to iterate over the RangeData for each pageable child
+    \details Used by PagingCallback to iterate over the RangeData for each pageable child
     during the update traversal. */
     RangeDataMap& getRangeDataMap();
 
     /** \brief Specify the osg::Group that owns this PageData instance. */
     void setParent( osg::Group* parent );
     /** \brief Obtain the osgt::Group that owns this PageData instance.
-    \details RootCallback calls this function so that it can add or remove children. */
+    \details PagingCallback calls this function so that it can add or remove children. */
     osg::Group* getParent();
 
 protected:

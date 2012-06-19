@@ -26,7 +26,7 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 #include <latticefx/PagingThread.h>
 #include <latticefx/PageData.h>
 
@@ -82,7 +82,7 @@ int main( int argc, char** argv )
     pageData->setRangeData( 1, lfx::PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
     root->setUserData( pageData );
 
-    root->setUpdateCallback( new lfx::RootCallback() );
+    root->setUpdateCallback( new lfx::PagingCallback() );
 
     root->addChild( new osg::Group );
     root->addChild( new osg::Group );

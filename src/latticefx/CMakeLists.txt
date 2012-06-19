@@ -20,11 +20,11 @@ set( _headerFiles
     LoadRequest.h
     OperationBase.h
     PageData.h
+    PagingCallback.h
     PagingThread.h
     PlayControl.h
     PluginManager.h
     Preprocess.h
-    RootCallback.h
     Renderer.h
     RTPOperation.h
     TextureUtils.h
@@ -50,12 +50,12 @@ set( _sourceFiles
     LoadRequest.cpp
     OperationBase.cpp
     PageData.cpp
+    PagingCallback.cpp
     PagingThread.cpp
     PlayControl.cpp
     PluginManager.cpp
     Preprocess.cpp
     Renderer.cpp
-    RootCallback.cpp
     RTPOperation.cpp
     TextureUtils.cpp
     TransferFunctionUtils.cpp

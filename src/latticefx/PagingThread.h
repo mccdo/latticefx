@@ -55,27 +55,27 @@ and metadata. LatticeFX supports paging subgraphs based on either estimated pixe
 time (in support of time series data animation).
 
 To avoid traversing the entire scene graph searching for nodes that might potentially need
-paging, the LatticeFX paging system depends on the RootCallback class. Applications create
+paging, the LatticeFX paging system depends on the PagingCallback class. Applications create
 an instance of this callback and attach it as an update callback to the root of some Node
 in their scene (usually the root of a subgraph containing Groups with pageable nodes). If
-the RootCallback instance is attached near the top of the scene graph and there are no other
+the PagingCallback instance is attached near the top of the scene graph and there are no other
 update callbacks in the scene graph, OSG's update visitor will do very little work.
 
 For each Group that contains pageable children, the app creates an instance of PageData and
-adds it to the RootCallback instance. The PageData contains PageData::RangeData for each
+adds it to the PagingCallback instance. The PageData contains PageData::RangeData for each
 pageable child. The app must add empty Group nodes as placeholders for each pageable child.
 
-During update, the RootCallback iterates over all PageData objects and checks child
+During update, the PagingCallback iterates over all PageData objects and checks child
 PageData::RangeData to see if an unloaded child needs to be loaded. If so, it calls
 PagingThread::addLoadRequests(). This causes the PagingThread to load the child and eventually
-return it. When the RootCallback detects that the load is complete, it adds the loaded
+return it. When the PagingCallback detects that the load is complete, it adds the loaded
 child in place of the empty Group node placeholder. At that time, any children that are no
 longer valid are removed from the parent Group and empty Group placeholders added back in
 their place.
 
 Note that the Group parent of pageable children initially has no bounding volume in the
 typical case where all children are pageable and therefore initially are all stub Group
-placeholders. In order for RootCallback to know the spatial location of the parent Group,
+placeholders. In order for PagingCallback to know the spatial location of the parent Group,
 the application should call setInitialBound() on the parent Group.
 
 Work to be done (TBD):

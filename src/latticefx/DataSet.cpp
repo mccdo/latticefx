@@ -30,7 +30,7 @@
 #include <latticefx/ChannelDataImageSet.h>
 #include <latticefx/ChannelDataLOD.h>
 #include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 #include <latticefx/DBUtils.h>
 
 #include <osg/Group>
@@ -332,7 +332,7 @@ bool DataSet::updateRenderer()
     }
 
 
-    RootCallback* rootcb( new RootCallback() );
+    PagingCallback* rootcb( new PagingCallback() );
     _sceneGraph->setUpdateCallback( rootcb );
 
     PageData* pageData( new PageData );
@@ -411,7 +411,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
-        parent->setUpdateCallback( new RootCallback() );
+        parent->setUpdateCallback( new PagingCallback() );
 
         unsigned int childIndex( 0 );
         unsigned int idx;

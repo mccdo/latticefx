@@ -26,7 +26,7 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 #include <latticefx/PagingThread.h>
 #include <latticefx/DataSet.h>
 #include <latticefx/ChannelDataOSGArray.h>

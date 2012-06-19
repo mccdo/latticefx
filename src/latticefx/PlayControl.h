@@ -30,7 +30,7 @@
 #define __LATTICEFX_PLAY_CONTROL_H__ 1
 
 #include <latticefx/Export.h>
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 #include <osg/Node>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -51,7 +51,7 @@ namespace lfx {
 \brief Manages time series animation on one or more scenes.
 \details To add a subgraph for management by PlayControl, specify the subgraph root
 node in the PlayControl constructor, or pass it to addScene(). Each root node must
-have RootCallback attached as an update callback.
+have PagingCallback attached as an update callback.
 
 To specify the time series animation play speed, call setPlayRate(). The default
 play rate is 1.0.
@@ -64,7 +64,7 @@ elapsedClockTick() multiplies the elapsed time parameter by the play rate and ad
 to \c _time, the time series animation time. If \c time exceeds the time range (see
 setTimeRange()), elapsedClockTick() wraps \c _time to stay within that range.
 
-After updating \c _time, elapsedClockTick() calls RootCallback::setAnimationTime(),
+After updating \c _time, elapsedClockTick() calls PagingCallback::setAnimationTime(),
 passing \c _time as a parameter.
 
 TBD Future work:
@@ -80,7 +80,7 @@ public:
     ~PlayControl();
 
     /** \brief Add a subgraph for management by PlayControl.
-    \details \c scene must have a RootCallback attached as an update callback. */
+    \details \c scene must have a PagingCallback attached as an update callback. */
     void addScene( osg::Node* scene );
 
     /** \brief Specify the elapsed clock time.
@@ -117,7 +117,7 @@ public:
     void getTimeRange( double& minTime, double& maxTime ) const;
 
 protected:
-    typedef std::map< osg::ref_ptr< osg::Node >, osg::ref_ptr< RootCallback > > NodeCBMap;
+    typedef std::map< osg::ref_ptr< osg::Node >, osg::ref_ptr< PagingCallback > > NodeCBMap;
     NodeCBMap _scenes;
 
     double _time;

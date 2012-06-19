@@ -48,39 +48,39 @@ namespace lfx {
 /**@{*/
 
 
-/** \class RootCallback RootCallback.h <latticefx/RootCallback.h>
+/** \class PagingCallback PagingCallback.h <latticefx/PagingCallback.h>
 \brief Update callback for LatticeFX subgraphs
-\details RootCallback updates a scene graph for correct display in the
+\details PagingCallback updates a scene graph for correct display in the
 presence of paging activity, time series animation, and configuration of
 uniforms used by subordinate program objects.
 
-RootCallback is an OSG update callback to avoid the expense of an
+PagingCallback is an OSG update callback to avoid the expense of an
 update traversal on the LatticeFX subgraph. Any subgraph elements that
-need updating register themselves with RootCallback. In this way, only
-the node owning RootCallback need be visited by the osgUtil::UpdateVisitor.
+need updating register themselves with PagingCallback. In this way, only
+the node owning PagingCallback need be visited by the osgUtil::UpdateVisitor.
 
-RootCallback exposes its functionality as generic public member methods,
-so apps may call those public methods directly, or use RootCallback as an
+PagingCallback exposes its functionality as generic public member methods,
+so apps may call those public methods directly, or use PagingCallback as an
 OSG update callback. Currently (May 2012), DataSet attaches an instance of
-RootCallback as an update callback to the root of the DataSet's scene graph.
+PagingCallback as an update callback to the root of the DataSet's scene graph.
 
-RootCallback calls updatePaging(), the public method that
+PagingCallback calls updatePaging(), the public method that
 interacts with PagingThread to dynamically load and unload subgraph
-elements. See RootCallback.cpp for the definition of RootCallback::updatePaging(),
+elements. See PagingCallback.cpp for the definition of PagingCallback::updatePaging(),
 which describes paging in detail.
 
-RootCallback also calls updateTimeSeries to select the best child node
+PagingCallback also calls updateTimeSeries to select the best child node
 for the current animation time, and set child node masks accordingly.
 
-In the future, RootCallback might have other functionality,
+In the future, PagingCallback might have other functionality,
 such as updating a uniform that contains the screen space projection of
 volumetric data.
 */
-class LATTICEFX_EXPORT RootCallback : public osg::NodeCallback
+class LATTICEFX_EXPORT PagingCallback : public osg::NodeCallback
 {
 public:
-    RootCallback();
-    RootCallback( const RootCallback& rhs );
+    PagingCallback();
+    PagingCallback( const PagingCallback& rhs );
 
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.
@@ -108,7 +108,7 @@ public:
     virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 protected:
-    virtual ~RootCallback();
+    virtual ~PagingCallback();
 
     /** \brief TBD
     \details TBD */
@@ -149,7 +149,7 @@ protected:
 /**@}*/
 
 
-bool RootCallback::inRange( const RangeValues& validRange, const RangeValues& childRange )
+bool PagingCallback::inRange( const RangeValues& validRange, const RangeValues& childRange )
 {
     const bool childFirstGood( childRange.first < validRange.second );
     const bool childSecondGood( childRange.second >= validRange.first );

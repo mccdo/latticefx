@@ -26,7 +26,7 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 #include <latticefx/PagingThread.h>
 #include <latticefx/LoadRequest.h>
 #include <latticefx/PageData.h>
@@ -41,41 +41,41 @@
 namespace lfx {
 
 
-RootCallback::RootCallback()
+PagingCallback::PagingCallback()
   : osg::NodeCallback(),
     _animationTime( 0. ),
     _timeRange( RangeValues( -0.5, 0.5 ) )
 {
 }
-RootCallback::RootCallback( const RootCallback& rhs )
+PagingCallback::PagingCallback( const PagingCallback& rhs )
   : osg::NodeCallback( rhs ),
     _animationTime( rhs._animationTime ),
     _timeRange( rhs._timeRange )
 {
 }
-RootCallback::~RootCallback()
+PagingCallback::~PagingCallback()
 {
 }
 
-void RootCallback::setAnimationTime( const double time )
+void PagingCallback::setAnimationTime( const double time )
 {
     _animationTime = time;
 }
-double RootCallback::getAnimationTime() const
+double PagingCallback::getAnimationTime() const
 {
     return( _animationTime );
 }
-void RootCallback::setTimeRange( const RangeValues& timeRange )
+void PagingCallback::setTimeRange( const RangeValues& timeRange )
 {
     _timeRange = timeRange;
 }
-RangeValues RootCallback::getTimeRange() const
+RangeValues PagingCallback::getTimeRange() const
 {
     return( _timeRange );
 }
 
 
-void RootCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
+void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
     if( node->getUserData() == NULL )
     {
@@ -300,7 +300,7 @@ public:
     lfx::LoadRequestImagePtr _request;
 };
 
-lfx::LoadRequestPtr RootCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
+lfx::LoadRequestPtr PagingCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
 {
     CollectImagesVisitor collect;
     child->accept( collect );
@@ -352,7 +352,7 @@ protected:
     lfx::LoadRequestImagePtr _request;
 };
 
-void RootCallback::enableImages( osg::Node* child, lfx::LoadRequestPtr request )
+void PagingCallback::enableImages( osg::Node* child, lfx::LoadRequestPtr request )
 {
     DistributeImagesVisitor distribute(
         boost::static_pointer_cast< lfx::LoadRequestImage >( request ) );
@@ -395,13 +395,13 @@ public:
     }
 };
 
-void RootCallback::reclaimImages( osg::Node* child )
+void PagingCallback::reclaimImages( osg::Node* child )
 {
     ReclaimImagesVisitor reclaim;
     child->accept( reclaim );
 }
 
-double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
+double PagingCallback::computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
         const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp )
 {
     const osg::Vec3 wcCenter = bSphere.center() * model;
@@ -441,7 +441,7 @@ double RootCallback::computePixelSize( const osg::BoundingSphere& bSphere, const
 }
 
 
-double RootCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
+double PagingCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
 {
     const double span( maxTime - minTime );
     if( span == 0 )

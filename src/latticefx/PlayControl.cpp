@@ -27,7 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/PlayControl.h>
-#include <latticefx/RootCallback.h>
+#include <latticefx/PagingCallback.h>
 
 #include <boost/foreach.hpp>
 
@@ -41,7 +41,7 @@ PlayControl::PlayControl( osg::Node* scene )
     _minTime( 0. ),
     _maxTime( 1. )
 {
-    RootCallback* rootcb( dynamic_cast< RootCallback* >( scene->getUpdateCallback() ) );
+    PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
     {
         OSG_WARN << "PlayControl(): Invalid scene update callback." << std::endl;
@@ -63,7 +63,7 @@ PlayControl::~PlayControl()
 
 void PlayControl::addScene( osg::Node* scene )
 {
-    RootCallback* rootcb( dynamic_cast< RootCallback* >( scene->getUpdateCallback() ) );
+    PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
     {
         OSG_WARN << "PlayControl::addScene(): Invalid scene update callback." << std::endl;
@@ -92,7 +92,7 @@ void PlayControl::elapsedClockTick( double elapsed )
     BOOST_FOREACH( NodeCBMap::value_type nodeCBPair, _scenes )
     {
         // .first is the scene itself, which we don't need in this loop.
-        // .second is a ref_ptr to a RootCallback. Set its animation time.
+        // .second is a ref_ptr to a PagingCallback. Set its animation time.
         nodeCBPair.second->setAnimationTime( _time );
     }
 }
