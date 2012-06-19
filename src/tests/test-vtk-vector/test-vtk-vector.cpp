@@ -205,23 +205,12 @@ public:
                 (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
             }
         }
-        
-        
-        //lfx::DataSetPtr dsp( new lfx::DataSet() );
-        
+
         lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-        //dsp->addChannel( vertData );
         
         lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-        //dsp->addChannel( dirData );
         
         lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-        //dsp->addChannel( colorData );
-        
-        // Add RTP operation to create a depth channel to use as input to the transfer function.
-        //DepthComputation* dc( new DepthComputation() );
-        //dc->addInput( "positions" );
-        //dsp->addOperation( lfx::RTPOperationPtr( dc ) );
         
         //lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
         setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
@@ -492,17 +481,18 @@ int main( int argc, char** argv )
     lfx::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     dsp->addChannel( dobjPtr );
     
-    //2nd Step
+    //2nd Step - the output of this is a ChannelData containing vtkPolyData
     VTKVectorFieldRTPPtr vectorRTP( new VTKVectorFieldRTP() );
     vectorRTP->addInput( "vtkDataObject" );
     dsp->addOperation( vectorRTP );
     
-    //3rd Step
+    //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
     VTKVectorRendererPtr renderOp( new VTKVectorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyData" );
     dsp->setRenderer( renderOp );
+
     std::cout << "lfx...creating data..." << std::endl;
     osg::Node* sceneNode = dsp->getSceneData();
     std::cout << "...finished creating data. " << std::endl;
