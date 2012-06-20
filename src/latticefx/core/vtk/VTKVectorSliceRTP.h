@@ -55,7 +55,9 @@ public:
     VTKVectorSliceRTP( CuttingPlane::SliceDirection slice = CuttingPlane::X_PLANE )
         : 
         lfx::RTPOperation( lfx::RTPOperation::Channel ),
-        m_planeDirection( slice )
+        m_planeDirection( slice ),
+        m_requestedValue( 0.2 ),
+        m_mask( 1.0 )
     {
         ;
     }
@@ -70,8 +72,14 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn );
     
+    void SetRequestedValue( double value );
+    
+    void SetMaskValue( double value );
+
 protected:
     CuttingPlane::SliceDirection m_planeDirection;
+    double m_requestedValue;
+    double m_mask;
 };
 
 typedef boost::shared_ptr< VTKVectorSliceRTP > VTKVectorSliceRTPPtr;

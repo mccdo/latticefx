@@ -55,12 +55,11 @@ lfx::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::ChannelDataPtr maskIn
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
 
     double* bounds = cddoPtr->GetBounds();
-    double requestedValue = 0.1;
-    //m_planeDirection;
+
     lfx::core::vtk::CuttingPlane* cuttingPlane =
         new lfx::core::vtk::CuttingPlane( bounds, m_planeDirection, 1 );
     // insure that we are using correct bounds for the given data set...
-    cuttingPlane->Advance( requestedValue );
+    cuttingPlane->Advance( m_requestedValue );
 
     vtkCutter* cutter = vtkCutter::New();
     cutter->SetInput( tempVtkDO );
@@ -99,7 +98,7 @@ lfx::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::ChannelDataPtr maskIn
     }
     
     // get every nth point from the dataSet data
-    ptmask->SetOnRatio( 1.0 );
+    ptmask->SetOnRatio( m_mask );
     ptmask->Update();
     
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
@@ -109,6 +108,16 @@ lfx::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::ChannelDataPtr maskIn
     c2p->Delete();
     
     return( cdpd );
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorSliceRTP::SetRequestedValue( double value )
+{
+    m_requestedValue = value;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorSliceRTP::SetMaskValue( double value )
+{
+    m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }
