@@ -51,7 +51,8 @@ public:
     ///operation when we construct the VTKVectorFieldRTP.
     VTKVectorFieldRTP()
         : 
-        lfx::RTPOperation( lfx::RTPOperation::Channel )
+        lfx::RTPOperation( lfx::RTPOperation::Channel ),
+        m_mask( 1.0 )
     {
         ;
     }
@@ -66,7 +67,10 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn );
     
+    void SetMaskValue( double value );
+
 protected:
+    double m_mask;
 };
 
 typedef boost::shared_ptr< VTKVectorFieldRTP > VTKVectorFieldRTPPtr;

@@ -78,7 +78,7 @@ lfx::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::ChannelDataPtr maskIn
     }
     
     // get every nth point from the dataSet data
-    ptmask->SetOnRatio( 1.0 );
+    ptmask->SetOnRatio( m_mask );
     ptmask->Update();
     
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
@@ -88,6 +88,11 @@ lfx::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::ChannelDataPtr maskIn
     c2p->Delete();
     
     return( cdpd );
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorFieldRTP::SetMaskValue( double value )
+{
+    m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }
