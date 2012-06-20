@@ -127,8 +127,12 @@ protected:
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( 1., 1., 1. ) );
 
+        // Regardless of the depth level, there are two LODs. The first is displayed
+        // for range (minRange, maxRange), and the second is displayed for range
+        // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
+        // LODs that are displayed at subranges of (maxRange, FLT_MAX).
         cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
-            lfx::RangeValues( nextMin, nextMax ) );
+            lfx::RangeValues( maxRange, FLT_MAX ) );
         return( cdLOD );
     }
 
