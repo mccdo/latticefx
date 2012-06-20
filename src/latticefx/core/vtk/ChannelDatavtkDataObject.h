@@ -62,15 +62,19 @@ ChannelData. */
 class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObject : public lfx::ChannelData
 {
 public:
-
     ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name=std::string( "" ) );
     ChannelDatavtkDataObject( const ChannelDatavtkDataObject& rhs );
     virtual ~ChannelDatavtkDataObject();
 
     vtkDataObject* GetDataObject();
     
+    unsigned int GetNumberOfPoints();
+    double* GetBounds();
+    void GetBounds( double* bounds );
+
 protected:
     vtkDataObject* m_dobj;
+    double m_bounds[ 6 ];
 };
 
 typedef boost::shared_ptr< ChannelDatavtkDataObject > ChannelDatavtkDataObjectPtr;

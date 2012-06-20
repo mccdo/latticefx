@@ -28,6 +28,10 @@
 
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
+#include <latticefx/utils/vtk/ComputeDataObjectBoundsCallback.h>
+#include <latticefx/utils/vtk/GetNumberOfPointsCallback.h>
+#include <latticefx/utils/vtk/DataObjectHandler.h>
+
 #include <vtkDataObject.h>
 
 namespace lfx {
@@ -42,6 +46,12 @@ ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const s
     ChannelData( name ),
     m_dobj( dobj )
 {
+    m_bounds[0] = 100000;
+    m_bounds[1] = -100000;
+    m_bounds[2] = 100000;
+    m_bounds[3] = -100000;
+    m_bounds[4] = 100000;
+    m_bounds[5] = -100000;
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkDataObject::ChannelDatavtkDataObject( const ChannelDatavtkDataObject& rhs )
@@ -49,6 +59,12 @@ ChannelDatavtkDataObject::ChannelDatavtkDataObject( const ChannelDatavtkDataObje
     ChannelData( rhs ),
     m_dobj( rhs.m_dobj )
 {
+    m_bounds[0] = 100000;
+    m_bounds[1] = -100000;
+    m_bounds[2] = 100000;
+    m_bounds[3] = -100000;
+    m_bounds[4] = 100000;
+    m_bounds[5] = -100000;
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkDataObject::~ChannelDatavtkDataObject()
@@ -58,6 +74,36 @@ ChannelDatavtkDataObject::~ChannelDatavtkDataObject()
 vtkDataObject* ChannelDatavtkDataObject::GetDataObject()
 {
     return m_dobj;
+}
+////////////////////////////////////////////////////////////////////////////////
+unsigned int ChannelDatavtkDataObject::GetNumberOfPoints()
+{
+    lfx::vtk_utils::DataObjectHandler dataObjectHandler;
+    lfx::vtk_utils::GetNumberOfPointsCallback* numberOfPointsCallback = 
+        new lfx::vtk_utils::GetNumberOfPointsCallback();
+    dataObjectHandler.SetDatasetOperatorCallback( numberOfPointsCallback );
+    dataObjectHandler.OperateOnAllDatasetsInObject( m_dobj );
+    unsigned int numPoints = numberOfPointsCallback->GetNumberOfPoints();
+    delete numberOfPointsCallback;
+    return numPoints;
+}
+////////////////////////////////////////////////////////////////////////////////
+double* ChannelDatavtkDataObject::GetBounds()
+{
+    GetBounds( m_bounds );
+    return m_bounds;
+}
+////////////////////////////////////////////////////////////////////////////////
+void ChannelDatavtkDataObject::GetBounds( double* bounds )
+{
+    lfx::vtk_utils::DataObjectHandler dataObjectHandler;
+    lfx::vtk_utils::ComputeDataObjectBoundsCallback* boundsCallback =
+        new lfx::vtk_utils::ComputeDataObjectBoundsCallback();
+    dataObjectHandler.SetDatasetOperatorCallback( boundsCallback );
+    dataObjectHandler.OperateOnAllDatasetsInObject( m_dobj );
+    boundsCallback->GetDataObjectBounds( bounds );
+    double bbDiagonal = boundsCallback->GetDataObjectBoundsDiagonal();
+    delete boundsCallback;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

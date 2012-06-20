@@ -48,11 +48,13 @@ namespace vtk {
 ////////////////////////////////////////////////////////////////////////////////
 lfx::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::ChannelDataPtr maskIn )
 {
-    vtkDataObject* tempVtkDO = 
+    
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) )->GetDataObject();
+        getInput( "vtkDataObject" ) );
+    vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
 
-    double bounds[6] = { 0., 0., 0., 0., 0., 0.};
+    double* bounds = cddoPtr->GetBounds();
     double requestedValue = 0.1;
     //m_planeDirection;
     lfx::core::vtk::CuttingPlane* cuttingPlane =
