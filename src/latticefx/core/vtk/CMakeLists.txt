@@ -12,6 +12,7 @@ set( _headerFiles
     VTKVectorSliceRTP.h
     VTKVectorRenderer.h
     CuttingPlane.h
+    VTKContourSliceRTP.h
 )
 
 set( _sourceFiles
@@ -21,6 +22,7 @@ set( _sourceFiles
     VTKVectorSliceRTP.cpp
     VTKVectorRenderer.cpp
     CuttingPlane.cpp
+    VTKContourSliceRTP.cpp
 )
 
 _addLibrary( Lib ${_libName}

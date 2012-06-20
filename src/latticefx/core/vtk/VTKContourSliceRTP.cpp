@@ -25,7 +25,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
-#include <latticefx/core/vtk/VTKVectorFieldRTP.h>
+#include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
@@ -36,6 +36,8 @@
 #include <vtkMaskPoints.h>
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
+#include <vtkCutter.h>
+#include <vtkPlane.h>
 
 namespace lfx {
 
@@ -44,40 +46,69 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-lfx::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::ChannelDataPtr maskIn )
+lfx::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::ChannelDataPtr maskIn )
 {
-    vtkDataObject* tempVtkDO = 
+    
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) )->GetDataObject();
+        getInput( "vtkDataObject" ) );
+    vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
+
+    double* bounds = cddoPtr->GetBounds();
+
+    lfx::core::vtk::CuttingPlane* cuttingPlane =
+        new lfx::core::vtk::CuttingPlane( bounds, m_planeDirection, 1 );
+    // insure that we are using correct bounds for the given data set...
+    cuttingPlane->Advance( m_requestedValue );
+
+    vtkCutter* cutter = vtkCutter::New();
+    cutter->SetInput( tempVtkDO );
+    cutter->SetCutFunction( cuttingPlane->GetPlane() );
+    
+    //cutter->Update();
+    delete cuttingPlane;
+    cuttingPlane = NULL;
     
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
-    c2p->SetInput( tempVtkDO );
+    c2p->SetInputConnection( cutter->GetOutputPort() );
     //c2p->Update();
-    
+    cutter->Delete();
+
     vtkMaskPoints* ptmask = vtkMaskPoints::New();
     
-    vtkPolyData* tempPd = 0;
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
         vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
-            vtkCompositeDataGeometryFilter::New();
+        vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_multiGroupGeomFilter->GetOutputPort(0);
         ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
         m_multiGroupGeomFilter->Delete();
     }
     else
     {
+        //m_geometryFilter->SetInputConnection( input );
+        //return m_geometryFilter->GetOutputPort();
         vtkDataSetSurfaceFilter* m_surfaceFilter = 
-            vtkDataSetSurfaceFilter::New();
+        vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_surfaceFilter->GetOutputPort();
         ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
         m_surfaceFilter->Delete();
     }
     
-    // get every nth point from the dataSet data
-    ptmask->SetOnRatio( m_mask );
-    ptmask->Update();
+    lfx::core::vtk::CuttingPlane* cuttingPlane =
+        new lfx::core::vtk::CuttingPlane( bounds, m_planeDirection, 1 );
+    // insure that we are using correct bounds for the given data set...
+    cuttingPlane->Advance( m_requestedValue );
     
+    vtkCutter* tempCutter = vtkCutter::New();
+    tempCutter->SetCutFunction( cuttingPlane->GetPlane() );
+    tempCutter->SetInput( tempVtkDO );
+    //tempCutter->Update();
+    
+    //SetMapperInput( tempCutter->GetOutputPort( 0 ) );
+
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
         new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
     
@@ -87,7 +118,12 @@ lfx::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::ChannelDataPtr maskIn
     return( cdpd );
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::SetMaskValue( double value )
+void VTKContourSliceRTP::SetRequestedValue( double value )
+{
+    m_requestedValue = value;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKContourSliceRTP::SetMaskValue( double value )
 {
     m_mask = value;
 }
