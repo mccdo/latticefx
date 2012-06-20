@@ -46,12 +46,15 @@
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 
+#include <sstream>
+
 
 class ImageProcess : public lfx::Preprocess
 {
 public:
-    ImageProcess()
-      : lfx::Preprocess()
+    ImageProcess( unsigned int depth=2 )
+      : lfx::Preprocess(),
+        _depth( depth )
     {
         setActionType( lfx::Preprocess::REPLACE_DATA );
     }
@@ -61,56 +64,72 @@ public:
         lfx::ChannelDataOSGImagePtr input( boost::static_pointer_cast< lfx::ChannelDataOSGImage >( _inputs[ 0 ] ) );
         const std::string dataName( input->getName() );
 
-        lfx::ChannelDataOSGImagePtr farImage( generateImageData( "pagetex-far.png", dataName ) );
-
-        lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
-        cdLOD->setRange( cdLOD->addChannel( farImage ),
-            lfx::RangeValues( 0., 100000. ) );
-
-        lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( input->getName() ) );
-        {
-            lfx::ChannelDataOSGImagePtr brick;
-            
-            brick = generateImageData( "pagetex-near0.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( -1., -1., -1. ) );
-            brick = generateImageData( "pagetex-near1.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( 1., -1., -1. ) );
-            brick = generateImageData( "pagetex-near2.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( -1., 1., -1. ) );
-            brick = generateImageData( "pagetex-near3.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( 1., 1., -1. ) );
-            brick = generateImageData( "pagetex-near4.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( -1., -1., 1. ) );
-            brick = generateImageData( "pagetex-near5.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( 1., -1., 1. ) );
-            brick = generateImageData( "pagetex-near6.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( -1., 1., 1. ) );
-            brick = generateImageData( "pagetex-near7.png", dataName );
-            cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-                osg::Vec3( 1., 1., 1. ) );
-        }
-
-        cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
-            lfx::RangeValues( 100000., FLT_MAX ) );
-
-        return( cdLOD );
+        return( recurseBuildTree( 0, 0., 25000. ) );
     }
 
 protected:
-    lfx::ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const std::string& dataName )
+    lfx::ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const unsigned int depth, const std::string& dataName )
     {
+        std::ostringstream ostr;
+        ostr << fileName << depth << ".png";
+
         osg::Image* image( new osg::Image );
-        image->setFileName( fileName );
+        image->setFileName( ostr.str() );
         return( lfx::ChannelDataOSGImagePtr(
             new lfx::ChannelDataOSGImage( dataName, image ) ) );
     }
+
+    lfx::ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange )
+    {
+        const std::string baseName( "pagetex-near" );
+        const std::string channelName( "texture" );
+
+        if( depth == _depth )
+            return( generateImageData( baseName, depth, channelName ) );
+
+
+        lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( channelName ) );
+        cdLOD->setRange( cdLOD->addChannel( generateImageData( baseName, depth, channelName ) ),
+            lfx::RangeValues( minRange, maxRange ) );
+
+        const unsigned int nextDepth( depth + 1 );
+        const double nextMin( maxRange );
+        const double nextMax( ( nextDepth == _depth ) ? FLT_MAX : ( maxRange * 2. ) );
+
+        lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( channelName ) );
+
+        lfx::ChannelDataPtr brick;            
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( -1., -1., -1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( 1., -1., -1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( -1., 1., -1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( 1., 1., -1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( -1., -1., 1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( 1., -1., 1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( -1., 1., 1. ) );
+        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
+            osg::Vec3( 1., 1., 1. ) );
+
+        cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
+            lfx::RangeValues( nextMin, nextMax ) );
+        return( cdLOD );
+    }
+
+    unsigned int _depth;
 };
 
 class BoxRenderer : public lfx::Renderer
