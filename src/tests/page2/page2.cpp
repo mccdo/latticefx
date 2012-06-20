@@ -52,7 +52,7 @@
 class ImageProcess : public lfx::Preprocess
 {
 public:
-    ImageProcess( unsigned int depth=2 )
+    ImageProcess( unsigned int depth=3 )
       : lfx::Preprocess(),
         _depth( depth )
     {
@@ -94,7 +94,10 @@ protected:
 
         const unsigned int nextDepth( depth + 1 );
         const double nextMin( maxRange );
-        const double nextMax( ( nextDepth == _depth ) ? FLT_MAX : ( maxRange * 2. ) );
+        // If nextDepth == _depth, then we're at the end, so set nextMax to FLT_MAX.
+        // Otherwise, increase maxRange by 4 because the area of a circle circumscribing
+        // a box goes up by a factor of 4 when the box edge double in size.
+        const double nextMax( ( nextDepth == _depth ) ? FLT_MAX : ( maxRange * 4. ) );
 
         lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( channelName ) );
 
