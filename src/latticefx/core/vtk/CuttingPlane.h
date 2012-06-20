@@ -59,7 +59,7 @@ public:
     } SliceDirection;
     
     ///Constructor
-    CuttingPlane( const double* bounds, const int xyz,
+    CuttingPlane( const double* bounds, SliceDirection xyz,
                      const int numSteps = 10 );
     ///Destructor
     ~CuttingPlane();
@@ -109,7 +109,7 @@ private:
 
     float dx;///<Used only by blue menu.
 
-    int type;///<Plane direction: 0=X, 1=Y, 2=Z.
+    SliceDirection type;///<Plane direction: 0=X, 1=Y, 2=Z.
 };
 }
 }

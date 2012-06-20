@@ -58,7 +58,7 @@ lfx::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::ChannelDataPtr maskIn
     double requestedValue = 0.1;
     //m_planeDirection;
     lfx::core::vtk::CuttingPlane* cuttingPlane =
-        new lfx::core::vtk::CuttingPlane( bounds, 0, 1 );
+        new lfx::core::vtk::CuttingPlane( bounds, m_planeDirection, 1 );
     // insure that we are using correct bounds for the given data set...
     cuttingPlane->Advance( requestedValue );
 

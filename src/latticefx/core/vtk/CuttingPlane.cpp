@@ -40,7 +40,7 @@ namespace core {
 
 namespace vtk {
 
-CuttingPlane::CuttingPlane( const double bounds[6], const int xyz,
+CuttingPlane::CuttingPlane( const double bounds[6], SliceDirection xyz,
                       const int numSteps )
     :
     type( xyz )
@@ -50,7 +50,7 @@ CuttingPlane::CuttingPlane( const double bounds[6], const int xyz,
 
 
     // specify the normal to sweep, the step-size, and the origin...
-    if( this->type == 0 )
+    if( type == X_PLANE )
     {
         this->normal[0] = 1.0f;
         this->normal[1] = 0.0f;
@@ -61,7 +61,7 @@ CuttingPlane::CuttingPlane( const double bounds[6], const int xyz,
         this->origin[1] = ( this->bd[3] + this->bd[2] ) / 2.0;
         this->origin[2] = ( this->bd[5] + this->bd[4] ) / 2.0;
     }
-    else if( this->type == 1 )
+    else if( type == Y_PLANE )
     {
         this->normal[0] = 0.0f;
         this->normal[1] = 1.0f;
@@ -72,7 +72,7 @@ CuttingPlane::CuttingPlane( const double bounds[6], const int xyz,
         this->origin[1] = ( this->bd[3] + this->bd[2] ) / 2.0;
         this->origin[2] = ( this->bd[5] + this->bd[4] ) / 2.0;
     }
-    else if( this->type == 2 )
+    else if( type == Z_PLANE )
     {
         this->normal[0] = 0.0f;
         this->normal[1] = 0.0f;
