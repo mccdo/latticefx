@@ -8,11 +8,19 @@ set( _headerFiles
     Export.h
     ChannelDatavtkDataObject.h
     ChannelDatavtkPolyData.h
+    VTKVectorFieldRTP.h
+    VTKVectorSliceRTP.h
+    VTKVectorRenderer.h
+    CuttingPlane.h
 )
 
 set( _sourceFiles
     ChannelDatavtkDataObject.cpp
     ChannelDatavtkPolyData.cpp
+    VTKVectorFieldRTP.cpp
+    VTKVectorSliceRTP.cpp
+    VTKVectorRenderer.cpp
+    CuttingPlane.cpp
 )
 
 _addLibrary( Lib ${_libName}
