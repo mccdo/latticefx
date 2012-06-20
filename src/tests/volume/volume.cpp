@@ -26,10 +26,10 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/DataSet.h>
-#include <latticefx/VolumeRenderer.h>
-#include <latticefx/ChannelDataOSGImage.h>
-#include <latticefx/TransferFunctionUtils.h>
+#include <latticefx/core/DataSet.h>
+#include <latticefx/core/VolumeRenderer.h>
+#include <latticefx/core/ChannelDataOSGImage.h>
+#include <latticefx/core/TransferFunctionUtils.h>
 
 #include <osgDB/ReadFile>
 #include <osgViewer/Viewer>

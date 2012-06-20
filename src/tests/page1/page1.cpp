@@ -26,15 +26,15 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/PagingCallback.h>
-#include <latticefx/PagingThread.h>
-#include <latticefx/DataSet.h>
-#include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/ChannelDataOSGImage.h>
-#include <latticefx/ChannelDataLOD.h>
-#include <latticefx/Preprocess.h>
-#include <latticefx/Renderer.h>
-#include <latticefx/PageData.h>
+#include <latticefx/core/PagingCallback.h>
+#include <latticefx/core/PagingThread.h>
+#include <latticefx/core/DataSet.h>
+#include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/ChannelDataOSGImage.h>
+#include <latticefx/core/ChannelDataLOD.h>
+#include <latticefx/core/Preprocess.h>
+#include <latticefx/core/Renderer.h>
+#include <latticefx/core/PageData.h>
 
 #include <osgwTools/Shapes.h>
 #include <osg/Geode>

@@ -26,10 +26,10 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/PluginManager.h>
-#include <latticefx/OperationBase.h>
-#include <latticefx/DataSet.h>
-#include <latticefx/ChannelDataOSGImage.h>
+#include <latticefx/core/PluginManager.h>
+#include <latticefx/core/OperationBase.h>
+#include <latticefx/core/DataSet.h>
+#include <latticefx/core/ChannelDataOSGImage.h>
 
 #include <osgDB/ReadFile>
 

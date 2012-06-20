@@ -29,8 +29,8 @@
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 
-#include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/TransferFunctionUtils.h>
+#include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/TransferFunctionUtils.h>
 
 #include <vtkMath.h>
 #include <vtkPointData.h>

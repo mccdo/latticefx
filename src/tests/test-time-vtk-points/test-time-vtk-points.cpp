@@ -25,15 +25,15 @@
 * -----------------------------------------------------------------
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
-#include <latticefx/DataSet.h>
-#include <latticefx/ChannelData.h>
-#include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/RTPOperation.h>
-#include <latticefx/Renderer.h>
-#include <latticefx/TextureUtils.h>
-#include <latticefx/BoundUtils.h>
-#include <latticefx/VectorRenderer.h>
-#include <latticefx/TransferFunctionUtils.h>
+#include <latticefx/core/DataSet.h>
+#include <latticefx/core/ChannelData.h>
+#include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/RTPOperation.h>
+#include <latticefx/core/Renderer.h>
+#include <latticefx/core/TextureUtils.h>
+#include <latticefx/core/BoundUtils.h>
+#include <latticefx/core/VectorRenderer.h>
+#include <latticefx/core/TransferFunctionUtils.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>

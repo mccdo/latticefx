@@ -26,13 +26,13 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/DataSet.h>
-#include <latticefx/ChannelData.h>
-#include <latticefx/ChannelDataOSGArray.h>
-#include <latticefx/RTPOperation.h>
-#include <latticefx/VectorRenderer.h>
-#include <latticefx/TransferFunctionUtils.h>
-#include <latticefx/PlayControl.h>
+#include <latticefx/core/DataSet.h>
+#include <latticefx/core/ChannelData.h>
+#include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/RTPOperation.h>
+#include <latticefx/core/VectorRenderer.h>
+#include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/PlayControl.h>
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>

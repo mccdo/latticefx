@@ -28,7 +28,7 @@
 #ifndef __LATTICEFX_CORE_VTK_VECTORRENDERER_H__
 #define __LATTICEFX_CORE_VTK_VECTORRENDERER_H__ 1
 
-#include <latticefx/VectorRenderer.h>
+#include <latticefx/core/VectorRenderer.h>
 
 #include <latticefx/core/vtk/Export.h>
 

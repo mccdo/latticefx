@@ -25,7 +25,7 @@
 * -----------------------------------------------------------------
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
-#include <latticefx/DataSet.h>
+#include <latticefx/core/DataSet.h>
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>

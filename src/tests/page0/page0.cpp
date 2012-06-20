@@ -26,9 +26,9 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/PagingCallback.h>
-#include <latticefx/PagingThread.h>
-#include <latticefx/PageData.h>
+#include <latticefx/core/PagingCallback.h>
+#include <latticefx/core/PagingThread.h>
+#include <latticefx/core/PageData.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>

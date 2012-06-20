@@ -31,7 +31,7 @@
 
 
 #include <latticefx/core/vtk/Export.h>
-#include <latticefx/ChannelData.h>
+#include <latticefx/core/ChannelData.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -43,7 +43,7 @@ namespace core {
     
 namespace vtk {
     
-/** \class ChannelDataComposite ChannelDataComposite.h <latticefx/ChannelDataComposite.h>
+/** \class ChannelDataComposite ChannelDataComposite.h <latticefx/core/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
 \details This class allows multiple ChannelData objects and is used for level of detail
 and texture bricking / subtextures.

@@ -28,7 +28,7 @@
 #ifndef __LATTICEFX_CORE_VTK_VECTORFIELD_RTP_OPERATION_H__
 #define __LATTICEFX_CORE_VTK_VECTORFIELD_RTP_OPERATION_H__ 1
 
-#include <latticefx/RTPOperation.h>
+#include <latticefx/core/RTPOperation.h>
 
 #include <latticefx/core/vtk/Export.h>
 

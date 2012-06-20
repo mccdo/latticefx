@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/PluginManager.h>
-#include <latticefx/OperationBase.h>
+#include <latticefx/core/PluginManager.h>
+#include <latticefx/core/OperationBase.h>
 #include <iostream>
 
 

@@ -97,7 +97,7 @@ lfx::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::ChannelDataPtr maskI
         m_surfaceFilter->Delete();
     }
     
-    lfx::core::vtk::CuttingPlane* cuttingPlane =
+/*    lfx::core::vtk::CuttingPlane* cuttingPlane =
         new lfx::core::vtk::CuttingPlane( bounds, m_planeDirection, 1 );
     // insure that we are using correct bounds for the given data set...
     cuttingPlane->Advance( m_requestedValue );
@@ -107,7 +107,7 @@ lfx::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::ChannelDataPtr maskI
     tempCutter->SetInput( tempVtkDO );
     //tempCutter->Update();
     
-    //SetMapperInput( tempCutter->GetOutputPort( 0 ) );
+    //SetMapperInput( tempCutter->GetOutputPort( 0 ) );*/
 
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
         new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
