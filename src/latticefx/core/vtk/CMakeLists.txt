@@ -14,6 +14,8 @@ set( _headerFiles
     CuttingPlane.h
     VTKContourSliceRTP.h
     VTKIsosurfaceRTP.h
+    vtkActorToOSG.h
+    VTKActorRenderer.h
 )
 
 set( _sourceFiles
@@ -22,9 +24,11 @@ set( _sourceFiles
     VTKVectorFieldRTP.cpp
     VTKVectorSliceRTP.cpp
     VTKVectorRenderer.cpp
+    VTKActorRenderer.cpp
     CuttingPlane.cpp
     VTKContourSliceRTP.cpp
     VTKIsosurfaceRTP.cpp
+    vtkActorToOSG.cpp
 )
 
 _addLibrary( Lib ${_libName}
