@@ -31,6 +31,8 @@ set( _sourceFiles
     vtkActorToOSG.cpp
 )
 
+set(INCLUDE_DIRECTORY_NAME "latticefx/core/vtk")
+
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}

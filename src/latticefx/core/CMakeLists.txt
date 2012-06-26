@@ -62,6 +62,8 @@ set( _sourceFiles
     VolumeRenderer.cpp
 )
 
+set(INCLUDE_DIRECTORY_NAME "latticefx/core")
+
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}

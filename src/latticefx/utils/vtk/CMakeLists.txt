@@ -11,6 +11,8 @@ file(GLOB_RECURSE _headerFiles ${HEADER_PATH}/*.h )
 
 file(GLOB_RECURSE _sourceFiles ${HEADER_PATH}/*.cpp )
 
+set(INCLUDE_DIRECTORY_NAME "latticefx/utils/vtk")
+
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
