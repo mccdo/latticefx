@@ -69,6 +69,8 @@ protected:
 	osg::Vec3 _volumeDims, _volumeOrigin;
 };
 
+typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
+
 
 
 /** \class VolumeRenderer VolumeRenderer.h <latticefx/core/VolumeRenderer.h>

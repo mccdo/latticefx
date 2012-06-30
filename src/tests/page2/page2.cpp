@@ -46,6 +46,7 @@
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
+#include <osgDB/ReadFile>
 
 #include <sstream>
 
@@ -152,7 +153,8 @@ public:
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
         stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( image ) );
 
-        osg::Geometry* geom( osgwTools::makeBox( osg::Vec3( .5, .5, .5 ) ) );
+        osg::Geometry* geom( osgwTools::makeBox( osg::Matrix::translate( getVolumeOrigin() ),
+            getVolumeDims() * .5 ) );
         geom->setColorBinding( osg::Geometry::BIND_OVERALL );
         geode->addDrawable( geom );
 
@@ -181,6 +183,8 @@ lfx::DataSetPtr createDataSet()
     dsp->addPreprocess( lfx::PreprocessPtr( op ) );
 
     BoxRenderer* renderOp( new BoxRenderer );
+    renderOp->setVolumeDims( osg::Vec3( 2., 1., 1. ) );
+    renderOp->setVolumeOrigin( osg::Vec3( 1., 0., .5 ) );
     renderOp->addInput( "texture" );
     dsp->setRenderer( lfx::RendererPtr( renderOp ) );
 
@@ -198,7 +202,10 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
 
-    viewer.setSceneData( dsp->getSceneData() );
+    osg::Group* root( new osg::Group );
+    root->addChild( dsp->getSceneData() );
+    root->addChild( osgDB::readNodeFile( "axes.osg" ) );
+    viewer.setSceneData( root );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.

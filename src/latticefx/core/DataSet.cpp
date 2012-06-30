@@ -30,6 +30,7 @@
 #include <latticefx/core/ChannelDataImageSet.h>
 #include <latticefx/core/ChannelDataLOD.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/DBUtils.h>
 
@@ -388,6 +389,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
             return( NULL );
         }
 
+        lfx::SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
         osg::ref_ptr< osg::Group > parent( new osg::Group );
         unsigned int idx;
         for( idx=0; idx < imageData->getNumChannels(); idx++ )
@@ -397,7 +399,14 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
             if( child != NULL )
             {
-                const osg::Vec3 offset( imageData->getOffset( idx ) * .5 );
+                osg::Vec3 offset( imageData->getOffset( idx ) * .5 );
+                if( spatial != NULL )
+                {
+                    // If the Renderer is a SpatialVolume, scale the offset by the volume dimensions.
+                    offset[ 0 ] *= spatial->getVolumeDims()[ 0 ];
+                    offset[ 1 ] *= spatial->getVolumeDims()[ 1 ];
+                    offset[ 2 ] *= spatial->getVolumeDims()[ 2 ];
+                }
                 const osg::Matrix trans( osg::Matrix::translate( offset ) *
                     osg::Matrix::scale( .5, .5, .5 ) );
                 osg::MatrixTransform* mt( new osg::MatrixTransform( trans ) );
