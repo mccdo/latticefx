@@ -8,6 +8,7 @@ set( _headerFiles
     Export.h
     ChannelDatavtkDataObject.h
     ChannelDatavtkPolyData.h
+    VTKActorRenderer.h
     VTKVectorFieldRTP.h
     VTKVectorSliceRTP.h
     VTKVectorRenderer.h
@@ -15,16 +16,15 @@ set( _headerFiles
     VTKContourSliceRTP.h
     VTKIsosurfaceRTP.h
     vtkActorToOSG.h
-    VTKActorRenderer.h
 )
 
 set( _sourceFiles
     ChannelDatavtkDataObject.cpp
     ChannelDatavtkPolyData.cpp
+    VTKActorRenderer.cpp
     VTKVectorFieldRTP.cpp
     VTKVectorSliceRTP.cpp
     VTKVectorRenderer.cpp
-    VTKActorRenderer.cpp
     CuttingPlane.cpp
     VTKContourSliceRTP.cpp
     VTKIsosurfaceRTP.cpp
