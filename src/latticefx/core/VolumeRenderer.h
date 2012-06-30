@@ -39,11 +39,43 @@
 namespace lfx {
 
 
+/** \class SpatialVolume VolumeRenderer.h <latticefx/core/VolumeRenderer.h>
+\brief Container class for spatial information.
+\details VolumeRenderer and other Renderer-derived classes that require
+spatial information should derive from this class. DataSet accesses
+SpatialVolume parameters to set the transforms of subgraphs when creating
+nested volume tree scene graphs. */
+class LATTICEFX_EXPORT SpatialVolume
+{
+public:
+    SpatialVolume();
+    SpatialVolume( const SpatialVolume& rhs );
+    virtual ~SpatialVolume();
+
+	// volume dims and origin
+    /** \brief Set dimensions (in world units) of the volume box.
+    \details This can be varied on every draw. */
+	void setVolumeDims( const osg::Vec3& volDims);
+    /** \brief Get dimensions (in world units) of the volume box. */
+    osg::Vec3 getVolumeDims() const;
+
+    /** \brief Set location (in world units) of the center of the volume box.
+    \details This can be varied on every draw. */
+	void setVolumeOrigin( const osg::Vec3& volOrigin);
+    /** \brief Get the location (in world units) of the center of the volume box. */
+    osg::Vec3 getVolumeOrigin() const;
+
+protected:
+	osg::Vec3 _volumeDims, _volumeOrigin;
+};
+
+
+
 /** \class VolumeRenderer VolumeRenderer.h <latticefx/core/VolumeRenderer.h>
 \brief TBD
 \details TBD
 */
-class LATTICEFX_EXPORT VolumeRenderer : public lfx::Renderer
+class LATTICEFX_EXPORT VolumeRenderer : public lfx::Renderer, public SpatialVolume
 {
 public:
     VolumeRenderer();
@@ -72,26 +104,9 @@ public:
     /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
     float getPlaneSpacing() const;
 
-	// volume dims and origin
-    /** \brief Set dimensions (in world units) of the volume box.
-    \details This can be varied on every draw. */
-	void setVolumeDims( const osg::Vec3f& volDims);
-    /** \brief Get dimensions (in world units) of the volume box. */
-    osg::Vec3f getVolumeDims() const;
-
-    /** \brief Set location (in world units) of the center of the volume box.
-    \details This can be varied on every draw. */
-	void setVolumeOrigin( const osg::Vec3f& volOrigin);
-    /** \brief Get the location (in world units) of the center of the volume box. */
-    osg::Vec3f getVolumeOrigin() const;
-
 protected:
 	unsigned int _maxSlices;
 	float _planeSpacing;
-	osg::Vec3f _volumeDims, _volumeOrigin;
-
-	// <<<>>> volume dims and origin
-
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

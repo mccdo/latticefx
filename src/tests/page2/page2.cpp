@@ -29,6 +29,7 @@
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/ChannelDataLOD.h>
@@ -139,7 +140,7 @@ protected:
     unsigned int _depth;
 };
 
-class BoxRenderer : public lfx::Renderer
+class BoxRenderer : public lfx::Renderer, public lfx::SpatialVolume
 {
 public:
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )

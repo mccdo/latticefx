@@ -141,7 +141,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
                 if( request->_keys.empty() )
                 {
-                    // No images to load. Immediately set status to ACTIVE.
+                    // No images to load. Turn on this child/branch.
                     rangeData._status = lfx::PageData::RangeData::LOADED;
                     removeExpired = true;
                 }

@@ -49,12 +49,50 @@
 namespace lfx {
 
 
+SpatialVolume::SpatialVolume()
+  : _volumeDims( osg::Vec3( 1., 1., 1. ) ),
+    _volumeOrigin( osg::Vec3( 0., 0., 0. ) )
+{
+}
+SpatialVolume::SpatialVolume( const SpatialVolume& rhs )
+  : _volumeDims( rhs._volumeDims ),
+    _volumeOrigin( rhs._volumeOrigin )
+{
+}
+SpatialVolume::~SpatialVolume()
+{
+}
+
+void SpatialVolume::setVolumeDims( const osg::Vec3& volDims)
+{
+	_volumeDims = volDims;
+}
+osg::Vec3 SpatialVolume::getVolumeDims() const
+{
+	return( _volumeDims );
+}
+
+void SpatialVolume::setVolumeOrigin( const osg::Vec3& volOrigin)
+{
+	_volumeOrigin = volOrigin;
+}
+osg::Vec3 SpatialVolume::getVolumeOrigin() const
+{
+	return( _volumeOrigin );
+}
+
+
+
+
 VolumeRenderer::VolumeRenderer()
-  : _maxSlices(1024), _planeSpacing(0.3f), _volumeDims(60.0f, 60.0f, 30.0f), _volumeOrigin(0.0f, 0.0f, 0.0f)
+  : _maxSlices( 1024 ),
+    _planeSpacing( 1.f )
 {
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
-  : lfx::Renderer( rhs )
+  : lfx::Renderer( rhs ),
+    _maxSlices( rhs._maxSlices ),
+    _planeSpacing( rhs._planeSpacing )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -158,9 +196,9 @@ osg::StateSet* VolumeRenderer::getRootState()
 	}
 
 	// <<<>>> need to setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing
-    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", _volumeDims ) );
+    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3f( _volumeDims ) ) );
     stateSet->addUniform( dimsUni );
-    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", _volumeOrigin ) );
+    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3f( _volumeOrigin ) ) );
     stateSet->addUniform( centerUni );
     osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", _planeSpacing ) );
     stateSet->addUniform( spaceUni );
@@ -201,23 +239,6 @@ float VolumeRenderer::getPlaneSpacing() const
 	return( _planeSpacing );
 }
 
-void VolumeRenderer::setVolumeDims( const osg::Vec3f& volDims)
-{
-	_volumeDims = volDims;
-}
-osg::Vec3f VolumeRenderer::getVolumeDims() const
-{
-	return( _volumeDims );
-}
-
-void VolumeRenderer::setVolumeOrigin( const osg::Vec3f& volOrigin)
-{
-	_volumeOrigin = volOrigin;
-}
-osg::Vec3f VolumeRenderer::getVolumeOrigin() const
-{
-	return( _volumeOrigin );
-}
 
 // lfx
 }

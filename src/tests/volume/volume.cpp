@@ -57,6 +57,8 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName )
     dsp->addChannel( volumeData );
 
     lfx::VolumeRendererPtr renderOp( new lfx::VolumeRenderer() );
+    renderOp->setVolumeDims( osg::Vec3( 60., 60., 30. ) );
+    renderOp->setPlaneSpacing( .3f );
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
 
