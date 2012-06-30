@@ -139,8 +139,17 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             if( isInRange )
             {
                 lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
-                pageThread->addLoadRequest( request );
-                rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+                if( request->_keys.empty() )
+                {
+                    // No images to load. Immediately set status to ACTIVE.
+                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    removeExpired = true;
+                }
+                else
+                {
+                    pageThread->addLoadRequest( request );
+                    rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+                }
             }
             break;
 
@@ -293,8 +302,8 @@ public:
                     }
                 }
             }
+            traverse( node );
         }
-        traverse( node );
     }
 
     lfx::LoadRequestImagePtr _request;
@@ -344,8 +353,8 @@ public:
                     }
                 }
             }
+            traverse( node );
         }
-        traverse( node );
     }
 
 protected:
@@ -371,23 +380,20 @@ public:
 
     virtual void apply( osg::Node& node )
     {
-        if( node.getUserData() == NULL )
+        osg::StateSet* stateSet( node.getStateSet() );
+        if( stateSet != NULL )
         {
-            osg::StateSet* stateSet( node.getStateSet() );
-            if( stateSet != NULL )
+            for( unsigned int unit=0; unit<16; unit++ )
             {
-                for( unsigned int unit=0; unit<16; unit++ )
+                osg::Texture* tex( static_cast< osg::Texture* >(
+                    stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
+                    ( tex->getImage( 0 ) != NULL ) )
                 {
-                    osg::Texture* tex( static_cast< osg::Texture* >(
-                        stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
-                    if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
-                        ( tex->getImage( 0 ) != NULL ) )
-                    {
-                        lfx::DBKey key( tex->getImage( 0 )->getFileName() );
-                        osg::Image* image( new osg::Image() );
-                        image->setFileName( key );
-                        tex->setImage( 0, image );
-                    }
+                    lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                    osg::Image* image( new osg::Image() );
+                    image->setFileName( key );
+                    tex->setImage( 0, image );
                 }
             }
         }
