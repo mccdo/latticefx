@@ -400,15 +400,21 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
             if( child != NULL )
             {
                 osg::Vec3 offset( imageData->getOffset( idx ) * .5 );
+                osg::Matrix negateOrigin;
                 if( spatial != NULL )
                 {
                     // If the Renderer is a SpatialVolume, scale the offset by the volume dimensions.
                     offset[ 0 ] *= spatial->getVolumeDims()[ 0 ];
                     offset[ 1 ] *= spatial->getVolumeDims()[ 1 ];
                     offset[ 2 ] *= spatial->getVolumeDims()[ 2 ];
+                    // Negate the origin offset from the Renderer in order to place
+                    // the geometry at the correct location.
+                    negateOrigin = osg::Matrix::translate( spatial->getVolumeOrigin() );
                 }
-                const osg::Matrix trans( osg::Matrix::translate( offset ) *
+                const osg::Matrix trans( negateOrigin *
+                    osg::Matrix::translate( offset ) *
                     osg::Matrix::scale( .5, .5, .5 ) );
+
                 osg::MatrixTransform* mt( new osg::MatrixTransform( trans ) );
                 mt->addChild( child );
                 parent->addChild( mt );
