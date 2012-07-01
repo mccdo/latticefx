@@ -184,7 +184,7 @@ lfx::DataSetPtr createDataSet()
 
     BoxRenderer* renderOp( new BoxRenderer );
     renderOp->setVolumeDims( osg::Vec3( 2., 1., 1. ) );
-    renderOp->setVolumeOrigin( osg::Vec3( 1., 0., .5 ) );
+    renderOp->setVolumeOrigin( osg::Vec3( 2., 0.5, 1.5 ) );
     renderOp->addInput( "texture" );
     dsp->setRenderer( lfx::RendererPtr( renderOp ) );
 

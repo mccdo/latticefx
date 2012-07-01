@@ -200,10 +200,13 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 {
                     reclaimImages( child );
                     rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                    child->setNodeMask( 0u );
                 }
-                // Intentional fallthrough.
+                break;
             default:
-                child->setNodeMask( 0u );
+            case lfx::PageData::RangeData::UNLOADED:
+            case lfx::PageData::RangeData::LOAD_REQUESTED:
+                // Nothing to do.
                 break;
             }
         }
@@ -242,7 +245,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 #if 1
     traverse( node, nv );
     // TBD this is temporary. Traverse everyone. Will probably
-    // nor render correctly. OK for dev.
+    // not render correctly. OK for dev.
     // 
     // Probably want to traverse specific children based on
     // the range data status, then afterwards, set the
