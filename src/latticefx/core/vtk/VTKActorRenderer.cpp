@@ -128,7 +128,7 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
                        //osgUtil::Optimizer::SPATIALIZE_GROUPS |
                        osgUtil::Optimizer::TRISTRIP_GEOMETRY |
                        //osgUtil::Optimizer::OPTIMIZE_TEXTURE_SETTINGS |
-                       osgUtil::Optimizer::MERGE_GEODES |
+                       osgUtil::Optimizer::MERGE_GEODES );
                        //osgUtil::Optimizer::STATIC_OBJECT_DETECTION );
     
     
