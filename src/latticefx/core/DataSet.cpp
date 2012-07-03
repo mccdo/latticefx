@@ -362,6 +362,11 @@ bool DataSet::updateRenderer()
         }
         ++maskIt;
     }
+    if( timeSet.size() > 1 )
+        _sceneGraph->setName( "Lfx-TimePagingRoot" );
+    else
+        _sceneGraph->setName( "Lfx-Root" );
+
 
     _sceneGraph->setStateSet( _renderer->getRootState() );
     return( true );
@@ -391,6 +396,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
         lfx::SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
         osg::ref_ptr< osg::Group > parent( new osg::Group );
+        parent->setName( "Lfx-ImageSet" );
         unsigned int idx;
         for( idx=0; idx < imageData->getNumChannels(); idx++ )
         {
@@ -431,6 +437,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         }
 
         osg::ref_ptr< osg::Group > parent( new osg::Group );
+        parent->setName( "Lfx-LODPaging" );
         osg::ref_ptr< PageData > pageData( new PageData( lfx::PageData::PIXEL_SIZE_RANGE ) );
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
