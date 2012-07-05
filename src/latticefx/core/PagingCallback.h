@@ -120,26 +120,9 @@ protected:
     \details TBD */
     void reclaimImages( osg::Node* child );
 
-    /** \brief Return the pixel size of \c bSphere.
-    \details Computes the pixel radius of the bounding sphere, then returns
-    the area of a circle with that radius. */
-    double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
-        const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp );
-
     /** \brief Return \c time, biased into the given time range.
     \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */
     static double getWrappedTime( const double& time, const double& minTime, const double& maxTime );
-
-    /** \brief Return true if \c validRange and \c childRange overlap.
-    \details If the paging RangeMode is PIXEL_SIZE_RANGE, both min and max values of
-    \c validRange are set to the return value of computePixelSize() and \c childRange
-    comes from the child-specific PageData::RangeData.
-
-    If the paging RangeMode is TIME_RANGE, \c validRange is a range of time values specified
-    by the application, and both min and max values of \c childRange are set to the time
-    value of the child node. */
-    static inline bool inRange( const RangeValues& validRange, const RangeValues& childRange );
-
 
     double _animationTime;
     RangeValues _timeRange;
@@ -147,20 +130,6 @@ protected:
 
 
 /**@}*/
-
-
-bool PagingCallback::inRange( const RangeValues& validRange, const RangeValues& childRange )
-{
-    const bool childFirstGood( childRange.first < validRange.second );
-    const bool childSecondGood( childRange.second >= validRange.first );
-    if( validRange.first <= validRange.second )
-        // Typical case: first (min) < second (max).
-        return( childSecondGood && childFirstGood );
-    else
-        // First (min) might be greater than second (max) due to
-        // wrapping of animation time.
-        return( childSecondGood || childFirstGood );
-}
 
 
 // lfx

@@ -47,6 +47,7 @@
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 #include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
 
 #include <sstream>
 
@@ -95,7 +96,6 @@ protected:
             lfx::RangeValues( minRange, maxRange ) );
 
         const unsigned int nextDepth( depth + 1 );
-        const double nextMin( maxRange );
         // If nextDepth == _depth, then we're at the end, so set nextMax to FLT_MAX.
         // Otherwise, increase maxRange by 4 because the area of a circle circumscribing
         // a box goes up by a factor of 4 when the box edge double in size.
@@ -104,33 +104,33 @@ protected:
         lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( channelName ) );
 
         lfx::ChannelDataPtr brick;            
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( -1., -1., -1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( 1., -1., -1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( -1., 1., -1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( 1., 1., -1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( -1., -1., 1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( 1., -1., 1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( -1., 1., 1. ) );
-        brick = recurseBuildTree( nextDepth, nextMin, nextMax );
+        brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( 1., 1., 1. ) );
 
         // Regardless of the depth level, there are two LODs. The first is displayed
-        // for range (minRange, maxRange), and the second is displayed for range
+        // for range (0., maxRange), and the second is displayed for range
         // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
         // LODs that are displayed at subranges of (maxRange, FLT_MAX).
         cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
@@ -200,12 +200,15 @@ int main( int argc, char** argv )
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
-    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
+    viewer.setCameraManipulator( tbm );
 
     osg::Group* root( new osg::Group );
     root->addChild( dsp->getSceneData() );
+    //osgDB::writeNodeFile( *(dsp->getSceneData()), "out.osg" );
     root->addChild( osgDB::readNodeFile( "axes.osg" ) );
     viewer.setSceneData( root );
+    tbm->home( 0. );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
@@ -216,7 +219,7 @@ int main( int argc, char** argv )
     osg::Vec3d eye, center, up;
     while( !viewer.done() )
     {
-        cam->getViewMatrixAsLookAt( eye, center, up );
+        tbm->getInverseMatrix().getLookAt( eye, center, up );
         pageThread->setTransforms( osg::Vec3( eye ) );
         viewer.frame();
     }
