@@ -287,38 +287,14 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         }
     }
 
-#if 1
+
     // Continue traversing if there are no pending load requests.
     if( continueUpdateTraversal )
-        traverse( node, nv );
-
-    // TBD this is temporary. Traverse everyone. Will probably
-    // not render correctly. OK for dev.
-    // 
-    // Probably want to traverse specific children based on
-    // the range data status, then afterwards, set the
-    // nodemask to all 1s for the active child and 0 for others.
-    // That way we only cull/draw the active scene graph branch.
-#else
-    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
     {
-        const unsigned int childIndex( rangeDataPair.first );
-        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
-
-        switch( rangeData._status )
-        {
-        case lfx::PageData::RangeData::LOAD_REQUESTED:
-            traverse( grp->getChild( childIndex ), nv );
-            break;
-
-        default:
-        case lfx::PageData::RangeData::UNLOADED:
-        case lfx::PageData::RangeData::LOADED:
-        case lfx::PageData::RangeData::ACTIVE:
-            break;
-        }
+        // Only ACTIVE children have non-zero node masks, so all other
+        // children will be ckipped by this traversal.
+        traverse( node, nv );
     }
-#endif
 }
 
 

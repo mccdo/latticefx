@@ -118,7 +118,6 @@ void PagingThread::operator()()
             {
                 request = *( _requestList.begin() );
                 _requestList.pop_front();
-                //std::cout << "____Got a request for " << request._dbKey << std::endl;
             }
         }
 

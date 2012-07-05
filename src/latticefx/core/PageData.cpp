@@ -113,13 +113,11 @@ PageData::RangeData::RangeData()
 }
 PageData::RangeData::RangeData( RangeValues rangeValues, const DBKey& dbKey )
   : _rangeValues( rangeValues ),
-    _dbKey( dbKey ),
     _status( UNLOADED )
 {
 }
 PageData::RangeData::RangeData( double minVal, double maxVal, const DBKey& dbKey )
   : _rangeValues( RangeValues( minVal, maxVal ) ),
-    _dbKey( dbKey ),
     _status( UNLOADED )
 {
 }

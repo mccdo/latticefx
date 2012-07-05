@@ -50,33 +50,42 @@ namespace lfx {
 \details
 The LatticeFX paging system does not use the osgDB::DatabasePager or the osg::PagedLOD
 node. Instead, LatticeFX uses a boost thread for paging, generic Group nodes in place
-of the PagedLOD, and the OSG update callback and UserData mechanisms for paging mechanics
-and metadata. LatticeFX supports paging subgraphs based on either estimated pixel size or
-time (in support of time series data animation).
+of the PagedLOD, and the OSG update callback and user data mechanisms for paging mechanics
+and metadata. LatticeFX supports paging scene graph elements based on either estimated
+pixel size or time (in support of time series data animation).
 
-To avoid traversing the entire scene graph searching for nodes that might potentially need
-paging, the LatticeFX paging system depends on the PagingCallback class. Applications create
-an instance of this callback and attach it as an update callback to the root of some Node
-in their scene (usually the root of a subgraph containing Groups with pageable nodes). If
-the PagingCallback instance is attached near the top of the scene graph and there are no other
-update callbacks in the scene graph, OSG's update visitor will do very little work.
+LatticeFX assumes the geometry in the scene graph will be negligible in size (a single
+instanced quad, point, vector, etc), but the textures will consume significant RAM and
+must be paded. For this reason, LatticeFX builds a complete scene graph containing all
+geometry, with empty stub textures. The entire paging system is designed to support
+paging in textures and attaching them to the scene graph when needed, and reclaiming those
+textures when they have expired. The geometry itself, and Nodes and Groups in general,
+are never paged by LatticeFX.
 
-For each Group that contains pageable children, the app creates an instance of PageData and
-adds it to the PagingCallback instance. The PageData contains PageData::RangeData for each
-pageable child. The app must add empty Group nodes as placeholders for each pageable child.
+Each Group that contains pageable children has both a PagingCallback update traversal
+callback object and a PageData user data object. DataSet is responsible for creating
+and attaching these objects during scene graph creation. DataSet attaches them to the
+root node to support time series data, and to subordinate nodes to support
+ChannelDataLOD.
+
+PageData contains PageData::RangeData for each pageable child. RangeData contains a
+RangeValues std::pair of ranges for the child. When paging based on pixel size,
+a given child is paged in (and eventually displayed) when the computed pixel size
+of its projected bounding volume falls between the RangeValue's min and max values.
+
+When paging based on time, the RangeValues pair contains a single time value. A given
+child is paged in when this time value falls within range of the owning PageData's
+min and max sime (see PageData::setMinMaxTime()), and displayed if it has the "best"
+time (closest to actual time) of all pageable children for the owning Group.
 
 During update, the PagingCallback iterates over all PageData objects and checks child
-PageData::RangeData to see if an unloaded child needs to be loaded. If so, it calls
-PagingThread::addLoadRequests(). This causes the PagingThread to load the child and eventually
-return it. When the PagingCallback detects that the load is complete, it adds the loaded
-child in place of the empty Group node placeholder. At that time, any children that are no
-longer valid are removed from the parent Group and empty Group placeholders added back in
-their place.
-
-Note that the Group parent of pageable children initially has no bounding volume in the
-typical case where all children are pageable and therefore initially are all stub Group
-placeholders. In order for PagingCallback to know the spatial location of the parent Group,
-the application should call setInitialBound() on the parent Group.
+PageData::RangeData to see if an unloaded child needs to be loaded. If so, it recursively
+descends the child to build a LoadRequest containing all required scene graph elements,
+and passes that LoadRequest to PagingThread::addLoadRequest(). This causes the
+PagingThread to process and return the LoadRequest. When the PagingCallback retrieves the
+filled reqauest, it again recursively descends the child to distribute the loaded elements.
+At that time, any children that are no longer valid are masked off and their expired scene
+graph elements are reclaimed.
 
 Work to be done (TBD):
 
@@ -85,6 +94,10 @@ create per frame. OSG does this by adding a GraphicsOperation to each draw threa
 only creating a limited number of objects per frame. We should be able to do something
 similar in a Camera post-draw callback, estimating the size of each OpenGL object and
 limiting the number created per frame based on amount of data sent over the bus.
+
+We need a pool of osg::Texture objects to limit and reuse the OpenGL texture object IDs.
+As the PagingThread loads data, it would acquire an available Texture from the pool,
+and when a texture expires, the reclamation process would return the Texture to the pool.
 */
 /**@{*/
 
@@ -92,10 +105,10 @@ limiting the number created per frame based on amount of data sent over the bus.
 /** \class PagingThread PagingThread.h <latticefx/core/PagingThread.h>
 \brief Class to manage paging thread
 \details
-PagingThread manages a boost thread that loads OSG subgraphs from
-a database. PagingThread is a singleton so that it can oversee paging on
-an application-wide basis and therefore avoid the possible bus contention that
-might occur if multiple paging threads were active.
+PagingThread manages a boost thread that processes LoadRequest objects (loads OSG
+scene graph elements) from a database. PagingThread is a singleton so that it can
+oversee paging on an application-wide basis and therefore avoid the possible bus
+contention that might occur if multiple paging threads were active.
 */
 class LATTICEFX_EXPORT PagingThread
 {

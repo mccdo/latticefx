@@ -104,7 +104,6 @@ public:
         RangeData( double minVal, double maxVal, const DBKey& dbKey=DBKey( "" ) );
 
         RangeValues _rangeValues;
-        DBKey _dbKey;
 
         /** \brief Enum for current page status.
         \li UNLOADED        Child is en empty stub Group.
