@@ -32,8 +32,53 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
+#define CONE_HEIGHT 500
+#define CONE_RADIUS 250
+
+#define TEXTURE_X 512
+#define TEXTURE_Y 512
+#define TEXTURE_Z 512
+
+#define TEXTURE_HALF_X 256
+#define TEXTURE_HALF_Y 256
+
+bool testVoxel( const int x, const int y, const int z )
+{
+    const int radiusTest = ( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
+        (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
+    
+    const double heightRadius = 
+        ( double( CONE_RADIUS ) / double( CONE_HEIGHT ) ) * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
+    
+    if( heightRadius > radiusTest )
+    {
+        return true;
+    }
+    return false;
+}
+
+void writeVoxel( const int val )
+{
+    ;
+}
 
 int main( int argc, char** argv )
 {
+    for( size_t k = 0; k < TEXTURE_Z; ++k )
+    {
+        for( size_t j = 0; j < TEXTURE_Y; ++j )
+        {
+            for( size_t i = 0; i < TEXTURE_Z; ++i )
+            {
+                int voxelVal = 0;
+                if( testVoxel( i, j, k ) )
+                {
+                    voxelVal = 1;
+                }
+                writeVoxel( voxelVal );
+            }
+        }
+    }
+
     return 0;
 }
