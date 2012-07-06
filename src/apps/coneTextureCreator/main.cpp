@@ -32,6 +32,11 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
+#include <osg/Image>
+#include <osg/Texture3D>
+#include <osg/Texture2D>
+#include <osgDB/WriteFile>
+
 #define CONE_HEIGHT 500
 #define CONE_RADIUS 250
 
@@ -57,22 +62,34 @@ bool testVoxel( const int x, const int y, const int z )
     return false;
 }
 
-void writeVoxel( const int val )
+void writeVoxel( const size_t numPixels, unsigned char* pixels )
 {
-    ;
+    osg::ref_ptr< osg::Image > image = new osg::Image();
+    //We will let osg manage the raw image data
+    image->setImage( numPixels, 1, 1, GL_RGB32F_ARB, GL_RGB, GL_FLOAT,
+                pixels, osg::Image::USE_NEW_DELETE );
+
+    //osg::Texture3D* texture = new osg::Texture3D( image );
+    //texture->setFilter( osg::Texture::MIN_FILTER, osg::Texture2D::NEAREST );
+    //texture->setFilter( osg::Texture::MAG_FILTER, osg::Texture2D::NEAREST );
+    
+    osgDB::writeImageFile( *image.get(), "cone_texture.ive" );
+    
+    //delete texture;
+    //delete image;
 }
 
 int main( int argc, char** argv )
 {
     unsigned char* pixels = 
-        new unsigned char[ TEXTURE_X * TEXTURE_Y * TEXTURE_Z * 4 ];
-    double R, G, B, A;
+        new unsigned char[ TEXTURE_X * TEXTURE_Y * TEXTURE_Z * 3 ];
+    double R, G, B;//, A;
     size_t pixel = 0;
     for( size_t k = 0; k < TEXTURE_Z; ++k )
     {
         for( size_t j = 0; j < TEXTURE_Y; ++j )
         {
-            for( size_t i = 0; i < TEXTURE_Z; ++i )
+            for( size_t i = 0; i < TEXTURE_X; ++i )
             {
                 R = 0.;
                 if( testVoxel( i, j, k ) )
@@ -81,19 +98,20 @@ int main( int argc, char** argv )
                 }
                 G = 0.;
                 B = 0.;
-                A = 255.;
+                //A = 255.;
 
-                pixels[pixel * 4   ]  = static_cast< unsigned char >( R );
-                pixels[pixel * 4 + 1] = static_cast< unsigned char >( G );
-                pixels[pixel * 4 + 2] = static_cast< unsigned char >( B );
-                pixels[pixel * 4 + 3] = static_cast< unsigned char >( A );
+                pixels[pixel * 3   ]  = ( unsigned char )( R );
+                pixels[pixel * 3 + 1] = ( unsigned char )( G );
+                pixels[pixel * 3 + 2] = ( unsigned char )( B );
+                //pixels[pixel * 4 + 3] = static_cast< unsigned char >( A );
                 pixel += 1;
             }
         }
     }
 
-    //writeVoxel( voxelVal );
+    writeVoxel( TEXTURE_X * TEXTURE_Y * TEXTURE_Z, pixels );
 
-    delete [] pixels;
+    //OSG handles the memory
+    //delete [] pixels;
     return 0;
 }
