@@ -64,21 +64,36 @@ void writeVoxel( const int val )
 
 int main( int argc, char** argv )
 {
+    unsigned char* pixels = 
+        new unsigned char[ TEXTURE_X * TEXTURE_Y * TEXTURE_Z * 4 ];
+    double R, G, B, A;
+    size_t pixel = 0;
     for( size_t k = 0; k < TEXTURE_Z; ++k )
     {
         for( size_t j = 0; j < TEXTURE_Y; ++j )
         {
             for( size_t i = 0; i < TEXTURE_Z; ++i )
             {
-                int voxelVal = 0;
+                R = 0.;
                 if( testVoxel( i, j, k ) )
                 {
-                    voxelVal = 1;
+                    R = 255.;
                 }
-                writeVoxel( voxelVal );
+                G = 0.;
+                B = 0.;
+                A = 255.;
+
+                pixels[pixel * 4   ]  = static_cast< unsigned char >( R );
+                pixels[pixel * 4 + 1] = static_cast< unsigned char >( G );
+                pixels[pixel * 4 + 2] = static_cast< unsigned char >( B );
+                pixels[pixel * 4 + 3] = static_cast< unsigned char >( A );
+                pixel += 1;
             }
         }
     }
 
+    //writeVoxel( voxelVal );
+
+    delete [] pixels;
     return 0;
 }
