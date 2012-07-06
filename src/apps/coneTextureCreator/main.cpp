@@ -55,7 +55,7 @@ bool testVoxel( const int x, const int y, const int z )
     const double heightRadius = 
         ( double( CONE_RADIUS ) / double( CONE_HEIGHT ) ) * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
     
-    if( heightRadius > radiusTest )
+    if( heightRadius >= radiusTest )
     {
         return true;
     }
@@ -81,9 +81,10 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
 
 int main( int argc, char** argv )
 {
+    size_t numPixels = TEXTURE_X * TEXTURE_Y * TEXTURE_Z;
     unsigned char* pixels = 
-        new unsigned char[ TEXTURE_X * TEXTURE_Y * TEXTURE_Z * 3 ];
-    double R, G, B;//, A;
+        new unsigned char[ numPixels * 3 ];
+    float R, G, B;//, A;
     size_t pixel = 0;
     for( size_t k = 0; k < TEXTURE_Z; ++k )
     {
@@ -109,7 +110,7 @@ int main( int argc, char** argv )
         }
     }
 
-    writeVoxel( TEXTURE_X * TEXTURE_Y * TEXTURE_Z, pixels );
+    writeVoxel( numPixels, pixels );
 
     //OSG handles the memory
     //delete [] pixels;
