@@ -62,12 +62,12 @@ bool testVoxel( const int x, const int y, const int z )
     return( heightRadius >= radiusTest );
 }
 
-void writeVoxel( const size_t numPixels, float* pixels )
+void writeVoxel( const size_t numPixels, unsigned char* pixels )
 {
     osg::ref_ptr< osg::Image > image = new osg::Image();
     //We will let osg manage the raw image data
-    image->setImage( TEXTURE_X, TEXTURE_Y, TEXTURE_Z, GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT,
-                ( unsigned char* )pixels, osg::Image::USE_NEW_DELETE );
+    image->setImage( TEXTURE_X, TEXTURE_Y, TEXTURE_Z, GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                pixels, osg::Image::USE_NEW_DELETE );
 
     //osg::Texture3D* texture = new osg::Texture3D( image );
     //texture->setFilter( osg::Texture::MIN_FILTER, osg::Texture2D::NEAREST );
@@ -82,15 +82,15 @@ void writeVoxel( const size_t numPixels, float* pixels )
 int main( int argc, char** argv )
 {
     size_t numPixels = TEXTURE_X * TEXTURE_Y * TEXTURE_Z;
-    float* pixels( new float[ numPixels ] );
-    float* pixelPtr( pixels );
+    unsigned char* pixels( new unsigned char[ numPixels ] );
+    unsigned char* pixelPtr( pixels );
     for( size_t k = 0; k < TEXTURE_Z; ++k )
     {
         for( size_t j = 0; j < TEXTURE_Y; ++j )
         {
             for( size_t i = 0; i < TEXTURE_X; ++i )
             {
-                *pixelPtr++ = ( testVoxel( i, j, k ) ? 1.f : 0.f );
+                *pixelPtr++ = ( testVoxel( i, j, k ) ? 255 : 0 );
             }
         }
     }
