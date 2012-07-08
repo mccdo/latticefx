@@ -7,6 +7,7 @@ uniform sampler1D tf1d;
 uniform sampler2D tf2d;
 uniform sampler3D tf3d;
 attribute vec3 tfInput;
+uniform vec2 tfRange;
 uniform int tfDimension;
 uniform int tfDest;
 const int tfDestRGB = 0;
@@ -15,13 +16,16 @@ const int tfDestAlpha = 2;
 
 void transferFunction()
 {
+    vec3 localInput = tfInput;
+    vec3 range = vec3( tfRange.y - tfRange.x );
+    vec3 index = ( localInput - vec3(tfRange.x) ) / range;
     vec4 result;
     if( tfDimension == 1 ) // 1D transfer function.
-        result = texture1D( tf1d, tfInput.s );
+        result = texture1D( tf1d, index.s );
     else if( tfDimension == 2 ) // 2D transfer function.
-        result = texture2D( tf2d, tfInput.st );
+        result = texture2D( tf2d, index.st );
     else if( tfDimension == 3 ) // 3D transfer function.
-        result = texture3D( tf3d, tfInput.stp );
+        result = texture3D( tf3d, index.stp );
     else // Transfer function is disabled.
     {
         gl_FrontColor = gl_Color;

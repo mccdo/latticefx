@@ -41,6 +41,7 @@ Renderer::Renderer()
   : OperationBase( OperationBase::RendererType ),
     _baseUnit( 8 ),
     _unitAssignmentCounter( 8 ),
+    _tfRange( 0., 1. ),
     _tfDest( TF_ALPHA ),
     _hmSource( HM_SOURCE_ALPHA ),
     _hmReference( 0.f ),
@@ -81,7 +82,7 @@ unsigned int Renderer::getOrAssignTextureUnit( const std::string& key )
     UnitAssignmentMap::const_iterator it( _unitAssignmentMap.find( key ) );
     if( it == _unitAssignmentMap.end() )
     {
-        // Addign the next available texture unit and store that assignment.
+        // Adding the next available texture unit and store that assignment.
         _unitAssignmentMap[ key ] = _unitAssignmentCounter;
         return( _unitAssignmentCounter++ );
     }
@@ -120,6 +121,15 @@ void Renderer::setTransferFunctionInput( const std::string& inputName )
 const std::string& Renderer::getTransferFunctionInput() const
 {
     return( _tfInputName );
+}
+
+void Renderer::setTransferFunctionInputRange( const osg::Vec2& range )
+{
+    _tfRange = range;
+}
+const osg::Vec2& Renderer::getTransferFunctionInputRange() const
+{
+    return( _tfRange );
 }
 
 void Renderer::setTransferFunctionDestination( const Renderer::TransferFunctionDestination dest )
@@ -218,6 +228,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         osg::Uniform* tf3dUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tf3d" ) ); tf3dUni->set( (int)tf3dUnit );
         stateSet->addUniform( tf3dUni );
     }
+
+    osg::Uniform* tfRange( new osg::Uniform( "tfRange", _tfRange ) );
+    stateSet->addUniform( tfRange );
 
     // uniform int tfDimension, 0 (disabled), 1, 2, or 3.
     osg::Uniform* tfDimUni( new osg::Uniform( "tfDimension", tfDimension ) );

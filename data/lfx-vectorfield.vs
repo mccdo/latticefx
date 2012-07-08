@@ -23,6 +23,7 @@ uniform sampler1D tf1d;
 uniform sampler2D tf2d;
 uniform sampler3D tf3d;
 uniform sampler3D tfInput;
+uniform vec2 tfRange;
 uniform int tfDimension;
 uniform int tfDest;
 const int tfDestRGB = 0;
@@ -36,6 +37,8 @@ void transferFunction( in vec3 tC )
     {
         // tfInput texture format is GL_ALPHA32F_ARB.
         float index = texture3D( tfInput, tC ).a;
+        float range = tfRange.y - tfRange.x;
+        index = ( index - tfRange.x ) / range;
         result = texture1D( tf1d, index );
     }
     else if( tfDimension == 2 ) // 2D transfer function.

@@ -207,12 +207,21 @@ public:
     /** \brief Specify the ChannelData used as an index into the transfer function.
     \details Specifies the ChannelData indirectly by its \c name. The ChannelData dimensions
     must match the dimensions of the image (setTransferFunction()) or behavior is undefined.
-    ChannelData indices in the range 0.0 to 1.0 index into the transfer function. Indices outside
-    that range are clamped. Applications can use filter or channel operations to normalize
-    ChannelData if necessary. */
+
+    Because the transfer function is a texture lookup, LatticeFX supports mapping a range
+    of transfer function input values into the (texture coordinate) range 0.0 to 1.0. See
+    setTransferFunctionInputRange(). Indices outside the specified range are clamped. */
     void setTransferFunctionInput( const std::string& name );
     /** \brief Get the name of the transfer function input ChannelData. */
     const std::string& getTransferFunctionInput() const;
+
+    /** \brief Specify the valid range of transfer function input values.
+    \details Transfer function is a texture lookup. Values outside the
+    specified range will clamp. The default range is (0., 1.). */
+    void setTransferFunctionInputRange( const osg::Vec2& range );
+    /** \brief TBD
+    \details TBD */
+    const osg::Vec2& getTransferFunctionInputRange() const;
 
     typedef enum {
         TF_RGB = 0,
@@ -367,6 +376,7 @@ protected:
 
     osg::ref_ptr< osg::Image > _tfImage;
     std::string _tfInputName;
+    osg::Vec2 _tfRange;
     TransferFunctionDestination _tfDest;
 
     HardwareMaskInputSource _hmSource;

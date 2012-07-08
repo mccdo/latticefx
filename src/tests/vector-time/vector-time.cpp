@@ -55,24 +55,12 @@ public:
         osg::Vec3Array* posArray( static_cast< osg::Vec3Array* >( posBaseArray ) );
 
         // Depth value is the z value. Create an array of the z values.
-        // Track min and max values so we can normalize later.
-        float minDepth( FLT_MAX ), maxDepth( -FLT_MAX );
         osg::FloatArray* depth( new osg::FloatArray );
         osg::Vec3Array::const_iterator it;
         for( it=posArray->begin(); it != posArray->end(); ++it )
         {
             const float z( it->z() );
-            minDepth = osg::minimum( minDepth, z );
-            maxDepth = osg::maximum( maxDepth, z );
             depth->push_back( z );
-        }
-        // Normalize the new array of depth values.
-        const float range( maxDepth - minDepth );
-        osg::FloatArray::iterator itZ;
-        for( itZ=depth->begin(); itZ != depth->end(); ++itZ )
-        {
-            // Put in range 0.0 .. 1.0.
-            *itZ = ( *itZ - minDepth ) / range;
         }
 
         return( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( depth, "depth" ) ) );
@@ -344,11 +332,20 @@ int main( int argc, char** argv )
     lfx::DataSetPtr dsp( prepareDataSet( style ) );
     root->addChild( dsp->getSceneData() );
 
-    // Test hardware clip planes
-    osg::ClipNode* cn( new osg::ClipNode() );
-    cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., 3. ) );
-    root->addChild( cn );
-    root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+    // Adjust root state.
+    {
+        osg::StateSet* stateSet( root->getOrCreateStateSet() );
+
+        // Test hardware clip planes
+        osg::ClipNode* cn( new osg::ClipNode() );
+        cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., 3. ) );
+        root->addChild( cn );
+        stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+
+        // Add uniform to control transfer function min/max range.
+        stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2( -3., 2. ) ),
+            osg::StateAttribute::OVERRIDE );
+    }
     
     // Play the time series animation
     lfx::PlayControlPtr playControl( new lfx::PlayControl( dsp->getSceneData() ) );
