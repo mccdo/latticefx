@@ -37,43 +37,43 @@
 #include <osg/Texture2D>
 #include <osgDB/WriteFile>
 
-#define CONE_HEIGHT 500
-#define CONE_RADIUS 250
+#define CONE_HEIGHT 250
+#define CONE_RADIUS 125
 
-#define TEXTURE_X 512
-#define TEXTURE_Y 512
-#define TEXTURE_Z 512
+#define TEXTURE_X 256
+#define TEXTURE_Y 256
+#define TEXTURE_Z 256
 
-#define TEXTURE_HALF_X 256
-#define TEXTURE_HALF_Y 256
+#define TEXTURE_HALF_X 128
+#define TEXTURE_HALF_Y 128
 
 bool testVoxel( const int x, const int y, const int z )
 {
-    const int radiusTest = ( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
+    if( z >= CONE_HEIGHT )
+        return false;
+
+    const double radiusTest = double( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
         (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
     
-    const double heightRadius = 
-        ( double( CONE_RADIUS ) / double( CONE_HEIGHT ) ) * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
+    double heightRadius =
+        ( double( CONE_RADIUS ) * double( z ) / double( CONE_HEIGHT ) );
+    heightRadius *= heightRadius;
     
-    if( heightRadius >= radiusTest )
-    {
-        return true;
-    }
-    return false;
+    return( heightRadius >= radiusTest );
 }
 
-void writeVoxel( const size_t numPixels, unsigned char* pixels )
+void writeVoxel( const size_t numPixels, float* pixels )
 {
     osg::ref_ptr< osg::Image > image = new osg::Image();
     //We will let osg manage the raw image data
-    image->setImage( numPixels, 1, 1, GL_RGB32F_ARB, GL_RGB, GL_FLOAT,
-                pixels, osg::Image::USE_NEW_DELETE );
+    image->setImage( TEXTURE_X, TEXTURE_Y, TEXTURE_Z, GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT,
+                ( unsigned char* )pixels, osg::Image::USE_NEW_DELETE );
 
     //osg::Texture3D* texture = new osg::Texture3D( image );
     //texture->setFilter( osg::Texture::MIN_FILTER, osg::Texture2D::NEAREST );
     //texture->setFilter( osg::Texture::MAG_FILTER, osg::Texture2D::NEAREST );
     
-    osgDB::writeImageFile( *image.get(), "cone_texture.ive" );
+    osgDB::writeImageFile( *image, "cone_texture.ive" );
     
     //delete texture;
     //delete image;
@@ -82,30 +82,15 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
 int main( int argc, char** argv )
 {
     size_t numPixels = TEXTURE_X * TEXTURE_Y * TEXTURE_Z;
-    unsigned char* pixels = 
-        new unsigned char[ numPixels * 3 ];
-    float R, G, B;//, A;
-    size_t pixel = 0;
+    float* pixels( new float[ numPixels ] );
+    float* pixelPtr( pixels );
     for( size_t k = 0; k < TEXTURE_Z; ++k )
     {
         for( size_t j = 0; j < TEXTURE_Y; ++j )
         {
             for( size_t i = 0; i < TEXTURE_X; ++i )
             {
-                R = 0.;
-                if( testVoxel( i, j, k ) )
-                {
-                    R = 255.;
-                }
-                G = 0.;
-                B = 0.;
-                //A = 255.;
-
-                pixels[pixel * 3   ]  = ( unsigned char )( R );
-                pixels[pixel * 3 + 1] = ( unsigned char )( G );
-                pixels[pixel * 3 + 2] = ( unsigned char )( B );
-                //pixels[pixel * 4 + 3] = static_cast< unsigned char >( A );
-                pixel += 1;
+                *pixelPtr++ = ( testVoxel( i, j, k ) ? 1.f : 0.f );
             }
         }
     }
