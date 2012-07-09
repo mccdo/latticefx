@@ -55,8 +55,10 @@ bool testVoxel( const int x, const int y, const int z )
     const double radiusTest = double( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
         (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
     
+    const double coneConstant = double( CONE_RADIUS ) / double( CONE_HEIGHT );
+    
     const double heightRadius = 
-        ( double( CONE_RADIUS ) / double( CONE_HEIGHT ) ) * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
+       coneConstant * coneConstant * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
     //double heightRadius =
     //    ( double( CONE_RADIUS ) * double( z ) / double( CONE_HEIGHT ) );
     //heightRadius *= heightRadius;
