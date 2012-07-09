@@ -55,9 +55,11 @@ bool testVoxel( const int x, const int y, const int z )
     const double radiusTest = double( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
         (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
     
-    double heightRadius =
-        ( double( CONE_RADIUS ) * double( z ) / double( CONE_HEIGHT ) );
-    heightRadius *= heightRadius;
+    const double heightRadius = 
+        ( double( CONE_RADIUS ) / double( CONE_HEIGHT ) ) * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
+    //double heightRadius =
+    //    ( double( CONE_RADIUS ) * double( z ) / double( CONE_HEIGHT ) );
+    //heightRadius *= heightRadius;
     
     return( heightRadius >= radiusTest );
 }
@@ -74,9 +76,6 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
     //texture->setFilter( osg::Texture::MAG_FILTER, osg::Texture2D::NEAREST );
     
     osgDB::writeImageFile( *image, "cone_texture.ive" );
-    
-    //delete texture;
-    //delete image;
 }
 
 int main( int argc, char** argv )
