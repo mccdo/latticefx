@@ -30,6 +30,7 @@ set( _headerFiles
     Preprocess.h
     Renderer.h
     RTPOperation.h
+    SurfaceRenderer.h
     TextureUtils.h
     TransferFunctionUtils.h
     VectorRenderer.h
@@ -56,6 +57,7 @@ set( _sourceFiles
     Preprocess.cpp
     Renderer.cpp
     RTPOperation.cpp
+    SurfaceRenderer.cpp
     TextureUtils.cpp
     TransferFunctionUtils.cpp
     VectorRenderer.cpp
