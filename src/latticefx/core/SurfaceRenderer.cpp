@@ -32,6 +32,14 @@
 #include <osg/Geometry>
 
 
+
+// When sending warp vector arrays, specify these vertex attrib locations.
+#define WARP_VERTEX_OFFSET_ATTRIB 12
+#define WARP_NORMAL_OFFSET_ATTRIB 13
+// Note: GeForce 9800M supports only 0 .. 15.
+// Base class Renderer uses 14 & 15 for transfer function.
+
+
 namespace lfx {
 
 
@@ -105,7 +113,28 @@ osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 
 osg::StateSet* SurfaceRenderer::getRootState()
 {
-    return( NULL );
+    osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet );
+
+    addHardwareFeatureUniforms( stateSet.get() );
+
+    ChannelDataPtr warpAlias( getInput( getInputTypeAlias( WARP_DIRECTION ) ) );
+    const bool warpEnabled( warpAlias != NULL );
+    stateSet->addUniform( new osg::Uniform( "warpEnabled", warpEnabled ) );
+
+    osg::Program* program( new osg::Program() );
+    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-surface.vs" ) );
+    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-surface.fs" ) );
+    stateSet->setAttribute( program );
+
+    if( warpEnabled )
+    {
+        stateSet->addUniform( new osg::Uniform( "warpScale", 1.f ) );
+
+        program->addBindAttribLocation( "tfInput", WARP_VERTEX_OFFSET_ATTRIB );
+        program->addBindAttribLocation( "tfInput", WARP_NORMAL_OFFSET_ATTRIB );
+    }
+
+    return( stateSet.release() );
 }
 
 
