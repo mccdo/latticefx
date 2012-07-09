@@ -36,7 +36,30 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 
+// Forward
+namespace osg {
+    class Geometry;
+}
+
 namespace lfx {
+
+
+/** \class PrimitiveSetGenerator SurfaceRenderer.h <latticefx/core/SurfaceRenderer.h>
+\brief Creates OSG PrimitiveSets for the SurfaceRenderer.
+\details TBD.
+*/
+class LATTICEFX_EXPORT PrimitiveSetGenerator
+{
+public:
+    PrimitiveSetGenerator();
+    PrimitiveSetGenerator( const PrimitiveSetGenerator& rhs );
+    virtual ~PrimitiveSetGenerator();
+
+    virtual void operator()( osg::Geometry* geom, unsigned int numElements ) = 0;
+};
+
+typedef boost::shared_ptr< PrimitiveSetGenerator > PrimitiveSetGeneratorPtr;
+
 
 
 /** \class SurfaceRenderer SurfaceRenderer.h <latticefx/core/SurfaceRenderer.h>
@@ -52,6 +75,13 @@ public:
 
     virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn );
     virtual osg::StateSet* getRootState();
+
+    /** \brief TBD
+    \details TBD */
+    void setPrimitiveSetGenerator( PrimitiveSetGeneratorPtr primitiveSetGenerator );
+    /** \brief TBD
+    \details TBD */
+    PrimitiveSetGeneratorPtr getPrimitiveSetGenerator();
 
     /** \brief Enum for input data type. */
     typedef enum {
@@ -69,7 +99,23 @@ public:
     std::string getInputTypeAlias( const InputType& inputType ) const;
 
 protected:
+    PrimitiveSetGeneratorPtr _primitiveSetGenerator;
+
     InputTypeMap _inputTypeMap;
+};
+
+typedef boost::shared_ptr< SurfaceRenderer > SurfaceRendererPtr;
+
+
+
+class LATTICEFX_EXPORT SimpleTrianglePrimitiveSetGenerator : public PrimitiveSetGenerator
+{
+public:
+    SimpleTrianglePrimitiveSetGenerator();
+    SimpleTrianglePrimitiveSetGenerator( const SimpleTrianglePrimitiveSetGenerator& rhs );
+    virtual ~SimpleTrianglePrimitiveSetGenerator();
+
+    virtual void operator()( osg::Geometry* geom, unsigned int numElements );
 };
 
 
