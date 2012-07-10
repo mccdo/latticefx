@@ -48,6 +48,14 @@ endif()
 
 include( CMakeMacros )
 
+option( LFX_DISABLE_LOGGING "If set, Lfx disables all console and log file writes." OFF )
+if( LFX_DISABLE_LOGGING )
+    add_definitions( -DLFX_DISABLE_LOGGING )
+    add_definitions( -DLFX_LOG=false )
+else()
+    add_definitions( -DLFX_LOG=true )
+endif()
+
 option( BOOST_ALL_DYN_LINK "If set, use Boost dynamic libraries (boost_*); otherwise static (libboost_*)." OFF )
 if( BOOST_ALL_DYN_LINK )
     add_definitions( -DBOOST_ALL_DYN_LINK )

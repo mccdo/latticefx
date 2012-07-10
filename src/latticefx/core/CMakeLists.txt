@@ -21,6 +21,9 @@ set( _headerFiles
     DataSet.h
     DBUtils.h
     LoadRequest.h
+    Log.h
+    LogBase.h
+    LogMacros.h
     OperationBase.h
     PageData.h
     PagingCallback.h
@@ -48,6 +51,7 @@ set( _sourceFiles
     DataSet.cpp
     DBUtils.cpp
     LoadRequest.cpp
+    Log.cpp
     OperationBase.cpp
     PageData.cpp
     PagingCallback.cpp
