@@ -52,7 +52,6 @@
 #define TF_INPUT_ATTRIB 14
 #define HM_SOURCE_ATTRIB 15
 // Note: GeForce 9800M supports only 0 .. 15.
-// SurfaceRenderer uses 12 & 13 for warp vectors.
 
 
 namespace lfx {

@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/SurfaceRenderer.h>
+#include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/BoundUtils.h>
 
 #include <osg/Geode>
@@ -35,10 +36,10 @@
 
 
 // When sending warp vector arrays, specify these vertex attrib locations.
-#define WARP_VERTEX_ATTRIB 12
-#define WARP_NORMAL_ATTRIB 13
+#define WARP_VERTEX_ATTRIB 13
+#define WARP_NORMAL_ATTRIB 14
+#define TF_INPUT_ATTRIB 15
 // Note: GeForce 9800M supports only 0 .. 15.
-// Base class Renderer uses 14 & 15 for transfer function.
 
 
 namespace lfx {
@@ -127,6 +128,24 @@ osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setVertexAttribBinding( WARP_NORMAL_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
     }
 
+    if( getTransferFunction() != NULL )
+    {
+        // If using a transfer function, we must have a valid input.
+        const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
+        if( tfInputByName == NULL )
+        {
+            OSG_WARN << "SurfaceRenderer::getSceneGraph(): Unable to find input \"" <<
+                getTransferFunctionInput() << "\"." << std::endl;
+            return( NULL );
+        }
+        const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
+        osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
+        // surface shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
+        osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
+        geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
+        geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
+    }
+
     if( _primitiveSetGenerator == NULL )
         _primitiveSetGenerator = PrimitiveSetGeneratorPtr( new SimpleTrianglePrimitiveSetGenerator() );
     (*_primitiveSetGenerator)( geom.get(), numElements );
@@ -147,17 +166,16 @@ osg::StateSet* SurfaceRenderer::getRootState()
     stateSet->addUniform( new osg::Uniform( "warpEnabled", warpEnabled ) );
 
     osg::Program* program( new osg::Program() );
+    program->addBindAttribLocation( "warpVertex", WARP_VERTEX_ATTRIB );
+    program->addBindAttribLocation( "warpNormal", WARP_NORMAL_ATTRIB );
+    program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
+
     program->addShader( loadShader( osg::Shader::VERTEX, "lfx-surface.vs" ) );
     program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-surface.fs" ) );
     stateSet->setAttribute( program );
 
     if( warpEnabled )
-    {
         stateSet->addUniform( new osg::Uniform( "warpScale", 0.f ) );
-
-        program->addBindAttribLocation( "warpVertex", WARP_VERTEX_ATTRIB );
-        program->addBindAttribLocation( "warpNormal", WARP_NORMAL_ATTRIB );
-    }
 
     return( stateSet.release() );
 }

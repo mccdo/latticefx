@@ -30,9 +30,38 @@
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/SurfaceRenderer.h>
+#include <latticefx/core/TransferFunctionUtils.h>
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
+
+
+
+class ScalarComputation : public lfx::RTPOperation
+{
+public:
+    ScalarComputation() : lfx::RTPOperation( lfx::RTPOperation::Channel ) {}
+    ScalarComputation( const ScalarComputation& rhs ) : lfx::RTPOperation( rhs ) {}
+
+    lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
+    {
+        lfx::ChannelDataPtr warpData( _inputs[ 0 ] );
+        osg::Array* warpBaseArray( warpData->asOSGArray() );
+        osg::Vec3Array* warpArray( static_cast< osg::Vec3Array* >( warpBaseArray ) );
+
+        // Create an array of the warp lengths.
+        osg::FloatArray* scalar( new osg::FloatArray );
+        osg::Vec3Array::const_iterator it;
+        for( it=warpArray->begin(); it != warpArray->end(); ++it )
+        {
+            const float l( it->length() );
+            scalar->push_back( l );
+        }
+
+        return( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( scalar, "scalar" ) ) );
+    }
+};
+
 
 
 const int triangleCount( 5 );
@@ -105,16 +134,26 @@ lfx::DataSetPtr prepareDataSet()
     dsp->addChannel( cdwv );
     dsp->addChannel( cdwn );
 
+    // Add RTP operation to create a scalar channel to use as input to the transfer function.
+    ScalarComputation* sc( new ScalarComputation() );
+    sc->addInput( cdwv->getName() );
+    dsp->addOperation( lfx::RTPOperationPtr( sc ) );
+
     lfx::SurfaceRendererPtr renderOp( new lfx::SurfaceRenderer() );
     renderOp->setInputNameAlias( lfx::SurfaceRenderer::VERTEX, cdv->getName() );
     renderOp->setInputNameAlias( lfx::SurfaceRenderer::NORMAL, cdn->getName() );
     renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_VERTEX, cdwv->getName() );
     renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_NORMAL, cdwn->getName() );
 
+    renderOp->setTransferFunctionInput( "scalar" );
+    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+
     renderOp->addInput( cdv->getName() );
     renderOp->addInput( cdn->getName() );
     renderOp->addInput( cdwv->getName() );
     renderOp->addInput( cdwn->getName() );
+    renderOp->addInput( "scalar" );
     dsp->setRenderer( renderOp );
 
     return( dsp );
