@@ -1,10 +1,11 @@
 #version 120
 
+
 uniform bool warpEnabled;
 uniform float warpScale;
 
-varying vec3 vertexOffset;
-varying vec3 normalOffset;
+attribute vec3 warpVertex;
+attribute vec3 warpNormal;
 
 void main()
 {
@@ -12,10 +13,11 @@ void main()
     vec3 normal = gl_Normal;
     if( warpEnabled )
     {
-        vec3 vecOff = warpScale * vertexOffset;
-        vec3 normOff = warpScale * normalOffset;
+        vec3 vecOff = warpScale * warpVertex;
         position = vec4( (gl_Vertex.xyz + vecOff), gl_Vertex.w );
-        normal = gl_Normal + normOff;
+
+        vec3 normOff = warpScale * warpNormal;
+        normal += normOff;
     }
 
     gl_Position = gl_ModelViewProjectionMatrix * position;

@@ -32,21 +32,53 @@
 #include <latticefx/core/SurfaceRenderer.h>
 
 #include <osgViewer/Viewer>
+#include <osgGA/TrackballManipulator>
 
+
+const int triangleCount( 5 );
+
+void subtract( osg::Vec3Array* a, const osg::Vec3Array* b )
+{
+    for( unsigned int idx=0; idx<a->size(); ++idx )
+        (*a)[ idx ] -= (*b)[ idx ];
+}
 
 void createTriangles( osg::Vec3Array* verts, osg::Vec3Array* norms )
 {
-    const int count( 5 );
-    const int startX( count / 2 );
+    const float deltaX( 2.f / float( triangleCount ) );
 
-    for( int idx=0; idx<count; idx++ )
+    for( int idx=0; idx<triangleCount; idx++ )
     {
-        verts->push_back( osg::Vec3( startX+idx, 0., 0. ) );
-        verts->push_back( osg::Vec3( startX+idx+1, 0., 0. ) );
-        verts->push_back( osg::Vec3( startX+idx, 0., 1. ) );
+        const float xVal( float( idx ) / float( triangleCount ) * 2.f - 1.f );
+        verts->push_back( osg::Vec3( xVal, 0., 0. ) );
+        verts->push_back( osg::Vec3( xVal+deltaX, 0., 0. ) );
+        verts->push_back( osg::Vec3( xVal, 0., deltaX ) );
         norms->push_back( osg::Vec3( 0., -1., 0. ) );
         norms->push_back( osg::Vec3( 0., -1., 0. ) );
         norms->push_back( osg::Vec3( 0., -1., 0. ) );
+    }
+}
+void createWarpTriangles( osg::Vec3Array* verts, osg::Vec3Array* norms )
+{
+    const float deltaX( 2.f / float( triangleCount ) );
+
+    for( int idx=0; idx<triangleCount; idx++ )
+    {
+        const float theta0( osg::PI * float( idx ) / float( triangleCount ) );
+        const osg::Matrix m0( osg::Matrix::rotate( theta0, osg::Vec3( 0., 0., 1. ) ) );
+        const float theta1( osg::PI * float( idx+1 ) / float( triangleCount ) );
+        const osg::Matrix m1( osg::Matrix::rotate( theta1, osg::Vec3( 0., 0., 1. ) ) );
+
+        const osg::Vec3 baseVec( osg::Vec3( -1., 0., 0. ) );
+        const osg::Vec3 a( baseVec * m0 );
+        const osg::Vec3 b( baseVec * m1 );
+
+        verts->push_back( a );
+        verts->push_back( b );
+        verts->push_back( osg::Vec3( a.x(), a.y(), deltaX ) );
+        norms->push_back( a );
+        norms->push_back( b );
+        norms->push_back( a );
     }
 }
 
@@ -55,21 +87,34 @@ lfx::DataSetPtr prepareDataSet()
     osg::ref_ptr< osg::Vec3Array > verts( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > norms( new osg::Vec3Array );
     createTriangles( verts.get(), norms.get() );
-
     lfx::ChannelDataOSGArrayPtr cdv( new lfx::ChannelDataOSGArray( verts.get(), "vertices" ) );
     lfx::ChannelDataOSGArrayPtr cdn( new lfx::ChannelDataOSGArray( norms.get(), "normals" ) );
+
+    osg::ref_ptr< osg::Vec3Array > warpVerts( new osg::Vec3Array );
+    osg::ref_ptr< osg::Vec3Array > warpNorms( new osg::Vec3Array );
+    createWarpTriangles( warpVerts.get(), warpNorms.get() );
+    subtract( warpVerts.get(), verts.get() );
+    subtract( warpNorms.get(), norms.get() );
+    lfx::ChannelDataOSGArrayPtr cdwv( new lfx::ChannelDataOSGArray( warpVerts.get(), "warp vertices" ) );
+    lfx::ChannelDataOSGArrayPtr cdwn( new lfx::ChannelDataOSGArray( warpNorms.get(), "warp normals" ) );
 
     // Create a data set and add the vertex data.
     lfx::DataSetPtr dsp( new lfx::DataSet() );
     dsp->addChannel( cdv );
     dsp->addChannel( cdn );
+    dsp->addChannel( cdwv );
+    dsp->addChannel( cdwn );
 
     lfx::SurfaceRendererPtr renderOp( new lfx::SurfaceRenderer() );
-    renderOp->setInputNameAlias( lfx::SurfaceRenderer::POSITION, cdv->getName() );
+    renderOp->setInputNameAlias( lfx::SurfaceRenderer::VERTEX, cdv->getName() );
     renderOp->setInputNameAlias( lfx::SurfaceRenderer::NORMAL, cdn->getName() );
+    renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_VERTEX, cdwv->getName() );
+    renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_NORMAL, cdwn->getName() );
 
     renderOp->addInput( cdv->getName() );
     renderOp->addInput( cdn->getName() );
+    renderOp->addInput( cdwv->getName() );
+    renderOp->addInput( cdwn->getName() );
     dsp->setRenderer( renderOp );
 
     return( dsp );
@@ -81,8 +126,34 @@ int main( int argc, char** argv )
 {
     lfx::DataSetPtr dsp( prepareDataSet() );
 
+    osg::Group* root( new osg::Group );
+    root->addChild( dsp->getSceneData() );
+
+    osg::ref_ptr< osg::Uniform > warpScale( new osg::Uniform( "warpScale", 0.f ) );
+    warpScale->setDataVariance( osg::Object::DYNAMIC );
+    root->getOrCreateStateSet()->addUniform( warpScale.get(),
+        osg::StateAttribute::OVERRIDE );
+
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
-    viewer.setSceneData( dsp->getSceneData() );
-    return( viewer.run() );
+    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    viewer.setSceneData( root );
+
+    double lastTime( 0. );
+    while( !viewer.done() )
+    {
+        const double currentTime( viewer.getFrameStamp()->getSimulationTime() );
+        const double elapsed( currentTime - lastTime );
+        lastTime = currentTime;
+
+        float scale;
+        warpScale->get( scale );
+        scale += (float)elapsed;
+        if( scale > 1.f )
+            scale -= 1.f;
+        warpScale->set( scale );
+
+        viewer.frame();
+    }
+    return( 0 );
 }

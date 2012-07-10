@@ -85,9 +85,10 @@ public:
 
     /** \brief Enum for input data type. */
     typedef enum {
-        POSITION,
+        VERTEX,
         NORMAL,
-        WARP_DIRECTION
+        WARP_VERTEX,
+        WARP_NORMAL,
     } InputType;
     typedef std::map< InputType, std::string > InputTypeMap;
 
