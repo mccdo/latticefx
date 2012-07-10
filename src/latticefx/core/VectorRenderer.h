@@ -32,6 +32,7 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/LogBase.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <string>
@@ -128,7 +129,8 @@ If no alias is specified, VectorRenderer looks for ChannelData with the followin
 </table>
 
 */
-class LATTICEFX_EXPORT VectorRenderer : public lfx::Renderer
+class LATTICEFX_EXPORT VectorRenderer : public lfx::Renderer,
+            protected lfx::LogBase
 {
 public:
     VectorRenderer();

@@ -33,12 +33,19 @@
 #include <latticefx/core/VectorRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
 #include <latticefx/core/PlayControl.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
 
 #include <iostream>
+#include <sstream>
+
+
+
+const std::string logstr( "lfx.demo" );
 
 
 
@@ -95,12 +102,20 @@ lfx::DataSetPtr prepareSimplePoints()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
-    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Creating data set. Dimensions: " << w << " x " << h << " x " << d;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     lfx::DataSetPtr dsp( new lfx::DataSet() );
     const double maxTime( 8. );
     const double sampleRate( 60. );
-    std::cout << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz." << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz.";
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     unsigned int totalSamples( 0 );
     double time;
@@ -112,7 +127,11 @@ lfx::DataSetPtr prepareSimplePoints()
         lfx::ChannelDataOSGArrayPtr posData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( posArray.get(), "positions" ) ) );
         dsp->addChannel( posData, time );
     }
-    std::cout << "Total samples: " << totalSamples << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Total samples: " << totalSamples;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
@@ -143,15 +162,24 @@ lfx::DataSetPtr preparePointSprites()
 lfx::DataSetPtr prepareSpheres()
 {
     const unsigned int w( 15 ), h( 12 ), d( 9 );
-    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
     const unsigned int samplesPerTime( w*h*d );
+    {
+        std::ostringstream ostr;
+        ostr << "Creating data set. Dimensions: " << w << " x " << h << " x " << d;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     lfx::DataSetPtr dsp( new lfx::DataSet() );
     unsigned int totalSamples( 0 );
 
     const double maxTime( 8. );
     const double sampleRate( 30. );
-    std::cout << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz." << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz.";
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
+
     double time;
     for( time=0.; time<maxTime; time += 1./sampleRate )
     {
@@ -182,7 +210,11 @@ lfx::DataSetPtr prepareSpheres()
         lfx::ChannelDataOSGArrayPtr radData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( radArray.get(), "radii" ) ) );
         dsp->addChannel( radData, time );
     }
-    std::cout << "Total samples: " << totalSamples << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Total samples: " << totalSamples;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
@@ -213,7 +245,11 @@ lfx::DataSetPtr prepareDirectionVectors()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
-    std::cout << "Creating data set. Dimensions: " << w << " x " << h << " x " << d << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Creating data set. Dimensions: " << w << " x " << h << " x " << d;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     unsigned int samplesPerTime( w*h*d );
     vertArray->resize( samplesPerTime );
@@ -239,7 +275,11 @@ lfx::DataSetPtr prepareDirectionVectors()
 
     const double maxTime( 8. );
     const double sampleRate( 60. );
-    std::cout << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz." << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Creating time series data. " << maxTime << "s, sample rate: " << sampleRate << "hz.";
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     int count( 0 );
     double time;
@@ -265,7 +305,11 @@ lfx::DataSetPtr prepareDirectionVectors()
         lfx::ChannelDataOSGArrayPtr dirData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) ) );
         dsp->addChannel( dirData, time );
     }
-    std::cout << "Total samples: " << count << std::endl;
+    {
+        std::ostringstream ostr;
+        ostr << "Total samples: " << count;
+        LFX_INFO_STATIC( logstr, ostr.str() );
+    }
 
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
@@ -294,7 +338,7 @@ lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
     switch( style )
     {
     case lfx::VectorRenderer::POINT_SPRITES:
-        std::cout << "point sprites not yet implemented." << std::endl;
+        LFX_NOTICE_STATIC( logstr, "point sprites not yet implemented." );
     default:
     case lfx::VectorRenderer::SIMPLE_POINTS:
         dataSet = prepareSimplePoints();
@@ -316,11 +360,14 @@ lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
 
 int main( int argc, char** argv )
 {
-    std::cout << "With no options, render as simple points." << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "\t-ps\tRender as point sprites." << std::endl;
-    std::cout << "\t-s\tRender as spheres." << std::endl;
-    std::cout << "\t-d\tRender as direction vectors." << std::endl << std::endl;
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
+    LFX_INFO_STATIC( logstr, "With no options, render as simple points." );
+    LFX_INFO_STATIC( logstr, "Options:" );
+    LFX_INFO_STATIC( logstr, "\t-ps\tRender as point sprites." );
+    LFX_INFO_STATIC( logstr, "\t-s\tRender as spheres." );
+    LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors.\n" );
+
     osg::ArgumentParser arguments( &argc, argv );
     lfx::VectorRenderer::PointStyle style( lfx::VectorRenderer::SIMPLE_POINTS );
     if( arguments.find( "-ps" ) > 0 ) style = lfx::VectorRenderer::POINT_SPRITES;

@@ -31,6 +31,7 @@
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/BoundUtils.h>
 #include <latticefx/core/DBUtils.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -58,7 +59,8 @@ namespace lfx {
 
 
 VectorRenderer::VectorRenderer()
-  : lfx::Renderer(),
+  : Renderer(),
+    LogBase( "lfx.core.vec" ),
     _pointStyle( SIMPLE_POINTS )
 {
     // Specify default ChannelData name aliases for the required inputs.
@@ -67,7 +69,8 @@ VectorRenderer::VectorRenderer()
     setInputNameAlias( RADIUS, "radii" );
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
-  : lfx::Renderer( rhs ),
+  : Renderer( rhs ),
+    LogBase( rhs ),
     _pointStyle( rhs._pointStyle ),
     _inputTypeMap( rhs._inputTypeMap )
 {
@@ -86,7 +89,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     ChannelDataPtr posAlias( getInput( getInputTypeAlias( POSITION ) ) );
     if( posAlias == NULL )
     {
-        OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required POSITION ChannelData." << std::endl;
+        LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find required POSITION ChannelData." );
         return( NULL );
     }
     ChannelDataPtr posChannel( posAlias->getMaskedChannel( maskIn ) );
@@ -117,8 +120,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
             if( tfInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getTransferFunctionInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -137,8 +140,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
             if( hmInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getHardwareMaskInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -154,7 +157,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     case POINT_SPRITES:
     {
-        OSG_NOTICE << "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." << std::endl;
+        LFX_NOTICE( "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." );
         break;
     }
     case SPHERES:
@@ -196,7 +199,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         ChannelDataPtr radAlias( getInput( getInputTypeAlias( RADIUS ) ) );
         if( radAlias == NULL )
         {
-            OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required RADIUS ChannelData." << std::endl;
+            LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find required RADIUS ChannelData." );
             return( NULL );
         }
         const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
@@ -217,8 +220,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
             if( tfInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getTransferFunctionInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -237,8 +240,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
             if( hmInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getHardwareMaskInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -287,7 +290,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         ChannelDataPtr dirAlias( getInput( getInputTypeAlias( DIRECTION ) ) );
         if( dirAlias == NULL )
         {
-            OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find required DIRECTION ChannelData." << std::endl;
+            LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find required DIRECTION ChannelData." );
             return( NULL );
         }
         const ChannelDataPtr dirChannel( dirAlias->getMaskedChannel( maskIn ) );
@@ -305,8 +308,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
             if( tfInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getTransferFunctionInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -323,8 +326,8 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
             const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
             if( hmInputByName == NULL )
             {
-                OSG_WARN << "VectorRenderer::getSceneGraph(): Unable to find input \"" <<
-                    getHardwareMaskInput() << "\"." << std::endl;
+                LFX_WARNING( "VectorRenderer::getSceneGraph(): Unable to find input \"" +
+                    getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -360,7 +363,7 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case POINT_SPRITES:
     {
-        OSG_NOTICE << "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." << std::endl;
+        LFX_NOTICE( "VectorRenderer::getSceneGraph(): POINT_SPRITES style is not yet implemented." );
         break;
     }
     case SPHERES:
