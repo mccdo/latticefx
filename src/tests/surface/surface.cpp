@@ -31,6 +31,8 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/SurfaceRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
@@ -163,6 +165,8 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     lfx::DataSetPtr dsp( prepareDataSet() );
 
     osg::Group* root( new osg::Group );

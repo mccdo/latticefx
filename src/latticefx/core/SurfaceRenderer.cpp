@@ -29,6 +29,7 @@
 #include <latticefx/core/SurfaceRenderer.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/BoundUtils.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -46,7 +47,8 @@ namespace lfx {
 
 
 SurfaceRenderer::SurfaceRenderer()
-  : lfx::Renderer()
+  : Renderer(),
+    LogBase( "lfx.core.surf" )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VERTEX, "positions" );
@@ -55,7 +57,8 @@ SurfaceRenderer::SurfaceRenderer()
     setInputNameAlias( WARP_NORMAL, "warp_normal" );
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
-  : lfx::Renderer( rhs ),
+  : Renderer( rhs ),
+    LogBase( rhs ),
     _inputTypeMap( rhs._inputTypeMap )
 {
 }
@@ -71,7 +74,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     ChannelDataPtr posAlias( getInput( getInputTypeAlias( VERTEX ) ) );
     if( posAlias == NULL )
     {
-        OSG_WARN << "SurfaceRenderer::getSceneGraph(): Unable to find required POSITION ChannelData." << std::endl;
+        LFX_WARNING( "getSceneGraph(): Unable to find required POSITION ChannelData." );
         return( NULL );
     }
     ChannelDataPtr posChannel( posAlias->getMaskedChannel( maskIn ) );
@@ -82,7 +85,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     ChannelDataPtr normAlias( getInput( getInputTypeAlias( NORMAL ) ) );
     if( normAlias == NULL )
     {
-        OSG_WARN << "SurfaceRenderer::getSceneGraph(): Unable to find required NORMAL ChannelData." << std::endl;
+        LFX_WARNING( "getSceneGraph(): Unable to find required NORMAL ChannelData." );
         return( NULL );
     }
     ChannelDataPtr normChannel( normAlias->getMaskedChannel( maskIn ) );
@@ -134,8 +137,8 @@ osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
         if( tfInputByName == NULL )
         {
-            OSG_WARN << "SurfaceRenderer::getSceneGraph(): Unable to find input \"" <<
-                getTransferFunctionInput() << "\"." << std::endl;
+            LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
+                getTransferFunctionInput() + "\"." );
             return( NULL );
         }
         const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );

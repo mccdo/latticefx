@@ -32,6 +32,8 @@
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/BoundUtils.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -146,6 +148,8 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     // Create an example data set.
     lfx::DataSetPtr dsp( prepareDataSet() );
 

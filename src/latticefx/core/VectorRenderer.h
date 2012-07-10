@@ -129,8 +129,7 @@ If no alias is specified, VectorRenderer looks for ChannelData with the followin
 </table>
 
 */
-class LATTICEFX_EXPORT VectorRenderer : public lfx::Renderer,
-            protected lfx::LogBase
+class LATTICEFX_EXPORT VectorRenderer : public Renderer, protected LogBase
 {
 public:
     VectorRenderer();

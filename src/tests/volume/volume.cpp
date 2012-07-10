@@ -30,6 +30,8 @@
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
@@ -76,6 +78,8 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     osg::ArgumentParser arguments( &argc, argv );
 
     std::string fileName( "HeadVolume.dds" );

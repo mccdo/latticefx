@@ -29,6 +29,8 @@
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/PageData.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -71,6 +73,8 @@ void generateDataFiles( osg::Group* root )
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     osg::ref_ptr< osg::Group > root( new osg::Group );
     root->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     generateDataFiles( root.get() );

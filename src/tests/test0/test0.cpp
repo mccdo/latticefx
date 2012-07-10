@@ -30,6 +30,8 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -162,6 +164,8 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     // Create an example data set.
     lfx::DataSetPtr dsp( prepareDataSet() );
 

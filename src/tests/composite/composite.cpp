@@ -34,6 +34,8 @@
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/PageData.h>
 #include <latticefx/core/PagingCallback.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osgwTools/Shapes.h>
 #include <osg/Geode>
@@ -114,6 +116,8 @@ lfx::DataSetPtr createDataSet()
 
 int main( int argc, char** argv )
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     osg::ArgumentParser arguments( &argc, argv );
 
     lfx::DataSetPtr dsp( createDataSet() );

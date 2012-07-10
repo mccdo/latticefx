@@ -28,11 +28,16 @@
 
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <iostream>
 
 
 int main()
 {
+    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+
     // Add additional plugin search paths.
     lfx::PluginManager* plug( lfx::PluginManager::instance() );
     plug->loadConfigFiles();
