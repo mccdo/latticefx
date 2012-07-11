@@ -88,13 +88,19 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
     _maxSlices( 1024 ),
-    _planeSpacing( 1.f )
+    _planeSpacing( 1.f ),
+    _lightPosition(1000.0f, 1000.0f, 1000.0f),
+    _diffuseLight(.75f, .75f, .75f, .75f),
+    _ambientLight(.25f, .25f, .25f, 1.0f)
 {
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
     _maxSlices( rhs._maxSlices ),
-    _planeSpacing( rhs._planeSpacing )
+    _planeSpacing( rhs._planeSpacing ),
+    _lightPosition( rhs._lightPosition ),
+    _diffuseLight( rhs._diffuseLight ),
+    _ambientLight( rhs._ambientLight )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -197,13 +203,19 @@ osg::StateSet* VolumeRenderer::getRootState()
 		stateSet->addUniform( tfInputUni );
 	}
 
-	// <<<>>> need to setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing
+	// Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
     osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3f( _volumeDims ) ) );
     stateSet->addUniform( dimsUni );
     osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3f( _volumeOrigin ) ) );
     stateSet->addUniform( centerUni );
     osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", _planeSpacing ) );
     stateSet->addUniform( spaceUni );
+    osg::Uniform* lightUni( new osg::Uniform( "LightPosition", _lightPosition ) );
+    stateSet->addUniform( lightUni );
+    osg::Uniform* diffuseUni( new osg::Uniform( "DiffuseLight", _diffuseLight ) );
+    stateSet->addUniform( diffuseUni );
+    osg::Uniform* ambientUni( new osg::Uniform( "AmbientLight", _ambientLight ) );
+    stateSet->addUniform( ambientUni );
 
 	osg::BlendFunc *fn = new osg::BlendFunc();
 	fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
@@ -239,6 +251,36 @@ void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
 float VolumeRenderer::getPlaneSpacing() const
 {
 	return( _planeSpacing );
+}
+
+void VolumeRenderer::setLightPosition( const osg::Vec3f& lightPos)
+{
+	_lightPosition = lightPos;
+}
+
+osg::Vec3f VolumeRenderer::getLightPosition() const
+{
+	return( _lightPosition );
+}
+
+void VolumeRenderer::setDiffuseLight( const osg::Vec4f& diffuse)
+{
+	_diffuseLight = diffuse;
+}
+
+osg::Vec4f VolumeRenderer::getDiffuseLight() const
+{
+	return( _diffuseLight );
+}
+
+void VolumeRenderer::setAmbientLight( const osg::Vec4f& ambient)
+{
+	_ambientLight = ambient;
+}
+
+osg::Vec4f VolumeRenderer::getAmbientLight() const
+{
+	return( _ambientLight );
 }
 
 
