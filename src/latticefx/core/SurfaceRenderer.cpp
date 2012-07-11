@@ -47,8 +47,7 @@ namespace lfx {
 
 
 SurfaceRenderer::SurfaceRenderer()
-  : Renderer(),
-    LogBase( "lfx.core.surf" )
+  : Renderer( "surf" )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VERTEX, "positions" );
@@ -58,7 +57,6 @@ SurfaceRenderer::SurfaceRenderer()
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
   : Renderer( rhs ),
-    LogBase( rhs ),
     _inputTypeMap( rhs._inputTypeMap )
 {
 }

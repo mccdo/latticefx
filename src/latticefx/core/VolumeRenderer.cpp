@@ -30,6 +30,7 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/TextureUtils.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osgDB/ReadFile>
 
@@ -85,12 +86,13 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 
 
 VolumeRenderer::VolumeRenderer()
-  : _maxSlices( 1024 ),
+  : Renderer( "vol" ),
+    _maxSlices( 1024 ),
     _planeSpacing( 1.f )
 {
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
-  : lfx::Renderer( rhs ),
+  : Renderer( rhs ),
     _maxSlices( rhs._maxSlices ),
     _planeSpacing( rhs._planeSpacing )
 {
@@ -141,7 +143,7 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     ChannelDataPtr dataPtr( getInput( "volumedata" ) );
     if( dataPtr == NULL )
     {
-        OSG_WARN << "VolumeRenderer::getSceneGraph(): Unable to find required volumedata ChannelData." << std::endl;
+        LFX_WARNING( "getSceneGraph(): Unable to find required volumedata ChannelData." );
         return( NULL );
     }
     ChannelDataOSGImage* dataImagePtr( static_cast<

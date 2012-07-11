@@ -32,6 +32,7 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/LogBase.h>
 
 #include <osg/Shader>
 #include <osg/Image>
@@ -41,6 +42,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 
 namespace osg {
@@ -112,10 +114,10 @@ This is usually just the eye coordinate vertex:
     gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 \endcode
 */
-class LATTICEFX_EXPORT Renderer : public lfx::OperationBase
+class LATTICEFX_EXPORT Renderer : public OperationBase, protected LogBase
 {
 public:
-    Renderer();
+    Renderer( const std::string logNameSuffix=std::string("unknown") );
     Renderer( const Renderer& rhs );
     virtual ~Renderer();
 

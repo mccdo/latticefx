@@ -59,8 +59,7 @@ namespace lfx {
 
 
 VectorRenderer::VectorRenderer()
-  : Renderer(),
-    LogBase( "lfx.core.vec" ),
+  : Renderer( "vec" ),
     _pointStyle( SIMPLE_POINTS )
 {
     // Specify default ChannelData name aliases for the required inputs.
@@ -70,7 +69,6 @@ VectorRenderer::VectorRenderer()
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
   : Renderer( rhs ),
-    LogBase( rhs ),
     _pointStyle( rhs._pointStyle ),
     _inputTypeMap( rhs._inputTypeMap )
 {

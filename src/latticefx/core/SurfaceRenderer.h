@@ -32,7 +32,6 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
-#include <latticefx/core/LogBase.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
@@ -67,7 +66,7 @@ typedef boost::shared_ptr< PrimitiveSetGenerator > PrimitiveSetGeneratorPtr;
 \brief Renders arbitrary surface geometry with optional vertex warping.
 \details TBD.
 */
-class LATTICEFX_EXPORT SurfaceRenderer : public Renderer, protected LogBase
+class LATTICEFX_EXPORT SurfaceRenderer : public Renderer
 {
 public:
     SurfaceRenderer();

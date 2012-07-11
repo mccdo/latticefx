@@ -27,6 +27,8 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <osg/Image>
 #include <osg/Texture1D>
 #include <osg/Texture2D>
@@ -37,8 +39,9 @@
 namespace lfx {
 
 
-Renderer::Renderer()
+Renderer::Renderer( const std::string logNameSuffix )
   : OperationBase( OperationBase::RendererType ),
+    LogBase( "lfx.core." + logNameSuffix ),
     _baseUnit( 8 ),
     _unitAssignmentCounter( 8 ),
     _tfRange( 0., 1. ),
@@ -50,6 +53,7 @@ Renderer::Renderer()
 }
 Renderer::Renderer( const Renderer& rhs )
   : OperationBase( rhs ),
+    LogBase( rhs ),
     _baseUnit( rhs._baseUnit ),
     _unitAssignmentCounter( rhs._unitAssignmentCounter ),
     _unitAssignmentMap( rhs._unitAssignmentMap ),
@@ -275,7 +279,7 @@ osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::stri
     const std::string fullName( osgDB::findDataFile( fileName ) );
     if( fullName.empty() )
     {
-        OSG_WARN << "Renderer::loadShader(): Can't find file \"" << fileName << "\"." << std::endl;
+        LFX_WARNING( "loadShader(): Can't find file \"" + fileName + "\"." );
         return( NULL );
     }
 
@@ -283,8 +287,8 @@ osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::stri
     shader->setName( fileName );
     if( !( shader->loadShaderSourceFromFile( fullName ) ) )
     {
-        OSG_WARN << "Renderer::loadShader(): \"" << fullName << "\":" << std::endl;
-        OSG_WARN << "\tloadShaderSourceFromFile() returned false." << std::endl;
+        LFX_WARNING( "loadShader(): \"" + fullName + "\":" );
+        LFX_WARNING( "\tloadShaderSourceFromFile() returned false." );
         return( NULL );
     }
     return( shader.release() );

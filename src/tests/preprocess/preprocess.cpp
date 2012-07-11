@@ -47,7 +47,7 @@ lfx::DataSetPtr preprocess( const std::string& fileName )
     osg::Image* image( osgDB::readImageFile( fileName ) );
     if( image == NULL )
     {
-        OSG_FATAL << "Can't read image from file \"" << fileName << "\"." << std::endl;
+        LFX_ERROR_STATIC( "lfx.demo", "Can't read image from file \"" + fileName + "\"." );
         return( lfx::DataSetPtr( ( lfx::DataSet* )NULL ) );
     }
 
