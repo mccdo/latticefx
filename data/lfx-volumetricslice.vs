@@ -3,10 +3,7 @@
 #extension GL_ARB_draw_instanced : require
 
 
-//uniform vec3 fvLightPosition;
-//uniform vec3 fvEyePosition;
-//uniform vec4 vViewPosition;
-//uniform vec4 vViewDirection;
+uniform vec3 LightPosition;
 
 uniform vec3 VolumeDims;
 uniform vec3 VolumeCenter;
@@ -16,9 +13,13 @@ uniform mat4 osg_ViewMatrixInverse;
 uniform float PlaneSpacing;
 
 varying vec3 Texcoord;
-//varying vec3 ViewDirection;
-//varying vec3 LightDirection;
-//varying vec3 Normal;
+varying vec3 TexcoordUp;
+varying vec3 TexcoordRight;
+varying vec3 TexcoordBack;
+varying vec3 TexcoordDown;
+varying vec3 TexcoordLeft;
+varying vec3 TexcoordFront;
+varying vec3 LightDirection;
 
 vec4 rotatePointToVector(vec4 point, vec4 vector)
 {
@@ -166,6 +167,14 @@ void main( void )
          vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
          Texcoord    = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
             .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
+            
+         // Surrounding texture coords used for surface normal derivation
+         TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
+         TexcoordRight = Texcoord + vec3(.01, 0.0, 0.0);
+         TexcoordBack    = Texcoord + vec3(0.0, 0.0, .01);
+         TexcoordDown = Texcoord + vec3(0.0, -.01, 0.0);
+         TexcoordLeft  = Texcoord + vec3(-.01, 0.0, 0.0);
+         TexcoordFront  = Texcoord + vec3(0.0, 0.0, -.01);
        }
       else
       {
@@ -181,10 +190,8 @@ void main( void )
    gl_Position = gl_ProjectionMatrix * newVertexPos;
 
     
-   //vec4 fvObjectPosition = gl_ModelViewMatrix * newVertexPos;
+   vec4 ObjectPosition = newVertexPos;
    
-   //ViewDirection  = fvEyePosition - fvObjectPosition.xyz;
-   //LightDirection = fvLightPosition - fvObjectPosition.xyz;
-   //Normal         = gl_NormalMatrix * gl_Normal;
+   LightDirection = LightPosition - ObjectPosition.xyz;
    
 }
