@@ -38,6 +38,7 @@
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
 #include <osg/MatrixTransform>
+#include <osg/PolygonMode>
 
 #include <iostream>
 
@@ -86,7 +87,7 @@ int main( int argc, char** argv )
     arguments.read( "-f", fileName );
 
     osg::Vec3 dims( 50., 50., 50. );
-    arguments.read( " -d", dims[0],dims[1],dims[2] );
+    arguments.read( "-d", dims[0],dims[1],dims[2] );
 
     // Create an example data set.
 	osg::Group* root (new osg::Group);
@@ -104,17 +105,17 @@ int main( int argc, char** argv )
 	    // the translate will occur in the unscaled units, and the scaling will occur around the new origin.
 	    // A is just translate and nominal scale
 	    transformA *= osg::Matrixd::scale(1.0, 1.0, 0.5);
-	    transformA *= osg::Matrixd::translate(-50.0, 0.0, 0.0);
+	    transformA *= osg::Matrixd::translate(-75.0, 0.0, 0.0);
 	    mtA->setMatrix(transformA);
 	    // B: scale and rotate but no translate
 	    transformB *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 1.0, 0.0); // 45 degrees about +Y axis
 	    transformB *= osg::Matrixd::scale(2.0, 2.0, 2.0);
-	    transformB *= osg::Matrixd::translate(0.0, 0.0, 0.0);
+	    transformB *= osg::Matrixd::translate(0.0, 50.0, 0.0);
 	    mtB->setMatrix(transformB);
 	    // C: translate, scale AND rotate
 	    transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 1.0, 0.0, 0.0); // 45 degrees about +X axis
 	    transformC *= osg::Matrixd::scale(2.0, 2.0, 1.0);
-	    transformC *= osg::Matrixd::translate(50.0, 0.0, 0.0);
+	    transformC *= osg::Matrixd::translate(100.0, 0.0, 50.0);
 	    mtC->setMatrix(transformC);
 	    root->addChild(mtA);
 	    root->addChild(mtB);
@@ -123,6 +124,24 @@ int main( int argc, char** argv )
 	    mtA->addChild( dsp->getSceneData() );
 	    mtB->addChild( dsp->getSceneData() );
 	    mtC->addChild( dsp->getSceneData() );
+        // Put wireframe boxes around volumes to test rotation and scaling of texture versus osg object
+        // This requires a pre-built cube object of unit size.
+        if (0)
+        {
+           osg::Node* cubeNode = osgDB::readNodeFile("1mCube.lwo");
+           osg::MatrixTransform* cubeTransform( new osg::MatrixTransform );
+   	       osg::Matrix cubeScale;
+           cubeScale *= osg::Matrixd::scale(dims);
+	       cubeTransform->setMatrix(cubeScale);
+           cubeTransform->addChild(cubeNode);
+           osg::PolygonMode *mode = new osg::PolygonMode;
+           mode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+           cubeTransform->getOrCreateStateSet()->setAttribute(mode);
+
+	       mtA->addChild(cubeTransform);
+	       mtB->addChild(cubeTransform);
+	       mtC->addChild(cubeTransform);
+        }
     }
     else
         root->addChild( dsp->getSceneData() );
