@@ -32,6 +32,7 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LoadRequest.h>
+#include <latticefx/core/LogBase.h>
 
 #include <osg/NodeCallback>
 #include <osg/Group>
@@ -76,7 +77,7 @@ In the future, PagingCallback might have other functionality,
 such as updating a uniform that contains the screen space projection of
 volumetric data.
 */
-class LATTICEFX_EXPORT PagingCallback : public osg::NodeCallback
+class LATTICEFX_EXPORT PagingCallback : public osg::NodeCallback, protected LogBase
 {
 public:
     PagingCallback();

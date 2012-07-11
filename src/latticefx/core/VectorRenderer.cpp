@@ -157,7 +157,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     }
     case POINT_SPRITES:
     {
-        LFX_NOTICE( "getSceneGraph(): POINT_SPRITES style is not yet implemented." );
+        LFX_CRITICAL( "getSceneGraph(): POINT_SPRITES style is not yet implemented." );
         break;
     }
     case SPHERES:
@@ -363,7 +363,7 @@ osg::StateSet* VectorRenderer::getRootState()
     }
     case POINT_SPRITES:
     {
-        LFX_NOTICE( "getRootState(): POINT_SPRITES style is not yet implemented." );
+        LFX_CRITICAL( "getRootState(): POINT_SPRITES style is not yet implemented." );
         break;
     }
     case SPHERES:

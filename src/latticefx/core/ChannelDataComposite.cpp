@@ -27,10 +27,12 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/ChannelDataComposite.h>
-#include <osg/Notify>
+#include <latticefx/core/LogMacros.h>
+
 #include <osg/math>
 
 #include <boost/foreach.hpp>
+#include <sstream>
 
 
 namespace lfx {
@@ -72,7 +74,12 @@ ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int index )
     if( index < _data.size() )
         return( _data[ index ] );
 
-    OSG_WARN << "ChannelDataComposite::getChannel(): Warning: Invalid index: " << index << ". _data.size()=" << _data.size() << std::endl;
+    if( LFX_LOG_WARNING )
+    {
+        std::ostringstream ostr;
+        ostr << "Composite::getChannel(): Invalid index: " << index << ". _data.size()=" << _data.size();
+        LFX_WARNING( ostr.str() );
+    }
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 

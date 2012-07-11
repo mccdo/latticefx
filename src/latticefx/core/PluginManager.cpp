@@ -28,6 +28,8 @@
 
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <Poco/Glob.h>
 #include <Poco/File.h>
 #include <Poco/SharedLibrary.h>
@@ -36,6 +38,8 @@
 #include <Poco/Environment.h>
 #include <Poco/AutoPtr.h>
 #include <boost/foreach.hpp>
+
+#include <sstream>
 #include <iostream>
 #include <set>
 
@@ -90,6 +94,7 @@ PluginManager* PluginManager::instance( const int initFlags )
 }
 
 PluginManager::PluginManager( const int initFlags )
+  : LogBase( "lfx.core.plugmgr" )
 {
     if( ( initFlags & USE_CURRENT_DIRECTORY ) != 0 )
     {
@@ -146,7 +151,12 @@ void PluginManager::addPaths( const std::string& paths, const bool loadConfigs )
     do {
         pos = paths.find( sep, lastPos );
         const std::string::size_type len( pos - lastPos );
-        //std::cout << paths.substr( lastPos, len ) << " " << pos << " " << lastPos << std::endl;
+        if( LFX_LOG_TRACE )
+        {
+            std::ostringstream ostr;
+            ostr << paths.substr( lastPos, len ) << " " << pos << " " << lastPos;
+            LFX_TRACE( ostr.str() );
+        }
         if( len > 0 )
             _paths.push_back( paths.substr( lastPos, len ) );
         lastPos = pos+1;
@@ -166,8 +176,8 @@ bool PluginManager::loadPlugins( const std::string& name )
     Poco::Path::StringVec pluginPaths( find( name ) );
     if( pluginPaths.empty() )
     {
-        std::cerr << "No plugin found for \"" << name << "\"." << std::endl;
-        std::cerr << "Possible missing or corrupt .ini file." << std::endl;
+        LFX_ERROR( "No plugin found for \"" + name + "\"." );
+        LFX_ERROR( "Possible missing or corrupt .ini file." );
         return( false );
     }
 
@@ -179,8 +189,8 @@ bool PluginManager::loadPlugins( const std::string& name, const std::string& des
     Poco::Path::StringVec pluginPaths( find( name, description ) );
     if( pluginPaths.empty() )
     {
-        std::cerr << "No plugin found for \"" << name << "\"." << std::endl;
-        std::cerr << "Possible missing or corrupt .ini file." << std::endl;
+        LFX_ERROR( "No plugin found for \"" + name + "\"." );
+        LFX_ERROR( "Possible missing or corrupt .ini file." );
         return( false );
     }
 
@@ -208,11 +218,11 @@ bool PluginManager::internalLoadLibraries( const Poco::Path::StringVec& libNames
         try {
             loader.loadLibrary( libName );
         } catch( Poco::LibraryLoadException lle ) {
-            std::cerr << "Caught Poco::LibraryLoadException." << std::endl;
-            std::cerr << "Exception message: " << lle.message() << std::endl;
+            LFX_ERROR( "Caught Poco::LibraryLoadException." );
+            LFX_ERROR( "Exception message: " + lle.message() );
             return( false );
         } catch( ... ) {
-            std::cerr << "Can't load \"" << libName << "\", unknown exception." << std::endl;
+            LFX_ERROR( "Can't load \"" + libName + "\", unknown exception." );
             return( false );
         }
     }
@@ -236,7 +246,7 @@ Poco::Path::StringVec PluginManager::find( const std::string& name )
 }
 Poco::Path::StringVec PluginManager::find( const std::string& name, const std::string& description )
 {
-    std::cout << "This function is not yet implemented." << std::endl;
+    LFX_CRITICAL( "find(name,descrip): This function is not yet implemented." );
     return( Poco::Path::StringVec() );
 }
 
@@ -275,7 +285,7 @@ void PluginManager::loadConfigFiles()
         Poco::Glob::glob( path, stringSet, Poco::Glob::GLOB_DOT_SPECIAL );
         BOOST_FOREACH( StringSet::value_type iniFileName, stringSet )
         {
-            //std::cout << iniFileName << std::endl;
+            LFX_TRACE( iniFileName );
 
             Poco::AutoPtr< IniFileConfiguration > conf( new IniFileConfiguration( iniFileName ) );
             PluginInfo pi;
@@ -297,9 +307,9 @@ void PluginManager::loadConfigFiles()
 
             _pluginInfo.insert( pi );
 
-            //std::cout << pi._path.toString() << std::endl;
-            //std::cout << pi._name << std::endl;
-            //std::cout << pi._description << std::endl;
+            LFX_TRACE( pi._path.toString() );
+            LFX_TRACE( pi._name );
+            LFX_TRACE( pi._description );
         }
     }
 }

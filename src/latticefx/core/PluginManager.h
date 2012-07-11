@@ -32,6 +32,8 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/LogBase.h>
+
 #include <Poco/Path.h>
 #include <string>
 #include <set>
@@ -109,7 +111,7 @@ when the plugin is loaded.
 To create an instance of a plugin class object, applications call createOperation().
 Currently, there is no way to query the list of classes contained in a plugin, but this
 capability can be added as future work. */
-class LATTICEFX_EXPORT PluginManager
+class LATTICEFX_EXPORT PluginManager : protected LogBase
 {
 public:
     typedef enum {

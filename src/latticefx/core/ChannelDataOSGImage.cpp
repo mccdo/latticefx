@@ -27,8 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/ChannelDataOSGImage.h>
-
-#include <osg/Notify>
+#include <latticefx/core/LogMacros.h>
 
 #include <boost/foreach.hpp>
 
@@ -97,7 +96,7 @@ const osg::Image* ChannelDataOSGImage::getImage() const
 
 ChannelDataPtr ChannelDataOSGImage::getMaskedChannel( const ChannelDataPtr maskIn )
 {
-    OSG_WARN << "ChannelDataOSGImage::getMaskedChannel(): Host mask not yet implemented." << std::endl;
+    LFX_WARNING( "OSGImage::getMaskedChannel(): Host mask not yet implemented." );
     return( shared_from_this() );
 }
 

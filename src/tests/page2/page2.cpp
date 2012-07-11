@@ -197,6 +197,7 @@ lfx::DataSetPtr createDataSet()
 int main( int argc, char** argv )
 {
     lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    //lfx::Log::instance()->setPriority( lfx::Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
 

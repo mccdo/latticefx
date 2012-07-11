@@ -27,8 +27,9 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <osg/Image>
-#include <osg/Notify>
 #include <osgDB/FileUtils>
 
 #include <osg/io_utils>
@@ -44,7 +45,7 @@ osg::Image* loadImageFromDat( const std::string& fileName,
     std::string fullName( osgDB::findDataFile( fileName ) );
     if( fullName.empty() )
     {
-        OSG_WARN << "loadImageFromDat(): Could not find \"" << fileName << "\"." << std::endl;
+        LFX_WARNING_STATIC( "lfx.core", "loadImageFromDat(): Could not find \"" + fileName + "\"." );
         return( NULL );
     }
 

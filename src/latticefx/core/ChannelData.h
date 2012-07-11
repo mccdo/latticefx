@@ -31,6 +31,7 @@
 
 
 #include <latticefx/core/Export.h>
+#include <latticefx/core/LogBase.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
@@ -63,7 +64,8 @@ Currently, ChannelData is just a wrapper around an osg::Array
 (see ChannelDataOSGArray),
 and only osg::ByteArray (for masking) and osg::Vec3Array (for
 vertices) are supported. */
-class LATTICEFX_EXPORT ChannelData : public boost::enable_shared_from_this< ChannelData >
+class LATTICEFX_EXPORT ChannelData : protected LogBase,
+            public boost::enable_shared_from_this< ChannelData >
 {
 public:
     ChannelData( const std::string& name=std::string( "" ) );

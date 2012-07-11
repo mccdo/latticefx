@@ -36,6 +36,7 @@
 #include <latticefx/core/Preprocess.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/LogBase.h>
 
 #include <osg/ref_ptr>
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -75,7 +76,7 @@ are arrays of data such as xyz vertex values or other scalar data. The data set
 can also contain 0 or more RTPOperation objects, which are mask, filter, or
 channel creation functions. An example is the MyMask RTPOperation.
 */
-class LATTICEFX_EXPORT DataSet
+class LATTICEFX_EXPORT DataSet : protected LogBase
 {
 public:
     ///Constructor

@@ -49,6 +49,8 @@ as follows:
     <li>core (the lfx core module)
     <ul>
       <li>\link lfx::Log log \endlink
+      <li>\link lfx::PluginManager plugmgr \endlink
+      <li>\link lfx::VectorRenderer vec \endlink
     </ul>
     <li>foo (the foo module)
     <ul>

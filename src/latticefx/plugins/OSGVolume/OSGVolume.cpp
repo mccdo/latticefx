@@ -27,13 +27,13 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/PluginManager.h>
+#include <latticefx/core/LogMacros.h>
 #include <Poco/ClassLibrary.h>
 
 #include <latticefx/core/Preprocess.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 
 #include <osgDB/WriteFile>
-#include <osg/Notify>
 #include <osg/Image>
 
 
@@ -96,7 +96,7 @@ public:
             cdp = _inputs[ 0 ];
         if( cdp == NULL )
         {
-            OSG_WARN << "OSGVolume ReduceLOD: NULL input." << std::endl;
+            LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL input." );
             return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
         }
         lfx::ChannelDataOSGImage* dataImage( static_cast<
@@ -104,7 +104,7 @@ public:
         osg::Image* srcImage( dataImage->getImage() );
         if( srcImage == NULL )
         {
-            OSG_WARN << "OSGVolume ReduceLOD: NULL source image." << std::endl;
+            LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL source image." );
             return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
         }
 

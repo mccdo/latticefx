@@ -27,7 +27,8 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/ChannelDataOSGArray.h>
-#include <osg/Notify>
+#include <latticefx/core/LogMacros.h>
+
 
 
 namespace lfx {
@@ -114,7 +115,7 @@ char* ChannelDataOSGArray::asCharPtr()
         break;
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::asCharPtr(): Unsupported array type." << std::endl;
+        LFX_WARNING( "OSGArray::asCharPtr(): Unsupported array type." );
         return( NULL );
         break;
     }
@@ -207,7 +208,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
     }
     default:
     {
-        OSG_WARN << "getMaskedChannel(): Array type not supported." << std::endl;
+        LFX_WARNING( "getMaskedChannel(): Array type not supported." );
         return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
     }
     }
@@ -231,7 +232,7 @@ void ChannelDataOSGArray::setAll( const char value )
     }
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::setAll(const char): Unsupported array type." << std::endl;
+        LFX_WARNING( "OSGArray::setAll(const char): Unsupported array type." );
         break;
     }
     }
@@ -252,7 +253,7 @@ void ChannelDataOSGArray::setAll( const float value )
     }
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::setAll(const float): Unsupported array type." << std::endl;
+        LFX_WARNING( "OSGArray::setAll(const float): Unsupported array type." );
         break;
     }
     }
@@ -278,7 +279,7 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
     }
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::andValues(): Unsupported array type." << std::endl;
+        LFX_WARNING( "OSGArray::andValues(): Unsupported array type." );
         break;
     }
     }
@@ -318,8 +319,10 @@ void ChannelDataOSGArray::resize( size_t size )
         ( dynamic_cast< osg::Vec3Array* >( _workingData.get() ) )->resize( size );
         break;
     default:
-        OSG_WARN << "ChannelDataOSGArray::resize(): Unsupported array type." << std::endl;
+    {
+        LFX_WARNING( "OSGArray::resize(): Unsupported array type." );
         break;
+    }
     }
 }
 
@@ -328,7 +331,7 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     if( ( lhs->getType() != rhs->getType() ) ||
         ( lhs->getTotalDataSize() < rhs->getTotalDataSize() ) )
     {
-        OSG_WARN << "ChannelDataOSGArray::copyArray(): Array mismatch." << std::endl;
+        LFX_WARNING( "OSGArray::copyArray(): Array mismatch." );
         return;
     }
 
@@ -362,7 +365,7 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     }
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::copyArray(): Unsupported array type." << std::endl;
+        LFX_WARNING( "OSGArray::copyArray(): Unsupported array type." );
         break;
     }
     }
@@ -401,7 +404,7 @@ osg::Vec3Array* ChannelDataOSGArray::convertToVec3Array( osg::Array* source )
     }
     default:
     {
-        OSG_WARN << "ChannelDataOSGArray::convertToVec3Array(): Unsupported array type." << std::endl;
+        LFX_WARNING_STATIC( "lfx.core.channel", "OSGArray::convertToVec3Array(): Unsupported array type." );
         break;
     }
     }

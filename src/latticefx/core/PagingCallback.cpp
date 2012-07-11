@@ -30,6 +30,7 @@
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/LoadRequest.h>
 #include <latticefx/core/PageData.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/NodeVisitor>
 #include <osg/Texture2D>
@@ -75,12 +76,14 @@ namespace lfx {
 
 PagingCallback::PagingCallback()
   : osg::NodeCallback(),
+    LogBase( "lfx.core.page.cb" ),
     _animationTime( 0. ),
     _timeRange( RangeValues( -0.5, 0.5 ) )
 {
 }
 PagingCallback::PagingCallback( const PagingCallback& rhs )
   : osg::NodeCallback( rhs ),
+    LogBase( rhs ),
     _animationTime( rhs._animationTime ),
     _timeRange( rhs._timeRange )
 {
@@ -154,7 +157,9 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     osg::Group* grp( node->asGroup() );
     if( grp == NULL )
-        OSG_WARN << "PagingCallback::operator(): Should not have NULL Group." << std::endl;
+    {
+        LFX_WARNING( "operator(): Should not have NULL Group." );
+    }
     osg::NodePath childPath( nv->getNodePath() );
 
     bool removeExpired( false );
@@ -182,6 +187,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 }
                 else
                 {
+                    LFX_TRACE( "Adding LoadRequest." );
                     pageThread->addLoadRequest( request );
                     rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
                     // We must fulfill this load request before we dive deeper into
@@ -200,12 +206,14 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                     enableImages( child, request );
                     rangeData._status = lfx::PageData::RangeData::LOADED;
                     removeExpired = true;
+                    LFX_TRACE( "Retrieved LoadRequest." );
                 }
                 else
                 {
                     // We must fulfill this load request before we dive deeper into
                     // the scene graph.
                     continueUpdateTraversal = false;
+                    LFX_TRACE( "Waiting for LoadRequest." );
                 }
             }
             else
@@ -213,6 +221,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 pageThread->cancelLoadRequest( childPath );
                 reclaimImages( child );
                 rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                LFX_TRACE( "Canceling LoadRequest." );
             }
 
         default:
@@ -346,7 +355,9 @@ public:
             return;
         }
         if( grp == NULL )
-            OSG_WARN << "CollectImagesVisitor: Should not have NULL Group." << std::endl;
+        {
+            LFX_WARNING_STATIC( "lfx.core.page", "CollectImagesVisitor: Should not have NULL Group." );
+        }
 
         const osg::Matrix modelMat( osg::computeLocalToWorld( _nodePath ) * _rootModelMat );
         const osg::BoundingSphere& bSphere( node.getBound() );
@@ -366,17 +377,25 @@ public:
                 switch( rangeData._status )
                 {
                 case PageData::RangeData::UNLOADED:
+                {
                     rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                     break;
+                }
                 case PageData::RangeData::LOAD_REQUESTED:
-                    OSG_WARN << "CollectImagesVisitor: Unextected LOAD_REQUESTED status." << std::endl;
+                {
+                    LFX_WARNING_STATIC( "lfx.core.page", "CollectImagesVisitor: Unextected LOAD_REQUESTED status." );
                     break;
+                }
                 case PageData::RangeData::LOADED:
-                    OSG_WARN << "CollectImagesVisitor: Unextected LOADED status." << std::endl;
+                {
+                    LFX_WARNING_STATIC( "lfx.core.page", "CollectImagesVisitor: Unextected LOADED status." );
                     break;
+                }
                 case PageData::RangeData::ACTIVE:
-                    OSG_WARN << "CollectImagesVisitor: Unextected ACTIVE status." << std::endl;
+                {
+                    LFX_WARNING_STATIC( "lfx.core.page", "CollectImagesVisitor: Unextected ACTIVE status." );
                     break;
+                }
                 }
                 recurse( *child );
             }
@@ -430,7 +449,9 @@ public:
                 {
                     lfx::DBKey key( tex->getImage( 0 )->getFileName() );
                     if( key.empty() )
-                        OSG_WARN << "Got empty key." << std::endl;
+                    {
+                        LFX_WARNING_STATIC( "lfx.core.page", "Got empty key." );
+                    }
                     osg::Image* image( _request->findAsImage( key ) );
                     if( image != NULL )
                         tex->setImage( 0, image );
@@ -452,7 +473,9 @@ public:
             return;
         }
         if( grp == NULL )
-            OSG_WARN << "DistributeImagesRecursive: Should not have NULL Group." << std::endl;
+        {
+            LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
+        }
 
         BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
@@ -525,7 +548,9 @@ public:
         }
         osg::Group* grp( node.asGroup() );
         if( grp == NULL )
-            OSG_WARN << "DistributeImagesRecursive: Should not have NULL Group." << std::endl;
+        {
+            LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
+        }
 
         BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {

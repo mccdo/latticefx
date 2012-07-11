@@ -28,6 +28,8 @@
 
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <osg/Texture>
 #include <osg/Texture3D>
 #include <osg/Vec3>
@@ -114,7 +116,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     const osg::Array* sourceArray( source->asOSGArray() );
     if( sourceArray == NULL )
     {
-        OSG_WARN << "createTexture3DForInstancedRenderer(): Unsupported source data." << std::endl;
+        LFX_WARNING_STATIC( "lfx.core", "createTexture3DForInstancedRenderer(): Unsupported source data." );
         return( NULL );
     }
 
@@ -154,7 +156,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     }
     default:
     {
-        OSG_WARN << "createTexture3DForInstancedRenderer(): Unsupported source data." << std::endl;
+        LFX_WARNING_STATIC( "lfx.core", "createTexture3DForInstancedRenderer(): Unsupported source data." );
         return( NULL );
     }
     }

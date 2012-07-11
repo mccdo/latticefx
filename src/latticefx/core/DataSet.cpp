@@ -33,10 +33,10 @@
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/DBUtils.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Group>
 #include <osg/MatrixTransform>
-#include <osg/Notify>
 
 #include <boost/foreach.hpp>
 
@@ -45,12 +45,14 @@ namespace lfx {
 
 
 DataSet::DataSet()
-  : _sceneGraph( new osg::Group ),
+  : LogBase( "lfx.core.dataset" ),
+    _sceneGraph( new osg::Group ),
     _dirtyFlags( ALL_DIRTY )
 {
 }
 DataSet::DataSet( const DataSet& rhs )
-  : _data( rhs._data ),
+  : LogBase( rhs ),
+    _data( rhs._data ),
     _dataNames( rhs._dataNames ),
     _preprocess( rhs._preprocess ),
     _ops( rhs._ops ),
@@ -329,7 +331,7 @@ bool DataSet::updateRenderer()
         // It would be nice, for dev purposes, if we had a way to handle this
         // case. But for now, just do nothing, which is probably the right thing
         // to do for production code anyway.
-        OSG_WARN << "DataSet: timeSet.size() == 0." << std::endl;
+        LFX_WARNING( "timeSet.size() == 0." );
         return( false );
     }
 
@@ -390,7 +392,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     {
         if( !( ChannelDataImageSet::allImageSetData( data ) ) )
         {
-            OSG_WARN << "recurseGetSceneGraph: All data must be ChannelDataImageSet." << std::endl;
+            LFX_WARNING( "recurseGetSceneGraph: All data must be ChannelDataImageSet." );
             return( NULL );
         }
 
@@ -432,7 +434,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     {
         if( !( ChannelDataLOD::allLODData( data ) ) )
         {
-            OSG_WARN << "recurseGetSceneGraph: All data must be ChannelDataLOD." << std::endl;
+            LFX_WARNING( "recurseGetSceneGraph: All data must be ChannelDataLOD." );
             return( NULL );
         }
 
@@ -527,7 +529,9 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
     {
         ChannelDataPtr cdp( currentData.findData( inputName ) );
         if( cdp == NULL )
-            OSG_WARN << "DataSet::setInputs(): Could not find data named \"" << inputName << "\"." << std::endl;
+        {
+            LFX_WARNING_STATIC( "lfx.core.dataset", "setInputs(): Could not find data named \"" + inputName + "\"." );
+        }
         newList.push_back( cdp );
     }
     opPtr->setInputs( newList );

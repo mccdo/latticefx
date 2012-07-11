@@ -29,17 +29,21 @@
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/LoadRequest.h>
 #include <latticefx/core/DBUtils.h>
+#include <latticefx/core/LogMacros.h>
+
 #include <osgDB/ReadFile>
 #include <boost/foreach.hpp>
 
 #include <iostream>
+#include <sstream>
 
 
 namespace lfx {
 
 
 PagingThread::PagingThread()
-  : _haltRequest( false )
+  : LogBase( "lfx.core.page.thread" ),
+    _haltRequest( false )
 {
     _thread = new boost::thread( boost::ref( *this ) );
 }
@@ -83,12 +87,15 @@ LoadRequestPtr PagingThread::retrieveLoadRequest( const osg::NodePath& path )
     return( LoadRequestPtr( (LoadRequest*)NULL ) );
 }
 
-void dump( const std::string& header, const LoadRequestList& requests )
+void PagingThread::dump( const std::string& header, const LoadRequestList& requests )
 {
-    std::cout << header << std::endl;
+    if( !( LFX_LOG_CRITICAL ) )
+        return;
+
+    LFX_CRITICAL( header );
     BOOST_FOREACH( const LoadRequestPtr req, requests )
     {
-        std::cout << "\t" << req->_keys.size() << std::endl;
+        LFX_CRITICAL( "\t" + req->_keys.size() );
     }
 }
 
@@ -106,8 +113,16 @@ void PagingThread::operator()()
         bool requestAvailable;
         {
             boost::mutex::scoped_lock requestLock( _requestMutex );
-            //std::cout << "__thread " << _requestList.size() << " " << _completedList.size() <<
-            //    " " << _availableList.size() << std::endl;
+            if( LFX_LOG_TRACE )
+            {
+                if( !_requestList.empty() || !_completedList.empty() || !_availableList.empty() )
+                {
+                    std::ostringstream ostr;
+                    ostr << "  queues: " << _requestList.size() << " " << _completedList.size() <<
+                        " " << _availableList.size();
+                    LFX_TRACE( ostr.str() );
+                }
+            }
 
             // Process cancellations stored on the _cancelList. Must hold _requestMutex
             // before calling this function.
@@ -124,7 +139,12 @@ void PagingThread::operator()()
         if( requestAvailable )
         {
             request->load();
-            //std::cout << "__    loaded: " << std::hex << request._loadedImage.get() << std::endl;
+            if( LFX_LOG_TRACE )
+            {
+                std::ostringstream ostr;
+                ostr << "      loaded " << request->_keys.size() << " images, including " << request->_keys.front();
+                LFX_TRACE( ostr.str() );
+            }
             _completedList.push_back( request );
         }
         else
@@ -178,9 +198,11 @@ void PagingThread::processCancellations()
         else if( ( it = find( _availableList, path ) ) != _availableList.end() )
             _availableList.erase( it );
         else
+        {
             // Couldn't find the specified path. This is an error. It means the client code
             // requested cancellation for a LoadRequest that the PagingThread doesn't posess.
-            std::cout << "PagingThread::processCancellations(): Couldn't cancel path." << std::endl;
+            LFX_ERROR( "processCancellations(): Couldn't cancel path." );
+        }
     }
 
     _cancelList.clear();

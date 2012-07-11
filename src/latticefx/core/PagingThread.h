@@ -33,6 +33,8 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LoadRequest.h>
 #include <latticefx/core/DBUtils.h>
+#include <latticefx/core/LogBase.h>
+
 #include <osg/Camera>
 #include <osg/Viewport>
 
@@ -110,7 +112,7 @@ scene graph elements) from a database. PagingThread is a singleton so that it ca
 oversee paging on an application-wide basis and therefore avoid the possible bus
 contention that might occur if multiple paging threads were active.
 */
-class LATTICEFX_EXPORT PagingThread
+class LATTICEFX_EXPORT PagingThread : protected LogBase
 {
 protected:
     PagingThread();
@@ -187,6 +189,8 @@ protected:
     This function should be called by the page thread. _requestMutex must be locked before
     calling this function. */
     void processCancellations();
+
+    void dump( const std::string& header, const LoadRequestList& requests );
 
     boost::thread* _thread;
     mutable boost::mutex _requestMutex, _availableMutex, _cancelMutex;

@@ -35,11 +35,13 @@ namespace lfx {
 
 
 ChannelData::ChannelData( const std::string& name )
-  : _name( name )
+  : LogBase( "lfx.core.channel" ),
+    _name( name )
 {
 }
 ChannelData::ChannelData( const ChannelData& rhs )
-  : _name( rhs._name )
+  : LogBase( rhs ),
+    _name( rhs._name )
 {
 }
 ChannelData::~ChannelData()

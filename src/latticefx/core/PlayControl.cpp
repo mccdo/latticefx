@@ -28,6 +28,7 @@
 
 #include <latticefx/core/PlayControl.h>
 #include <latticefx/core/PagingCallback.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <boost/foreach.hpp>
 
@@ -36,7 +37,8 @@ namespace lfx {
 
 
 PlayControl::PlayControl( osg::Node* scene )
-  : _time( 0. ),
+  : LogBase( "lfx.core.play" ),
+    _time( 0. ),
     _playRate( 1. ),
     _minTime( 0. ),
     _maxTime( 1. )
@@ -44,13 +46,14 @@ PlayControl::PlayControl( osg::Node* scene )
     PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
     {
-        OSG_WARN << "PlayControl(): Invalid scene update callback." << std::endl;
+        LFX_WARNING( "ctor(): Invalid scene update callback." );
         return;
     }
     _scenes[ scene ] = rootcb;
 }
 PlayControl::PlayControl( const PlayControl& rhs )
-  : _scenes( rhs._scenes ),
+  : LogBase( rhs ),
+    _scenes( rhs._scenes ),
     _time( rhs._time ),
     _playRate( rhs._playRate ),
     _minTime( 0. ),
@@ -66,7 +69,7 @@ void PlayControl::addScene( osg::Node* scene )
     PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
     {
-        OSG_WARN << "PlayControl::addScene(): Invalid scene update callback." << std::endl;
+        LFX_WARNING( "addScene(): Invalid scene update callback." );
         return;
     }
     _scenes[ scene ] = rootcb;

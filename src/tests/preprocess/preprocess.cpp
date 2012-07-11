@@ -63,7 +63,7 @@ lfx::DataSetPtr preprocess( const std::string& fileName )
     const std::string pluginName( "OSGVolume" );
     if( !( plug->loadPlugins( pluginName ) ) )
     {
-        OSG_WARN << "Couldn't load \"OSGVolume\"." << std::endl;
+        LFX_WARNING_STATIC( "lfx.demo", "Couldn't load \"OSGVolume\"." );
         return( lfx::DataSetPtr( (lfx::DataSet*)NULL ) );
     }
 
@@ -72,7 +72,7 @@ lfx::DataSetPtr preprocess( const std::string& fileName )
     lfx::OperationBasePtr op( plug->createOperation( pluginName, opName ) );
     if( op == NULL )
     {
-        OSG_WARN << opName << ": createOperation() returned NULL." << std::endl;
+        LFX_WARNING_STATIC( "lfx.demo", opName + ": createOperation() returned NULL." );
         return( lfx::DataSetPtr( (lfx::DataSet*)NULL ) );
     }
 

@@ -34,6 +34,9 @@
 #include <iostream>
 
 
+const std::string logstr( "lfx.demo" );
+
+
 int main()
 {
     lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
@@ -46,29 +49,37 @@ int main()
     const std::string pluginName( "MultipleOperationsPluginTest" );
     if( !( plug->loadPlugins( pluginName ) ) )
     {
-        std::cout << "\tMake sure you have a valid .ini file in your plugin directory. Copy the" << std::endl;
-        std::cout << "\tfile data/plugin-example.ini to the directory containing multiop.dll/.so" << std::endl;
-        std::cout << "\tand rename it multiop.ini. Edit it, and change the value of the 'Name'" << std::endl;
-        std::cout << "\tvariable to 'MultipleOperationsPluginTest'. Then re-run this test." << std::endl;
+        LFX_CRITICAL_STATIC( logstr, "\tMake sure you have a valid .ini file in your plugin directory. Copy the" );
+        LFX_CRITICAL_STATIC( logstr, "\tfile data/plugin-example.ini to the directory containing multiop.dll/.so" );
+        LFX_CRITICAL_STATIC( logstr, "\tand rename it multiop.ini. Edit it, and change the value of the 'Name'" );
+        LFX_CRITICAL_STATIC( logstr, "\tvariable to 'MultipleOperationsPluginTest'. Then re-run this test." );
         return( 1 );
     }
-    std::cout << pluginName << ": Shared library loaded successfully." << std::endl;
+    LFX_NOTICE_STATIC( logstr, pluginName + ": Shared library loaded successfully." );
 
     // Try to create the loaded operations.
     {
         std::string opName( "MyMask" );
         lfx::OperationBasePtr op( plug->createOperation( pluginName, opName ) );
         if( op == NULL )
-            std::cerr << opName << ": createOperation() returned NULL." << std::endl;
+        {
+            LFX_ERROR_STATIC( logstr, opName + ": createOperation() returned NULL." );
+        }
         else
-            std::cout << opName << ": loaded and created successfully." << std::endl;
+        {
+            LFX_NOTICE_STATIC( logstr, opName + ": loaded and created successfully." );
+        }
 
         opName = "MyPreprocess";
         op = plug->createOperation( pluginName, opName );
         if( op == NULL )
-            std::cerr << opName << ": createOperation() returned NULL." << std::endl;
+        {
+            LFX_ERROR_STATIC( logstr, opName + ": createOperation() returned NULL." );
+        }
         else
-            std::cout << opName << ": loaded and created successfully." << std::endl;
+        {
+            LFX_NOTICE_STATIC( logstr, opName + ": loaded and created successfully." );
+        }
     }
 
     return( 0 );

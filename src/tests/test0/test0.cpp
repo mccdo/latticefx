@@ -56,7 +56,7 @@ public:
         lfx::ChannelDataPtr input = getInput( "vertices" );
         if( ( input == NULL ) )
         {
-            osg::notify( osg::WARN ) << "MyMask::mask(): Invalid input." << std::endl;
+            LFX_WARNING_STATIC( "lfx.demo", "MyMask::mask(): Invalid input." );
             return( lfx::ChannelDataPtr( ( lfx::ChannelData* )( NULL ) ) );
         }
 

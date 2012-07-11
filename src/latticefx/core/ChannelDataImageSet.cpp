@@ -27,7 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/ChannelDataImageSet.h>
-#include <osg/Notify>
+
 #include <osg/math>
 
 #include <boost/foreach.hpp>

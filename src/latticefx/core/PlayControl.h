@@ -31,6 +31,8 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/PagingCallback.h>
+#include <latticefx/core/LogBase.h>
+
 #include <osg/Node>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -72,7 +74,7 @@ TBD Future work:
 range limit: loop, stop, reverse, etc.
 \li Add typical player control API (pause(), stop(), play(), ffwd(), rwd(), etc).
 */
-class LATTICEFX_EXPORT PlayControl
+class LATTICEFX_EXPORT PlayControl : protected LogBase
 {
 public:
     PlayControl( osg::Node* scene=NULL );
