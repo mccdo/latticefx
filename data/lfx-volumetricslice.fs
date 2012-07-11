@@ -24,7 +24,7 @@ bool TestInBounds(vec3 sample)
 void main( void )
 {
    // turn transfer function off for testing with cone
-   bool UseTransferFunc = false;
+   bool UseTransferFunc = true;
    vec4  fvBaseColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvUpColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvRightColor = vec4(0.0, 0.0, 0.0, 0.0);
