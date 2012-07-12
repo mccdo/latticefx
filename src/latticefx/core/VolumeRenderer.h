@@ -106,32 +106,9 @@ public:
     /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
     float getPlaneSpacing() const;
 
-	// light position
-    /** \brief Set light position (in view space).
-    \details This can be varied on every draw. */
-	void setLightPosition( const osg::Vec3f& lightPos);
-    /** \brief Get light position (in view space). */
-    osg::Vec3f getLightPosition() const;
-
-	// diffuse light amount
-    /** \brief Set diffuse light amount.
-    \details This can be varied on every draw. */
-	void setDiffuseLight( const osg::Vec4f& diffuse);
-    /** \brief Get diffuse light amount. */
-    osg::Vec4f getDiffuseLight() const;
-
-	// ambient light amount
-    /** \brief Set ambient light amount.
-    \details This can be varied on every draw. */
-	void setAmbientLight( const osg::Vec4f& ambient);
-    /** \brief Get ambient light amount. */
-    osg::Vec4f getAmbientLight() const;
-
 protected:
 	unsigned int _maxSlices;
 	float _planeSpacing;
-	osg::Vec3f _lightPosition;
-	osg::Vec4f _diffuseLight, _ambientLight;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

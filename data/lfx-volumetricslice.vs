@@ -19,7 +19,9 @@ varying vec3 TexcoordBack;
 varying vec3 TexcoordDown;
 varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
-varying vec3 ecLightDirection;
+
+varying vec3 ecVertex;
+
 
 vec4 rotatePointToVector(vec4 point, vec4 vector)
 {
@@ -184,7 +186,8 @@ void main( void )
     // set the position
     gl_Position = gl_ProjectionMatrix * newVertexPos;
 
-    ecLightDirection = gl_LightSource[0].position.xyz - newVertexPos.xyz;   
+    // Lighting
+    ecVertex = newVertexPos.xyz;
     gl_FrontColor = gl_Color;
     gl_BackColor = gl_Color;
 }

@@ -1,9 +1,6 @@
 #version 120
 
 
-uniform vec4 AmbientLight;
-uniform vec4 DiffuseLight;
-
 uniform sampler3D VolumeTexture;
 uniform sampler2D TransferFunction;
 
@@ -14,7 +11,34 @@ varying vec3 TexcoordBack;
 varying vec3 TexcoordDown;
 varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
-varying vec3 ecLightDirection;
+
+
+/** begin light **/
+
+varying vec3 ecVertex;
+
+vec4 fragmentLighting( vec4 baseColor, vec3 normal )
+{
+    vec3 lightVec = normalize( gl_LightSource[0].position.xyz - ecVertex );
+    vec3 eyeVec = normalize( -ecVertex );
+    vec3 reflectVec = normalize( -reflect( lightVec, normal ) );
+
+    vec4 amb = gl_LightSource[0].ambient * baseColor;
+
+    vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
+    diff = clamp( diff, 0., 1. );
+   
+    // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
+    float specExp = 10.; // gl_FrontMaterial.shininess
+    vec4 spec = gl_FrontLightProduct[0].specular *
+        pow( max( dot( reflectVec, eyeVec ), 0. ), specExp );
+    spec = clamp( spec, 0., 1. );
+
+    return( gl_FrontLightModelProduct.sceneColor + amb + diff + spec );
+}
+
+/** end light **/
+
 
 bool TestInBounds(vec3 sample)
 {
@@ -24,7 +48,7 @@ bool TestInBounds(vec3 sample)
 void main( void )
 {
    // turn transfer function off for testing with cone
-   bool UseTransferFunc = true;
+   bool UseTransferFunc = false;
    vec4  fvBaseColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvUpColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvRightColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -107,15 +131,13 @@ void main( void )
       fvLeftColor    = fvLeftColor - fvBaseColor;
       fvFrontColor   = fvFrontColor - fvBaseColor;
       
-      vec3 fvNormal    = vec3( fvLeftColor.a - fvRightColor.a, fvDownColor.a - fvUpColor.a, fvFrontColor.a - fvBackColor.a );
-      fvNormal         = gl_NormalMatrix * fvNormal;
-      
-      vec3  fvLightDirection = normalize( ecLightDirection );
-      float fNDotL           = dot( fvNormal, fvLightDirection ); 
-      vec4  fvTotalDiffuse   = DiffuseLight * fNDotL * fvBaseColor; 
-      vec4  fvTotalAmbient   = AmbientLight * fvBaseColor; 
-      fvBaseColor.rgb    = fvTotalDiffuse.rgb + fvTotalAmbient.rgb; 
-     
+
+      vec3 ecNormal = gl_NormalMatrix *
+          vec3( fvLeftColor.a - fvRightColor.a, fvDownColor.a - fvUpColor.a, fvFrontColor.a - fvBackColor.a );
+
+      float saveAlpha = fvBaseColor.a;
+      fvBaseColor = fragmentLighting( fvBaseColor, ecNormal );
+      fvBaseColor.a = saveAlpha;
    }
    else
    {
