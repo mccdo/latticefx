@@ -51,96 +51,35 @@ void main( void )
         discard;
 
 
-   vec4  fvBaseColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvUpColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvRightColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvBackColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvDownColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvLeftColor = vec4(0.0, 0.0, 0.0, 0.0);
-   vec4  fvFrontColor = vec4(0.0, 0.0, 0.0, 0.0);
+    // Sample current fragment texture and six surrounding texture coordinates
+    vec4 fvBaseColor = texture3D( VolumeTexture, Texcoord );
+
+    // Early discard
+    const float alphaThresh = 25./255.;
+    if( fvBaseColor.r < alphaThresh )
+        discard;
 
 
-      // Sample current fragment texture and six surrounding texture coordinates
-      fvBaseColor    = texture3D( VolumeTexture, Texcoord );
+    vec4 fvUpColor = texture3D( VolumeTexture, TexcoordUp );
+    vec4 fvRightColor = texture3D( VolumeTexture, TexcoordRight );
+    vec4 fvBackColor = texture3D( VolumeTexture, TexcoordBack );
+    vec4 fvDownColor = texture3D( VolumeTexture, TexcoordDown );
+    vec4 fvLeftColor = texture3D( VolumeTexture, TexcoordLeft );
+    vec4 fvFrontColor = texture3D( VolumeTexture, TexcoordFront );
+    fvUpColor = fvUpColor - fvBaseColor;
+    fvRightColor = fvRightColor - fvBaseColor;
+    fvBackColor = fvBackColor - fvBaseColor;
+    fvDownColor = fvDownColor - fvBaseColor;
+    fvLeftColor = fvLeftColor - fvBaseColor;
+    fvFrontColor = fvFrontColor - fvBaseColor;
 
-    // turn transfer function off for testing with cone
-    const bool UseTransferFunc = true;
-      // apply transfer function to center sample first, to exploit early discard if possible
-      if (! UseTransferFunc)
-      {
-        fvBaseColor.a  = fvBaseColor.r;
-      }
-      else
-      {
-        fvBaseColor    = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
-      }
-      
-      // try for early discard
-      float alphaThresh = 1.0/255.0;
-      if (fvBaseColor.a < alphaThresh)
-      {
-        //discard; // this seems to cause nothing to render. Odd.
-      }
+    vec3 ocNormal = normalize( vec3( fvLeftColor.r - fvRightColor.r, fvDownColor.r - fvUpColor.r, fvFrontColor.r - fvBackColor.r ) );
+    vec3 ecNormal = gl_NormalMatrix * ocNormal;
 
-      if (TestInBounds(TexcoordUp))
-      {
-         fvUpColor      = texture3D( VolumeTexture, TexcoordUp );
-      }
-      if (TestInBounds(TexcoordRight))
-      {
-         fvRightColor   = texture3D( VolumeTexture, TexcoordRight );
-      }
-      if (TestInBounds(TexcoordBack))
-      {
-         fvBackColor    = texture3D( VolumeTexture, TexcoordBack );
-      }
-      if (TestInBounds(TexcoordDown))
-      {
-         fvDownColor    = texture3D( VolumeTexture, TexcoordDown );
-      }
-      if (TestInBounds(TexcoordLeft))
-      {
-         fvLeftColor   = texture3D( VolumeTexture, TexcoordLeft );
-      }
-      if (TestInBounds(TexcoordFront))
-      {
-         fvFrontColor    = texture3D( VolumeTexture, TexcoordFront );
-      }
-      
-      // transfer all non-center samples
-      if (! UseTransferFunc)
-      {
-        fvUpColor.a    = fvUpColor.r;
-        fvRightColor.a = fvRightColor.r;
-        fvBackColor.a  = fvBackColor.r;
-        fvDownColor.a  = fvDownColor.r;
-        fvLeftColor.a  = fvLeftColor.r;
-        fvFrontColor.a = fvFrontColor.r;
-      }
-      else
-      {
-        fvUpColor      = texture2D( TransferFunction, vec2(fvUpColor.r, 0.0) );
-        fvRightColor   = texture2D( TransferFunction, vec2(fvRightColor.r, 0.0) );
-        fvBackColor    = texture2D( TransferFunction, vec2(fvBackColor.r, 0.0) );
-        fvDownColor    = texture2D( TransferFunction, vec2(fvDownColor.r, 0.0) );
-        fvLeftColor    = texture2D( TransferFunction, vec2(fvLeftColor.r, 0.0) );
-        fvFrontColor   = texture2D( TransferFunction, vec2(fvFrontColor.r, 0.0) );
-      }
-
-      fvUpColor      = fvUpColor - fvBaseColor;
-      fvRightColor   = fvRightColor - fvBaseColor;
-      fvBackColor    = fvBackColor - fvBaseColor;
-      fvDownColor    = fvDownColor - fvBaseColor;
-      fvLeftColor    = fvLeftColor - fvBaseColor;
-      fvFrontColor   = fvFrontColor - fvBaseColor;
-      
-
-      vec3 ecNormal = gl_NormalMatrix *
-          vec3( fvLeftColor.a - fvRightColor.a, fvDownColor.a - fvUpColor.a, fvFrontColor.a - fvBackColor.a );
-
-      float saveAlpha = fvBaseColor.a;
-      fvBaseColor = fragmentLighting( fvBaseColor, ecNormal );
-      fvBaseColor.a = saveAlpha;
+    //vec4 xfer = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
+    vec4 xfer = vec4( 1., 1., 1., 1. );
+    fvBaseColor = fragmentLighting( xfer, ecNormal );
+    fvBaseColor.a = 1.;
 
 
     gl_FragData[ 0 ] = fvBaseColor;
