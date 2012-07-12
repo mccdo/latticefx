@@ -14,7 +14,7 @@ varying vec3 TexcoordBack;
 varying vec3 TexcoordDown;
 varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
-varying vec3 LightDirection;
+varying vec3 ecLightDirection;
 
 bool TestInBounds(vec3 sample)
 {
@@ -110,7 +110,7 @@ void main( void )
       vec3 fvNormal    = vec3( fvLeftColor.a - fvRightColor.a, fvDownColor.a - fvUpColor.a, fvFrontColor.a - fvBackColor.a );
       fvNormal         = gl_NormalMatrix * fvNormal;
       
-      vec3  fvLightDirection = normalize( LightDirection );
+      vec3  fvLightDirection = normalize( ecLightDirection );
       float fNDotL           = dot( fvNormal, fvLightDirection ); 
       vec4  fvTotalDiffuse   = DiffuseLight * fNDotL * fvBaseColor; 
       vec4  fvTotalAmbient   = AmbientLight * fvBaseColor; 

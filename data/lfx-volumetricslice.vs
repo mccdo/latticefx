@@ -19,7 +19,7 @@ varying vec3 TexcoordBack;
 varying vec3 TexcoordDown;
 varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
-varying vec3 LightDirection;
+varying vec3 ecLightDirection;
 
 vec4 rotatePointToVector(vec4 point, vec4 vector)
 {
@@ -118,8 +118,6 @@ vec3 getCubeCenterPos(vec3 modelMatTrans)
 void main( void )
 {
    vec4 newVertexPos = gl_Vertex;
-   vec4 mvNearestVertex;
-   vec4 mvFarthestVertex;
    
    mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
    vec3 modelTranslation = vec3(modelMat[0].w, modelMat[1].w, modelMat[2].w);
@@ -128,70 +126,65 @@ void main( void )
    float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims) * .5;
    vec3 cubeCenter = getCubeCenterPos(modelTranslation);
    
+   vec4 mvNearestVertex, mvFarthestVertex;
    float farVertDist, nearVertDist;
    findNearFarCubeVertexDist(cubeCenter, cubeDims, mvNearestVertex, mvFarthestVertex, nearVertDist, farVertDist);
    
-   if (farVertDist > 0.0)
-   {
-      float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
-      if (curQuadDist > nearVertDist)
-      {
-         // All work to be done in view space
-         // Find center of cube in model space where the origin is the camera location
-         vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4(cubeCenter, 1.0);
-         // find the view vector from camera to object
-         vec4 mvCubeDirection = vec4(normalize(mvVolumeCenter.xyz), 1.0);
-         // Find location of our new quad
-         vec4 quadPosition = vec4(mvCubeDirection.xyz * curQuadDist, 1.0);
+    float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
+    if( ( farVertDist <= 0.0 ) ||
+        ( curQuadDist <= nearVertDist ) )
+    {
+        // Clip the vertex.
+        gl_Position = vec4( 1., 1., 1., 0. );
+        return;
+    }
+
+    // All work to be done in (eye coords) view space
+    // Find center of cube in (eye coords) model space where the origin is the camera location
+    vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4(cubeCenter, 1.0);
+    // find the view vector from camera to object
+    vec4 mvCubeDirection = vec4(normalize(mvVolumeCenter.xyz), 1.0);
+    // Find location of our new quad
+    vec4 quadPosition = vec4(mvCubeDirection.xyz * curQuadDist, 1.0);
          
-         // Resize the quad's vertex by the distance across the cube diagonally
-         if (gl_Vertex.x >= 0.0)
-            newVertexPos.x = cubeDiagonal;
-         else
-            newVertexPos.x = -cubeDiagonal;
-         if (gl_Vertex.y >= 0.0)
-            newVertexPos.y = cubeDiagonal;
-         else
-            newVertexPos.y = -cubeDiagonal;
-         newVertexPos.z = 0.0;
+    // Resize the quad's vertex by the distance across the cube diagonally
+    if (gl_Vertex.x >= 0.0)
+        newVertexPos.x = cubeDiagonal;
+    else
+        newVertexPos.x = -cubeDiagonal;
+    if (gl_Vertex.y >= 0.0)
+        newVertexPos.y = cubeDiagonal;
+    else
+        newVertexPos.y = -cubeDiagonal;
+    newVertexPos.z = 0.0;
           
-         // rotate the point so normal aligns with the view vector
-         newVertexPos = rotatePointToVector(newVertexPos, normalize(-quadPosition) );
+    // rotate the point so normal aligns with the view vector
+    newVertexPos = rotatePointToVector(newVertexPos, normalize(-quadPosition) );
    
-         // move quad to target position in view space
-         newVertexPos.x += quadPosition.x;
-         newVertexPos.y += quadPosition.y;
-         newVertexPos.z += quadPosition.z;
+    // move quad to target position in view space
+    newVertexPos.x += quadPosition.x;
+    newVertexPos.y += quadPosition.y;
+    newVertexPos.z += quadPosition.z;
          
-         // Find the coordinates in model space relative to the data cube
-         vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
-         Texcoord    = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
-            .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
+    // Find the coordinates in model space relative to the data cube
+    // newVertexPos is in eye coords. vertexCopy is in object coords.
+    vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
+    Texcoord    = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
+    .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
             
-         // Surrounding texture coords used for surface normal derivation
-         TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
-         TexcoordRight = Texcoord + vec3(.01, 0.0, 0.0);
-         TexcoordBack    = Texcoord + vec3(0.0, 0.0, .01);
-         TexcoordDown = Texcoord + vec3(0.0, -.01, 0.0);
-         TexcoordLeft  = Texcoord + vec3(-.01, 0.0, 0.0);
-         TexcoordFront  = Texcoord + vec3(0.0, 0.0, -.01);
-       }
-      else
-      {
-         newVertexPos = vec4(0.0, 0.0, 10000.0, 1.0);
-      }
-   }
-   else
-   {
-      newVertexPos = vec4(0.0, 0.0, 10000.0, 1.0);
-   }
+    // Surrounding texture coords used for surface normal derivation
+    TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
+    TexcoordRight = Texcoord + vec3(.01, 0.0, 0.0);
+    TexcoordBack    = Texcoord + vec3(0.0, 0.0, .01);
+    TexcoordDown = Texcoord + vec3(0.0, -.01, 0.0);
+    TexcoordLeft  = Texcoord + vec3(-.01, 0.0, 0.0);
+    TexcoordFront  = Texcoord + vec3(0.0, 0.0, -.01);
 
-   // set the position
-   gl_Position = gl_ProjectionMatrix * newVertexPos;
 
-    
-   vec4 ObjectPosition = newVertexPos;
-   
-   LightDirection = LightPosition - ObjectPosition.xyz;
-   
+    // set the position
+    gl_Position = gl_ProjectionMatrix * newVertexPos;
+
+    ecLightDirection = gl_LightSource[0].position.xyz - newVertexPos.xyz;   
+    gl_FrontColor = gl_Color;
+    gl_BackColor = gl_Color;
 }
