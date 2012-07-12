@@ -37,6 +37,24 @@ void main( void )
    {
       // Sample current fragment texture and six surrounding texture coordinates
       fvBaseColor    = texture3D( VolumeTexture, Texcoord );
+
+      // apply transfer function to center sample first, to exploit early discard if possible
+      if (! UseTransferFunc)
+      {
+        fvBaseColor.a  = fvBaseColor.r;
+      }
+      else
+      {
+        fvBaseColor    = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
+      }
+      
+      // try for early discard
+      float alphaThresh = 1.0/255.0;
+      if (fvBaseColor.a < alphaThresh)
+      {
+        //discard; // this seems to cause nothing to render. Odd.
+      }
+
       if (TestInBounds(TexcoordUp))
       {
          fvUpColor      = texture3D( VolumeTexture, TexcoordUp );
@@ -62,9 +80,9 @@ void main( void )
          fvFrontColor    = texture3D( VolumeTexture, TexcoordFront );
       }
       
+      // transfer all non-center samples
       if (! UseTransferFunc)
       {
-        fvBaseColor.a  = fvBaseColor.r;
         fvUpColor.a    = fvUpColor.r;
         fvRightColor.a = fvRightColor.r;
         fvBackColor.a  = fvBackColor.r;
@@ -74,7 +92,6 @@ void main( void )
       }
       else
       {
-        fvBaseColor    = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
         fvUpColor      = texture2D( TransferFunction, vec2(fvUpColor.r, 0.0) );
         fvRightColor   = texture2D( TransferFunction, vec2(fvRightColor.r, 0.0) );
         fvBackColor    = texture2D( TransferFunction, vec2(fvBackColor.r, 0.0) );
@@ -105,11 +122,6 @@ void main( void )
       discard;
    }
    
-   float alphaThresh = 1.0/255.0;
-   if (fvBaseColor.a < alphaThresh)
-   {
-     discard;
-   }
    gl_FragColor = ( fvBaseColor );
        
 }
