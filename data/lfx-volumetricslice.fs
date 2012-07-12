@@ -47,8 +47,10 @@ bool TestInBounds(vec3 sample)
 
 void main( void )
 {
-   // turn transfer function off for testing with cone
-   bool UseTransferFunc = false;
+    if( !( TestInBounds( Texcoord ) ) )
+        discard;
+
+
    vec4  fvBaseColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvUpColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvRightColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -56,12 +58,13 @@ void main( void )
    vec4  fvDownColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvLeftColor = vec4(0.0, 0.0, 0.0, 0.0);
    vec4  fvFrontColor = vec4(0.0, 0.0, 0.0, 0.0);
-   
-   if (TestInBounds(Texcoord))
-   {
+
+
       // Sample current fragment texture and six surrounding texture coordinates
       fvBaseColor    = texture3D( VolumeTexture, Texcoord );
 
+    // turn transfer function off for testing with cone
+    const bool UseTransferFunc = true;
       // apply transfer function to center sample first, to exploit early discard if possible
       if (! UseTransferFunc)
       {
@@ -138,12 +141,10 @@ void main( void )
       float saveAlpha = fvBaseColor.a;
       fvBaseColor = fragmentLighting( fvBaseColor, ecNormal );
       fvBaseColor.a = saveAlpha;
-   }
-   else
-   {
-      discard;
-   }
-   
-   gl_FragColor = ( fvBaseColor );
-       
+
+
+    gl_FragData[ 0 ] = fvBaseColor;
+
+    // Support for second/glow render target.
+    gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
 }
