@@ -60,21 +60,23 @@ void main( void )
         discard;
 
 
+    // Clip plane test.
+    //if( dot( vec4( ecVertex, 1. ), gl_ClipPlane[ 0 ] ) < 0. )
+    //    discard;
+
+
     vec4 fvUpColor = texture3D( VolumeTexture, TexcoordUp );
     vec4 fvRightColor = texture3D( VolumeTexture, TexcoordRight );
     vec4 fvBackColor = texture3D( VolumeTexture, TexcoordBack );
     vec4 fvDownColor = texture3D( VolumeTexture, TexcoordDown );
     vec4 fvLeftColor = texture3D( VolumeTexture, TexcoordLeft );
     vec4 fvFrontColor = texture3D( VolumeTexture, TexcoordFront );
-    fvUpColor = fvUpColor - fvBaseColor;
-    fvRightColor = fvRightColor - fvBaseColor;
-    fvBackColor = fvBackColor - fvBaseColor;
-    fvDownColor = fvDownColor - fvBaseColor;
-    fvLeftColor = fvLeftColor - fvBaseColor;
-    fvFrontColor = fvFrontColor - fvBaseColor;
+    vec4 xVec = fvLeftColor - fvRightColor;
+    vec4 yVec = fvDownColor - fvUpColor;
+    vec4 zVec = fvFrontColor - fvBackColor;
 
-    vec3 ocNormal = normalize( vec3( fvLeftColor.r - fvRightColor.r, fvDownColor.r - fvUpColor.r, fvFrontColor.r - fvBackColor.r ) );
-    vec3 ecNormal = gl_NormalMatrix * ocNormal;
+    vec3 ocNormal = vec3( xVec.r, yVec.r, zVec.r );
+    vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
 
     //vec4 xfer = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
     vec4 xfer = vec4( 1., 1., 1., 1. );

@@ -3,14 +3,11 @@
 #extension GL_ARB_draw_instanced : require
 
 
-uniform vec3 LightPosition;
-
 uniform vec3 VolumeDims;
 uniform vec3 VolumeCenter;
+uniform float PlaneSpacing;
 
 uniform mat4 osg_ViewMatrixInverse;
-
-uniform float PlaneSpacing;
 
 varying vec3 Texcoord;
 varying vec3 TexcoordUp;
