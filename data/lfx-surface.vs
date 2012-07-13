@@ -90,10 +90,7 @@ void main()
     transferFunction();
     vertexLighting( position, normal );
 
-    /*
-    vec3 norm = normalize( gl_NormalMatrix * normal );
-    // Simple diffuse lighting computation with light at infinite viewer.
-    float diff = max( 0., dot( norm.xyz, vec3( 0., 0., 1. ) ) );
-    gl_FrontColor = vec4( vec3( diff ), 1. );
-    */
+    // Clip plane support. Must follow vertexLighting() because that's
+    // where ecVertex is computed.
+    gl_ClipVertex = vec4( vec3( ecVertex ), 1. );
 }

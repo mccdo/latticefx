@@ -190,4 +190,7 @@ void main( void )
     ecVertex = newVertexPos.xyz;
     gl_FrontColor = gl_Color;
     gl_BackColor = gl_Color;
+
+    // Clip plane support: Clip vertex is eye coord vertex.
+    gl_ClipVertex = vec4( vec3( ecVertex ), 1. );
 }
