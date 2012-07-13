@@ -81,15 +81,19 @@ void findNearFarCubeVertexDist(vec3 cubeCenter, vec3 cubeDims, out vec4 mvNeares
             vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
 
             // In view space -z is in front of the camera
-             float vertDist = -mvCubeVertex.z;
-             if (vertDist < nearVertDist)
+             float vertDistZ = -mvCubeVertex.z;
+             float vertDistLen = length(mvCubeVertex);
+             if (mvCubeVertex.z > 0.0) vertDistLen = -vertDistLen;
+             float minVertDist = vertDistLen < vertDistZ ? vertDistLen: vertDistZ;
+             float maxVertDist = vertDistLen > vertDistZ ? vertDistLen: vertDistZ;
+             if (minVertDist < nearVertDist)
              {
-                nearVertDist = vertDist;
+                nearVertDist = minVertDist;
                 mvNearestVertex = mvCubeVertex;
              }
-             if (vertDist > farVertDist)
+             if (maxVertDist > farVertDist)
              {
-                farVertDist = vertDist;
+                farVertDist = maxVertDist;
                 mvFarthestVertex = mvCubeVertex;
              }
          }
