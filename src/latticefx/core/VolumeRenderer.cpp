@@ -153,9 +153,10 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     osg::Texture3D* volumeTexture = new osg::Texture3D( volumeImage );
 	volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
 	volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
-	volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE);
-	volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE);
-	volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE);
+	volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
+	volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
+	volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
+    volumeTexture->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
     stateSet->setTextureAttributeAndModes(
