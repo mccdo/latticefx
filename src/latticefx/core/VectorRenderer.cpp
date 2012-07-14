@@ -481,7 +481,7 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
     osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
     const DBKey key( generateDBKey() );
     image->setFileName( key );
-    storeImage( image.get(), key );
+    lfx::core::storeImage( image.get(), key );
 
     // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );

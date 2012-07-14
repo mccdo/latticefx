@@ -32,8 +32,6 @@
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/LogMacros.h>
 
-#include <osgDB/ReadFile>
-
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/Texture1D>
@@ -149,15 +147,11 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     }
     ChannelDataOSGImage* dataImagePtr( static_cast<
         ChannelDataOSGImage* >( dataPtr.get() ) );
-    osg::Image* volumeImage( dataImagePtr->getImage() );
 
-    osg::Texture3D* volumeTexture = new osg::Texture3D( volumeImage );
-    volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
-    volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
-    volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
-    volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
-    volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
-    volumeTexture->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
+    // Create empty stub texture, to be paged in at run-time.
+    const DBKey key( dataImagePtr->getImage()->getFileName() );
+    osg::Texture3D* volumeTexture( createStubTexture( key ) );
+
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
 
@@ -225,6 +219,24 @@ void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
 float VolumeRenderer::getPlaneSpacing() const
 {
     return( _planeSpacing );
+}
+
+osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
+{
+    // Create dummy Texture / Image as placeholder until real image data is paged in.
+    osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
+    tex->setResizeNonPowerOfTwoHint( false );
+    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
+    tex->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
+    tex->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
+    tex->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
+    tex->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
+    osg::Image* dummyImage( new osg::Image );
+    dummyImage->setFileName( key );
+    tex->setImage( dummyImage );
+
+    return( tex.release() );
 }
 
 

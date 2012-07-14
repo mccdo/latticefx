@@ -54,6 +54,11 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
         LFX_ERROR_STATIC( "lfx.demo", "Can't read image from file \"" + fileName + "\"." );
         return( DataSetPtr( ( DataSet* )NULL ) );
     }
+    if( image->getFileName().empty() )
+    {
+        // Images in ChannelDataOSGImage must have valid file name.
+        image->setFileName( fileName );
+    }
 
     ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image ) );
 
@@ -82,6 +87,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
 

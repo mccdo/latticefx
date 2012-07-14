@@ -32,9 +32,15 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/DBUtils.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+
+// Forward
+namespace osg {
+    class Texture3D;
+}
 
 namespace lfx {
 namespace core {
@@ -108,6 +114,8 @@ public:
     float getPlaneSpacing() const;
 
 protected:
+    static osg::Texture3D* createStubTexture( const DBKey& key );
+
     unsigned int _maxSlices;
     float _planeSpacing;
 };
