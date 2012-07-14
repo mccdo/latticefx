@@ -53,7 +53,7 @@ void VTKVectorRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
-osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
+osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     vtkPolyData* tempVtkPD = 
     boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
@@ -107,29 +107,29 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         }
     }
     
-    setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
+    setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
     
     //by this stage of the game the render has already had setInputs called 
-    //on it by lfx::DataSet therefore we can modify the _inputs array
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    //on it by lfx::core::DataSet therefore we can modify the _inputs array
+    lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( vertArray.get(), "positions" ) );
     addInput( vertData );
     
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
     addInput( dirData );
     
-    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
     addInput( colorData );
     
     // Configure transfer function.
     setTransferFunctionInput( "scalar" );
-    setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
+    setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     
 #if WRITE_IMAGE_DATA            
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
     
-    return( lfx::VectorRenderer::getSceneGraph( maskIn ) );
+    return( lfx::core::VectorRenderer::getSceneGraph( maskIn ) );
 }
 ////////////////////////////////////////////////////////////////////////////////    
 }

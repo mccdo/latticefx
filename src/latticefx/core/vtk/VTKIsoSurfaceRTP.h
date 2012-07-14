@@ -43,14 +43,14 @@ namespace vtk {
  \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
  name vtkDataObject and creates a vtkPolyData with the vector field. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKIsosurfaceRTP : public lfx::RTPOperation
+class LATTICEFX_CORE_VTK_EXPORT VTKIsosurfaceRTP : public lfx::core::RTPOperation
 {
 public:
     
     ///Default constructor
     VTKIsosurfaceRTP()
         : 
-        lfx::RTPOperation( lfx::RTPOperation::Channel ),
+        lfx::core::RTPOperation( lfx::core::RTPOperation::Channel ),
         m_requestedValue( 0.2 )    
     {
         ;
@@ -64,7 +64,7 @@ public:
     
     ///We are going to be creating a ChannelDatavtkPolyData so we override the 
     ///channel method since we do not have a ChannelData already
-    virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn );
+    virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
     
     void SetRequestedValue( double value );
 

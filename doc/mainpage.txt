@@ -9,18 +9,18 @@ support for large data sets, configurable, etc.
 
 \subsection ssDataSet The DataSet class
 
-  \li \link lfx::DataSet The DataSet class \endlink
+  \li \link lfx::core::DataSet The DataSet class \endlink
 
 \subsection ssOps Operations on Data
 
-  \li \link lfx::Preprocess Preprocessing and Caching \endlink
-  \li \link lfx::RTPOperation Run-Time Processing Operations \endlink
-  \li \link lfx::Renderer Rendering Framework \endlink
+  \li \link lfx::core::Preprocess Preprocessing and Caching \endlink
+  \li \link lfx::core::RTPOperation Run-Time Processing Operations \endlink
+  \li \link lfx::core::Renderer Rendering Framework \endlink
 
 \section Rendering
 
-  \li \link lfx::VectorRenderer Rendering Vector Data \endlink
-  \li \link lfx::VolumeRenderer Rendering Volume Data \endlink
+  \li \link lfx::core::VectorRenderer Rendering Vector Data \endlink
+  \li \link lfx::core::VolumeRenderer Rendering Volume Data \endlink
 
 \section Paging
 

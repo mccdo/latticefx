@@ -57,7 +57,7 @@
 #include <vtkMath.h>
 #include <vtkPointData.h>
 
-lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
+lfx::core::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vectorName, std::string scalarName )
 {
     vtkPoints* points = tempVtkPD->GetPoints();
     size_t dataSize = points->GetNumberOfPoints();
@@ -109,15 +109,15 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
     }
     
     
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
 
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( vertArray.get(), "positions" ) );
     dsp->addChannel( vertData );
     
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
     dsp->addChannel( dirData );
     
-    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
     dsp->addChannel( colorData );
 
     // Add RTP operation to create a depth channel to use as input to the transfer function.
@@ -125,16 +125,16 @@ lfx::DataSetPtr prepareDirectionVectors( vtkPolyData* tempVtkPD, std::string vec
     //dc->addInput( "positions" );
     //dsp->addOperation( lfx::RTPOperationPtr( dc ) );
     
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
+    lfx::core::VectorRendererPtr renderOp( new lfx::core::VectorRenderer() );
+    renderOp->setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
     renderOp->addInput( "scalar" );
     
     // Configure transfer function.
     renderOp->setTransferFunctionInput( "scalar" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    renderOp->setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     
     dsp->setRenderer( renderOp );
     
@@ -221,7 +221,7 @@ lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
     return tempDataSet;
 }
 ////////////////////////////////////////////////////////////////////////////////
-lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
+lfx::core::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
 {
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDataSet );
@@ -256,7 +256,7 @@ lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
 
     try
     {
-        lfx::DataSetPtr templfxDataSet = prepareDirectionVectors( ptmask->GetOutput(), "Momentum", "Density" );
+        lfx::core::DataSetPtr templfxDataSet = prepareDirectionVectors( ptmask->GetOutput(), "Momentum", "Density" );
 
 #if WRITE_IMAGE_DATA            
         osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
@@ -277,7 +277,7 @@ lfx::DataSetPtr CreatePolyData( vtkDataObject* tempVtkDataSet )
         //vprDEBUG( vesDBG, 0 ) << "|\tMemory allocation failure : cfdPresetVectors "
         //    << std::endl << vprDEBUG_FLUSH;
     }       
-    return lfx::DataSetPtr();     
+    return lfx::core::DataSetPtr();
 }
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
@@ -288,11 +288,11 @@ int main( int argc, char** argv )
 
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
     vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
-    lfx::DataSetPtr testlfxDataSet = CreatePolyData( tempVtkDataSet );
+    lfx::core::DataSetPtr testlfxDataSet = CreatePolyData( tempVtkDataSet );
     //tempVtkDataSet->Delete();
     delete tempDataSet;
     // Create an example data set.
-    //lfx::DataSetPtr dsp( prepareDataSet() );
+    //lfx::core::ChannelDataOSGArrayPtr dsp( prepareDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );

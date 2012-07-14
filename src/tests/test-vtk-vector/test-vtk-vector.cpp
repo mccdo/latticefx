@@ -113,7 +113,7 @@ int main( int argc, char** argv )
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
     
     //Create the DataSet for this visualization with VTK
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
     
     //1st Step
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );

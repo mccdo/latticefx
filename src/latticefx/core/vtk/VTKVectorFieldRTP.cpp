@@ -44,7 +44,7 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-lfx::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::ChannelDataPtr maskIn )
+lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
     vtkDataObject* tempVtkDO = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 

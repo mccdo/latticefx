@@ -43,7 +43,7 @@ namespace vtk {
  \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
  name vtkDataObject and creates a vtkPolyData with the vector field. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKVectorFieldRTP : public lfx::RTPOperation
+class LATTICEFX_CORE_VTK_EXPORT VTKVectorFieldRTP : public lfx::core::RTPOperation
 {
 public:
     ///Default constructor
@@ -51,7 +51,7 @@ public:
     ///operation when we construct the VTKVectorFieldRTP.
     VTKVectorFieldRTP()
         : 
-        lfx::RTPOperation( lfx::RTPOperation::Channel ),
+        lfx::core::RTPOperation( lfx::core::RTPOperation::Channel ),
         m_mask( 1.0 )
     {
         ;
@@ -65,7 +65,7 @@ public:
     
     ///We are going to be creating a ChannelDatavtkPolyData so we override the 
     ///channel method since we do not have a ChannelData already
-    virtual lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn );
+    virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
     
     void SetMaskValue( double value );
 

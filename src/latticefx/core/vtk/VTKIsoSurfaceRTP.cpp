@@ -45,7 +45,7 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-lfx::ChannelDataPtr VTKIsosurfaceRTP::channel( const lfx::ChannelDataPtr maskIn )
+lfx::core::ChannelDataPtr VTKIsosurfaceRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
     
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 

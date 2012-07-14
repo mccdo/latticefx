@@ -51,14 +51,14 @@ namespace vtk {
  the instance rendering tools to render a VTK vector field using GPU based instance
  rendering. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKActorRenderer : public lfx::Renderer
+class LATTICEFX_CORE_VTK_EXPORT VTKActorRenderer : public lfx::core::Renderer
 {
 public:
     ///Default constructor
-    ///We are really a fancy lfx::VectorRenderer specific to VTK data
+    ///We are really a fancy lfx::core::VectorRenderer specific to VTK data
     VTKActorRenderer()
         :
-        lfx::Renderer()
+        lfx::core::Renderer()
     {
         ;
     }
@@ -77,9 +77,9 @@ public:
     ///\param activeScalar The active scalar name to use
     void SetActiveScalar( const std::string& activeScalar );
     
-    ///We are overriding the lfx::VectorRenderer method and then calling it 
+    ///We are overriding the lfx::core::VectorRenderer method and then calling it 
     ///once we have given it all of the data it needs.
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
     
 protected:
     ///The active vector to set which vector to use for rendering

@@ -48,9 +48,9 @@ as follows:
   <ul>
     <li>core (the lfx core module)
     <ul>
-      <li>\link lfx::Log log \endlink
-      <li>\link lfx::PluginManager plugmgr \endlink
-      <li>\link lfx::VectorRenderer vec \endlink
+      <li>\link lfx::core::Log log \endlink
+      <li>\link lfx::core::PluginManager plugmgr \endlink
+      <li>\link lfx::core::VectorRenderer vec \endlink
     </ul>
     <li>foo (the foo module)
     <ul>
@@ -78,14 +78,14 @@ Priority level match those used by Poco and are defined as follows:
 \li 7 - Debug
 \li 8 - Trace
 
-Set a Poco::Logger's priority and destination (console or log file) using the lfx::Log class.
+Set a Poco::Logger's priority and destination (console or log file) using the lfx::core::Log class.
 \code
     // Set the global priority to 3 (error and above) and destination to Console.
     // There is an implicit 3rd parameter of "lfx".
-    lfx::Log::instance()->setPriority( 3, lfx::Log::Console );
+    lfx::core::Log::instance()->setPriority( 3, lfx::core::Log::Console );
 
     // Set the lfx core module to priority 3 (error and above)
-    lfx::Log::instance()->setPriority( 4, "lfx.core" );
+    lfx::core::Log::instance()->setPriority( 4, "lfx.core" );
 \endcode
 
 Poco Logger priority and destination inherit down the heirarchy. Your application should
@@ -93,19 +93,19 @@ set specific priority and destinations (as in the code above) at init time, befo
 Lfx class constructors obtain references to subordinate Loggers.
 
 By default, the root Logger ("lfx") is configured with priority 0 (silent) and
-destination lfx::Log::Console.
+destination lfx::core::Log::Console.
 
 The default log file name is "lfx.log" and Lfx writes it to the current directory.
 You can change the default log file name with either of the following methods:
-\li Call lfx::Log::setLogFileName( const std::string& ).
+\li Call lfx::core::Log::setLogFileName( const std::string& ).
 \li Set the environment variable LFX_LOG_FILE_NAME to the path and file name prior
-to invoking lfx::Log::instance().
+to invoking lfx::core::Log::instance().
 
 Lfx internal code uses the macros defined in latticefx/core/logMatrix.h to display log messages at
 verious levels. When using these macros, please observe the following rules of thumb:
 \li Use the LFX_LOG_<prio> macros to avoid expensive message construction for messages that will not be logged due to their priority.
-\li Use the LFX_<prio> macros from member functions of classes that derive from lfx::LogBase.
-\li Use the LFX_<prio>_STATIC macros from static functions, or from member functions of classes that don't derive from lfx::LogBase.
+\li Use the LFX_<prio> macros from member functions of classes that derive from lfx::core::LogBase.
+\li Use the LFX_<prio>_STATIC macros from static functions, or from member functions of classes that don't derive from lfx::core::LogBase.
 
 Note that, even with priority set to 0, there is some non-zero overhead in handling
 message logging. To eliminate all Lfx message logging, set the CMake variable
@@ -119,7 +119,7 @@ is on, Lfx's message logging facilities become no-ops and have zero computationa
 /** \def __LFX_LOG
 \brief Shared internal logging macro.
 \details Internal macro for efficient message logging for classes derived
-from lfx::LogBase. (Assumes member or local variables \c _logger and \c _logStream.)
+from lfx::core::LogBase. (Assumes member or local variables \c _logger and \c _logStream.)
 
 This function is a no-op if LFX_DISABLE_LOGGING is defined. The definition of
 LFX_DISABLE_LOGGING is controlled using CMake.
@@ -129,7 +129,7 @@ LFX_DISABLE_LOGGING is controlled using CMake.
 /** \def __LFX_LOG_STATIC
 \brief Shared internal logging macro.
 \details Internal macro for message logging within static functions or classes
-not derived from lfx::LogBase.
+not derived from lfx::core::LogBase.
 
 This function is a no-op if LFX_DISABLE_LOGGING is defined. The definition of
 LFX_DISABLE_LOGGING is controlled using CMake.
@@ -226,7 +226,7 @@ becomes this:
 
 /** \def LFX_FATAL
 \brief Efficient message logging macros.
-\details Efficient message logging for classes derived from lfx::LogBase.
+\details Efficient message logging for classes derived from lfx::core::LogBase.
 (Assumes member or local variables \c _logger and \c _logStream.)
 */
 /** \def LFX_CRITICAL
@@ -254,7 +254,7 @@ becomes this:
 
 /** \def LFX_FATAL_STATIC
 \brief Message logging macros.
-\details Message logging for static functions or classes not derived from lfx::LogBase.
+\details Message logging for static functions or classes not derived from lfx::core::LogBase.
 These macros obtain a Logger from Poco's global map and construct a Poco::LogStream
 on the fly. */
 /** \def LFX_CRITICAL_STATIC

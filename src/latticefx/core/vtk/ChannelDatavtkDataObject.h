@@ -59,7 +59,7 @@ derived classes, ChannelDataLOD and ChannelDataImageSet.
 RTPOperation has no special handling for ChannelDataComposite and should never
 encounter one in practice. The DataSet will invoke an RTPOperation only with concrete
 ChannelData. */
-class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObject : public lfx::ChannelData
+class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObject : public lfx::core::ChannelData
 {
 public:
     ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name=std::string( "" ) );
