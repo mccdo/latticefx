@@ -43,23 +43,24 @@
 #include <iostream>
 
 
+using namespace lfx::core;
 
 
-lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
+DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 {
     osg::Image* image( osgDB::readImageFile( fileName ) );
     if( image == NULL )
     {
         LFX_ERROR_STATIC( "lfx.demo", "Can't read image from file \"" + fileName + "\"." );
-        return( lfx::DataSetPtr( ( lfx::DataSet* )NULL ) );
+        return( DataSetPtr( ( DataSet* )NULL ) );
     }
 
-    lfx::ChannelDataOSGImagePtr volumeData( new lfx::ChannelDataOSGImage( "volumedata", image ) );
+    ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image ) );
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( volumeData );
 
-    lfx::VolumeRendererPtr renderOp( new lfx::VolumeRenderer() );
+    VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
     renderOp->setPlaneSpacing( .3f );
 
@@ -67,11 +68,11 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
     dsp->setRenderer( renderOp );
 
     renderOp->setTransferFunction( osgDB::readImageFile( "Spectrum.png" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGB_SAMPLE );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGB_SAMPLE );
 
     // Render when alpha values are greater than 0.15.
-    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_ALPHA );
-    renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_GT );
+    renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_ALPHA );
+    renderOp->setHardwareMaskOperator( Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( .15f );
 
     return( dsp );
@@ -80,7 +81,7 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     osg::ArgumentParser arguments( &argc, argv );
 
@@ -94,7 +95,7 @@ int main( int argc, char** argv )
     osg::Group* root (new osg::Group);
     root->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
 
-    lfx::DataSetPtr dsp( prepareVolume( fileName, dims ) );
+    DataSetPtr dsp( prepareVolume( fileName, dims ) );
 
     if( arguments.find( "-mt" ) > 0 )
     {

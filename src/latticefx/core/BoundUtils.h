@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_BOUND_UTILS_H__
-#define __LATTICEFX_BOUND_UTILS_H__ 1
+#ifndef __LFX_CORE_BOUND_UTILS_H__
+#define __LFX_CORE_BOUND_UTILS_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -38,6 +38,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \defgroup BoundUtils Utilities for fitting OSG bounding volumes
@@ -58,9 +59,11 @@ LATTICEFX_EXPORT osg::BoundingBox getBound( const osg::Vec3Array& array, const o
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_BOUND_UTILS_H__
+// __LFX_CORE_BOUND_UTILS_H__
 #endif

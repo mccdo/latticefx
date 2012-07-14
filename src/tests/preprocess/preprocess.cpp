@@ -40,45 +40,46 @@
 #include <iostream>
 
 
+using namespace lfx::core;
 
 
-lfx::DataSetPtr preprocess( const std::string& fileName )
+DataSetPtr preprocess( const std::string& fileName )
 {
     osg::Image* image( osgDB::readImageFile( fileName ) );
     if( image == NULL )
     {
         LFX_ERROR_STATIC( "lfx.demo", "Can't read image from file \"" + fileName + "\"." );
-        return( lfx::DataSetPtr( ( lfx::DataSet* )NULL ) );
+        return( DataSetPtr( ( DataSet* )NULL ) );
     }
 
-    lfx::ChannelDataOSGImagePtr volumeData( new lfx::ChannelDataOSGImage( "volumedata", image ) );
+    ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image ) );
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( volumeData );
 
 
     // Load Plugin to get the Downsample preprocess operation.
-    lfx::PluginManager* plug( lfx::PluginManager::instance() );
+    PluginManager* plug( PluginManager::instance() );
     plug->loadConfigFiles();
     const std::string pluginName( "OSGVolume" );
     if( !( plug->loadPlugins( pluginName ) ) )
     {
         LFX_WARNING_STATIC( "lfx.demo", "Couldn't load \"OSGVolume\"." );
-        return( lfx::DataSetPtr( (lfx::DataSet*)NULL ) );
+        return( DataSetPtr( (DataSet*)NULL ) );
     }
 
     // Create an instance of the Downsample preprocess operation.
     std::string opName( "Downsample" );
-    lfx::OperationBasePtr op( plug->createOperation( pluginName, opName ) );
+    OperationBasePtr op( plug->createOperation( pluginName, opName ) );
     if( op == NULL )
     {
         LFX_WARNING_STATIC( "lfx.demo", opName + ": createOperation() returned NULL." );
-        return( lfx::DataSetPtr( (lfx::DataSet*)NULL ) );
+        return( DataSetPtr( (DataSet*)NULL ) );
     }
 
 
     op->addInput( "volumedata" );
-    lfx::PreprocessPtr pre( boost::static_pointer_cast< lfx::Preprocess >( op ) );
+    PreprocessPtr pre( boost::static_pointer_cast< Preprocess >( op ) );
     dsp->addPreprocess( pre );
 
     return( dsp );
@@ -87,14 +88,14 @@ lfx::DataSetPtr preprocess( const std::string& fileName )
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     osg::ArgumentParser arguments( &argc, argv );
 
     std::string fileName( "HeadVolume.dds" );
     arguments.read( "-f", fileName );
 
-    lfx::DataSetPtr dsp( preprocess( fileName ) );
+    DataSetPtr dsp( preprocess( fileName ) );
     dsp->updateAll();
 
     return( 0 );

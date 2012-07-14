@@ -48,17 +48,18 @@ using Poco::Util::IniFileConfiguration;
 
 
 namespace lfx {
+namespace core {
 
 
-OperationInfo::OperationInfo( lfx::OperationBasePtr instance, const std::string& className,
+OperationInfo::OperationInfo( OperationBasePtr instance, const std::string& className,
             const std::string& baseClassName, const std::string& description )
   : _opInstance( instance ),
-    _pluginName( lfx::PluginManager::instance()->getActivelyLoadingPlugin() ),
+    _pluginName( PluginManager::instance()->getActivelyLoadingPlugin() ),
     _className( className ),
     _baseClassName( baseClassName ),
     _description( description )
 {
-    lfx::PluginManager::instance()->addOperation( *this );
+    PluginManager::instance()->addOperation( *this );
 }
 
 bool operator<( const OperationInfo& lhs, const OperationInfo& rhs )
@@ -213,7 +214,7 @@ bool PluginManager::internalLoadLibraries( const Poco::Path::StringVec& libNames
     // Attempt to load all shared libraries found.
     BOOST_FOREACH( Poco::Path::StringVec::value_type libName, libNames )
     {
-        typedef Poco::ClassLoader< lfx::OperationBase > LibLoader;
+        typedef Poco::ClassLoader< OperationBase > LibLoader;
         LibLoader loader;
         try {
             loader.loadLibrary( libName );
@@ -255,7 +256,7 @@ void PluginManager::addOperation( const OperationInfo& opInfo )
     _opInfo.push_back( opInfo );
 }
 
-lfx::OperationBasePtr PluginManager::createOperation( const std::string& pluginName, const std::string& className )
+OperationBasePtr PluginManager::createOperation( const std::string& pluginName, const std::string& className )
 {
     BOOST_FOREACH( const OperationInfo& opInfo, _opInfo )
     {
@@ -324,5 +325,7 @@ bool operator<( const PluginManager::PluginInfo& lhs, const PluginManager::Plugi
 }
 
 
+// core
+}
 // lfx
 }

@@ -32,7 +32,7 @@
 
 
 namespace lfx {
-
+namespace core {
 
 
 /** \def AS_CHAR_PTR
@@ -412,5 +412,7 @@ osg::Vec3Array* ChannelDataOSGArray::convertToVec3Array( osg::Array* source )
 }
 
 
+// core
+}
 // lfx
 }

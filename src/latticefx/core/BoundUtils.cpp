@@ -33,6 +33,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 osg::BoundingSphere getBound( const osg::Vec3Array& array, const double pad )
@@ -56,5 +57,7 @@ osg::BoundingBox getBound( const osg::Vec3Array& array, const osg::Vec3& pad )
 }
 
 
+// core
+}
 // lfx
 }

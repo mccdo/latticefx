@@ -34,6 +34,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 PlayControl::PlayControl( osg::Node* scene )
@@ -134,5 +135,7 @@ void PlayControl::getTimeRange( double& minTime, double& maxTime ) const
 }
 
 
+// core
+}
 // lfx
 }

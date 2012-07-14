@@ -36,8 +36,8 @@
 #include <Poco/FileChannel.h>
 
 
-namespace lfx
-{
+namespace lfx {
+namespace core {
 
 
 Log* Log::instance()
@@ -103,5 +103,7 @@ void Log::setPriority( int prio, const DestinationType dest, const std::string& 
 }
 
 
+// core
+}
 // lfx
 }

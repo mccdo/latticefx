@@ -33,6 +33,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* image )
@@ -116,5 +117,7 @@ void ChannelDataOSGImage::reset()
 }
 
 
+// core
+}
 // lfx
 }

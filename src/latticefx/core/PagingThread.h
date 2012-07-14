@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_PAGING_THREAD_H__
-#define __LATTICEFX_PAGING_THREAD_H__ 1
+#ifndef __LFX_CORE_PAGING_THREAD_H__
+#define __LFX_CORE_PAGING_THREAD_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -45,6 +45,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \addtogroup PagingSupport Support for threaded data loading
@@ -212,9 +213,11 @@ protected:
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_PAGING_THREAD_H__
+// __LFX_CORE_PAGING_THREAD_H__
 #endif

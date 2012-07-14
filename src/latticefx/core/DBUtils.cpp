@@ -40,6 +40,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 #ifdef DB_IMPL_FILESYSTEM
@@ -91,5 +92,7 @@ osg::Node* loadSubGraph( const DBKey& dbKey )
 #endif
 
 
+// core
+}
 // lfx
 }

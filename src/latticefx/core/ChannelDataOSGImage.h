@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_CHANNEL_DATA_OSG_IMAGE_H__
-#define __LATTICEFX_CHANNEL_DATA_OSG_IMAGE_H__ 1
+#ifndef __LFX_CORE_CHANNEL_DATA_OSG_IMAGE_H__
+#define __LFX_CORE_CHANNEL_DATA_OSG_IMAGE_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class ChannelDataOSGImage ChannelDataOSGImage.h <latticefx/core/ChannelDataOSGImage.h>
@@ -106,9 +107,11 @@ protected:
 typedef boost::shared_ptr< ChannelDataOSGImage > ChannelDataOSGImagePtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_CHANNEL_DATA_OSG_IMAGE_H__
+// __LFX_CORE_CHANNEL_DATA_OSG_IMAGE_H__
 #endif

@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 DataSet::DataSet()
@@ -396,7 +397,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
             return( NULL );
         }
 
-        lfx::SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
+        SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
         osg::ref_ptr< osg::Group > parent( new osg::Group );
         parent->setName( "Lfx-ImageSet" );
         unsigned int idx;
@@ -440,7 +441,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
         osg::ref_ptr< osg::Group > parent( new osg::Group );
         parent->setName( "Lfx-LODPaging" );
-        osg::ref_ptr< PageData > pageData( new PageData( lfx::PageData::PIXEL_SIZE_RANGE ) );
+        osg::ref_ptr< PageData > pageData( new PageData( PageData::PIXEL_SIZE_RANGE ) );
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
@@ -545,7 +546,7 @@ ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList
     BOOST_FOREACH( const ChannelDataPtr cdp, dataList )
     {
         unsigned int x = 0, y = 0, z = 0;
-        //The default implementation of lfx::ChannelData::getDimensions does not
+        //The default implementation of ChannelData::getDimensions does not
         //return a default value therefore we must set our x,y,z to 0.
         cdp->getDimensions( x, y, z );
         const unsigned int total( x*y*z );
@@ -567,5 +568,7 @@ void DataSet::createFallbackMaskList()
 }
 
 
+// core
+}
 // lfx
 }

@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_CHANNEL_DATA_H__
-#define __LATTICEFX_CHANNEL_DATA_H__ 1
+#ifndef __LFX_CORE_CHANNEL_DATA_H__
+#define __LFX_CORE_CHANNEL_DATA_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -45,6 +45,7 @@ namespace osg {
 }
 
 namespace lfx {
+namespace core {
 
 
 class ChannelData;
@@ -166,9 +167,11 @@ public:
 };
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_CHANNEL_DATA_H__
+// __LFX_CORE_CHANNEL_DATA_H__
 #endif

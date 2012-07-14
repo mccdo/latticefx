@@ -38,30 +38,33 @@
 #include <osgViewer/Viewer>
 
 
+using namespace lfx::core;
+
+
 /** \brief Example of a run time operation to mask off part of the data.
 \details The data is a plot of -( x*x + y*y ). This mask operation
 removes all data points of the graph that satisfy y + z > 0.
 */
-class MyMask : public lfx::RTPOperation
+class MyMask : public RTPOperation
 {
 public:
     MyMask()
-      : lfx::RTPOperation( lfx::RTPOperation::Mask )
+      : RTPOperation( RTPOperation::Mask )
     {}
     virtual ~MyMask()
     {}
 
-    virtual lfx::ChannelDataPtr mask( const lfx::ChannelDataPtr maskIn )
+    virtual ChannelDataPtr mask( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataPtr input = getInput( "vertices" );
+        ChannelDataPtr input = getInput( "vertices" );
         if( ( input == NULL ) )
         {
             LFX_WARNING_STATIC( "lfx.demo", "MyMask::mask(): Invalid input." );
-            return( lfx::ChannelDataPtr( ( lfx::ChannelData* )( NULL ) ) );
+            return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
         }
 
         // Get the threshold test value, configurable from the calling code using
-        // setValue( "threshold", lfx::OperationValue( floatVal ) );
+        // setValue( "threshold", OperationValue( floatVal ) );
         float threshold( 0.f );
         if( hasValue( "threshold" ) )
             threshold = getValue( "threshold" )->getFloat();
@@ -85,28 +88,28 @@ public:
             maskValue = ( v.z() + v.y() > threshold ) ? 0 : 1;
         }
 
-        lfx::ChannelDataOSGArrayPtr cdp( new lfx::ChannelDataOSGArray( maskData.get() ) );
+        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( maskData.get() ) );
         return( cdp );
     }
 
 protected:
 };
 
-class MyRenderer : public lfx::Renderer
+class MyRenderer : public Renderer
 {
 public:
-    MyRenderer() : lfx::Renderer()
+    MyRenderer() : Renderer()
     {}
     virtual ~MyRenderer()
     {}
 
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
         osg::ref_ptr< osg::Geode > geode( new osg::Geode );
         geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         osg::Geometry* geom = new osg::Geometry;
-        lfx::ChannelDataPtr input( getInput( "vertices" )->getMaskedChannel( maskIn ) );
+        ChannelDataPtr input( getInput( "vertices" )->getMaskedChannel( maskIn ) );
         geom->setVertexArray( input->asOSGArray() );
 
         unsigned int idx, size = geom->getVertexArray()->getNumElements();
@@ -122,7 +125,7 @@ public:
 protected:
 };
 
-lfx::DataSetPtr prepareDataSet()
+DataSetPtr prepareDataSet()
 {
     // Create a vertex array for the graph - (x*x + y*y), with the plot
     // space ranging from -1 to 1 in both x and y.
@@ -140,20 +143,20 @@ lfx::DataSetPtr prepareDataSet()
                 x, y, -( x*x + y*y ) );
         }
     }
-    lfx::ChannelDataOSGArrayPtr cdp( new lfx::ChannelDataOSGArray( xyzData.get(), "vertices" ) );
+    ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( xyzData.get(), "vertices" ) );
 
     // Create a data set and add the vertex data.
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( cdp );
 
     // Create a mask operation and add it to the data set.
-    lfx::RTPOperationPtr maskOp( new MyMask() );
-    maskOp->setValue( "threshold", lfx::OperationValue( -0.1f ) );
+    RTPOperationPtr maskOp( new MyMask() );
+    maskOp->setValue( "threshold", OperationValue( -0.1f ) );
     maskOp->addInput( cdp->getName() );
     //maskOp->setEnable( false ); // Optionally disable the mask operation.
     dsp->addOperation( maskOp );
 
-    lfx::RendererPtr renderOp( new MyRenderer() );
+    RendererPtr renderOp( new MyRenderer() );
     renderOp->addInput( cdp->getName() );
     dsp->setRenderer( renderOp );
 
@@ -164,10 +167,10 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     // Create an example data set.
-    lfx::DataSetPtr dsp( prepareDataSet() );
+    DataSetPtr dsp( prepareDataSet() );
 
     osgViewer::Viewer viewer;
     // Obtain the data set's scene graph and add it to the viewer.

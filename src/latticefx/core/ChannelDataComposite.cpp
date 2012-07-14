@@ -36,6 +36,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 ChannelDataComposite::ChannelDataComposite( const CompositeType compositeType, const std::string& name )
@@ -103,5 +104,7 @@ void ChannelDataComposite::getDimensions( unsigned int& x, unsigned int& y, unsi
 }
 
 
+// core
+}
 // lfx
 }

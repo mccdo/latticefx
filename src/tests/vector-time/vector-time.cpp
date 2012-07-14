@@ -44,20 +44,21 @@
 #include <sstream>
 
 
+using namespace lfx::core;
+
 
 const std::string logstr( "lfx.demo" );
 
 
-
-class DepthComputation : public lfx::RTPOperation
+class DepthComputation : public RTPOperation
 {
 public:
-    DepthComputation() : lfx::RTPOperation( lfx::RTPOperation::Channel ) {}
-    DepthComputation( const DepthComputation& rhs ) : lfx::RTPOperation( rhs ) {}
+    DepthComputation() : RTPOperation( RTPOperation::Channel ) {}
+    DepthComputation( const DepthComputation& rhs ) : RTPOperation( rhs ) {}
 
-    lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
+    ChannelDataPtr channel( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataPtr posData( getInput( "positions" ) );
+        ChannelDataPtr posData( getInput( "positions" ) );
         osg::Array* posBaseArray( posData->asOSGArray() );
         osg::Vec3Array* posArray( static_cast< osg::Vec3Array* >( posBaseArray ) );
 
@@ -70,7 +71,7 @@ public:
             depth->push_back( z );
         }
 
-        return( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( depth, "depth" ) ) );
+        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( depth, "depth" ) ) );
     }
 };
 
@@ -98,7 +99,7 @@ unsigned int computeDynamicPositions( osg::Vec3Array* a,
     return( index );
 }
 
-lfx::DataSetPtr prepareSimplePoints()
+DataSetPtr prepareSimplePoints()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
@@ -108,7 +109,7 @@ lfx::DataSetPtr prepareSimplePoints()
         LFX_INFO_STATIC( logstr, ostr.str() );
     }
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     const double maxTime( 8. );
     const double sampleRate( 60. );
     {
@@ -124,7 +125,7 @@ lfx::DataSetPtr prepareSimplePoints()
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
         totalSamples += count;
-        lfx::ChannelDataOSGArrayPtr posData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( posArray.get(), "positions" ) ) );
         dsp->addChannel( posData, time );
     }
     {
@@ -136,30 +137,30 @@ lfx::DataSetPtr prepareSimplePoints()
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
     dc->addInput( "positions" );
-    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+    dsp->addOperation( RTPOperationPtr( dc ) );
 
 
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
+    VectorRendererPtr renderOp( new VectorRenderer() );
+    renderOp->setPointStyle( VectorRenderer::SIMPLE_POINTS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
 
     // Configure transfer function.
     renderOp->setTransferFunctionInput( "depth" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     dsp->setRenderer( renderOp );
 
 
     return( dsp );
 }
-lfx::DataSetPtr preparePointSprites()
+DataSetPtr preparePointSprites()
 {
-    lfx::DataSetPtr dsp( (lfx::DataSet*) NULL );
+    DataSetPtr dsp( (DataSet*) NULL );
     return( dsp );
 }
-lfx::DataSetPtr prepareSpheres()
+DataSetPtr prepareSpheres()
 {
     const unsigned int w( 15 ), h( 12 ), d( 9 );
     const unsigned int samplesPerTime( w*h*d );
@@ -169,7 +170,7 @@ lfx::DataSetPtr prepareSpheres()
         LFX_INFO_STATIC( logstr, ostr.str() );
     }
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     unsigned int totalSamples( 0 );
 
     const double maxTime( 8. );
@@ -186,7 +187,7 @@ lfx::DataSetPtr prepareSpheres()
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
         totalSamples += count;
-        lfx::ChannelDataOSGArrayPtr posData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( posArray.get(), "positions" ) ) );
         dsp->addChannel( posData, time );
 
         // Array of radius values.
@@ -207,7 +208,7 @@ lfx::DataSetPtr prepareSpheres()
                 }
             }
         }
-        lfx::ChannelDataOSGArrayPtr radData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( radArray.get(), "radii" ) ) );
+        ChannelDataOSGArrayPtr radData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( radArray.get(), "radii" ) ) );
         dsp->addChannel( radData, time );
     }
     {
@@ -219,29 +220,29 @@ lfx::DataSetPtr prepareSpheres()
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
     dc->addInput( "positions" );
-    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+    dsp->addOperation( RTPOperationPtr( dc ) );
 
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::SPHERES );
+    VectorRendererPtr renderOp( new VectorRenderer() );
+    renderOp->setPointStyle( VectorRenderer::SPHERES );
     renderOp->addInput( "positions" );
     renderOp->addInput( "radii" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
 
     // Configure transfer function.
     renderOp->setTransferFunctionInput( "depth" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     // Configure hardware mask.
-    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_RED );
-    renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_OFF );
+    renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_RED );
+    renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
     renderOp->setHardwareMaskReference( 0.f );
 
     dsp->setRenderer( renderOp );
 
     return( dsp );
 }
-lfx::DataSetPtr prepareDirectionVectors()
+DataSetPtr prepareDirectionVectors()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
@@ -269,8 +270,8 @@ lfx::DataSetPtr prepareDirectionVectors()
         }
     }
 
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( vertData );
 
     const double maxTime( 8. );
@@ -302,7 +303,7 @@ lfx::DataSetPtr prepareDirectionVectors()
                 }
             }
         }
-        lfx::ChannelDataOSGArrayPtr dirData( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) ) );
+        ChannelDataOSGArrayPtr dirData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( dirArray.get(), "directions" ) ) );
         dsp->addChannel( dirData, time );
     }
     {
@@ -314,42 +315,42 @@ lfx::DataSetPtr prepareDirectionVectors()
     // Add RTP operation to create a depth channel to use as input to the transfer function.
     DepthComputation* dc( new DepthComputation() );
     dc->addInput( "positions" );
-    dsp->addOperation( lfx::RTPOperationPtr( dc ) );
+    dsp->addOperation( RTPOperationPtr( dc ) );
 
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::DIRECTION_VECTORS );
+    VectorRendererPtr renderOp( new VectorRenderer() );
+    renderOp->setPointStyle( VectorRenderer::DIRECTION_VECTORS );
     renderOp->addInput( "positions" );
     renderOp->addInput( "directions" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
 
     // Configure transfer function.
     renderOp->setTransferFunctionInput( "depth" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     dsp->setRenderer( renderOp );
 
     return( dsp );
 }
 
-lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
+DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style )
 {
-    lfx::DataSetPtr dataSet;
+    DataSetPtr dataSet;
     switch( style )
     {
-    case lfx::VectorRenderer::POINT_SPRITES:
+    case VectorRenderer::POINT_SPRITES:
         LFX_NOTICE_STATIC( logstr, "point sprites not yet implemented." );
     default:
-    case lfx::VectorRenderer::SIMPLE_POINTS:
+    case VectorRenderer::SIMPLE_POINTS:
         dataSet = prepareSimplePoints();
         break;
-//    case lfx::VectorRenderer::POINT_SPRITES:
+//    case VectorRenderer::POINT_SPRITES:
 //        dataSet = preparePointSprites();
 //        break;
-    case lfx::VectorRenderer::SPHERES:
+    case VectorRenderer::SPHERES:
         dataSet = prepareSpheres();
         break;
-    case lfx::VectorRenderer::DIRECTION_VECTORS:
+    case VectorRenderer::DIRECTION_VECTORS:
         dataSet = prepareDirectionVectors();
         break;
     }
@@ -360,7 +361,7 @@ lfx::DataSetPtr prepareDataSet( const lfx::VectorRenderer::PointStyle& style )
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     LFX_INFO_STATIC( logstr, "With no options, render as simple points." );
     LFX_INFO_STATIC( logstr, "Options:" );
@@ -369,14 +370,14 @@ int main( int argc, char** argv )
     LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors.\n" );
 
     osg::ArgumentParser arguments( &argc, argv );
-    lfx::VectorRenderer::PointStyle style( lfx::VectorRenderer::SIMPLE_POINTS );
-    if( arguments.find( "-ps" ) > 0 ) style = lfx::VectorRenderer::POINT_SPRITES;
-    if( arguments.find( "-s" ) > 0 ) style = lfx::VectorRenderer::SPHERES;
-    if( arguments.find( "-d" ) > 0 ) style = lfx::VectorRenderer::DIRECTION_VECTORS;
+    VectorRenderer::PointStyle style( VectorRenderer::SIMPLE_POINTS );
+    if( arguments.find( "-ps" ) > 0 ) style = VectorRenderer::POINT_SPRITES;
+    if( arguments.find( "-s" ) > 0 ) style = VectorRenderer::SPHERES;
+    if( arguments.find( "-d" ) > 0 ) style = VectorRenderer::DIRECTION_VECTORS;
 
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    lfx::DataSetPtr dsp( prepareDataSet( style ) );
+    DataSetPtr dsp( prepareDataSet( style ) );
     root->addChild( dsp->getSceneData() );
 
     // Adjust root state.
@@ -395,7 +396,7 @@ int main( int argc, char** argv )
     }
     
     // Play the time series animation
-    lfx::PlayControlPtr playControl( new lfx::PlayControl( dsp->getSceneData() ) );
+    PlayControlPtr playControl( new PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );
 
     osgViewer::Viewer viewer;

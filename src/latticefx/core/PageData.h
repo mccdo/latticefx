@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_PAGE_DATA_H__
-#define __LATTICEFX_PAGE_DATA_H__ 1
+#ifndef __LFX_CORE_PAGE_DATA_H__
+#define __LFX_CORE_PAGE_DATA_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \addtogroup PagingSupport */
@@ -159,9 +160,11 @@ protected:
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_PAGE_DATA_H__
+// __LFX_CORE_PAGE_DATA_H__
 #endif

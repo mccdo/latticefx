@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_CHANNEL_DATA_OSG_ARRAY_H__
-#define __LATTICEFX_CHANNEL_DATA_OSG_ARRAY_H__ 1
+#ifndef __LFX_CORE_CHANNEL_DATA_OSG_ARRAY_H__
+#define __LFX_CORE_CHANNEL_DATA_OSG_ARRAY_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class ChannelDataOSGArray ChannelDataOSGArray.h <latticefx/core/ChannelDataOSGArray.h>
@@ -131,9 +132,11 @@ protected:
 typedef boost::shared_ptr< ChannelDataOSGArray > ChannelDataOSGArrayPtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_CHANNEL_DATA_OSG_ARRAY_H__
+// __LFX_CORE_CHANNEL_DATA_OSG_ARRAY_H__
 #endif

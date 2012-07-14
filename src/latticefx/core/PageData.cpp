@@ -32,6 +32,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 PageData::PageData( const RangeMode rangeMode )
@@ -124,5 +125,7 @@ PageData::RangeData::RangeData( double minVal, double maxVal, const DBKey& dbKey
 
 
 
+// core
+}
 // lfx
 }

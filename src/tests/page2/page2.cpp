@@ -54,37 +54,40 @@
 #include <sstream>
 
 
-class ImageProcess : public lfx::Preprocess
+using namespace lfx::core;
+
+
+class ImageProcess : public Preprocess
 {
 public:
     ImageProcess( unsigned int depth=3 )
-      : lfx::Preprocess(),
+      : Preprocess(),
         _depth( depth )
     {
-        setActionType( lfx::Preprocess::REPLACE_DATA );
+        setActionType( Preprocess::REPLACE_DATA );
     }
 
-    virtual lfx::ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()()
     {
-        lfx::ChannelDataOSGImagePtr input( boost::static_pointer_cast< lfx::ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
         const std::string dataName( input->getName() );
 
         return( recurseBuildTree( 0, 0., 25000. ) );
     }
 
 protected:
-    lfx::ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const unsigned int depth, const std::string& dataName )
+    ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const unsigned int depth, const std::string& dataName )
     {
         std::ostringstream ostr;
         ostr << fileName << depth << ".png";
 
         osg::Image* image( new osg::Image );
         image->setFileName( ostr.str() );
-        return( lfx::ChannelDataOSGImagePtr(
-            new lfx::ChannelDataOSGImage( dataName, image ) ) );
+        return( ChannelDataOSGImagePtr(
+            new ChannelDataOSGImage( dataName, image ) ) );
     }
 
-    lfx::ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange )
+    ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange )
     {
         const std::string baseName( "pagetex-near" );
         const std::string channelName( "texture" );
@@ -93,9 +96,9 @@ protected:
             return( generateImageData( baseName, depth, channelName ) );
 
 
-        lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( channelName ) );
+        ChannelDataLODPtr cdLOD( new ChannelDataLOD( channelName ) );
         cdLOD->setRange( cdLOD->addChannel( generateImageData( baseName, depth, channelName ) ),
-            lfx::RangeValues( minRange, maxRange ) );
+            RangeValues( minRange, maxRange ) );
 
         const unsigned int nextDepth( depth + 1 );
         // If nextDepth == _depth, then we're at the end, so set nextMax to FLT_MAX.
@@ -103,9 +106,9 @@ protected:
         // a box goes up by a factor of 4 when the box edge double in size.
         const double nextMax( ( nextDepth == _depth ) ? FLT_MAX : ( maxRange * 4. ) );
 
-        lfx::ChannelDataImageSetPtr cdImageSet( new lfx::ChannelDataImageSet( channelName ) );
+        ChannelDataImageSetPtr cdImageSet( new ChannelDataImageSet( channelName ) );
 
-        lfx::ChannelDataPtr brick;            
+        ChannelDataPtr brick;            
         brick = recurseBuildTree( nextDepth, 0., nextMax );
         cdImageSet->setOffset( cdImageSet->addChannel( brick ),
             osg::Vec3( -1., -1., -1. ) );
@@ -136,19 +139,19 @@ protected:
         // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
         // LODs that are displayed at subranges of (maxRange, FLT_MAX).
         cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
-            lfx::RangeValues( maxRange, FLT_MAX ) );
+            RangeValues( maxRange, FLT_MAX ) );
         return( cdLOD );
     }
 
     unsigned int _depth;
 };
 
-class BoxRenderer : public lfx::Renderer, public lfx::SpatialVolume
+class BoxRenderer : public Renderer, public SpatialVolume
 {
 public:
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataOSGImage* cdi( static_cast< lfx::ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
+        ChannelDataOSGImage* cdi( static_cast< ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
         osg::Image* image( cdi->getImage() );
 
         osg::Geode* geode( new osg::Geode() );
@@ -171,24 +174,24 @@ public:
     }
 };
 
-lfx::DataSetPtr createDataSet()
+DataSetPtr createDataSet()
 {
     osg::Image* image( new osg::Image() );
     image->setFileName( "pagetex-near0.png" );
-    lfx::ChannelDataOSGImagePtr imageData( new lfx::ChannelDataOSGImage( "texture", image ) );
+    ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );
 
     ImageProcess* op( new ImageProcess );
     op->addInput( "texture" );
-    dsp->addPreprocess( lfx::PreprocessPtr( op ) );
+    dsp->addPreprocess( PreprocessPtr( op ) );
 
     BoxRenderer* renderOp( new BoxRenderer );
     renderOp->setVolumeDims( osg::Vec3( 2., 1., 1. ) );
     renderOp->setVolumeOrigin( osg::Vec3( 2., 0.5, 1.5 ) );
     renderOp->addInput( "texture" );
-    dsp->setRenderer( lfx::RendererPtr( renderOp ) );
+    dsp->setRenderer( RendererPtr( renderOp ) );
 
     return( dsp );
 }
@@ -196,12 +199,12 @@ lfx::DataSetPtr createDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
-    //lfx::Log::instance()->setPriority( lfx::Log::PrioTrace, "lfx.core.page" );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
 
-    lfx::DataSetPtr dsp( createDataSet() );
+    DataSetPtr dsp( createDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
@@ -217,7 +220,7 @@ int main( int argc, char** argv )
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    PagingThread* pageThread( PagingThread::instance() );
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 

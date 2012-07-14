@@ -30,6 +30,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 RTPOperation::RTPOperation( const RTPOpType rtpOpType )
@@ -47,5 +48,7 @@ RTPOperation::~RTPOperation()
 }
 
 
+// core
+}
 // lfx
 }

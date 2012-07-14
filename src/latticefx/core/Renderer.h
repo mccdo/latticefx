@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_RENDERER_H__
-#define __LATTICEFX_RENDERER_H__ 1
+#ifndef __LFX_CORE_RENDERER_H__
+#define __LFX_CORE_RENDERER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -51,12 +51,13 @@ namespace osg {
 }
 
 namespace lfx {
+namespace core {
 
 
 /** \class Renderer Renderer.h <latticefx/core/Renderer.h>
 \brief Base class for Rendering Framework operations.
 \details Applications should create an instance of a class that derives from Renderer,
-such as lfx::VectorRenderer or lfx::VolumeRenderer, and attach it to a DataSet using
+such as VectorRenderer or VolumeRenderer, and attach it to a DataSet using
 DataSet::setRenderer(). Exactly one Renderer may be attached to a DataSet.
 
 Applications should attach any necessary input ChannelData to the Renderer instance.
@@ -65,8 +66,8 @@ specific ChannelData inputs. For example, when rendering simple points, VectorRe
 requires position data:
 
 \code
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
-    renderOp->setPointStyle( lfx::VectorRenderer::SIMPLE_POINTS );
+    VectorRendererPtr renderOp( new VectorRenderer() );
+    renderOp->setPointStyle( VectorRenderer::SIMPLE_POINTS );
     renderOp->addInput( "positions" );
 \endcode
 
@@ -127,7 +128,7 @@ public:
 
     DataSet calls this function once for each time step. The \c maskIn will likely
     be different for every time step. */
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn ) = 0;
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn ) = 0;
 
     /** \brief Create a single state set for all scene graphs.
     \details Create a single state set that applies to all scene graphs created by
@@ -397,9 +398,11 @@ typedef boost::shared_ptr< Renderer > RendererPtr;
 typedef std::list< RendererPtr > RendererList;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_RENDERER_H__
+// __LFX_CORE_RENDERER_H__
 #endif

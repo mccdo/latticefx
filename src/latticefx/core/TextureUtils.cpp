@@ -38,6 +38,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 // ceilPower2 - Originally in OpenGL Distilled example source code.
@@ -173,5 +174,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
 }
 
 
+// core
+}
 // lfx
 }

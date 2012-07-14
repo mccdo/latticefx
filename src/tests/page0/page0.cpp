@@ -42,6 +42,8 @@
 #include <string>
 
 
+using namespace lfx::core;
+
 
 void generateDataFiles( osg::Group* root )
 {
@@ -73,20 +75,20 @@ void generateDataFiles( osg::Group* root )
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     osg::ref_ptr< osg::Group > root( new osg::Group );
     root->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     generateDataFiles( root.get() );
 
-    lfx::PageData* pageData( new lfx::PageData );
-    pageData->setRangeMode( lfx::PageData::PIXEL_SIZE_RANGE );
+    PageData* pageData( new PageData );
+    pageData->setRangeMode( PageData::PIXEL_SIZE_RANGE );
     pageData->setParent( root.get() );
-    pageData->setRangeData( 0, lfx::PageData::RangeData( 0, 50000, "page-white.osg" ) );
-    pageData->setRangeData( 1, lfx::PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
+    pageData->setRangeData( 0, PageData::RangeData( 0, 50000, "page-white.osg" ) );
+    pageData->setRangeData( 1, PageData::RangeData( 50000, FLT_MAX, "page-red.osg" ) );
     root->setUserData( pageData );
 
-    root->setUpdateCallback( new lfx::PagingCallback() );
+    root->setUpdateCallback( new PagingCallback() );
 
     root->addChild( new osg::Group );
     root->addChild( new osg::Group );
@@ -100,7 +102,7 @@ int main( int argc, char** argv )
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    PagingThread* pageThread( PagingThread::instance() );
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 

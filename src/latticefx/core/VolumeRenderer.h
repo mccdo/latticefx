@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_VOLUME_RENDERER_H__
-#define __LATTICEFX_VOLUME_RENDERER_H__ 1
+#ifndef __LFX_CORE_VOLUME_RENDERER_H__
+#define __LFX_CORE_VOLUME_RENDERER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -37,6 +37,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class SpatialVolume VolumeRenderer.h <latticefx/core/VolumeRenderer.h>
@@ -77,19 +78,19 @@ typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
 \brief TBD
 \details TBD
 */
-class LATTICEFX_EXPORT VolumeRenderer : public lfx::Renderer, public SpatialVolume
+class LATTICEFX_EXPORT VolumeRenderer : public Renderer, public SpatialVolume
 {
 public:
     VolumeRenderer();
     VolumeRenderer( const VolumeRenderer& rhs );
     virtual ~VolumeRenderer();
 
-    /** \brief Override base class lfx::Renderer
+    /** \brief Override base class Renderer
     \details Invoked by DataSet once per time step to obtain a scene graph for
     rendering volumetric data. */
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
 
-    /** \brief Override base class lfx::Renderer
+    /** \brief Override base class Renderer
     \details Invoked by DataSet to obtain a global StateSet for all child
     scene graphs. */
     virtual osg::StateSet* getRootState();
@@ -114,9 +115,11 @@ protected:
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_VOLUME_RENDERER_H__
+// __LFX_CORE_VOLUME_RENDERER_H__
 #endif

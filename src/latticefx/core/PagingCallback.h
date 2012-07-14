@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_ROOT_CALLBACK_H__
-#define __LATTICEFX_ROOT_CALLBACK_H__ 1
+#ifndef __LFX_CORE_PAGING_CALLBACK_H__
+#define __LFX_CORE_PAGING_CALLBACK_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -43,6 +43,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \addtogroup PagingSupport */
@@ -113,10 +114,10 @@ protected:
 
     /** \brief TBD
     \details TBD */
-    lfx::LoadRequestPtr createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
+    LoadRequestPtr createLoadRequest( osg::Node* child, const osg::NodePath& childPath );
     /** \brief TBD
     \details TBD */
-    void enableImages( osg::Node* child, lfx::LoadRequestPtr request );
+    void enableImages( osg::Node* child, LoadRequestPtr request );
     /** \brief TBD
     \details TBD */
     void reclaimImages( osg::Node* child );
@@ -133,9 +134,11 @@ protected:
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_DATA_SET_H__
+// __LFX_CORE_PAGING_CALLBACK_H__
 #endif

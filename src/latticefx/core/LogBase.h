@@ -36,8 +36,8 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace lfx
-{
+namespace lfx {
+namespace core {
 
 
 typedef boost::shared_ptr< Poco::LogStream > PocoLogStreamPtr;
@@ -86,6 +86,8 @@ public:
 /*@}*/
 
 
+// core
+}
 // lfx
 }
 

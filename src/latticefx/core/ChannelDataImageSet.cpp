@@ -34,6 +34,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 ChannelDataImageSet::ChannelDataImageSet( const std::string& name )
@@ -79,5 +80,7 @@ bool ChannelDataImageSet::allImageSetData( const ChannelDataList& data )
 }
 
 
+// core
+}
 // lfx
 }

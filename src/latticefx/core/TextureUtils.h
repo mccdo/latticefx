@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_TEXTURE_UTILS_H__
-#define __LATTICEFX_TEXTURE_UTILS_H__ 1
+#ifndef __LFX_CORE_TEXTURE_UTILS_H__
+#define __LFX_CORE_TEXTURE_UTILS_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -43,6 +43,7 @@ namespace osg {
 
 
 namespace lfx {
+namespace core {
 
 
 /** \defgroup TextureUtils Utilities for creating and working with texture-based data
@@ -88,9 +89,11 @@ LATTICEFX_EXPORT osg::Image* createImage3DForInstancedRenderer( const ChannelDat
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_TEXTURE_UTILS_H__
+// __LFX_CORE_TEXTURE_UTILS_H__
 #endif

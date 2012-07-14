@@ -34,24 +34,26 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 
 
+using namespace lfx::core;
 
-class MyMask : public lfx::RTPOperation
+
+class MyMask : public RTPOperation
 {
 public:
     MyMask()
-      : lfx::RTPOperation( lfx::RTPOperation::Mask )
+      : RTPOperation( RTPOperation::Mask )
     {}
     virtual ~MyMask()
     {}
 
-    virtual lfx::OperationBase* create()
+    virtual OperationBase* create()
     {
         return( new MyMask );
     }
 
-    virtual lfx::ChannelDataPtr mask( const lfx::ChannelDataPtr maskIn )
+    virtual ChannelDataPtr mask( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataOSGArrayPtr cdp( new lfx::ChannelDataOSGArray() );
+        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray() );
         return( cdp );
     }
 
@@ -69,16 +71,16 @@ REGISTER_OPERATION(
 
 
 
-class MyPreprocess : public lfx::Preprocess
+class MyPreprocess : public Preprocess
 {
 public:
     MyPreprocess()
-        : lfx::Preprocess()
+        : Preprocess()
     {}
     virtual ~MyPreprocess()
     {}
 
-    virtual lfx::OperationBase* create()
+    virtual OperationBase* create()
     {
         return( new MyPreprocess );
     }
@@ -98,7 +100,7 @@ REGISTER_OPERATION(
 
 // Poco ClassLibrary manifest registration. Add a POCO_EXPORT_CLASS
 // for each class (operation) in the plugin.
-POCO_BEGIN_MANIFEST( lfx::OperationBase )
+POCO_BEGIN_MANIFEST( OperationBase )
     POCO_EXPORT_CLASS( MyMask )
     POCO_EXPORT_CLASS( MyPreprocess )
 POCO_END_MANIFEST

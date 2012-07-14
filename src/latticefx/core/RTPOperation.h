@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_RTP_OPERATION_H__
-#define __LATTICEFX_RTP_OPERATION_H__ 1
+#ifndef __LFX_CORE_RTP_OPERATION_H__
+#define __LFX_CORE_RTP_OPERATION_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -41,6 +41,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class RTPOperation RTPOperation.h <latticefx/core/RTPOperation.h>
@@ -52,7 +53,7 @@ An implementation of an RTPOperation must override one of
 the mask(), filter(), or channel() functions. The app creating
 the RTPOperation instance is responsible for adding any
 required inputs using the addInput() function. */
-class LATTICEFX_EXPORT RTPOperation : public lfx::OperationBase
+class LATTICEFX_EXPORT RTPOperation : public OperationBase
 {
 public:
     typedef enum {
@@ -90,9 +91,11 @@ typedef boost::shared_ptr< RTPOperation > RTPOperationPtr;
 typedef std::list< RTPOperationPtr > RTPOperationList;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_RTP_OPERATION_H__
+// __LFX_CORE_RTP_OPERATION_H__
 #endif

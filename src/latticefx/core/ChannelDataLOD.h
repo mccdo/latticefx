@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_CHANNEL_LOD_H__
-#define __LATTICEFX_CHANNEL_LOD_H__ 1
+#ifndef __LFX_CORE_CHANNEL_DATA_LOD_H__
+#define __LFX_CORE_CHANNEL_DATA_LOD_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -40,13 +40,13 @@
 
 
 namespace lfx {
-
+namespace core {
 
 
 /** \class ChannelDataLOD ChannelDataLOD.h <latticefx/core/ChannelDataLOD.h>
 \brief Composite pattern container for LOD data.
 \details TBD */
-class LATTICEFX_EXPORT ChannelDataLOD : public lfx::ChannelDataComposite
+class LATTICEFX_EXPORT ChannelDataLOD : public ChannelDataComposite
 {
 public:
     ChannelDataLOD( const std::string& name=std::string( "" ) );
@@ -89,9 +89,11 @@ protected:
 typedef boost::shared_ptr< ChannelDataLOD > ChannelDataLODPtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_CHANNEL_LOD_H__
+// __LFX_CORE_CHANNEL_DATA_LOD_H__
 #endif

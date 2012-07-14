@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_PLAY_CONTROL_H__
-#define __LATTICEFX_PLAY_CONTROL_H__ 1
+#ifndef __LFX_CORE_PLAY_CONTROL_H__
+#define __LFX_CORE_PLAY_CONTROL_H__ 1
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/PagingCallback.h>
@@ -40,6 +40,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \addtogroup TimeSeriesSupport Support for time series animations
@@ -133,9 +134,11 @@ typedef boost::shared_ptr< PlayControl > PlayControlPtr;
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_PLAY_CONTROL_H__
+// __LFX_CORE_PLAY_CONTROL_H__
 #endif

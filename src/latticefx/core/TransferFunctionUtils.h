@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_TRANSFER_FUNCTION_UTILS_H__
-#define __LATTICEFX_TRANSFER_FUNCTION_UTILS_H__ 1
+#ifndef __LFX_CORE_TRANSFER_FUNCTION_UTILS_H__
+#define __LFX_CORE_TRANSFER_FUNCTION_UTILS_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -41,6 +41,7 @@ namespace osg {
 
 
 namespace lfx {
+namespace core {
 
 
 /** \defgroup TransferFunctionUtils Utilities for transfer functions
@@ -76,9 +77,11 @@ LATTICEFX_EXPORT osg::Image* loadImageFromDat( const std::string& fileName,
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_TRANSFER_FUNCTION_UTILS_H__
+// __LFX_CORE_TRANSFER_FUNCTION_UTILS_H__
 #endif

@@ -38,16 +38,18 @@
 #include <osgGA/TrackballManipulator>
 
 
+using namespace lfx::core;
 
-class ScalarComputation : public lfx::RTPOperation
+
+class ScalarComputation : public RTPOperation
 {
 public:
-    ScalarComputation() : lfx::RTPOperation( lfx::RTPOperation::Channel ) {}
-    ScalarComputation( const ScalarComputation& rhs ) : lfx::RTPOperation( rhs ) {}
+    ScalarComputation() : RTPOperation( RTPOperation::Channel ) {}
+    ScalarComputation( const ScalarComputation& rhs ) : RTPOperation( rhs ) {}
 
-    lfx::ChannelDataPtr channel( const lfx::ChannelDataPtr maskIn )
+    ChannelDataPtr channel( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataPtr warpData( _inputs[ 0 ] );
+        ChannelDataPtr warpData( _inputs[ 0 ] );
         osg::Array* warpBaseArray( warpData->asOSGArray() );
         osg::Vec3Array* warpArray( static_cast< osg::Vec3Array* >( warpBaseArray ) );
 
@@ -60,7 +62,7 @@ public:
             scalar->push_back( l );
         }
 
-        return( lfx::ChannelDataOSGArrayPtr( new lfx::ChannelDataOSGArray( scalar, "scalar" ) ) );
+        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( scalar, "scalar" ) ) );
     }
 };
 
@@ -113,24 +115,24 @@ void createWarpTriangles( osg::Vec3Array* verts, osg::Vec3Array* norms )
     }
 }
 
-lfx::DataSetPtr prepareDataSet()
+DataSetPtr prepareDataSet()
 {
     osg::ref_ptr< osg::Vec3Array > verts( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > norms( new osg::Vec3Array );
     createTriangles( verts.get(), norms.get() );
-    lfx::ChannelDataOSGArrayPtr cdv( new lfx::ChannelDataOSGArray( verts.get(), "vertices" ) );
-    lfx::ChannelDataOSGArrayPtr cdn( new lfx::ChannelDataOSGArray( norms.get(), "normals" ) );
+    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( verts.get(), "vertices" ) );
+    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( norms.get(), "normals" ) );
 
     osg::ref_ptr< osg::Vec3Array > warpVerts( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > warpNorms( new osg::Vec3Array );
     createWarpTriangles( warpVerts.get(), warpNorms.get() );
     subtract( warpVerts.get(), verts.get() );
     subtract( warpNorms.get(), norms.get() );
-    lfx::ChannelDataOSGArrayPtr cdwv( new lfx::ChannelDataOSGArray( warpVerts.get(), "warp vertices" ) );
-    lfx::ChannelDataOSGArrayPtr cdwn( new lfx::ChannelDataOSGArray( warpNorms.get(), "warp normals" ) );
+    ChannelDataOSGArrayPtr cdwv( new ChannelDataOSGArray( warpVerts.get(), "warp vertices" ) );
+    ChannelDataOSGArrayPtr cdwn( new ChannelDataOSGArray( warpNorms.get(), "warp normals" ) );
 
     // Create a data set and add the vertex data.
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( cdv );
     dsp->addChannel( cdn );
     dsp->addChannel( cdwv );
@@ -139,17 +141,17 @@ lfx::DataSetPtr prepareDataSet()
     // Add RTP operation to create a scalar channel to use as input to the transfer function.
     ScalarComputation* sc( new ScalarComputation() );
     sc->addInput( cdwv->getName() );
-    dsp->addOperation( lfx::RTPOperationPtr( sc ) );
+    dsp->addOperation( RTPOperationPtr( sc ) );
 
-    lfx::SurfaceRendererPtr renderOp( new lfx::SurfaceRenderer() );
-    renderOp->setInputNameAlias( lfx::SurfaceRenderer::VERTEX, cdv->getName() );
-    renderOp->setInputNameAlias( lfx::SurfaceRenderer::NORMAL, cdn->getName() );
-    renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_VERTEX, cdwv->getName() );
-    renderOp->setInputNameAlias( lfx::SurfaceRenderer::WARP_NORMAL, cdwn->getName() );
+    SurfaceRendererPtr renderOp( new SurfaceRenderer() );
+    renderOp->setInputNameAlias( SurfaceRenderer::VERTEX, cdv->getName() );
+    renderOp->setInputNameAlias( SurfaceRenderer::NORMAL, cdn->getName() );
+    renderOp->setInputNameAlias( SurfaceRenderer::WARP_VERTEX, cdwv->getName() );
+    renderOp->setInputNameAlias( SurfaceRenderer::WARP_NORMAL, cdwn->getName() );
 
     renderOp->setTransferFunctionInput( "scalar" );
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "01.dat" ) );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGBA );
+    renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     renderOp->addInput( cdv->getName() );
     renderOp->addInput( cdn->getName() );
@@ -165,9 +167,9 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
-    lfx::DataSetPtr dsp( prepareDataSet() );
+    DataSetPtr dsp( prepareDataSet() );
 
     osg::Group* root( new osg::Group );
     root->addChild( dsp->getSceneData() );

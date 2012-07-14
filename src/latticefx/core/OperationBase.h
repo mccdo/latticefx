@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_OPERATION_BASE_H__
-#define __LATTICEFX_OPERATION_BASE_H__ 1
+#ifndef __LFX_CORE_OPERATION_BASE_H__
+#define __LFX_CORE_OPERATION_BASE_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 // Forward declaration.
@@ -141,7 +142,7 @@ public:
     \details Called by PluginManager to create an instance of classes
     defined in plugin libraries. All classes loaded by plugins must
     override and implement this method. */
-    virtual lfx::OperationBase* create() { return( NULL ); }
+    virtual OperationBase* create() { return( NULL ); }
 
     typedef std::vector< std::string > StringList;
     /** \brief Add an input by name.
@@ -208,9 +209,11 @@ protected:
 typedef boost::shared_ptr< OperationBase > OperationBasePtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_OPERATION_BASE_H__
+// __LFX_CORE_OPERATION_BASE_H__
 #endif

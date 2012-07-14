@@ -56,7 +56,7 @@ comes from the child-specific PageData::RangeData.
 If the paging RangeMode is TIME_RANGE, \c validRange is a range of time values specified
 by the application, and both min and max values of \c childRange are set to the time
 value of the child node. */
-inline bool inRange( const lfx::RangeValues& validRange, const lfx::RangeValues& childRange )
+inline bool inRange( const lfx::core::RangeValues& validRange, const lfx::core::RangeValues& childRange )
 {
     const bool childFirstGood( childRange.first < validRange.second );
     const bool childSecondGood( childRange.second >= validRange.first );
@@ -72,6 +72,7 @@ inline bool inRange( const lfx::RangeValues& validRange, const lfx::RangeValues&
 
 
 namespace lfx {
+namespace core {
 
 
 PagingCallback::PagingCallback()
@@ -118,11 +119,11 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         return;
     }
 
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    PagingThread* pageThread( PagingThread::instance() );
 
     RangeValues validRange;
-    lfx::PageData* pageData( static_cast< lfx::PageData* >( node->getUserData() ) );
-    if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
+    PageData* pageData( static_cast< PageData* >( node->getUserData() ) );
+    if( pageData->getRangeMode() == PageData::TIME_RANGE )
     {
         // _timeRange is set by the application. The assumption is that this will be large enough
         // to accomodate several children, only one of which will be displayed (by use of NodeMask).
@@ -164,10 +165,10 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     bool removeExpired( false );
     bool continueUpdateTraversal( true );
-    BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
     {
         const unsigned int childIndex( rangeDataPair.first );
-        lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+        PageData::RangeData& rangeData( rangeDataPair.second );
         osg::Node* child( grp->getChild( childIndex ) );
         childPath.push_back( child );
 
@@ -175,21 +176,21 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
         switch( rangeData._status )
         {
-        case lfx::PageData::RangeData::UNLOADED:
+        case PageData::RangeData::UNLOADED:
             if( isInRange )
             {
-                lfx::LoadRequestPtr request( createLoadRequest( child, childPath ) );
+                LoadRequestPtr request( createLoadRequest( child, childPath ) );
                 if( request->_keys.empty() )
                 {
                     // No images to load. Turn on this child/branch.
-                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    rangeData._status = PageData::RangeData::LOADED;
                     removeExpired = true;
                 }
                 else
                 {
                     LFX_TRACE( "Adding LoadRequest." );
                     pageThread->addLoadRequest( request );
-                    rangeData._status = lfx::PageData::RangeData::LOAD_REQUESTED;
+                    rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                     // We must fulfill this load request before we dive deeper into
                     // the scene graph.
                     continueUpdateTraversal = false;
@@ -197,14 +198,14 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             }
             break;
 
-        case lfx::PageData::RangeData::LOAD_REQUESTED:
+        case PageData::RangeData::LOAD_REQUESTED:
             if( isInRange )
             {
-                lfx::LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
+                LoadRequestPtr request( pageThread->retrieveLoadRequest( childPath ) );
                 if( request != NULL )
                 {
                     enableImages( child, request );
-                    rangeData._status = lfx::PageData::RangeData::LOADED;
+                    rangeData._status = PageData::RangeData::LOADED;
                     removeExpired = true;
                     LFX_TRACE( "Retrieved LoadRequest." );
                 }
@@ -220,13 +221,13 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             {
                 pageThread->cancelLoadRequest( childPath );
                 reclaimImages( child );
-                rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                rangeData._status = PageData::RangeData::UNLOADED;
                 LFX_TRACE( "Canceling LoadRequest." );
             }
 
         default:
-        case lfx::PageData::RangeData::LOADED:
-        case lfx::PageData::RangeData::ACTIVE:
+        case PageData::RangeData::LOADED:
+        case PageData::RangeData::ACTIVE:
             // Nothing to do.
             break;
         }
@@ -236,46 +237,46 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     if( removeExpired )
     {
-        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
             const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
             switch( rangeData._status )
             {
-            case lfx::PageData::RangeData::LOADED:
-                rangeData._status = lfx::PageData::RangeData::ACTIVE;
+            case PageData::RangeData::LOADED:
+                rangeData._status = PageData::RangeData::ACTIVE;
                 child->setNodeMask( ~0u );
                 break;
-            case lfx::PageData::RangeData::ACTIVE:
+            case PageData::RangeData::ACTIVE:
                 if( !isInRange )
                 {
                     reclaimImages( child );
-                    rangeData._status = lfx::PageData::RangeData::UNLOADED;
+                    rangeData._status = PageData::RangeData::UNLOADED;
                     child->setNodeMask( 0u );
                 }
                 break;
             default:
-            case lfx::PageData::RangeData::UNLOADED:
-            case lfx::PageData::RangeData::LOAD_REQUESTED:
+            case PageData::RangeData::UNLOADED:
+            case PageData::RangeData::LOAD_REQUESTED:
                 // Nothing to do.
                 break;
             }
         }
     }
 
-    if( pageData->getRangeMode() == lfx::PageData::TIME_RANGE )
+    if( pageData->getRangeMode() == PageData::TIME_RANGE )
     {
         osg::Node* bestChild( grp->getChild( 0 ) );
         double minTimeDifference( FLT_MAX );
 
-        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
-            if( rangeData._status != lfx::PageData::RangeData::ACTIVE )
+            PageData::RangeData& rangeData( rangeDataPair.second );
+            if( rangeData._status != PageData::RangeData::ACTIVE )
                 // Currently trying to find the best child for the current time, so if
                 // the status isn't ACTIVE, we don't care about it.
                 continue;
@@ -311,7 +312,7 @@ class CollectImagesRecursive
 {
 public:
     CollectImagesRecursive( const osg::Matrix& rootModelMat )
-      : _request( lfx::LoadRequestImagePtr( new lfx::LoadRequestImage ) ),
+      : _request( LoadRequestImagePtr( new LoadRequestImage ) ),
         _rootModelMat( rootModelMat )
     {
         // Get transform info for LOD calculations.
@@ -334,16 +335,16 @@ public:
                     ( tex->getImage( 0 ) != NULL ) &&
                     ( tex->getImage( 0 )->data() == NULL ))
                 {
-                    lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                    DBKey key( tex->getImage( 0 )->getFileName() );
                     _request->_keys.push_back( key );
                 }
             }
         }
 
         osg::Group* grp( node.asGroup() );
-        lfx::PageData* pageData( static_cast< lfx::PageData* >( node.getUserData() ) );
+        PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == lfx::PageData::TIME_RANGE ) )
+            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             if( grp != NULL )
@@ -364,10 +365,10 @@ public:
         const double pixelSize( computePixelSize( bSphere, modelMat, _wcEyePosition, _proj, _vp.get() ) );
         const RangeValues validRange( pixelSize, pixelSize );
 
-        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
             const bool isInRange( inRange( validRange, rangeData._rangeValues ) );
@@ -403,7 +404,7 @@ public:
         _nodePath.pop_back();
     }
 
-    lfx::LoadRequestImagePtr _request;
+    LoadRequestImagePtr _request;
 
 private:
     osg::Matrix _rootModelMat;
@@ -415,7 +416,7 @@ private:
     osg::NodePath _nodePath;
 };
 
-lfx::LoadRequestPtr PagingCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
+LoadRequestPtr PagingCallback::createLoadRequest( osg::Node* child, const osg::NodePath& childPath )
 {
     osg::Matrix modelMat( osg::computeLocalToWorld( childPath ) );
     CollectImagesRecursive collect( modelMat );
@@ -430,7 +431,7 @@ lfx::LoadRequestPtr PagingCallback::createLoadRequest( osg::Node* child, const o
 class DistributeImagesRecursive
 {
 public:
-    DistributeImagesRecursive( const lfx::LoadRequestImagePtr request )
+    DistributeImagesRecursive( const LoadRequestImagePtr request )
       : _request( request )
     {
     }
@@ -447,7 +448,7 @@ public:
                 if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
                     ( tex->getImage( 0 ) != NULL ) )
                 {
-                    lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                    DBKey key( tex->getImage( 0 )->getFileName() );
                     if( key.empty() )
                     {
                         LFX_WARNING_STATIC( "lfx.core.page", "Got empty key." );
@@ -460,9 +461,9 @@ public:
         }
 
         osg::Group* grp( node.asGroup() );
-        lfx::PageData* pageData( static_cast< lfx::PageData* >( node.getUserData() ) );
+        PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == lfx::PageData::TIME_RANGE ) )
+            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             if( grp != NULL )
@@ -477,10 +478,10 @@ public:
             LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
         }
 
-        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
             switch( rangeData._status )
@@ -497,10 +498,10 @@ public:
     }
 
 protected:
-    const lfx::LoadRequestImagePtr _request;
+    const LoadRequestImagePtr _request;
 };
 
-void PagingCallback::enableImages( osg::Node* child, lfx::LoadRequestPtr request )
+void PagingCallback::enableImages( osg::Node* child, LoadRequestPtr request )
 {
     LoadRequestImagePtr imageRequest( boost::static_pointer_cast< LoadRequestImage >( request ) );
     DistributeImagesRecursive distribute( imageRequest );
@@ -530,7 +531,7 @@ public:
                 if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
                     ( tex->getImage( 0 ) != NULL ) )
                 {
-                    lfx::DBKey key( tex->getImage( 0 )->getFileName() );
+                    DBKey key( tex->getImage( 0 )->getFileName() );
                     osg::Image* image( new osg::Image() );
                     image->setFileName( key );
                     tex->setImage( 0, image );
@@ -538,9 +539,9 @@ public:
             }
         }
 
-        lfx::PageData* pageData( static_cast< lfx::PageData* >( node.getUserData() ) );
+        PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == lfx::PageData::TIME_RANGE ) )
+            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             traverse( node );
@@ -552,10 +553,10 @@ public:
             LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
         }
 
-        BOOST_FOREACH( lfx::PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
-            lfx::PageData::RangeData& rangeData( rangeDataPair.second );
+            PageData::RangeData& rangeData( rangeDataPair.second );
             osg::Node* child( grp->getChild( childIndex ) );
 
             rangeData._status = PageData::RangeData::UNLOADED;
@@ -583,6 +584,8 @@ double PagingCallback::getWrappedTime( const double& time, const double& minTime
 }
 
 
+// core
+}
 // lfx
 }
 

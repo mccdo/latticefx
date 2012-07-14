@@ -48,38 +48,41 @@
 #include <osgGA/TrackballManipulator>
 
 
-class ImageProcess : public lfx::Preprocess
+using namespace lfx::core;
+
+
+class ImageProcess : public Preprocess
 {
 public:
     ImageProcess()
-      : lfx::Preprocess()
+      : Preprocess()
     {
-        setActionType( lfx::Preprocess::REPLACE_DATA );
+        setActionType( Preprocess::REPLACE_DATA );
     }
 
-    virtual lfx::ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()()
     {
-        lfx::ChannelDataOSGImagePtr input( boost::static_pointer_cast< lfx::ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
 
         osg::Image* farImage( new osg::Image );
         farImage->setFileName( "pagetex-far.png" );
-        lfx::ChannelDataOSGImagePtr newImage( new lfx::ChannelDataOSGImage( "texture", farImage ) );
+        ChannelDataOSGImagePtr newImage( new ChannelDataOSGImage( "texture", farImage ) );
 
-        lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
+        ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
-            lfx::RangeValues( 0., 100000. ) );
+            RangeValues( 0., 100000. ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
-            lfx::RangeValues( 100000., FLT_MAX ) );
+            RangeValues( 100000., FLT_MAX ) );
         return( cdLOD );
     }
 };
 
-class BoxRenderer : public lfx::Renderer
+class BoxRenderer : public Renderer
 {
 public:
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataOSGImage* cdi( static_cast< lfx::ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
+        ChannelDataOSGImage* cdi( static_cast< ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
         osg::Image* image( cdi->getImage() );
 
         osg::Geode* geode( new osg::Geode() );
@@ -94,22 +97,22 @@ public:
     }
 };
 
-lfx::DataSetPtr createDataSet()
+DataSetPtr createDataSet()
 {
     osg::Image* image( new osg::Image() );
     image->setFileName( "pagetex-near0.png" );
-    lfx::ChannelDataOSGImagePtr imageData( new lfx::ChannelDataOSGImage( "texture", image ) );
+    ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );
 
     ImageProcess* op( new ImageProcess );
     op->addInput( "texture" );
-    dsp->addPreprocess( lfx::PreprocessPtr( op ) );
+    dsp->addPreprocess( PreprocessPtr( op ) );
 
     BoxRenderer* renderOp( new BoxRenderer );
     renderOp->addInput( "texture" );
-    dsp->setRenderer( lfx::RendererPtr( renderOp ) );
+    dsp->setRenderer( RendererPtr( renderOp ) );
 
     return( dsp );
 }
@@ -117,11 +120,11 @@ lfx::DataSetPtr createDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     osg::ArgumentParser arguments( &argc, argv );
 
-    lfx::DataSetPtr dsp( createDataSet() );
+    DataSetPtr dsp( createDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
@@ -131,7 +134,7 @@ int main( int argc, char** argv )
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    PagingThread* pageThread( PagingThread::instance() );
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 

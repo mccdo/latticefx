@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_PREPROCESS_H__
-#define __LATTICEFX_PREPROCESS_H__ 1
+#ifndef __LFX_CORE_PREPROCESS_H__
+#define __LFX_CORE_PREPROCESS_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -41,13 +41,14 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class Preprocess Preprocess.h <latticefx/core/Preprocess.h>
 \brief Base class for Preprocessing & Caching operations.
 \details TBD
 */
-class LATTICEFX_EXPORT Preprocess : public lfx::OperationBase
+class LATTICEFX_EXPORT Preprocess : public OperationBase
 {
 public:
     Preprocess();
@@ -80,9 +81,9 @@ public:
     add it to the DataSet, replace the first input with \c newData, or ignore
     \c newData. (IGNORE_DATA is useful if this function stores the data, in the DB for
     example.) */
-    virtual lfx::ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()()
     {
-        return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
+        return( ChannelDataPtr( (ChannelData*)NULL ) );
     }
 
 protected:
@@ -93,9 +94,11 @@ typedef boost::shared_ptr< Preprocess > PreprocessPtr;
 typedef std::list< PreprocessPtr > PreprocessList;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_PREPROCESS_H__
+// __LFX_CORE_PREPROCESS_H__
 #endif

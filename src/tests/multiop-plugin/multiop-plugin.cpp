@@ -34,15 +34,18 @@
 #include <iostream>
 
 
+using namespace lfx::core;
+
+
 const std::string logstr( "lfx.demo" );
 
 
 int main()
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     // Add additional plugin search paths.
-    lfx::PluginManager* plug( lfx::PluginManager::instance() );
+    PluginManager* plug( PluginManager::instance() );
     plug->loadConfigFiles();
 
     // Load all plugins named "MultipleOperationsPluginTest".
@@ -60,7 +63,7 @@ int main()
     // Try to create the loaded operations.
     {
         std::string opName( "MyMask" );
-        lfx::OperationBasePtr op( plug->createOperation( pluginName, opName ) );
+        OperationBasePtr op( plug->createOperation( pluginName, opName ) );
         if( op == NULL )
         {
             LFX_ERROR_STATIC( logstr, opName + ": createOperation() returned NULL." );

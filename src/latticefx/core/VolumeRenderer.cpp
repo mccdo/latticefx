@@ -48,6 +48,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 SpatialVolume::SpatialVolume()
@@ -122,7 +123,7 @@ void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
 }
 
 
-osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
+osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
@@ -227,5 +228,7 @@ float VolumeRenderer::getPlaneSpacing() const
 }
 
 
+// core
+}
 // lfx
 }

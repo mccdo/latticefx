@@ -37,6 +37,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 Renderer::Renderer( const std::string logNameSuffix )
@@ -295,5 +296,7 @@ osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::stri
 }
 
 
+// core
+}
 // lfx
 }

@@ -37,6 +37,9 @@
 #include <osg/Image>
 
 
+using namespace lfx::core;
+
+
 osg::Image* downsample( osg::Image* srcImage )
 {
     osg::ref_ptr< osg::Image > image( new osg::Image );
@@ -72,40 +75,40 @@ osg::Image* downsample( osg::Image* srcImage )
 }
 
 
-class Downsample : public lfx::Preprocess
+class Downsample : public Preprocess
 {
 public:
     Downsample()
-        : lfx::Preprocess()
+        : Preprocess()
     {}
     Downsample( const Downsample& rhs )
-        : lfx::Preprocess( rhs )
+        : Preprocess( rhs )
     {}
     virtual ~Downsample()
     {}
 
-    virtual lfx::OperationBase* create()
+    virtual OperationBase* create()
     {
         return( new Downsample );
     }
 
-    virtual lfx::ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()()
     {
-        lfx::ChannelDataPtr cdp;
+        ChannelDataPtr cdp;
         if( !( _inputs.empty() ) )
             cdp = _inputs[ 0 ];
         if( cdp == NULL )
         {
             LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL input." );
-            return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
         }
-        lfx::ChannelDataOSGImage* dataImage( static_cast<
-            lfx::ChannelDataOSGImage* >( cdp.get() ) );
+        ChannelDataOSGImage* dataImage( static_cast<
+            ChannelDataOSGImage* >( cdp.get() ) );
         osg::Image* srcImage( dataImage->getImage() );
         if( srcImage == NULL )
         {
             LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL source image." );
-            return( lfx::ChannelDataPtr( (lfx::ChannelData*)NULL ) );
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
         }
 
         osg::Image* newImage( downsample( srcImage ) );
@@ -113,8 +116,8 @@ public:
         // Debug.
         osgDB::writeImageFile( *newImage, "out.ive" );
 
-        lfx::ChannelDataOSGImagePtr newData(
-            new lfx::ChannelDataOSGImage( dataImage->getName(), newImage ) );
+        ChannelDataOSGImagePtr newData(
+            new ChannelDataOSGImage( dataImage->getName(), newImage ) );
         return( newData);
     }
 
@@ -133,6 +136,6 @@ REGISTER_OPERATION(
 
 // Poco ClassLibrary manifest registration. Add a POCO_EXPORT_CLASS
 // for each class (operation) in the plugin.
-POCO_BEGIN_MANIFEST( lfx::OperationBase )
+POCO_BEGIN_MANIFEST( OperationBase )
     POCO_EXPORT_CLASS( Downsample )
 POCO_END_MANIFEST

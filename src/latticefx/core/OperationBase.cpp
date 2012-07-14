@@ -32,6 +32,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 OperationBase::OperationBase( const OperationType opType )
@@ -215,5 +216,7 @@ bool OperationValue::getBool() const
 }
 
 
+// core
+}
 // lfx
 }

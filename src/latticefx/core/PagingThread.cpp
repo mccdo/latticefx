@@ -39,6 +39,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 PagingThread::PagingThread()
@@ -251,5 +252,7 @@ LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, cons
 }
 
 
+// core
+}
 // lfx
 }

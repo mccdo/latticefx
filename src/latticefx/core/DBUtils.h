@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_DB_UTILS_H__
-#define __LATTICEFX_DB_UTILS_H__ 1
+#ifndef __LFX_CORE_DB_UTILS_H__
+#define __LFX_CORE_DB_UTILS_H__ 1
 
 #include <latticefx/core/Export.h>
 
@@ -46,6 +46,7 @@ namespace osg {
 }
 
 namespace lfx {
+namespace core {
 
 
 #ifdef DB_IMPL_FILESYSTEM
@@ -64,9 +65,11 @@ LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
 LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_DB_UTILS_H__
+// __LFX_CORE_DB_UTILS_H__
 #endif

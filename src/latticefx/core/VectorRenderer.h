@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_VECTOR_RENDERER_H__
-#define __LATTICEFX_VECTOR_RENDERER_H__ 1
+#ifndef __LFX_CORE_VECTOR_RENDERER_H__
+#define __LFX_CORE_VECTOR_RENDERER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -45,6 +45,7 @@ namespace osg {
 
 
 namespace lfx {
+namespace core {
 
 
 /** \class VectorRenderer VectorRenderer.h <latticefx/core/VectorRenderer.h>
@@ -52,8 +53,8 @@ namespace lfx {
 \details Attach the VectorRenderer to a DataSet as follows:
 
 \code
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
-    lfx::VectorRendererPtr renderOp( new lfx::VectorRenderer() );
+    DataSetPtr dsp( new DataSet() );
+    VectorRendererPtr renderOp( new VectorRenderer() );
     dsp->setRenderer( renderOp );
 \endcode
 
@@ -103,7 +104,7 @@ aloas as follows:
 
 \code
     // 'renderop' is a VectorRendererPtr
-    renderop->setInputNameAlias( lfx::VectorRenderer::POSITION, "MyXYZPositionData" );
+    renderop->setInputNameAlias( VectorRenderer::POSITION, "MyXYZPositionData" );
 \endcode
 
 If no alias is specified, VectorRenderer looks for ChannelData with the following default names:
@@ -135,12 +136,12 @@ public:
     VectorRenderer( const VectorRenderer& rhs );
     virtual ~VectorRenderer();
 
-    /** \brief Override base class lfx::Renderer.
+    /** \brief Override base class Renderer.
     \details Invoked by DataSet to obtain a scene graph for rendering points at a
     partivular time step. */
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
 
-    /** \brief Override base class lfx::Renderer.
+    /** \brief Override base class Renderer.
     \details Invoked by DataSet to obtain a root node StateSet globally applicable to
     all scene graphs created by getSceneGraph. Helps avoid redundant state setting. */
     virtual osg::StateSet* getRootState();
@@ -187,9 +188,11 @@ protected:
 typedef boost::shared_ptr< VectorRenderer > VectorRendererPtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_VECTOR_RENDERER_H__
+// __LFX_CORE_VECTOR_RENDERER_H__
 #endif

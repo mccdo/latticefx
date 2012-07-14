@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_SURFACE_RENDERER_H__
-#define __LATTICEFX_SURFACE_RENDERER_H__ 1
+#ifndef __LFX_CORE_SURFACE_RENDERER_H__
+#define __LFX_CORE_SURFACE_RENDERER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@ namespace osg {
 }
 
 namespace lfx {
+namespace core {
 
 
 /** \class PrimitiveSetGenerator SurfaceRenderer.h <latticefx/core/SurfaceRenderer.h>
@@ -112,7 +113,7 @@ public:
     SurfaceRenderer( const SurfaceRenderer& rhs );
     virtual ~SurfaceRenderer();
 
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
     virtual osg::StateSet* getRootState();
 
     /** \brief Specify the PrimitiveSetGenerator.
@@ -171,9 +172,11 @@ public:
 };
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_SURFACE_RENDERER_H__
+// __LFX_CORE_SURFACE_RENDERER_H__
 #endif

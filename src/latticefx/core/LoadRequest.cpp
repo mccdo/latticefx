@@ -34,6 +34,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 LoadRequest::LoadRequest()
@@ -41,7 +42,7 @@ LoadRequest::LoadRequest()
     _keys()
 {
 }
-LoadRequest::LoadRequest( const osg::NodePath& path, const lfx::DBKeyList& keys )
+LoadRequest::LoadRequest( const osg::NodePath& path, const DBKeyList& keys )
   : _path( path ),
     _keys( keys )
 {
@@ -55,7 +56,7 @@ LoadRequest::~LoadRequest()
 {
 }
 
-osg::Object* LoadRequest::find( const lfx::DBKey& dbKey )
+osg::Object* LoadRequest::find( const DBKey& dbKey )
 {
     ResultsMap::iterator it( _results.find( dbKey ) );
     if( it != _results.end() )
@@ -68,20 +69,22 @@ osg::Object* LoadRequest::find( const lfx::DBKey& dbKey )
 bool LoadRequestImage::load()
 {
     bool result( true );
-    BOOST_FOREACH( const lfx::DBKey key, _keys )
+    BOOST_FOREACH( const DBKey key, _keys )
     {
-        osg::Image* image( lfx::loadImage( key ) );
+        osg::Image* image( lfx::core::loadImage( key ) );
         if( image == NULL )
             result = false;
         _results[ key ] = image;
     }
     return( result );
 }
-osg::Image* LoadRequestImage::findAsImage( const lfx::DBKey& dbKey )
+osg::Image* LoadRequestImage::findAsImage( const DBKey& dbKey )
 {
     return( static_cast< osg::Image* >( find( dbKey ) ) );
 }
 
 
+// core
+}
 // lfx
 }

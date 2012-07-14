@@ -34,6 +34,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 ChannelDataLOD::ChannelDataLOD( const std::string& name )
@@ -77,5 +78,7 @@ bool ChannelDataLOD::allLODData( const ChannelDataList& data )
 }
 
 
+// core
+}
 // lfx
 }

@@ -56,6 +56,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 VectorRenderer::VectorRenderer()
@@ -77,7 +78,7 @@ VectorRenderer::~VectorRenderer()
 {
 }
 
-osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
+osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
@@ -165,7 +166,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
         // TBD bound pad needs to be settable.
-        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+        geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
         geode->addDrawable( geom );
 
         // Set the number of instances.
@@ -183,7 +184,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         // input ChannelData could vary from one time step to the next, which affects the
         // size of the data textures and therefore the texDim uniform values. It must be
         // specified per time step.
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
@@ -257,7 +258,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
         // TBD bound pad needs to be settable.
-        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+        geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
         geode->addDrawable( geom );
 
         // Set the number of instances.
@@ -275,7 +276,7 @@ osg::Node* VectorRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
         // input ChannelData could vary from one time step to the next, which affects the
         // size of the data textures and therefore the texDim uniform values. It must be
         // specified per time step.
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
@@ -495,5 +496,7 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
 }
 
 
+// core
+}
 // lfx
 }

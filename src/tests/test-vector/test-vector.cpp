@@ -47,16 +47,18 @@
 #include <osgwTools/Shapes.h>
 
 
+using namespace lfx::core;
 
-class InstancedVectors : public lfx::Renderer
+
+class InstancedVectors : public Renderer
 {
 public:
-    InstancedVectors() : lfx::Renderer()
+    InstancedVectors() : Renderer()
     {}
     virtual ~InstancedVectors()
     {}
 
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
         const osg::Array* sourceArray( _inputs[ 0 ]->asOSGArray() );
         const osg::Vec3Array* positions( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
@@ -66,7 +68,7 @@ public:
         osg::Geometry* geom( osgwTools::makeArrow() );
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
-        geom->setInitialBound( lfx::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+        geom->setInitialBound( getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
         geode->addDrawable( geom );
 
         // Set the number of instances.
@@ -76,17 +78,17 @@ public:
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
-        osg::Texture3D* posTex( lfx::createTexture3DForInstancedRenderer( getInput( "positions" ) ) );
+        osg::Texture3D* posTex( createTexture3DForInstancedRenderer( getInput( "positions" ) ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
         osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
         stateSet->addUniform( posUni );
 
-        osg::Texture3D* dirTex( lfx::createTexture3DForInstancedRenderer( getInput( "directions" ) ) );
+        osg::Texture3D* dirTex( createTexture3DForInstancedRenderer( getInput( "directions" ) ) );
         stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
         osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
         stateSet->addUniform( dirUni );
 
-        const osg::Vec3f dimensions( lfx::computeTexture3DDimensions( numElements ) );
+        const osg::Vec3f dimensions( computeTexture3DDimensions( numElements ) );
         osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
         stateSet->addUniform( texDim );
 
@@ -105,7 +107,7 @@ public:
 protected:
 };
 
-lfx::DataSetPtr prepareDataSet()
+DataSetPtr prepareDataSet()
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
@@ -128,15 +130,15 @@ lfx::DataSetPtr prepareDataSet()
             }
         }
     }
-    lfx::ChannelDataOSGArrayPtr vertData( new lfx::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    lfx::ChannelDataOSGArrayPtr dirData( new lfx::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    ChannelDataOSGArrayPtr dirData( new ChannelDataOSGArray( dirArray.get(), "directions" ) );
 
     // Create a data set and add the vertex and direction data.
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( vertData );
     dsp->addChannel( dirData );
 
-    lfx::RendererPtr renderOp( new InstancedVectors() );
+    RendererPtr renderOp( new InstancedVectors() );
     renderOp->addInput( vertData->getName() );
     renderOp->addInput( dirData->getName() );
     dsp->setRenderer( renderOp );
@@ -148,10 +150,10 @@ lfx::DataSetPtr prepareDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     // Create an example data set.
-    lfx::DataSetPtr dsp( prepareDataSet() );
+    DataSetPtr dsp( prepareDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );

@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_PLUGIN_MANAGER_H__
-#define __LATTICEFX_PLUGIN_MANAGER_H__ 1
+#ifndef __LFX_CORE_PLUGIN_MANAGER_H__
+#define __LFX_CORE_PLUGIN_MANAGER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -40,7 +40,7 @@
 
 
 namespace lfx {
-
+namespace core {
 
 
 /** \addtogroup PluginSupport Plugin Support
@@ -56,12 +56,12 @@ singleton, using PluginManager::addOperation().
 */
 struct LATTICEFX_EXPORT OperationInfo
 {
-    OperationInfo( lfx::OperationBasePtr instance, const std::string& className,
+    OperationInfo( OperationBasePtr instance, const std::string& className,
             const std::string& baseClassName, const std::string& description );
 
     std::string _pluginName;
     std::string _className, _baseClassName, _description;
-    lfx::OperationBasePtr _opInstance;
+    OperationBasePtr _opInstance;
 
     friend bool operator<( const OperationInfo& lhs, const OperationInfo& rhs );
 };
@@ -79,8 +79,8 @@ causes each exported class to immediately register itself with the PluginManager
 See PluginManager::addOperation(), which is invoked by the OperationInfo
 constructor. */
 #define REGISTER_OPERATION(_instance,_className,_baseClassName,_description) \
-static lfx::OperationInfo staticOperationRegistration_##_className( \
-    lfx::OperationBasePtr( _instance ), #_className, _baseClassName, _description );
+static OperationInfo staticOperationRegistration_##_className( \
+    OperationBasePtr( _instance ), #_className, _baseClassName, _description );
 
 
 
@@ -217,9 +217,11 @@ bool operator<( const PluginManager::PluginInfo& lhs, const PluginManager::Plugi
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_PLUGIN_MANAGER_H__
+// __LFX_CORE_PLUGIN_MANAGER_H__
 #endif

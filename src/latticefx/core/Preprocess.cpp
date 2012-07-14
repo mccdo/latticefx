@@ -30,6 +30,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 Preprocess::Preprocess()
@@ -56,5 +57,7 @@ Preprocess::ActionType Preprocess::getActionType() const
 }
 
 
+// core
+}
 // lfx
 }

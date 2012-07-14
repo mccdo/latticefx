@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_EXPORT_H__
-#define __LATTICEFX_EXPORT_H__ 1
+#ifndef __LFX_CORE_EXPORT_H__
+#define __LFX_CORE_EXPORT_H__ 1
 
 
 #if defined( _MSC_VER ) || defined( __CYGWIN__ ) || defined( __MINGW32__ ) || defined( __BCPLUSPLUS__ ) || defined( __MWERKS__ )
@@ -43,5 +43,5 @@
 #endif
 
 
-// __LATTICEFX_EXPORT_H__
+// __LFX_CORE_EXPORT_H__
 #endif

@@ -40,8 +40,8 @@ namespace Poco {
 }
 
 
-namespace lfx
-{
+namespace lfx {
+namespace core {
 
 
 /** \addtogroup lfxCoreLogging Message Logging Utilities */
@@ -115,6 +115,8 @@ protected:
 /*@}*/
 
 
+// core
+}
 // lfx
 }
 

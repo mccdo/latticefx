@@ -37,6 +37,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 osg::Image* loadImageFromDat( const std::string& fileName,
@@ -91,5 +92,7 @@ osg::Image* loadImageFromDat( const std::string& fileName,
 }
 
 
+// core
+}
 // lfx
 }

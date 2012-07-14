@@ -32,6 +32,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 ChannelData::ChannelData( const std::string& name )
@@ -103,5 +104,7 @@ void ChannelDataList::replaceData( const ChannelDataPtr channel )
 }
 
 
+// core
+}
 // lfx
 }

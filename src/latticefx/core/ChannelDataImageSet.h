@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_CHANNEL_DATA_IMAGE_SET_H__
-#define __LATTICEFX_CHANNEL_DATA_IMAGE_SET_H__ 1
+#ifndef __LFX_CORE_CHANNEL_DATA_IMAGE_SET_H__
+#define __LFX_CORE_CHANNEL_DATA_IMAGE_SET_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -45,13 +45,13 @@
 
 
 namespace lfx {
-
+namespace core {
 
 
 /** \class ChannelDataImageSet ChannelDataImageSet.h <latticefx/core/ChannelDataImageSet.h>
 \brief Composite pattern container for sets of image data, such as texture octants.
 \details TBD */
-class LATTICEFX_EXPORT ChannelDataImageSet : public lfx::ChannelDataComposite
+class LATTICEFX_EXPORT ChannelDataImageSet : public ChannelDataComposite
 {
 public:
     ChannelDataImageSet( const std::string& name=std::string( "" ) );
@@ -94,9 +94,11 @@ protected:
 typedef boost::shared_ptr< ChannelDataImageSet > ChannelDataImageSetPtr;
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_CHANNEL_DATA_IMAGE_SET_H__
+// __LFX_CORE_CHANNEL_DATA_IMAGE_SET_H__
 #endif

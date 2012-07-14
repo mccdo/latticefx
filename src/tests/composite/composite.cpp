@@ -45,38 +45,41 @@
 #include <osgViewer/Viewer>
 
 
-class ColorProcess : public lfx::Preprocess
+using namespace lfx::core;
+
+
+class ColorProcess : public Preprocess
 {
 public:
     ColorProcess()
-      : lfx::Preprocess()
+      : Preprocess()
     {
-        setActionType( lfx::Preprocess::REPLACE_DATA );
+        setActionType( Preprocess::REPLACE_DATA );
     }
 
-    virtual lfx::ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()()
     {
-        lfx::ChannelDataOSGArrayPtr input( boost::static_pointer_cast< lfx::ChannelDataOSGArray >( _inputs[ 0 ] ) );
+        ChannelDataOSGArrayPtr input( boost::static_pointer_cast< ChannelDataOSGArray >( _inputs[ 0 ] ) );
 
         osg::Vec3Array* color( new osg::Vec3Array );
         color->push_back( osg::Vec3( 0., 1., 0. ) );
-        lfx::ChannelDataOSGArrayPtr newData( new lfx::ChannelDataOSGArray( color, input->getName() ) );
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( color, input->getName() ) );
 
-        lfx::ChannelDataLODPtr cdLOD( new lfx::ChannelDataLOD( input->getName() ) );
+        ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
-            lfx::RangeValues( 0., 40000. ) );
+            RangeValues( 0., 40000. ) );
         cdLOD->setRange( cdLOD->addChannel( newData ),
-            lfx::RangeValues( 40000., FLT_MAX ) );
+            RangeValues( 40000., FLT_MAX ) );
         return( cdLOD );
     }
 };
 
-class BoxRenderer : public lfx::Renderer
+class BoxRenderer : public Renderer
 {
 public:
-    virtual osg::Node* getSceneGraph( const lfx::ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
-        lfx::ChannelDataOSGArray* cda( static_cast< lfx::ChannelDataOSGArray* >( _inputs[ 0 ].get() ) );
+        ChannelDataOSGArray* cda( static_cast< ChannelDataOSGArray* >( _inputs[ 0 ].get() ) );
         osg::Vec3Array* c( static_cast< osg::Vec3Array* >( cda->asOSGArray() ) );
 
         osg::Vec4Array* color( new osg::Vec4Array );
@@ -93,22 +96,22 @@ public:
     }
 };
 
-lfx::DataSetPtr createDataSet()
+DataSetPtr createDataSet()
 {
     osg::Vec3Array* c( new osg::Vec3Array );
     c->push_back( osg::Vec3( 1., 0., 0. ) );
-    lfx::ChannelDataOSGArrayPtr colorData( new lfx::ChannelDataOSGArray( c, "color" ) );
+    ChannelDataOSGArrayPtr colorData( new ChannelDataOSGArray( c, "color" ) );
 
-    lfx::DataSetPtr dsp( new lfx::DataSet() );
+    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( colorData );
 
     ColorProcess* op( new ColorProcess );
     op->addInput( "color" );
-    dsp->addPreprocess( lfx::PreprocessPtr( op ) );
+    dsp->addPreprocess( PreprocessPtr( op ) );
 
     BoxRenderer* renderOp( new BoxRenderer );
     renderOp->addInput( "color" );
-    dsp->setRenderer( lfx::RendererPtr( renderOp ) );
+    dsp->setRenderer( RendererPtr( renderOp ) );
 
     return( dsp );
 }
@@ -116,11 +119,11 @@ lfx::DataSetPtr createDataSet()
 
 int main( int argc, char** argv )
 {
-    lfx::Log::instance()->setPriority( lfx::Log::PrioInfo, lfx::Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     osg::ArgumentParser arguments( &argc, argv );
 
-    lfx::DataSetPtr dsp( createDataSet() );
+    DataSetPtr dsp( createDataSet() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
@@ -130,7 +133,7 @@ int main( int argc, char** argv )
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
-    lfx::PagingThread* pageThread( lfx::PagingThread::instance() );
+    PagingThread* pageThread( PagingThread::instance() );
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 

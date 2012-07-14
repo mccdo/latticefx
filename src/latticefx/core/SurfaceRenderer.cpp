@@ -44,6 +44,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 SurfaceRenderer::SurfaceRenderer()
@@ -65,7 +66,7 @@ SurfaceRenderer::~SurfaceRenderer()
 }
 
 
-osg::Node* SurfaceRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
+osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
@@ -240,5 +241,7 @@ void SimpleTrianglePrimitiveSetGenerator::operator()( osg::Geometry* geom, unsig
 }
 
 
+// core
+}
 // lfx
 }

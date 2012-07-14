@@ -26,8 +26,8 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LATTICEFX_LOAD_REQUEST_H__
-#define __LATTICEFX_LOAD_REQUEST_H__ 1
+#ifndef __LFX_CORE_LOAD_REQUEST_H__
+#define __LFX_CORE_LOAD_REQUEST_H__ 1
 
 
 //#include <latticefx/core/Export.h>
@@ -42,6 +42,7 @@
 
 
 namespace lfx {
+namespace core {
 
 
 /** \addtogroup PagingSupport */
@@ -54,19 +55,19 @@ namespace lfx {
 files, Node files, or Object files as needed. */
 struct LoadRequest {
     LoadRequest();
-    LoadRequest( const osg::NodePath& path, const lfx::DBKeyList& keys );
+    LoadRequest( const osg::NodePath& path, const DBKeyList& keys );
     LoadRequest( const LoadRequest& rhs );
     ~LoadRequest();
 
     virtual bool load() = 0;
 
-    osg::Object* find( const lfx::DBKey& dbKey );
+    osg::Object* find( const DBKey& dbKey );
 
 
     osg::NodePath _path;
-    lfx::DBKeyList _keys;
+    DBKeyList _keys;
 
-    typedef std::map< lfx::DBKey, osg::ref_ptr< osg::Object > > ResultsMap;
+    typedef std::map< DBKey, osg::ref_ptr< osg::Object > > ResultsMap;
     ResultsMap _results;
 };
 
@@ -82,7 +83,7 @@ struct LoadRequestImage : public LoadRequest
 {
     virtual bool load();
 
-    osg::Image* findAsImage( const lfx::DBKey& dbKey );
+    osg::Image* findAsImage( const DBKey& dbKey );
 };
 
 typedef boost::shared_ptr< LoadRequestImage > LoadRequestImagePtr;
@@ -91,9 +92,11 @@ typedef boost::shared_ptr< LoadRequestImage > LoadRequestImagePtr;
 /**@}*/
 
 
+// core
+}
 // lfx
 }
 
 
-// __LATTICEFX_LOAD_REQUEST_H__
+// __LFX_CORE_LOAD_REQUEST_H__
 #endif
