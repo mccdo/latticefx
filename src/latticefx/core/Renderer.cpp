@@ -253,9 +253,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
     osg::Vec4 maskParams( 0., 0., 0., _hmReference );
     if( _hmOperator != HM_OP_OFF )
     {
-        if( ( _hmSource & HM_SOURCE_RED ) != 0 )
+        if( _hmSource == HM_SOURCE_RED )
             maskParams[ 0 ] = 1.f;
-        else if( ( _hmSource & HM_SOURCE_SCALAR ) != 0 )
+        else if( _hmSource == HM_SOURCE_SCALAR )
             maskParams[ 0 ] = 2.f;
 
         if( ( _hmOperator & HM_OP_EQ ) != 0 )
