@@ -62,6 +62,7 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
     lfx::VolumeRendererPtr renderOp( new lfx::VolumeRenderer() );
     renderOp->setVolumeDims( dims );
     renderOp->setPlaneSpacing( .3f );
+
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
 
@@ -69,9 +70,9 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
     renderOp->setTransferFunctionInput( "" );
     renderOp->setTransferFunctionDestination( lfx::Renderer::TF_ALPHA );
 
-    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_ALPHA );
-    renderOp->setHardwareMaskReference( 0. );
+    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_RED );
     renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_GT );
+    renderOp->setHardwareMaskReference( .15f );
 
     return( dsp );
 }
