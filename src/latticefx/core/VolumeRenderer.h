@@ -52,21 +52,21 @@ public:
     SpatialVolume( const SpatialVolume& rhs );
     virtual ~SpatialVolume();
 
-	// volume dims and origin
+    // volume dims and origin
     /** \brief Set dimensions (in world units) of the volume box.
     \details This can be varied on every draw. */
-	void setVolumeDims( const osg::Vec3& volDims);
+    void setVolumeDims( const osg::Vec3& volDims);
     /** \brief Get dimensions (in world units) of the volume box. */
     osg::Vec3 getVolumeDims() const;
 
     /** \brief Set location (in world units) of the center of the volume box.
     \details This can be varied on every draw. */
-	void setVolumeOrigin( const osg::Vec3& volOrigin);
+    void setVolumeOrigin( const osg::Vec3& volOrigin);
     /** \brief Get the location (in world units) of the center of the volume box. */
     osg::Vec3 getVolumeOrigin() const;
 
 protected:
-	osg::Vec3 _volumeDims, _volumeOrigin;
+    osg::Vec3 _volumeDims, _volumeOrigin;
 };
 
 typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
@@ -107,8 +107,8 @@ public:
     float getPlaneSpacing() const;
 
 protected:
-	unsigned int _maxSlices;
-	float _planeSpacing;
+    unsigned int _maxSlices;
+    float _planeSpacing;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

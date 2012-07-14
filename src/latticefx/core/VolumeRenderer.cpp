@@ -66,20 +66,20 @@ SpatialVolume::~SpatialVolume()
 
 void SpatialVolume::setVolumeDims( const osg::Vec3& volDims)
 {
-	_volumeDims = volDims;
+    _volumeDims = volDims;
 }
 osg::Vec3 SpatialVolume::getVolumeDims() const
 {
-	return( _volumeDims );
+    return( _volumeDims );
 }
 
 void SpatialVolume::setVolumeOrigin( const osg::Vec3& volOrigin)
 {
-	_volumeOrigin = volOrigin;
+    _volumeOrigin = volOrigin;
 }
 osg::Vec3 SpatialVolume::getVolumeOrigin() const
 {
-	return( _volumeOrigin );
+    return( _volumeOrigin );
 }
 
 
@@ -104,41 +104,41 @@ VolumeRenderer::~VolumeRenderer()
 // <<<>>> temporarily here until integration is complete
 void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
 {
-	const float halfDimX( .5 );
-	const float halfDimZ( .5 );
+    const float halfDimX( .5 );
+    const float halfDimZ( .5 );
 
-	osg::Vec3Array* v = new osg::Vec3Array;
-	v->resize( 4 );
-	geom.setVertexArray( v );
+    osg::Vec3Array* v = new osg::Vec3Array;
+    v->resize( 4 );
+    geom.setVertexArray( v );
 
-	// Geometry for a single quad.
-	(*v)[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
-	(*v)[ 1 ] = osg::Vec3( halfDimX, -halfDimZ, 0. );
-	(*v)[ 2 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
-	(*v)[ 3 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
+    // Geometry for a single quad.
+    (*v)[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
+    (*v)[ 1 ] = osg::Vec3( halfDimX, -halfDimZ, 0. );
+    (*v)[ 2 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
+    (*v)[ 3 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
 
-	// Use the DrawArraysInstanced PrimitiveSet and tell it to draw nInstances instances.
-	geom.addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4, nInstances ) );
+    // Use the DrawArraysInstanced PrimitiveSet and tell it to draw nInstances instances.
+    geom.addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4, nInstances ) );
 }
 
 
 osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
 {
-	osg::ref_ptr< osg::Geode > geode( new osg::Geode );
+    osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-	osg::Geometry* geom( new osg::Geometry );
-	geom->setUseDisplayList( false );
-	geom->setUseVertexBufferObjects( true );
-	// OSG has no clue where our vertex shader will place the geometric data,
-	// so specify an initial bound to allow proper culling and near/far computation.
-	osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
-	geom->setInitialBound( bb );
-	// Add geometric data and the PrimitiveSet. Specify numInstances as _maxSlices.
-	createDAIGeometry( *geom, _maxSlices );
-	geode->addDrawable( geom );
+    osg::Geometry* geom( new osg::Geometry );
+    geom->setUseDisplayList( false );
+    geom->setUseVertexBufferObjects( true );
+    // OSG has no clue where our vertex shader will place the geometric data,
+    // so specify an initial bound to allow proper culling and near/far computation.
+    osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
+    geom->setInitialBound( bb );
+    // Add geometric data and the PrimitiveSet. Specify numInstances as _maxSlices.
+    createDAIGeometry( *geom, _maxSlices );
+    geode->addDrawable( geom );
 
 
-	osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+    osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
     ChannelDataPtr dataPtr( getInput( "volumedata" ) );
     if( dataPtr == NULL )
@@ -151,38 +151,38 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     osg::Image* volumeImage( dataImagePtr->getImage() );
 
     osg::Texture3D* volumeTexture = new osg::Texture3D( volumeImage );
-	volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
-	volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
-	volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
-	volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
-	volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
+    volumeTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
+    volumeTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
+    volumeTexture->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
+    volumeTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
+    volumeTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
     volumeTexture->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
 
 
-	return( geode.release() );
+    return( geode.release() );
 }
 
 
 osg::StateSet* VolumeRenderer::getRootState()
 {
-	osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
+    osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
 
-	// position, direction, transfer function input, and hardware mask input texture
-	// units are the same for all time steps, so set their sampler uniform unit
-	// values in the root state.
-	const unsigned int volTexUnit( getOrAssignTextureUnit( "volumeTex" ) );
-	osg::Uniform* volUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "VolumeTexture" ) ); volUni->set( (int)volTexUnit );
-	stateSet->addUniform( volUni );
+    // position, direction, transfer function input, and hardware mask input texture
+    // units are the same for all time steps, so set their sampler uniform unit
+    // values in the root state.
+    const unsigned int volTexUnit( getOrAssignTextureUnit( "volumeTex" ) );
+    osg::Uniform* volUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "VolumeTexture" ) ); volUni->set( (int)volTexUnit );
+    stateSet->addUniform( volUni );
 
-	if( ( getTransferFunction() != NULL ) &&
+    if( ( getTransferFunction() != NULL ) &&
         !( getTransferFunctionInput().empty() ) )
     {
         LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
     }
 
-	// Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
+    // Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
     osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3f( _volumeDims ) ) );
     stateSet->addUniform( dimsUni );
     osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3f( _volumeOrigin ) ) );
@@ -190,40 +190,40 @@ osg::StateSet* VolumeRenderer::getRootState()
     osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", _planeSpacing ) );
     stateSet->addUniform( spaceUni );
 
-	osg::BlendFunc *fn = new osg::BlendFunc();
-	fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
-	stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
+    osg::BlendFunc *fn = new osg::BlendFunc();
+    fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
     osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
     stateSet->setAttributeAndModes( depth, osg::StateAttribute::ON );
 
     // Set base class transfer function and volume texture uniforms.
-	addHardwareFeatureUniforms( stateSet.get() );
+    addHardwareFeatureUniforms( stateSet.get() );
 
-	osg::Program* program = new osg::Program();
-	stateSet->setAttribute( program );
-	program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vs" ) );
-	program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
+    osg::Program* program = new osg::Program();
+    stateSet->setAttribute( program );
+    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vs" ) );
+    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
 
-	return( stateSet.release() );
+    return( stateSet.release() );
 }
 
 void VolumeRenderer::setMaxSlices( const unsigned int& maxSlices )
 {
-	_maxSlices = maxSlices;
+    _maxSlices = maxSlices;
 }
 unsigned int VolumeRenderer::getMaxSlices() const
 {
-	return( _maxSlices );
+    return( _maxSlices );
 }
 
 void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
 {
-	_planeSpacing = planeSpacing;
+    _planeSpacing = planeSpacing;
 }
 float VolumeRenderer::getPlaneSpacing() const
 {
-	return( _planeSpacing );
+    return( _planeSpacing );
 }
 
 
