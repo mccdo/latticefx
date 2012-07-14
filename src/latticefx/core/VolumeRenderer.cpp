@@ -159,21 +159,6 @@ osg::Node* VolumeRenderer::getSceneGraph( const lfx::ChannelDataPtr maskIn )
     volumeTexture->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
-    stateSet->setTextureAttributeAndModes(
-        getOrAssignTextureUnit( "tfInput" ), volumeTexture );
-
-	osg::Texture2D* transferTexture = new osg::Texture2D(
-        osgDB::readImageFile( "Spectrum.png" ) );
-	transferTexture->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
-	transferTexture->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
-	transferTexture->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE);
-	transferTexture->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE);
-
-    const unsigned int transTexUnit( getOrAssignTextureUnit( "transferHackTBD" ) );
-    stateSet->setTextureAttributeAndModes( transTexUnit, transferTexture );
-
-	osg::Uniform* transUni( new osg::Uniform( osg::Uniform::SAMPLER_2D, "TransferFunction" ) ); transUni->set( (int)transTexUnit );
-	stateSet->addUniform( transUni );
 
 
 	return( geode.release() );
@@ -191,17 +176,11 @@ osg::StateSet* VolumeRenderer::getRootState()
 	osg::Uniform* volUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "VolumeTexture" ) ); volUni->set( (int)volTexUnit );
 	stateSet->addUniform( volUni );
 
-	if( getTransferFunction() != NULL )
-	{
-		//const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-		//osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "TransferFunction" ) ); tfInputUni->set( (int)tfInputUnit );
-		//stateSet->addUniform( tfInputUni );
-
-        if( !( getTransferFunctionInput().empty() ) )
-        {
-            LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
-        }
-	}
+	if( ( getTransferFunction() != NULL ) &&
+        !( getTransferFunctionInput().empty() ) )
+    {
+        LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
+    }
 
 	// Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
     osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3f( _volumeDims ) ) );

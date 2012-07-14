@@ -131,7 +131,6 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 
 
 uniform sampler3D VolumeTexture;
-uniform sampler2D TransferFunction;
 
 varying vec3 Texcoord;
 varying vec3 TexcoordUp;
