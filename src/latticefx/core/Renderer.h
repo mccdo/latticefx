@@ -212,7 +212,10 @@ public:
 
     Because the transfer function is a texture lookup, LatticeFX supports mapping a range
     of transfer function input values into the (texture coordinate) range 0.0 to 1.0. See
-    setTransferFunctionInputRange(). Indices outside the specified range are clamped. */
+    setTransferFunctionInputRange(). Indices outside the specified range are clamped.
+    
+    This function is ignored for the VolumeRenderer. The VolumeRenderer transfer function
+    input is always taken from the volume data itself. */
     void setTransferFunctionInput( const std::string& name );
     /** \brief Get the name of the transfer function input ChannelData. */
     const std::string& getTransferFunctionInput() const;
@@ -228,7 +231,8 @@ public:
     typedef enum {
         TF_RGB = 0,
         TF_RGBA = 1,
-        TF_ALPHA = 2
+        TF_ALPHA = 2,
+        TF_RGB_SAMPLE = 3
     } TransferFunctionDestination;
     /** \brief Specify the transfer function destination.
     \details The transfer function image (setTransferFunction()) is indexed by the input
@@ -238,6 +242,8 @@ public:
     The alpha values are taken from the OpenGL primary color.
     \li TF_RGBA The result determines the RGBA values of the ambient and diffuse material colors.
     \li TF_ALPHA The result alpha value determines the alpha values of the ambient and diffuse
+    \LI TF_RGB_SAMPLE Supported by VolumeRenderer only. Like TF_RGB, except the alpha values are
+    taken from the volume data sample.
     material colors. The RGB values are taken from the OpenGL primary color.
 
     The default is TF_ALPHA. */

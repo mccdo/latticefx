@@ -66,11 +66,11 @@ lfx::DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dim
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
 
-    renderOp->setTransferFunction( lfx::loadImageFromDat( "02.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
-    renderOp->setTransferFunctionInput( "" );
-    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_ALPHA );
+    renderOp->setTransferFunction( osgDB::readImageFile( "Spectrum.png" ) );
+    renderOp->setTransferFunctionDestination( lfx::Renderer::TF_RGB_SAMPLE );
 
-    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_RED );
+    // Render when alpha values are greater than 0.15.
+    renderOp->setHardwareMaskInputSource( lfx::Renderer::HM_SOURCE_ALPHA );
     renderOp->setHardwareMaskOperator( lfx::Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( .15f );
 

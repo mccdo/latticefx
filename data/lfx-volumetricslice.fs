@@ -28,6 +28,57 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
 /** end light **/
 
 
+/** begin transfer function **/
+
+uniform sampler1D tf1d;
+uniform vec2 tfRange;
+uniform int tfDimension;
+uniform int tfDest;
+const int tfDestRGB = 0;
+const int tfDestRGBA = 1;
+const int tfDestAlpha = 2;
+const int tfDestRGBSample = 3;
+
+vec4 transferFunction( in float index )
+{
+    vec4 xfer;
+    float range = tfRange.y - tfRange.x;
+    float rangeIndex = ( index - tfRange.x ) / range;
+    if( tfDimension == 1 ) // 1D transfer function.
+    {
+        xfer = texture1D( tf1d, rangeIndex );
+    }
+    else // Transfer function is disabled.
+    {
+        return( gl_Color );
+    }
+
+    vec4 returnColor;
+    if( tfDest == tfDestRGB )
+    {
+        returnColor.rgb = xfer.rgb;
+        returnColor.a = gl_Color.a;
+    }
+    else if( tfDest == tfDestRGBA )
+    {
+        returnColor = xfer;
+    }
+    else if( tfDest == tfDestAlpha )
+    {
+        returnColor.rgb = gl_Color.rgb;
+        returnColor.a = xfer.a;
+    }
+    else //tfDestRGBSample
+    {
+        returnColor.rgb = xfer.rgb;
+        returnColor.a = rangeIndex;
+    }
+    return( returnColor );
+}
+
+/** end transfer function **/
+
+
 /** begin hardware mask **/
 
 uniform sampler3D hmInput;
@@ -109,7 +160,8 @@ void main( void )
     vec4 fvBaseColor = texture3D( VolumeTexture, Texcoord );
 
 
-    if( !hardwareMask( Texcoord, fvBaseColor ) )
+    vec4 color = transferFunction( fvBaseColor.r );
+    if( !hardwareMask( Texcoord, color ) )
         discard;
 
 
@@ -131,13 +183,11 @@ void main( void )
     vec3 ocNormal = vec3( xVec.r, yVec.r, zVec.r );
     vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
 
-    //vec4 xfer = texture2D( TransferFunction, vec2(fvBaseColor.r, 0.0) );
-    vec4 xfer = vec4( 1., 1., 1., 1. );
-    fvBaseColor = fragmentLighting( xfer, ecNormal );
-    fvBaseColor.a = 1.;
+    vec4 finalColor = fragmentLighting( color, ecNormal );
+    finalColor.a = color.a;
 
 
-    gl_FragData[ 0 ] = fvBaseColor;
+    gl_FragData[ 0 ] = finalColor;
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );

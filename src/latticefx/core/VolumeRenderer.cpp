@@ -193,9 +193,14 @@ osg::StateSet* VolumeRenderer::getRootState()
 
 	if( getTransferFunction() != NULL )
 	{
-		const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-		osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "TransferFunction" ) ); tfInputUni->set( (int)tfInputUnit );
-		stateSet->addUniform( tfInputUni );
+		//const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+		//osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "TransferFunction" ) ); tfInputUni->set( (int)tfInputUnit );
+		//stateSet->addUniform( tfInputUni );
+
+        if( !( getTransferFunctionInput().empty() ) )
+        {
+            LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
+        }
 	}
 
 	// Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
