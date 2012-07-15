@@ -37,8 +37,28 @@
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 
+#include <boost/foreach.hpp>
+
 
 using namespace lfx::core;
+
+
+const std::string logstr( "lfx.demo" );
+
+
+void dumpUniformInfo( const Renderer& renderOp )
+{
+    LFX_CRITICAL_STATIC( logstr, "Available uniforms:" );
+
+    const Renderer::UniformInfoVector& infoVec( renderOp.getUniforms() );
+    BOOST_FOREACH( const Renderer::UniformInfo& info, infoVec )
+    {
+        LFX_CRITICAL_STATIC( logstr, info._name + "\t" +
+            Renderer::uniformTypeAsString( info._type ) + "\t" +
+            info._description );
+    }
+}
+
 
 
 class ScalarComputation : public RTPOperation
@@ -159,6 +179,8 @@ DataSetPtr prepareDataSet()
     renderOp->addInput( cdwn->getName() );
     renderOp->addInput( "scalar" );
     dsp->setRenderer( renderOp );
+
+    dumpUniformInfo( *renderOp );
 
     return( dsp );
 }

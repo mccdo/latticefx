@@ -35,6 +35,7 @@
 #include <latticefx/core/LogBase.h>
 
 #include <osg/Shader>
+#include <osg/Uniform>
 #include <osg/Image>
 #include <osg/ref_ptr>
 
@@ -114,6 +115,8 @@ This is usually just the eye coordinate vertex:
 \code
     gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 \endcode
+
+However, the implementation might be more complex, depending on the rendering algorithm.
 */
 class LATTICEFX_EXPORT Renderer : public OperationBase, protected LogBase
 {
@@ -140,6 +143,59 @@ public:
     ChannelData, which could vary depending on how many elements passed the host
     mask at a given time step. */
     virtual osg::StateSet* getRootState() { return( NULL ); }
+
+
+
+    /** \name Uniform Information
+    \details These functions allow access to Renderer-specific uniform variable information.
+    */
+    /**@{*/
+
+    struct UniformInfo {
+        UniformInfo( const std::string& name=std::string(""), const osg::Uniform::Type& type=osg::Uniform::UNDEFINED, const std::string& description=std::string("") );
+        UniformInfo( const UniformInfo& rhs );
+        ~UniformInfo();
+
+        std::string _name;
+        osg::Uniform::Type _type;
+        std::string _description;
+        osg::Matrixf _mat4Value;
+        osg::Vec2f _vec2Value;
+        osg::Vec3f _vec3Value;
+        osg::Vec4f _vec4Value;
+        float _floatValue;
+        int _intValue;
+        bool _boolValue;
+    };
+    typedef std::vector< UniformInfo > UniformInfoVector;
+    /** \brief TBD
+    \details TBD */
+    void registerUniform( const UniformInfo& info );
+
+    /** \brief TBD
+    \details TBD */
+    const UniformInfoVector& getUniforms() const;
+    /** \brief TBD
+    \details TBD */
+    unsigned int getNumUniforms() const;
+    /** \brief TBD
+    \details TBD */
+    UniformInfo& getUniform( const std::string& name );
+    /** \override */
+    const UniformInfo& getUniform( const std::string& name ) const;
+    /** \override */
+    UniformInfo& getUniform( const unsigned int index );
+    /** \override */
+    const UniformInfo& getUniform( const unsigned int index ) const;
+    /** \brief TBD
+    \details TBD */
+    osg::Uniform* createUniform( const UniformInfo& info ) const;
+
+    /** \brief TBD
+    \details TBD */
+    static std::string uniformTypeAsString( const osg::Uniform::Type type );
+
+    /**@}*/
 
 
     /** \name Texture Unit Usage
@@ -377,6 +433,8 @@ protected:
     \returns A valid Shader object on success. Returns NULL on failure. Note that
     osg::Program::addShader() is a no-op if the shader parameter is NULL. */
     osg::Shader* loadShader( const osg::Shader::Type type, const std::string& fileName );
+
+    UniformInfoVector _uniformInfo;
 
     unsigned int _baseUnit;
     unsigned int _unitAssignmentCounter;

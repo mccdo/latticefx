@@ -55,6 +55,18 @@ SurfaceRenderer::SurfaceRenderer()
     setInputNameAlias( NORMAL, "normals" );
     setInputNameAlias( WARP_VERTEX, "warp_vertex" );
     setInputNameAlias( WARP_NORMAL, "warp_normal" );
+
+    // Create and register uniform information, and initial/default values
+    // (if we have them -- in some cases, we don't know the actual initial
+    // values until scene graph creation).
+    UniformInfo info;
+    info = UniformInfo( "warpScale", osg::Uniform::FLOAT, "Vertex warp scale value." );
+    info._floatValue = 0.f;
+    registerUniform( info );
+
+    info = UniformInfo( "warpEnabled", osg::Uniform::BOOL, "Vertex warp enable toggle." );
+    info._boolValue = false;
+    registerUniform( info );
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
   : Renderer( rhs ),
@@ -164,8 +176,11 @@ osg::StateSet* SurfaceRenderer::getRootState()
 
     ChannelDataPtr warpVAlias( getInput( getInputTypeAlias( WARP_VERTEX ) ) );
     ChannelDataPtr warpNAlias( getInput( getInputTypeAlias( WARP_NORMAL ) ) );
+
     const bool warpEnabled( ( warpVAlias != NULL ) && ( warpNAlias != NULL ) );
-    stateSet->addUniform( new osg::Uniform( "warpEnabled", warpEnabled ) );
+    UniformInfo& info( getUniform( "warpEnabled" ) );
+    info._boolValue = warpEnabled; // Set the default.
+    stateSet->addUniform( createUniform( getUniform( "warpEnabled" ) ) );
 
     osg::Program* program( new osg::Program() );
     program->addBindAttribLocation( "warpVertex", WARP_VERTEX_ATTRIB );
@@ -177,7 +192,7 @@ osg::StateSet* SurfaceRenderer::getRootState()
     stateSet->setAttribute( program );
 
     if( warpEnabled )
-        stateSet->addUniform( new osg::Uniform( "warpScale", 0.f ) );
+        stateSet->addUniform( createUniform( getUniform( "warpScale" ) ) );
 
     return( stateSet.release() );
 }

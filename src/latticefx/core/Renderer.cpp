@@ -35,6 +35,8 @@
 #include <osg/Texture3D>
 #include <osgDB/FileUtils>
 
+#include <boost/foreach.hpp>
+
 
 namespace lfx {
 namespace core {
@@ -51,10 +53,37 @@ Renderer::Renderer( const std::string logNameSuffix )
     _hmReference( 0.f ),
     _hmOperator( HM_OP_OFF )
 {
+    // Create and register uniform information, and initial/default values
+    // (if we have them -- in some cases, we don't know the actual initial
+    // values until scene graph creation).
+    UniformInfo info;
+    info = UniformInfo( "tf1d", osg::Uniform::SAMPLER_1D, "1D transfer function sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "tf2d", osg::Uniform::SAMPLER_2D, "2D transfer function sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "tf3d", osg::Uniform::SAMPLER_3D, "3D transfer function sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "tfRange", osg::Uniform::FLOAT_VEC2, "Transfer function input range (x=min, y=max)." );
+    info._vec2Value = _tfRange;
+    registerUniform( info );
+
+    info = UniformInfo( "tfDimension", osg::Uniform::INT, "Transfer function dimension: 0 (off), 1, 2, or 3." );
+    registerUniform( info );
+
+    info = UniformInfo( "tfDest", osg::Uniform::INT, "Transfer function destination: 0=RGB, 1=RGBA, 2=ALPHA, 3=RGB_SAMPLE." );
+    info._intValue = (int) _tfDest;
+    registerUniform( info );
+
+    info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters." );
+    registerUniform( info );
 }
 Renderer::Renderer( const Renderer& rhs )
   : OperationBase( rhs ),
     LogBase( rhs ),
+    _uniformInfo( rhs._uniformInfo ),
     _baseUnit( rhs._baseUnit ),
     _unitAssignmentCounter( rhs._unitAssignmentCounter ),
     _unitAssignmentMap( rhs._unitAssignmentMap ),
@@ -70,6 +99,155 @@ Renderer::Renderer( const Renderer& rhs )
 Renderer::~Renderer()
 {
 }
+
+
+
+Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description )
+  : _name( name ),
+    _type( type ),
+    _description( description ),
+    _mat4Value( osg::Matrixf::identity() ),
+    _vec2Value( 0.f, 0.f ),
+    _vec3Value( 0.f, 0.f, 0.f ),
+    _vec4Value( 0.f, 0.f, 0.f, 0.f ),
+    _floatValue( 0.f ),
+    _intValue( 0 ),
+    _boolValue( false )
+{
+}
+Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
+  : _name( rhs._name ),
+    _type( rhs._type ),
+    _description( rhs._description ),
+    _mat4Value( rhs._mat4Value ),
+    _vec2Value( rhs._vec2Value ),
+    _vec3Value( rhs._vec3Value ),
+    _vec4Value( rhs._vec4Value ),
+    _floatValue( rhs._floatValue ),
+    _intValue( rhs._intValue ),
+    _boolValue( rhs._boolValue )
+{
+}
+Renderer::UniformInfo::~UniformInfo()
+{
+}
+
+void Renderer::registerUniform( const UniformInfo& info )
+{
+    _uniformInfo.push_back( info );
+}
+const Renderer::UniformInfoVector& Renderer::getUniforms() const
+{
+    return( _uniformInfo );
+}
+unsigned int Renderer::getNumUniforms() const
+{
+    return( _uniformInfo.size() );
+}
+Renderer::UniformInfo& Renderer::getUniform( const std::string& name )
+{
+    BOOST_FOREACH( UniformInfo& info, _uniformInfo )
+    {
+        if( info._name == name )
+            return( info );
+    }
+    LFX_WARNING( "getUniform(name): Can't find uniform \"" + name + "\"." );
+    return( _uniformInfo[ 0 ] );
+}
+const Renderer::UniformInfo& Renderer::getUniform( const std::string& name ) const
+{
+    Renderer* nonConstThis( const_cast< Renderer* >( this ) );
+    return( nonConstThis->getUniform( name ) );
+}
+Renderer::UniformInfo& Renderer::getUniform( const unsigned int index )
+{
+    if( index >= _uniformInfo.size() )
+        LFX_WARNING( "getUniform(index): index out of range." );
+    return( _uniformInfo[ index ] );
+}
+const Renderer::UniformInfo& Renderer::getUniform( const unsigned int index ) const
+{
+    Renderer* nonConstThis( const_cast< Renderer* >( this ) );
+    return( nonConstThis->getUniform( index ) );
+}
+osg::Uniform* Renderer::createUniform( const UniformInfo& info ) const
+{
+    osg::ref_ptr< osg::Uniform > uniform( new osg::Uniform( info._type, info._name ) );
+
+    switch( info._type )
+    {
+    case osg::Uniform::FLOAT_MAT4:
+        uniform->set( info._mat4Value );
+        break;
+    case osg::Uniform::FLOAT_VEC2:
+        uniform->set( info._vec2Value );
+        break;
+    case osg::Uniform::FLOAT_VEC3:
+        uniform->set( info._vec3Value );
+        break;
+    case osg::Uniform::FLOAT_VEC4:
+        uniform->set( info._vec4Value );
+        break;
+    case osg::Uniform::FLOAT:
+        uniform->set( info._floatValue );
+        break;
+    case osg::Uniform::SAMPLER_1D:
+    case osg::Uniform::SAMPLER_2D:
+    case osg::Uniform::SAMPLER_3D:
+    case osg::Uniform::INT:
+        uniform->set( info._intValue );
+        break;
+    case osg::Uniform::BOOL:
+        uniform->set( info._boolValue );
+        break;
+    default:
+        LFX_WARNING( "createUniform(): Unsupported uniform type." );
+        break;
+    }
+
+    return( uniform.release() );
+}
+
+std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )
+{
+    switch( type )
+    {
+    case osg::Uniform::FLOAT_MAT4:
+        return( "FLOAT_MAT4" );
+        break;
+    case osg::Uniform::FLOAT_VEC2:
+        return( "FLOAT_VEC2" );
+        break;
+    case osg::Uniform::FLOAT_VEC3:
+        return( "FLOAT_VEC3" );
+        break;
+    case osg::Uniform::FLOAT_VEC4:
+        return( "FLOAT_VEC4" );
+        break;
+    case osg::Uniform::FLOAT:
+        return( "FLOAT" );
+        break;
+    case osg::Uniform::SAMPLER_1D:
+        return( "SAMPLER_1D" );
+        break;
+    case osg::Uniform::SAMPLER_2D:
+        return( "SAMPLER_2D" );
+        break;
+    case osg::Uniform::SAMPLER_3D:
+        return( "SAMPLER_3D" );
+        break;
+    case osg::Uniform::INT:
+        return( "INT" );
+        break;
+    case osg::Uniform::BOOL:
+        return( "BOOL" );
+        break;
+    default:
+        return( "Unsupported uniform type." );
+        break;
+    }
+}
+
 
 
 void Renderer::setTextureBaseUnit( const unsigned int baseUnit )
@@ -204,8 +382,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         const unsigned int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
         stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf1dUni( new osg::Uniform( osg::Uniform::SAMPLER_1D, "tf1d" ) ); tf1dUni->set( (int)tf1dUnit );
-        stateSet->addUniform( tf1dUni );
+        UniformInfo& info( getUniform( "tf1d" ) );
+        info._intValue = tf1dUnit;
+        stateSet->addUniform( createUniform( info ) );
     }
     else if( function->r() == 1 )
     {
@@ -217,8 +396,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         const unsigned int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
         stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf2dUni( new osg::Uniform( osg::Uniform::SAMPLER_2D, "tf2d" ) ); tf2dUni->set( (int)tf2dUnit );
-        stateSet->addUniform( tf2dUni );
+        UniformInfo& info( getUniform( "tf2d" ) );
+        info._intValue = tf2dUnit;
+        stateSet->addUniform( createUniform( info ) );
     }
     else
     {
@@ -230,20 +410,28 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         const unsigned int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
         stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
 
-        osg::Uniform* tf3dUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tf3d" ) ); tf3dUni->set( (int)tf3dUnit );
-        stateSet->addUniform( tf3dUni );
+        UniformInfo& info( getUniform( "tf3d" ) );
+        info._intValue = tf3dUnit;
+        stateSet->addUniform( createUniform( info ) );
     }
 
-    osg::Uniform* tfRange( new osg::Uniform( "tfRange", _tfRange ) );
-    stateSet->addUniform( tfRange );
+    {
+        UniformInfo& info( getUniform( "tfRange" ) );
+        info._vec2Value = _tfRange;
+        stateSet->addUniform( createUniform( info ) );
+    }
 
-    // uniform int tfDimension, 0 (disabled), 1, 2, or 3.
-    osg::Uniform* tfDimUni( new osg::Uniform( "tfDimension", tfDimension ) );
-    stateSet->addUniform( tfDimUni );
+    {
+        UniformInfo& info( getUniform( "tfDimension" ) );
+        info._intValue = tfDimension;
+        stateSet->addUniform( createUniform( info ) );
+    }
 
-    // uniform int tfDest, 0=RGB, 1=RGBA, 2=ALPHA
-    osg::Uniform* tfDestUni( new osg::Uniform( "tfDest", (int)getTransferFunctionDestination() ) );
-    stateSet->addUniform( tfDestUni );
+    {
+        UniformInfo& info( getUniform( "tfDest" ) );
+        info._intValue = (int) getTransferFunctionDestination();
+        stateSet->addUniform( createUniform( info ) );
+    }
 
 
     // Cram all mask parameters into a single vec4 uniform:
@@ -270,8 +458,11 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
             maskParams[ 2 ] = 1.f;
     }
 
-    osg::Uniform* hmParamsUni( new osg::Uniform( "hmParams", maskParams ) );
-    stateSet->addUniform( hmParamsUni );
+    {
+        UniformInfo& info( getUniform( "hmParams" ) );
+        info._vec4Value = maskParams;
+        stateSet->addUniform( createUniform( info ) );
+    }
 }
 
 
