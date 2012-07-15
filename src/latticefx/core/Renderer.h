@@ -168,9 +168,6 @@ public:
         bool _boolValue;
     };
     typedef std::vector< UniformInfo > UniformInfoVector;
-    /** \brief TBD
-    \details TBD */
-    void registerUniform( const UniformInfo& info );
 
     /** \brief TBD
     \details TBD */
@@ -189,7 +186,7 @@ public:
     const UniformInfo& getUniform( const unsigned int index ) const;
     /** \brief TBD
     \details TBD */
-    osg::Uniform* createUniform( const UniformInfo& info ) const;
+    static osg::Uniform* createUniform( const UniformInfo& info );
 
     /** \brief TBD
     \details TBD */
@@ -433,6 +430,11 @@ protected:
     \returns A valid Shader object on success. Returns NULL on failure. Note that
     osg::Program::addShader() is a no-op if the shader parameter is NULL. */
     osg::Shader* loadShader( const osg::Shader::Type type, const std::string& fileName );
+
+    /** \brief TBD
+    \details TBD */
+    void registerUniform( const UniformInfo& info );
+
 
     UniformInfoVector _uniformInfo;
 

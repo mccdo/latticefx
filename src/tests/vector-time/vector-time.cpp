@@ -391,7 +391,7 @@ int main( int argc, char** argv )
         stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
 
         // Add uniform to control transfer function min/max range.
-        stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2( -3., 2. ) ),
+        stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2f( -3.f, 2.f ) ),
             osg::StateAttribute::OVERRIDE );
     }
     

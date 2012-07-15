@@ -170,7 +170,7 @@ const Renderer::UniformInfo& Renderer::getUniform( const unsigned int index ) co
     Renderer* nonConstThis( const_cast< Renderer* >( this ) );
     return( nonConstThis->getUniform( index ) );
 }
-osg::Uniform* Renderer::createUniform( const UniformInfo& info ) const
+osg::Uniform* Renderer::createUniform( const UniformInfo& info )
 {
     osg::ref_ptr< osg::Uniform > uniform( new osg::Uniform( info._type, info._name ) );
 
@@ -201,7 +201,7 @@ osg::Uniform* Renderer::createUniform( const UniformInfo& info ) const
         uniform->set( info._boolValue );
         break;
     default:
-        LFX_WARNING( "createUniform(): Unsupported uniform type." );
+        LFX_WARNING_STATIC( "lfx.core", "Renderer::createUniform(): Unsupported uniform type." );
         break;
     }
 

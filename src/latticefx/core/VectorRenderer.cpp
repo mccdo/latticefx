@@ -67,6 +67,28 @@ VectorRenderer::VectorRenderer()
     setInputNameAlias( POSITION, "positions" );
     setInputNameAlias( DIRECTION, "directions" );
     setInputNameAlias( RADIUS, "radii" );
+
+    // Create and register uniform information, and initial/default values
+    // (if we have them -- in some cases, we don't know the actual initial
+    // values until scene graph creation).
+    UniformInfo info;
+    info = UniformInfo( "texDim", osg::Uniform::FLOAT_VEC3, "Texture dimensions for instanced rendering data." );
+    registerUniform( info );
+
+    info = UniformInfo( "texPos", osg::Uniform::SAMPLER_3D, "Position texture data sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "texRad", osg::Uniform::SAMPLER_3D, "Radius texture data sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "texDir", osg::Uniform::SAMPLER_3D, "Vector direction texture data sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "tfInput", osg::Uniform::SAMPLER_3D, "Transfer function input data sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "hmInput", osg::Uniform::SAMPLER_3D, "Hardware mask input data sampler unit." );
+    registerUniform( info );
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
   : Renderer( rhs ),
@@ -185,8 +207,11 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         // size of the data textures and therefore the texDim uniform values. It must be
         // specified per time step.
         const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
-        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
-        stateSet->addUniform( texDim );
+        {
+            UniformInfo& info( getUniform( "texDim" ) );
+            info._vec3Value = dimensions;
+            stateSet->addUniform( createUniform( info ) );
+        }
 
         // Create image data and store in DB.
         osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
@@ -277,8 +302,11 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         // size of the data textures and therefore the texDim uniform values. It must be
         // specified per time step.
         const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
-        osg::Uniform* texDim( new osg::Uniform( "texDim", dimensions ) );
-        stateSet->addUniform( texDim );
+        {
+            UniformInfo& info( getUniform( "texDim" ) );
+            info._vec3Value = dimensions;
+            stateSet->addUniform( createUniform( info ) );
+        }
 
         osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
 
@@ -373,26 +401,30 @@ osg::StateSet* VectorRenderer::getRootState()
         // position, radius, transfer function input, and hardware mask input texture
         // units are the same for all time steps, so set their sampler uniform unit
         // values in the root state.
-        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
-        stateSet->addUniform( posUni );
+        {
+            UniformInfo& info( getUniform( "texPos" ) );
+            info._intValue = getOrAssignTextureUnit( "posTex" );
+            stateSet->addUniform( createUniform( info ) );
+        }
 
-        const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
-        osg::Uniform* radUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texRad" ) ); radUni->set( (int)radTexUnit );
-        stateSet->addUniform( radUni );
+        {
+            UniformInfo& info( getUniform( "texRad" ) );
+            info._intValue = getOrAssignTextureUnit( "radTex" );
+            stateSet->addUniform( createUniform( info ) );
+        }
 
         if( getTransferFunction() != NULL )
         {
-            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( (int)tfInputUnit );
-            stateSet->addUniform( tfInputUni );
+            UniformInfo& info( getUniform( "tfInput" ) );
+            info._intValue = getOrAssignTextureUnit( "tfInput" );
+            stateSet->addUniform( createUniform( info ) );
         }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
-            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( (int)hmInputUnit );
-            stateSet->addUniform( hmInputUni );
+            UniformInfo& info( getUniform( "hmInput" ) );
+            info._intValue = getOrAssignTextureUnit( "hmInput" );
+            stateSet->addUniform( createUniform( info ) );
         }
 
         // Set base class transfer function and hardware mask uniforms.
@@ -413,13 +445,17 @@ osg::StateSet* VectorRenderer::getRootState()
         // position, direction, transfer function input, and hardware mask input texture
         // units are the same for all time steps, so set their sampler uniform unit
         // values in the root state.
-        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( (int)posTexUnit );
-        stateSet->addUniform( posUni );
+        {
+            UniformInfo& info( getUniform( "texPos" ) );
+            info._intValue = getOrAssignTextureUnit( "posTex" );
+            stateSet->addUniform( createUniform( info ) );
+        }
 
-        const unsigned int dirTexUnit( getOrAssignTextureUnit( "dirTex" ) );
-        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( (int)dirTexUnit );
-        stateSet->addUniform( dirUni );
+        {
+            UniformInfo& info( getUniform( "texDir" ) );
+            info._intValue = getOrAssignTextureUnit( "dirTex" );
+            stateSet->addUniform( createUniform( info ) );
+        }
 
         if( getTransferFunction() != NULL )
         {
@@ -430,9 +466,9 @@ osg::StateSet* VectorRenderer::getRootState()
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
-            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
-            osg::Uniform* hmInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "hmInput" ) ); hmInputUni->set( (int)hmInputUnit );
-            stateSet->addUniform( hmInputUni );
+            UniformInfo& info( getUniform( "hmInput" ) );
+            info._intValue = getOrAssignTextureUnit( "hmInput" );
+            stateSet->addUniform( createUniform( info ) );
         }
 
         // Set base class transfer function and hardware mask uniforms.
