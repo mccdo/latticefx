@@ -31,13 +31,16 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 /**
- * vtkSmartPtr
+ * \class vtkSmartPtr vtkSmartPtr.h <latticefx/utils/vtk/vtkSmartPtr.h>
  *
- * Class that handles the management of vtk data types.  Here is how it is used:
+ * \brief Class that handles the management of vtk data types.
+ * \details Here is how it is used:
  *
- * using namespace vtkutil;
- * vtkSmartPtr<vtkType> ptr;
- * Where vtkType is some VTK Class.  So,
+ * \code
+ * using namespace lfx::vtk_utils;
+ * vtkSmartPtr< vtkType > ptr;
+ * \endcode
+ * Where \c vtkType is some VTK Class.  So,
  * vTKSmartPTr<vtkSocketCommunicator> sock;
  * would make a new vtkSocketCommunicator* and initialize it with
  * vtkSocketCommunicator::New();

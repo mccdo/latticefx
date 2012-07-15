@@ -41,3 +41,16 @@ support for large data sets, configurable, etc.
   \li \ref PluginSupport
 
 */
+
+/**
+\namespace lfx
+Documentation for lfx.
+*/
+/**
+\namespace lfx::core
+Documentation for lfx::core.
+*/
+/**
+\namespace lfx::vtk_utils
+Documentation for lfx::vtk_utils.
+*/
