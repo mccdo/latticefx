@@ -26,9 +26,6 @@ uniform sampler3D tfInput;
 uniform vec2 tfRange;
 uniform int tfDimension;
 uniform vec4 tfDest;
-const int tfDestRGB = 0;
-const int tfDestRGBA = 1;
-const int tfDestAlpha = 2;
 
 void transferFunction( in vec3 tC )
 {
