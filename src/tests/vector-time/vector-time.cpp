@@ -37,6 +37,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
 
@@ -402,6 +403,7 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    viewer.addEventHandler( new osgViewer::StatsHandler() );
     viewer.setSceneData( root );
 
     double prevClockTime( 0. );

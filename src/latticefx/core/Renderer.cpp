@@ -452,27 +452,28 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
 
     // Cram all mask parameters into a single vec4 uniform:
-    //   Element 0: Input source (0=alpha, 1=red, 2=scalar
-    //   Element 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
-    //   Element 2: Operator negate flag (0=no negate, 1=negate).
+    //   Element 0: Input source (0=alpha, 1=red, 2=scalar, 1000=no mask)
+    //   Element 1: Mask operator (0=EQ, -1=LT, 1=GT).
+    //   Element 2: Operator negate flag (1=no negate, -1=negate).
     //   Element 3: Reference value.
-    osg::Vec4 maskParams( 0., 0., 0., _hmReference );
+    osg::Vec4 maskParams( 1000., 0., 0., _hmReference );
     if( _hmOperator != HM_OP_OFF )
     {
-        if( _hmSource == HM_SOURCE_RED )
+        if( _hmSource == HM_SOURCE_ALPHA )
+            maskParams[ 0 ] = 0.f;
+        else if( _hmSource == HM_SOURCE_RED )
             maskParams[ 0 ] = 1.f;
         else if( _hmSource == HM_SOURCE_SCALAR )
             maskParams[ 0 ] = 2.f;
 
         if( ( _hmOperator & HM_OP_EQ ) != 0 )
-            maskParams[ 1 ] = 1.f;
+            maskParams[ 1 ] = 0.f;
         else if( ( _hmOperator & HM_OP_LT ) != 0 )
-            maskParams[ 1 ] = 2.f;
+            maskParams[ 1 ] = -1.f;
         else if( ( _hmOperator & HM_OP_GT ) != 0 )
-            maskParams[ 1 ] = 3.f;
+            maskParams[ 1 ] = 1.f;
 
-        if( ( _hmOperator & HM_OP_NOT ) != 0 )
-            maskParams[ 2 ] = 1.f;
+        maskParams[ 2 ] = ( ( _hmOperator & HM_OP_NOT ) != 0 ) ? -1.f : 1.;
     }
 
     {

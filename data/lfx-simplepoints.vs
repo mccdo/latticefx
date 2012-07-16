@@ -46,37 +46,35 @@ uniform vec4 hmParams;
 const float hmAlpha = 0.;
 const float hmRed = 1.;
 const float hmScalar = 2.;
-const float hmEqual = 1.;
-const float hmLessThan = 2.;
-const float hmGreaterThan = 3.;
 
 // Return true if passed, false if failed.
 bool hardwareMask()
 {
     // hmParams has all mask parameters in a single vec4 uniform:
-    //   Element 0: Input source (0=alpha, 1=red, 2=scalar
-    //   Element 1: Mask operator (0=OFF, 1=EQ, 2=LT, 3=GT).
-    //   Element 2: Operator negate flag (1=negate).
+    //   Element 0: Input source (0=alpha, 1=red, 2=scalar, 1000=no mask
+    //   Element 1: Mask operator (0=EQ, -1=LT, 1=GT).
+    //   Element 2: Operator negate flag (1=no negate, -1=negate).
     //   Element 3: Reference value.
 
-    if( hmParams[ 1 ] == 0. ) // Off
-        return( true );
-
     float value;
-    if( hmParams[ 0 ] == hmAlpha )
-        value = gl_FrontColor.a;
-    else if( hmParams[ 0 ] == hmRed )
-        value = gl_FrontColor.r;
+    if( hmParams[ 0 ] < hmScalar )
+    {
+        // either red (1) or alpha (0).
+        value = dot( gl_FrontColor.ra, vec2( hmParams[ 0 ], 1. - hmParams[ 0 ] ) );
+    }
     else if( hmParams[ 0 ] == hmScalar )
+    {
         value = hmInput;
+    }
+    else
+    {
+        // no mask
+        return( true );
+    }
 
-    bool result;
-    if( hmParams[ 1 ] == hmEqual )
-        result = ( value == hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == hmLessThan )
-        result = ( value < hmParams[ 3 ] );
-    else if( hmParams[ 1 ] == hmGreaterThan )
-        result = ( value > hmParams[ 3 ] );
+    // sign() returns 1=pos, 0=0, and -1=neg -- same as what we have in hmParams[ 1 ].
+    // So if sign(value-ref) == hmParams[1], we have passed the hm test.
+    bool result = ( sign( value - hmParams[ 3 ] ) == hmParams[ 1 ] );
 
     if( hmParams[ 2 ] == 1. ) // Negate
         result = !result;
