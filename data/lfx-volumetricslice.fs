@@ -33,46 +33,26 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
 uniform sampler1D tf1d;
 uniform vec2 tfRange;
 uniform int tfDimension;
-uniform int tfDest;
-const int tfDestRGB = 0;
-const int tfDestRGBA = 1;
-const int tfDestAlpha = 2;
-const int tfDestRGBSample = 3;
+uniform vec4 tfDest;
 
 vec4 transferFunction( in float index )
 {
-    vec4 xfer;
     float range = tfRange.y - tfRange.x;
     float rangeIndex = ( index - tfRange.x ) / range;
-    if( tfDimension == 1 ) // 1D transfer function.
-    {
-        xfer = texture1D( tf1d, rangeIndex );
-    }
-    else // Transfer function is disabled.
-    {
-        return( gl_Color );
-    }
 
-    vec4 returnColor;
-    if( tfDest == tfDestRGB )
-    {
-        returnColor.rgb = xfer.rgb;
-        returnColor.a = gl_Color.a;
-    }
-    else if( tfDest == tfDestRGBA )
-    {
-        returnColor = xfer;
-    }
-    else if( tfDest == tfDestAlpha )
-    {
-        returnColor.rgb = gl_Color.rgb;
-        returnColor.a = xfer.a;
-    }
-    else //tfDestRGBSample
-    {
-        returnColor.rgb = xfer.rgb;
-        returnColor.a = rangeIndex;
-    }
+    // Support only 1D transfer function for now.
+    vec4 xfer = texture1D( tf1d, rangeIndex );
+
+    // If tfDimension is non-zero, we get the normal destination mask.
+    // If zero, set dest mask to all zeros to get all gl_Color.
+    vec4 localDestMask = tfDest * max( float( tfDimension ), 1. );
+
+    // localDestMask is rgba floats, and will be either 1.0 or 0.0 for each element.
+    // For element=1.0, take element from the xfer function.
+    // Otherwise, take element from glColor.
+    vec4 returnColor = ( xfer * localDestMask )
+        + ( gl_Color * ( 1. - localDestMask ) );
+
     return( returnColor );
 }
 
@@ -169,17 +149,17 @@ void main( void )
     //    discard;
 
 
-    vec4 fvUpColor = texture3D( VolumeTexture, TexcoordUp );
-    vec4 fvRightColor = texture3D( VolumeTexture, TexcoordRight );
-    vec4 fvBackColor = texture3D( VolumeTexture, TexcoordBack );
-    vec4 fvDownColor = texture3D( VolumeTexture, TexcoordDown );
-    vec4 fvLeftColor = texture3D( VolumeTexture, TexcoordLeft );
-    vec4 fvFrontColor = texture3D( VolumeTexture, TexcoordFront );
+    vec4 fvUpColor = transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
+    vec4 fvRightColor = transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
+    vec4 fvBackColor = transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
+    vec4 fvDownColor = transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
+    vec4 fvLeftColor = transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
+    vec4 fvFrontColor = transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
     vec4 xVec = fvLeftColor - fvRightColor;
     vec4 yVec = fvDownColor - fvUpColor;
     vec4 zVec = fvFrontColor - fvBackColor;
 
-    vec3 ocNormal = vec3( xVec.r, yVec.r, zVec.r );
+    vec3 ocNormal = vec3( xVec.a, yVec.a, zVec.a );
     vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );

@@ -288,8 +288,7 @@ public:
     typedef enum {
         TF_RGB = 0,
         TF_RGBA = 1,
-        TF_ALPHA = 2,
-        TF_RGB_SAMPLE = 3
+        TF_ALPHA = 2
     } TransferFunctionDestination;
     /** \brief Specify the transfer function destination.
     \details The transfer function image (setTransferFunction()) is indexed by the input
@@ -299,8 +298,6 @@ public:
     The alpha values are taken from the OpenGL primary color.
     \li TF_RGBA The result determines the RGBA values of the ambient and diffuse material colors.
     \li TF_ALPHA The result alpha value determines the alpha values of the ambient and diffuse
-    \LI TF_RGB_SAMPLE Supported by VolumeRenderer only. Like TF_RGB, except the alpha values are
-    taken from the volume data sample.
     material colors. The RGB values are taken from the OpenGL primary color.
 
     The default is TF_ALPHA. */
@@ -455,6 +452,7 @@ protected:
     std::string _tfInputName;
     osg::Vec2 _tfRange;
     TransferFunctionDestination _tfDest;
+    osg::Vec4 _tfDestMask;
 
     HardwareMaskInputSource _hmSource;
     std::string _hmInputName;

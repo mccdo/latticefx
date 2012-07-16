@@ -35,6 +35,7 @@
 
 #include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
 #include <osg/MatrixTransform>
@@ -72,8 +73,8 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
 
-    renderOp->setTransferFunction( osgDB::readImageFile( "Spectrum.png" ) );
-    renderOp->setTransferFunctionDestination( Renderer::TF_RGB_SAMPLE );
+    renderOp->setTransferFunction( lfx::core::loadImageFromDat( "01.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
+    renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     // Render when alpha values are greater than 0.15.
     renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_ALPHA );
@@ -163,8 +164,9 @@ int main( int argc, char** argv )
     */
     
     osgViewer::Viewer viewer;
-    viewer.setUpViewInWindow( 10, 30, 800, 440 );
+    viewer.setUpViewInWindow( 10, 30, 1200, 690 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    viewer.addEventHandler( new osgViewer::StatsHandler() );
     viewer.setSceneData( root );
 
     while( !( viewer.done() ) )

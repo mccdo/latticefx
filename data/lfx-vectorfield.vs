@@ -25,59 +25,47 @@ uniform sampler3D tf3d;
 uniform sampler3D tfInput;
 uniform vec2 tfRange;
 uniform int tfDimension;
-uniform int tfDest;
+uniform vec4 tfDest;
 const int tfDestRGB = 0;
 const int tfDestRGBA = 1;
 const int tfDestAlpha = 2;
 
 void transferFunction( in vec3 tC )
 {
-    vec4 result;
+    vec4 xfer;
+    vec4 inputSample = texture3D( tfInput, tC );
     if( tfDimension == 1 ) // 1D transfer function.
     {
         // tfInput texture format is GL_ALPHA32F_ARB.
-        float index = texture3D( tfInput, tC ).a;
-        float range = tfRange.y - tfRange.x;
-        index = ( index - tfRange.x ) / range;
-        result = texture1D( tf1d, index );
+        float index = inputSample.a;
+        index = ( index - tfRange.x ) / ( tfRange.y - tfRange.x );
+        xfer = texture1D( tf1d, index );
     }
     else if( tfDimension == 2 ) // 2D transfer function.
     {
         // tfInput texture format is GL_LUMINANCE_ALPHA32F_ARB.
-        vec2 index = texture3D( tfInput, tC ).ba;
-        result = texture2D( tf2d, index );
+        vec2 index = inputSample.ba;
+        index = ( index - tfRange.x ) / ( tfRange.y - tfRange.x );
+        xfer = texture2D( tf2d, index );
     }
     else if( tfDimension == 3 ) // 3D transfer function.
     {
-        vec3 index = texture3D( tfInput, tC ).rgb;
-        result = texture3D( tf3d, index );
-    }
-    else // Transfer function is disabled.
-    {
-        gl_FrontColor = gl_Color;
-        gl_BackColor = gl_Color;
-        return;
+        vec3 index = inputSample.rgb;
+        index = ( index - tfRange.x ) / ( tfRange.y - tfRange.x );
+        xfer = texture3D( tf3d, index );
     }
 
-    if( tfDest == tfDestRGB )
-    {
-        gl_FrontColor.rgb = result.rgb;
-        gl_BackColor.rgb = result.rgb;
-        gl_FrontColor.a = gl_Color.a;
-        gl_BackColor.a = gl_Color.a;
-    }
-    else if( tfDest == tfDestRGBA )
-    {
-        gl_FrontColor = result;
-        gl_BackColor = result;
-    }
-    else
-    {
-        gl_FrontColor.rgb = gl_Color.rgb;
-        gl_BackColor.rgb = gl_Color.rgb;
-        gl_FrontColor.a = result.a;
-        gl_BackColor.a = result.a;
-    }
+    // If tfDimension is non-zero, we get the normal destination mask.
+    // If zero, set dest mask to all zeros to get all gl_Color.
+    vec4 localDestMask = tfDest * max( float( tfDimension ), 1. );
+
+    // localDestMask is rgba floats, and will be either 1.0 or 0.0 for each element.
+    // For element=1.0, take element from the xfer function.
+    // Otherwise, take element from glColor.
+    gl_FrontColor = ( xfer * localDestMask )
+        + ( gl_Color * ( 1. - localDestMask ) );
+    gl_BackColor = ( xfer * localDestMask )
+        + ( gl_Color * ( 1. - localDestMask ) );
 }
 
 /** end transfer function **/

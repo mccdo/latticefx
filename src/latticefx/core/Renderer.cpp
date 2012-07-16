@@ -49,6 +49,7 @@ Renderer::Renderer( const std::string logNameSuffix )
     _unitAssignmentCounter( 8 ),
     _tfRange( 0., 1. ),
     _tfDest( TF_ALPHA ),
+    _tfDestMask( 0., 0., 0., 1. ),
     _hmSource( HM_SOURCE_ALPHA ),
     _hmReference( 0.f ),
     _hmOperator( HM_OP_OFF )
@@ -73,8 +74,8 @@ Renderer::Renderer( const std::string logNameSuffix )
     info = UniformInfo( "tfDimension", osg::Uniform::INT, "Transfer function dimension: 0 (off), 1, 2, or 3.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "tfDest", osg::Uniform::INT, "Transfer function destination: 0=RGB, 1=RGBA, 2=ALPHA, 3=RGB_SAMPLE." );
-    info._intValue = (int) _tfDest;
+    info = UniformInfo( "tfDest", osg::Uniform::FLOAT_VEC4, "Transfer function destination as rgba mask." );
+    info._vec4Value = _tfDestMask;
     registerUniform( info );
 
     info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters.", UniformInfo::PRIVATE );
@@ -90,6 +91,7 @@ Renderer::Renderer( const Renderer& rhs )
     _tfImage( rhs._tfImage ),
     _tfInputName( rhs._tfInputName ),
     _tfDest( rhs._tfDest ),
+    _tfDestMask( rhs._tfDestMask ),
     _hmSource( rhs._hmSource ),
     _hmInputName( rhs._hmInputName ),
     _hmReference( rhs._hmReference ),
@@ -320,6 +322,19 @@ const osg::Vec2& Renderer::getTransferFunctionInputRange() const
 void Renderer::setTransferFunctionDestination( const Renderer::TransferFunctionDestination dest )
 {
     _tfDest = dest;
+
+    switch( _tfDest )
+    {
+    case TF_RGB:
+        _tfDestMask.set( 1., 1., 1., 0. );
+        break;
+    case TF_RGBA:
+        _tfDestMask.set( 1., 1., 1., 1. );
+        break;
+    case TF_ALPHA:
+        _tfDestMask.set( 0., 0., 0., 1. );
+        break;
+    }
 }
 Renderer::TransferFunctionDestination Renderer::getTransferFunctionDestination() const
 {
@@ -431,7 +446,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
     {
         UniformInfo& info( getUniform( "tfDest" ) );
-        info._intValue = (int) getTransferFunctionDestination();
+        info._vec4Value = _tfDestMask;
         stateSet->addUniform( createUniform( info ) );
     }
 

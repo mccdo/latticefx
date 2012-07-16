@@ -23,7 +23,7 @@ uniform sampler3D tf3d;
 attribute vec3 tfInput;
 uniform vec2 tfRange;
 uniform int tfDimension;
-uniform int tfDest;
+uniform vec4 tfDest;
 const int tfDestRGB = 0;
 const int tfDestRGBA = 1;
 const int tfDestAlpha = 2;
@@ -31,36 +31,26 @@ const int tfDestAlpha = 2;
 void transferFunction()
 {
     vec3 localInput = tfInput;
-    vec3 range = vec3( tfRange.y - tfRange.x );
-    vec3 index = ( localInput - vec3(tfRange.x ) ) / range;
-    vec4 result;
+    vec3 index = ( localInput - tfRange.x ) / ( tfRange.y - tfRange.x );
+    vec4 xfer;
     if( tfDimension == 1 ) // 1D transfer function.
-        result = texture1D( tf1d, index.s );
+        xfer = texture1D( tf1d, index.s );
     else if( tfDimension == 2 ) // 2D transfer function.
-        result = texture2D( tf2d, index.st );
+        xfer = texture2D( tf2d, index.st );
     else if( tfDimension == 3 ) // 3D transfer function.
-        result = texture3D( tf3d, index.stp );
-    else // Transfer function is disabled.
-    {
-        gl_FrontColor = gl_Color;
-        gl_BackColor = gl_Color;
-        return;
-    }
+        xfer = texture3D( tf3d, index.stp );
 
-    if( tfDest == tfDestRGB )
-    {
-        gl_FrontColor.rgb = result.rgb;
-        gl_FrontColor.a = gl_Color.a;
-    }
-    else if( tfDest == tfDestRGBA )
-    {
-        gl_FrontColor = result;
-    }
-    else
-    {
-        gl_FrontColor.rgb = gl_Color.rgb;
-        gl_FrontColor.a = result.a;
-    }
+    // If tfDimension is non-zero, we get the normal destination mask.
+    // If zero, set dest mask to all zeros to get all gl_Color.
+    vec4 localDestMask = tfDest * max( float( tfDimension ), 1. );
+
+    // localDestMask is rgba floats, and will be either 1.0 or 0.0 for each element.
+    // For element=1.0, take element from the xfer function.
+    // Otherwise, take element from glColor.
+    gl_FrontColor = ( xfer * localDestMask )
+        + ( gl_Color * ( 1. - localDestMask ) );
+    gl_BackColor = ( xfer * localDestMask )
+        + ( gl_Color * ( 1. - localDestMask ) );
 }
 
 /** end transfer function **/
