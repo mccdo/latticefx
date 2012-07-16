@@ -152,13 +152,20 @@ public:
     /**@{*/
 
     struct UniformInfo {
-        UniformInfo( const std::string& name=std::string(""), const osg::Uniform::Type& type=osg::Uniform::UNDEFINED, const std::string& description=std::string("") );
+        typedef enum {
+            PRIVATE,
+            PUBLIC
+        } AccessType;
+
+        UniformInfo( const std::string& name=std::string(""), const osg::Uniform::Type& type=osg::Uniform::UNDEFINED, const std::string& description=std::string(""), const AccessType access=PUBLIC );
         UniformInfo( const UniformInfo& rhs );
         ~UniformInfo();
 
         std::string _name;
         osg::Uniform::Type _type;
         std::string _description;
+        AccessType _access;
+
         osg::Matrixf _mat4Value;
         osg::Vec2f _vec2Value;
         osg::Vec3f _vec3Value;
@@ -177,11 +184,7 @@ public:
     unsigned int getNumUniforms() const;
     /** \brief TBD
     \details TBD */
-    UniformInfo& getUniform( const std::string& name );
-    /** \override */
     const UniformInfo& getUniform( const std::string& name ) const;
-    /** \override */
-    UniformInfo& getUniform( const unsigned int index );
     /** \override */
     const UniformInfo& getUniform( const unsigned int index ) const;
     /** \brief TBD
@@ -434,6 +437,11 @@ protected:
     /** \brief TBD
     \details TBD */
     void registerUniform( const UniformInfo& info );
+    /** \brief TBD
+    \details TBD */
+    UniformInfo& getUniform( const std::string& name );
+    /** \override */
+    UniformInfo& getUniform( const unsigned int index );
 
 
     UniformInfoVector _uniformInfo;

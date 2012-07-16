@@ -93,13 +93,13 @@ VolumeRenderer::VolumeRenderer()
     // (if we have them -- in some cases, we don't know the actual initial
     // values until scene graph creation).
     UniformInfo info;
-    info = UniformInfo( "VolumeTexture", osg::Uniform::SAMPLER_3D, "Volume texture data sampler unit." );
+    info = UniformInfo( "VolumeTexture", osg::Uniform::SAMPLER_3D, "Volume texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "VolumeDims", osg::Uniform::FLOAT_VEC3, "Volume texture dimensions." );
+    info = UniformInfo( "VolumeDims", osg::Uniform::FLOAT_VEC3, "Volume texture dimensions.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "VolumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location." );
+    info = UniformInfo( "VolumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "PlaneSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
@@ -185,7 +185,7 @@ osg::StateSet* VolumeRenderer::getRootState()
     {
         UniformInfo& info( getUniform( "VolumeTexture" ) );
         info._intValue = getOrAssignTextureUnit( "volumeTex" );
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     if( ( getTransferFunction() != NULL ) &&
@@ -198,13 +198,13 @@ osg::StateSet* VolumeRenderer::getRootState()
     {
         UniformInfo& info( getUniform( "VolumeDims" ) );
         info._vec3Value = osg::Vec3f( _volumeDims );
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
         UniformInfo& info( getUniform( "VolumeCenter" ) );
         info._vec3Value = osg::Vec3f( _volumeOrigin );
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {

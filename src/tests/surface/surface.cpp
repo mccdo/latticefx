@@ -39,6 +39,9 @@
 
 #include <boost/foreach.hpp>
 
+#include <osg/io_utils>
+#include <sstream>
+
 
 using namespace lfx::core;
 
@@ -46,16 +49,51 @@ using namespace lfx::core;
 const std::string logstr( "lfx.demo" );
 
 
-void dumpUniformInfo( const Renderer& renderOp )
+void dumpUniformInfo( const RendererPtr renderOp )
 {
     LFX_CRITICAL_STATIC( logstr, "Available uniforms:" );
 
-    const Renderer::UniformInfoVector& infoVec( renderOp.getUniforms() );
+    const Renderer::UniformInfoVector& infoVec( renderOp->getUniforms() );
     BOOST_FOREACH( const Renderer::UniformInfo& info, infoVec )
     {
-        LFX_CRITICAL_STATIC( logstr, info._name + "\t" +
-            Renderer::uniformTypeAsString( info._type ) + "\t" +
-            info._description );
+        if( info._access == Renderer::UniformInfo::PUBLIC )
+        {
+            LFX_CRITICAL_STATIC( logstr, info._name + "\t" +
+                Renderer::uniformTypeAsString( info._type ) + "\t" +
+                info._description );
+
+            // Display the default value.
+            std::ostringstream ostr;
+            ostr << "\tDefault: ";
+            switch( info._type )
+            {
+            case osg::Uniform::FLOAT_MAT4:
+                ostr << info._mat4Value;
+                break;
+            case osg::Uniform::FLOAT_VEC2:
+                ostr << info._vec2Value;
+                break;
+            case osg::Uniform::FLOAT_VEC3:
+                ostr << info._vec3Value;
+                break;
+            case osg::Uniform::FLOAT_VEC4:
+                ostr << info._vec4Value;
+                break;
+            case osg::Uniform::FLOAT:
+                ostr << info._floatValue;
+                break;
+            case osg::Uniform::SAMPLER_1D:
+            case osg::Uniform::SAMPLER_2D:
+            case osg::Uniform::SAMPLER_3D:
+            case osg::Uniform::INT:
+                ostr << info._intValue;
+                break;
+            case osg::Uniform::BOOL:
+                ostr << std::boolalpha << info._boolValue;
+                break;
+            }
+            LFX_CRITICAL_STATIC( logstr, ostr.str() );
+        }
     }
 }
 
@@ -180,8 +218,6 @@ DataSetPtr prepareDataSet()
     renderOp->addInput( "scalar" );
     dsp->setRenderer( renderOp );
 
-    dumpUniformInfo( *renderOp );
-
     return( dsp );
 }
 
@@ -192,9 +228,14 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     DataSetPtr dsp( prepareDataSet() );
+    osg::Node* lfxParent( dsp->getSceneData() );
+    // By calling getSceneGraph() before dumpUniformInfo(), we allow the
+    // Renderer to establish correct default values for its uniforms, many
+    // of which can't be determined until the DataSet is completely processed.
+    dumpUniformInfo( dsp->getRenderer() );
 
     osg::Group* root( new osg::Group );
-    root->addChild( dsp->getSceneData() );
+    root->addChild( lfxParent );
 
     osg::ref_ptr< osg::Uniform > warpScale( new osg::Uniform( "warpScale", 0.f ) );
     warpScale->setDataVariance( osg::Object::DYNAMIC );

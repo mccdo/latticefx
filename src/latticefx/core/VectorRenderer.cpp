@@ -72,22 +72,22 @@ VectorRenderer::VectorRenderer()
     // (if we have them -- in some cases, we don't know the actual initial
     // values until scene graph creation).
     UniformInfo info;
-    info = UniformInfo( "texDim", osg::Uniform::FLOAT_VEC3, "Texture dimensions for instanced rendering data." );
+    info = UniformInfo( "texDim", osg::Uniform::FLOAT_VEC3, "Texture dimensions for instanced rendering data.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "texPos", osg::Uniform::SAMPLER_3D, "Position texture data sampler unit." );
+    info = UniformInfo( "texPos", osg::Uniform::SAMPLER_3D, "Position texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "texRad", osg::Uniform::SAMPLER_3D, "Radius texture data sampler unit." );
+    info = UniformInfo( "texRad", osg::Uniform::SAMPLER_3D, "Radius texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "texDir", osg::Uniform::SAMPLER_3D, "Vector direction texture data sampler unit." );
+    info = UniformInfo( "texDir", osg::Uniform::SAMPLER_3D, "Vector direction texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "tfInput", osg::Uniform::SAMPLER_3D, "Transfer function input data sampler unit." );
+    info = UniformInfo( "tfInput", osg::Uniform::SAMPLER_3D, "Transfer function input data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "hmInput", osg::Uniform::SAMPLER_3D, "Hardware mask input data sampler unit." );
+    info = UniformInfo( "hmInput", osg::Uniform::SAMPLER_3D, "Hardware mask input data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
@@ -210,7 +210,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         {
             UniformInfo& info( getUniform( "texDim" ) );
             info._vec3Value = dimensions;
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         // Create image data and store in DB.
@@ -305,7 +305,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         {
             UniformInfo& info( getUniform( "texDim" ) );
             info._vec3Value = dimensions;
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
@@ -404,27 +404,27 @@ osg::StateSet* VectorRenderer::getRootState()
         {
             UniformInfo& info( getUniform( "texPos" ) );
             info._intValue = getOrAssignTextureUnit( "posTex" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         {
             UniformInfo& info( getUniform( "texRad" ) );
             info._intValue = getOrAssignTextureUnit( "radTex" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         if( getTransferFunction() != NULL )
         {
             UniformInfo& info( getUniform( "tfInput" ) );
             info._intValue = getOrAssignTextureUnit( "tfInput" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
             UniformInfo& info( getUniform( "hmInput" ) );
             info._intValue = getOrAssignTextureUnit( "hmInput" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         // Set base class transfer function and hardware mask uniforms.
@@ -448,13 +448,13 @@ osg::StateSet* VectorRenderer::getRootState()
         {
             UniformInfo& info( getUniform( "texPos" ) );
             info._intValue = getOrAssignTextureUnit( "posTex" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         {
             UniformInfo& info( getUniform( "texDir" ) );
             info._intValue = getOrAssignTextureUnit( "dirTex" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         if( getTransferFunction() != NULL )
@@ -468,7 +468,7 @@ osg::StateSet* VectorRenderer::getRootState()
         {
             UniformInfo& info( getUniform( "hmInput" ) );
             info._intValue = getOrAssignTextureUnit( "hmInput" );
-            stateSet->addUniform( createUniform( info ) );
+            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         // Set base class transfer function and hardware mask uniforms.

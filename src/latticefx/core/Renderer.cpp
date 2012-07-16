@@ -57,27 +57,27 @@ Renderer::Renderer( const std::string logNameSuffix )
     // (if we have them -- in some cases, we don't know the actual initial
     // values until scene graph creation).
     UniformInfo info;
-    info = UniformInfo( "tf1d", osg::Uniform::SAMPLER_1D, "1D transfer function sampler unit." );
+    info = UniformInfo( "tf1d", osg::Uniform::SAMPLER_1D, "1D transfer function sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "tf2d", osg::Uniform::SAMPLER_2D, "2D transfer function sampler unit." );
+    info = UniformInfo( "tf2d", osg::Uniform::SAMPLER_2D, "2D transfer function sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "tf3d", osg::Uniform::SAMPLER_3D, "3D transfer function sampler unit." );
+    info = UniformInfo( "tf3d", osg::Uniform::SAMPLER_3D, "3D transfer function sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "tfRange", osg::Uniform::FLOAT_VEC2, "Transfer function input range (x=min, y=max)." );
     info._vec2Value = _tfRange;
     registerUniform( info );
 
-    info = UniformInfo( "tfDimension", osg::Uniform::INT, "Transfer function dimension: 0 (off), 1, 2, or 3." );
+    info = UniformInfo( "tfDimension", osg::Uniform::INT, "Transfer function dimension: 0 (off), 1, 2, or 3.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "tfDest", osg::Uniform::INT, "Transfer function destination: 0=RGB, 1=RGBA, 2=ALPHA, 3=RGB_SAMPLE." );
     info._intValue = (int) _tfDest;
     registerUniform( info );
 
-    info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters." );
+    info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters.", UniformInfo::PRIVATE );
     registerUniform( info );
 }
 Renderer::Renderer( const Renderer& rhs )
@@ -102,10 +102,11 @@ Renderer::~Renderer()
 
 
 
-Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description )
+Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description, const AccessType access )
   : _name( name ),
     _type( type ),
     _description( description ),
+    _access( access ),
     _mat4Value( osg::Matrixf::identity() ),
     _vec2Value( 0.f, 0.f ),
     _vec3Value( 0.f, 0.f, 0.f ),
@@ -119,6 +120,7 @@ Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
   : _name( rhs._name ),
     _type( rhs._type ),
     _description( rhs._description ),
+    _access( rhs._access ),
     _mat4Value( rhs._mat4Value ),
     _vec2Value( rhs._vec2Value ),
     _vec3Value( rhs._vec3Value ),
@@ -384,7 +386,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         UniformInfo& info( getUniform( "tf1d" ) );
         info._intValue = tf1dUnit;
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
     else if( function->r() == 1 )
     {
@@ -398,7 +400,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         UniformInfo& info( getUniform( "tf2d" ) );
         info._intValue = tf2dUnit;
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
     else
     {
@@ -412,7 +414,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         UniformInfo& info( getUniform( "tf3d" ) );
         info._intValue = tf3dUnit;
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
@@ -424,7 +426,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
     {
         UniformInfo& info( getUniform( "tfDimension" ) );
         info._intValue = tfDimension;
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
@@ -461,7 +463,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
     {
         UniformInfo& info( getUniform( "hmParams" ) );
         info._vec4Value = maskParams;
-        stateSet->addUniform( createUniform( info ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 }
 
