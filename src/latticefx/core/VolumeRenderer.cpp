@@ -89,6 +89,21 @@ VolumeRenderer::VolumeRenderer()
     _maxSlices( 1024 ),
     _planeSpacing( 1.f )
 {
+    // Create and register uniform information, and initial/default values
+    // (if we have them -- in some cases, we don't know the actual initial
+    // values until scene graph creation).
+    UniformInfo info;
+    info = UniformInfo( "VolumeTexture", osg::Uniform::SAMPLER_3D, "Volume texture data sampler unit." );
+    registerUniform( info );
+
+    info = UniformInfo( "VolumeDims", osg::Uniform::FLOAT_VEC3, "Volume texture dimensions." );
+    registerUniform( info );
+
+    info = UniformInfo( "VolumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location." );
+    registerUniform( info );
+
+    info = UniformInfo( "PlaneSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
+    registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
@@ -167,9 +182,11 @@ osg::StateSet* VolumeRenderer::getRootState()
     // position, direction, transfer function input, and hardware mask input texture
     // units are the same for all time steps, so set their sampler uniform unit
     // values in the root state.
-    const unsigned int volTexUnit( getOrAssignTextureUnit( "volumeTex" ) );
-    osg::Uniform* volUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "VolumeTexture" ) ); volUni->set( (int)volTexUnit );
-    stateSet->addUniform( volUni );
+    {
+        UniformInfo& info( getUniform( "VolumeTexture" ) );
+        info._intValue = getOrAssignTextureUnit( "volumeTex" );
+        stateSet->addUniform( createUniform( info ) );
+    }
 
     if( ( getTransferFunction() != NULL ) &&
         !( getTransferFunctionInput().empty() ) )
@@ -178,12 +195,23 @@ osg::StateSet* VolumeRenderer::getRootState()
     }
 
     // Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
-    osg::Uniform* dimsUni( new osg::Uniform( "VolumeDims", osg::Vec3f( _volumeDims ) ) );
-    stateSet->addUniform( dimsUni );
-    osg::Uniform* centerUni( new osg::Uniform( "VolumeCenter", osg::Vec3f( _volumeOrigin ) ) );
-    stateSet->addUniform( centerUni );
-    osg::Uniform* spaceUni( new osg::Uniform( "PlaneSpacing", _planeSpacing ) );
-    stateSet->addUniform( spaceUni );
+    {
+        UniformInfo& info( getUniform( "VolumeDims" ) );
+        info._vec3Value = osg::Vec3f( _volumeDims );
+        stateSet->addUniform( createUniform( info ) );
+    }
+
+    {
+        UniformInfo& info( getUniform( "VolumeCenter" ) );
+        info._vec3Value = osg::Vec3f( _volumeOrigin );
+        stateSet->addUniform( createUniform( info ) );
+    }
+
+    {
+        UniformInfo& info( getUniform( "PlaneSpacing" ) );
+        info._floatValue = _planeSpacing;
+        stateSet->addUniform( createUniform( info ) );
+    }
 
     osg::BlendFunc *fn = new osg::BlendFunc();
     fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
