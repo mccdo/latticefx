@@ -184,7 +184,7 @@ osg::StateSet* VolumeRenderer::getRootState()
     // values in the root state.
     {
         UniformInfo& info( getUniform( "VolumeTexture" ) );
-        info._intValue = getOrAssignTextureUnit( "volumeTex" );
+        info._prototype->set( getOrAssignTextureUnit( "volumeTex" ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
@@ -197,19 +197,19 @@ osg::StateSet* VolumeRenderer::getRootState()
     // Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
     {
         UniformInfo& info( getUniform( "VolumeDims" ) );
-        info._vec3Value = osg::Vec3f( _volumeDims );
+        info._prototype->set( osg::Vec3f( _volumeDims ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
         UniformInfo& info( getUniform( "VolumeCenter" ) );
-        info._vec3Value = osg::Vec3f( _volumeOrigin );
+        info._prototype->set( osg::Vec3f( _volumeOrigin ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
         UniformInfo& info( getUniform( "PlaneSpacing" ) );
-        info._floatValue = _planeSpacing;
+        info._prototype->set( _planeSpacing );
         stateSet->addUniform( createUniform( info ) );
     }
 

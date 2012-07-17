@@ -157,22 +157,15 @@ public:
             PUBLIC
         } AccessType;
 
-        UniformInfo( const std::string& name=std::string(""), const osg::Uniform::Type& type=osg::Uniform::UNDEFINED, const std::string& description=std::string(""), const AccessType access=PUBLIC );
+        UniformInfo() {}
+        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description=std::string(""), const AccessType access=PUBLIC );
         UniformInfo( const UniformInfo& rhs );
         ~UniformInfo();
 
-        std::string _name;
-        osg::Uniform::Type _type;
         std::string _description;
         AccessType _access;
 
-        osg::Matrixf _mat4Value;
-        osg::Vec2f _vec2Value;
-        osg::Vec3f _vec3Value;
-        osg::Vec4f _vec4Value;
-        float _floatValue;
-        int _intValue;
-        bool _boolValue;
+        osg::ref_ptr< osg::Uniform > _prototype;
     };
     typedef std::vector< UniformInfo > UniformInfoVector;
 
@@ -181,12 +174,7 @@ public:
     const UniformInfoVector& getUniforms() const;
     /** \brief TBD
     \details TBD */
-    unsigned int getNumUniforms() const;
-    /** \brief TBD
-    \details TBD */
     const UniformInfo& getUniform( const std::string& name ) const;
-    /** \override */
-    const UniformInfo& getUniform( const unsigned int index ) const;
     /** \brief TBD
     \details TBD */
     static osg::Uniform* createUniform( const UniformInfo& info );
@@ -437,8 +425,6 @@ protected:
     /** \brief TBD
     \details TBD */
     UniformInfo& getUniform( const std::string& name );
-    /** \override */
-    UniformInfo& getUniform( const unsigned int index );
 
 
     UniformInfoVector _uniformInfo;

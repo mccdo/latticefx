@@ -58,39 +58,60 @@ void dumpUniformInfo( const RendererPtr renderOp )
     {
         if( info._access == Renderer::UniformInfo::PUBLIC )
         {
-            LFX_CRITICAL_STATIC( logstr, info._name + "\t" +
-                Renderer::uniformTypeAsString( info._type ) + "\t" +
+            LFX_CRITICAL_STATIC( logstr, info._prototype->getName() + "\t" +
+                Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
                 info._description );
 
             // Display the default value.
             std::ostringstream ostr;
             ostr << "\tDefault: ";
-            switch( info._type )
+            switch( info._prototype->getType() )
             {
             case osg::Uniform::FLOAT_MAT4:
-                ostr << info._mat4Value;
+            {
+                osg::Matrix mat; info._prototype->get( mat );
+                ostr << mat;
                 break;
+            }
             case osg::Uniform::FLOAT_VEC2:
-                ostr << info._vec2Value;
+            {
+                osg::Vec2f vec2; info._prototype->get( vec2 );
+                ostr << vec2;
                 break;
+            }
             case osg::Uniform::FLOAT_VEC3:
-                ostr << info._vec3Value;
+            {
+                osg::Vec3f vec3; info._prototype->get( vec3 );
+                ostr << vec3;
                 break;
+            }
             case osg::Uniform::FLOAT_VEC4:
-                ostr << info._vec4Value;
+            {
+                osg::Vec4f vec4; info._prototype->get( vec4 );
+                ostr << vec4;
                 break;
+            }
             case osg::Uniform::FLOAT:
-                ostr << info._floatValue;
+            {
+                float f; info._prototype->get( f );
+                ostr << f;
                 break;
+            }
             case osg::Uniform::SAMPLER_1D:
             case osg::Uniform::SAMPLER_2D:
             case osg::Uniform::SAMPLER_3D:
             case osg::Uniform::INT:
-                ostr << info._intValue;
+            {
+                int i; info._prototype->get( i );
+                ostr << i;
                 break;
+            }
             case osg::Uniform::BOOL:
-                ostr << std::boolalpha << info._boolValue;
+            {
+                bool b; info._prototype->get( b );
+                ostr << b;
                 break;
+            }
             }
             LFX_CRITICAL_STATIC( logstr, ostr.str() );
         }

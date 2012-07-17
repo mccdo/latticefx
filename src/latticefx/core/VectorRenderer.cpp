@@ -209,7 +209,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
         {
             UniformInfo& info( getUniform( "texDim" ) );
-            info._vec3Value = dimensions;
+            info._prototype->set( dimensions );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
@@ -304,7 +304,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
         {
             UniformInfo& info( getUniform( "texDim" ) );
-            info._vec3Value = dimensions;
+            info._prototype->set( dimensions );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
@@ -403,27 +403,27 @@ osg::StateSet* VectorRenderer::getRootState()
         // values in the root state.
         {
             UniformInfo& info( getUniform( "texPos" ) );
-            info._intValue = getOrAssignTextureUnit( "posTex" );
+            info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         {
             UniformInfo& info( getUniform( "texRad" ) );
-            info._intValue = getOrAssignTextureUnit( "radTex" );
+            info._prototype->set( getOrAssignTextureUnit( "radTex" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         if( getTransferFunction() != NULL )
         {
             UniformInfo& info( getUniform( "tfInput" ) );
-            info._intValue = getOrAssignTextureUnit( "tfInput" );
+            info._prototype->set( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
             UniformInfo& info( getUniform( "hmInput" ) );
-            info._intValue = getOrAssignTextureUnit( "hmInput" );
+            info._prototype->set( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
@@ -447,13 +447,13 @@ osg::StateSet* VectorRenderer::getRootState()
         // values in the root state.
         {
             UniformInfo& info( getUniform( "texPos" ) );
-            info._intValue = getOrAssignTextureUnit( "posTex" );
+            info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
         {
             UniformInfo& info( getUniform( "texDir" ) );
-            info._intValue = getOrAssignTextureUnit( "dirTex" );
+            info._prototype->set( getOrAssignTextureUnit( "dirTex" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
@@ -467,7 +467,7 @@ osg::StateSet* VectorRenderer::getRootState()
         if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
         {
             UniformInfo& info( getUniform( "hmInput" ) );
-            info._intValue = getOrAssignTextureUnit( "hmInput" );
+            info._prototype->set( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 

@@ -61,11 +61,11 @@ SurfaceRenderer::SurfaceRenderer()
     // values until scene graph creation).
     UniformInfo info;
     info = UniformInfo( "warpScale", osg::Uniform::FLOAT, "Vertex warp scale value." );
-    info._floatValue = 0.f;
+    info._prototype->set( 0.f );
     registerUniform( info );
 
     info = UniformInfo( "warpEnabled", osg::Uniform::BOOL, "Vertex warp enable toggle." );
-    info._boolValue = false;
+    info._prototype->set( false );
     registerUniform( info );
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
@@ -179,7 +179,7 @@ osg::StateSet* SurfaceRenderer::getRootState()
 
     const bool warpEnabled( ( warpVAlias != NULL ) && ( warpNAlias != NULL ) );
     UniformInfo& info( getUniform( "warpEnabled" ) );
-    info._boolValue = warpEnabled; // Set the default.
+    info._prototype->set( warpEnabled );
     stateSet->addUniform( createUniform( getUniform( "warpEnabled" ) ) );
 
     osg::Program* program( new osg::Program() );

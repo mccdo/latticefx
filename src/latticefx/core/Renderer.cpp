@@ -68,14 +68,14 @@ Renderer::Renderer( const std::string logNameSuffix )
     registerUniform( info );
 
     info = UniformInfo( "tfRange", osg::Uniform::FLOAT_VEC2, "Transfer function input range (x=min, y=max)." );
-    info._vec2Value = _tfRange;
+    info._prototype->set( _tfRange );
     registerUniform( info );
 
     info = UniformInfo( "tfDimension", osg::Uniform::INT, "Transfer function dimension: 0 (off), 1, 2, or 3.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "tfDest", osg::Uniform::FLOAT_VEC4, "Transfer function destination as rgba mask." );
-    info._vec4Value = _tfDestMask;
+    info._prototype->set( _tfDestMask );
     registerUniform( info );
 
     info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters.", UniformInfo::PRIVATE );
@@ -105,31 +105,15 @@ Renderer::~Renderer()
 
 
 Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description, const AccessType access )
-  : _name( name ),
-    _type( type ),
-    _description( description ),
-    _access( access ),
-    _mat4Value( osg::Matrixf::identity() ),
-    _vec2Value( 0.f, 0.f ),
-    _vec3Value( 0.f, 0.f, 0.f ),
-    _vec4Value( 0.f, 0.f, 0.f, 0.f ),
-    _floatValue( 0.f ),
-    _intValue( 0 ),
-    _boolValue( false )
+  : _description( description ),
+    _access( access )
 {
+    _prototype = new osg::Uniform( type, name );
 }
 Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
-  : _name( rhs._name ),
-    _type( rhs._type ),
-    _description( rhs._description ),
+  : _description( rhs._description ),
     _access( rhs._access ),
-    _mat4Value( rhs._mat4Value ),
-    _vec2Value( rhs._vec2Value ),
-    _vec3Value( rhs._vec3Value ),
-    _vec4Value( rhs._vec4Value ),
-    _floatValue( rhs._floatValue ),
-    _intValue( rhs._intValue ),
-    _boolValue( rhs._boolValue )
+    _prototype( rhs._prototype )
 {
 }
 Renderer::UniformInfo::~UniformInfo()
@@ -144,15 +128,11 @@ const Renderer::UniformInfoVector& Renderer::getUniforms() const
 {
     return( _uniformInfo );
 }
-unsigned int Renderer::getNumUniforms() const
-{
-    return( _uniformInfo.size() );
-}
 Renderer::UniformInfo& Renderer::getUniform( const std::string& name )
 {
     BOOST_FOREACH( UniformInfo& info, _uniformInfo )
     {
-        if( info._name == name )
+        if( info._prototype->getName() == name )
             return( info );
     }
     LFX_WARNING( "getUniform(name): Can't find uniform \"" + name + "\"." );
@@ -163,21 +143,11 @@ const Renderer::UniformInfo& Renderer::getUniform( const std::string& name ) con
     Renderer* nonConstThis( const_cast< Renderer* >( this ) );
     return( nonConstThis->getUniform( name ) );
 }
-Renderer::UniformInfo& Renderer::getUniform( const unsigned int index )
-{
-    if( index >= _uniformInfo.size() )
-        LFX_WARNING( "getUniform(index): index out of range." );
-    return( _uniformInfo[ index ] );
-}
-const Renderer::UniformInfo& Renderer::getUniform( const unsigned int index ) const
-{
-    Renderer* nonConstThis( const_cast< Renderer* >( this ) );
-    return( nonConstThis->getUniform( index ) );
-}
 osg::Uniform* Renderer::createUniform( const UniformInfo& info )
 {
-    osg::ref_ptr< osg::Uniform > uniform( new osg::Uniform( info._type, info._name ) );
-
+    osg::ref_ptr< osg::Uniform > uniform( new osg::Uniform( *( info._prototype ) ) );
+    return (uniform.release() );
+#if 0
     switch( info._type )
     {
     case osg::Uniform::FLOAT_MAT4:
@@ -210,6 +180,7 @@ osg::Uniform* Renderer::createUniform( const UniformInfo& info )
     }
 
     return( uniform.release() );
+#endif
 }
 
 std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )
@@ -400,7 +371,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf1d" ) );
-        info._intValue = tf1dUnit;
+        info._prototype->set( tf1dUnit );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
     else if( function->r() == 1 )
@@ -414,7 +385,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf2d" ) );
-        info._intValue = tf2dUnit;
+        info._prototype->set( tf2dUnit );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
     else
@@ -428,25 +399,25 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf3d" ) );
-        info._intValue = tf3dUnit;
+        info._prototype->set( tf3dUnit );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
         UniformInfo& info( getUniform( "tfRange" ) );
-        info._vec2Value = _tfRange;
+        info._prototype->set( _tfRange );
         stateSet->addUniform( createUniform( info ) );
     }
 
     {
         UniformInfo& info( getUniform( "tfDimension" ) );
-        info._intValue = tfDimension;
+        info._prototype->set( tfDimension );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
         UniformInfo& info( getUniform( "tfDest" ) );
-        info._vec4Value = _tfDestMask;
+        info._prototype->set( _tfDestMask );
         stateSet->addUniform( createUniform( info ) );
     }
 
@@ -478,7 +449,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
     {
         UniformInfo& info( getUniform( "hmParams" ) );
-        info._vec4Value = maskParams;
+        info._prototype->set( maskParams );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 }
