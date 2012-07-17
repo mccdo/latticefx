@@ -148,16 +148,58 @@ public:
 
     /** \name Uniform Information
     \details These functions allow access to Renderer-specific uniform variable information.
-    */
+
+    Renderer, and Renderer-derived classes, typically use shader-based rendering controlled by
+    host-side uniforms. Some of these uniforms are internal to the Renderer, but others are public
+    and the application can override their setting at an ancestor Node's StateSet in the scene
+    graph. In order to override such a uniform, the application needs to know the uniform name and
+    data type. The application might also decide to display available uniforms to the user, along
+    with a description of each uniform, and obtain new values from user input.
+
+    To facilitate this usage, each Renderer-derived class should register all available uniforms
+    by creating a UniformInfo struct and passing it to the registerUniform() method. The UniformInfo
+    constructor takes a name string, osg::Uniform::Type,
+    description string, and UniformInfo::AccessType, then creates an instance of a Uniform (using
+    the name string and osg::Uniform::Type) and stores it in Renderer::UniformInfo::_prototype. The
+    Renderer should then set an initial value for the prototype Uniform using osg::Uniform::set().
+
+    The application can obtain a list of all registered UniformInfo structs (using getUniforms())
+    or a single named UniformInfo struct (using getUniform(const std::string&)). Both the
+    application and the Renderer-derived class can create an actual instance of a registered
+    uniform using createUniform(const UniformInfo& ).
+
+    In general, the application should ignore any registered uniforms with UniformInfo::AccessType
+    set to PRIVATE. These uniforms are internal to the Renderer; some might be controllable by
+    public Renderer class methods, but others might be purely internal.
+    
+    When a Renderer registers a UniformInfo with UniformInfo::AccessType PRIVATE, and eventually
+    creates and adds a corresponding osg::Uniform to a StateSet in the scene graph, the Renderer
+    should set the StateAttribute::PROTECTED bit to ensure the application doesn't override the
+    uniform. */
     /**@{*/
 
+    /** \struct UniformInfo Renderer.h <latticefx/core/Renderer.h>
+    \brief Record of information regarding a registered osg::Uniform.
+    \details Contains a description string and AccessType, along with a prototype instance of an
+    osg::Uniform with a name string, osg::Uniform::Type data type, and corresponding value.
+    */
     struct UniformInfo {
+        /** \brief Access information
+        \details Denotes whether the described Uniform is internal to the Renderer, or available
+        for the application to override.
+        \li PRIVATE Internal to the Renderer, and (probably) added to the scene graph with the
+        PROTECTED osg::StateAttribute mode bit to prevent application overriding.
+        \li PUBLIC Intended for applications to override via setting the Uniform in an ancestor
+        Node's StateSet with the osg::StateAttribute OVERRIDE mode bit.
+        */
         typedef enum {
             PRIVATE,
             PUBLIC
         } AccessType;
 
         UniformInfo() {}
+        /** \brief Constructor
+        \details Creates an instance of an osg::Uniform with \c name and \c type and stored it in _prototype. */
         UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description=std::string(""), const AccessType access=PUBLIC );
         UniformInfo( const UniformInfo& rhs );
         ~UniformInfo();
@@ -165,22 +207,34 @@ public:
         std::string _description;
         AccessType _access;
 
+        /** \brief Pointer to an prototype instance of a Uniform.
+        \details The uniform's  name and type are taken from
+        Renderer::UniformInfo(const std::string&, const osg::Uniform::Type&, const std::string&, const AccessType).
+        When a Renderer creates a UniformInfo and registers it, the Renderer should set the prototype
+        Uniform's value using osg::Uniform::set().
+
+        This prototype is used as a parameter to the osg::Uniform() copy constructor when createUniform()
+        is called. */
         osg::ref_ptr< osg::Uniform > _prototype;
     };
     typedef std::vector< UniformInfo > UniformInfoVector;
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get all registered UniformInfo structs.
+    \details Returns a const vector of all registered UniformInfo structs. */
     const UniformInfoVector& getUniforms() const;
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get a registered UniformInfo by name.
+    \details Returns the registered UniformInfo struct with name \c name. If there are
+    no registered UniformInfo structs named \c name, a warning is displayed and the
+    first UniformInfo struct is returned. */
     const UniformInfo& getUniform( const std::string& name ) const;
-    /** \brief TBD
-    \details TBD */
+    /** \brief Create a new instance of a Uniform based on the specified \c info.
+    \details This static method simply invokes the Uniform copy constructor on the \c info's
+    UniformInfo::_prototype. */
     static osg::Uniform* createUniform( const UniformInfo& info );
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Convert the Uniform data type to a string.
+    \details This static method could be useful when displaying uniform data, such as in
+    a GUI or to the console. */
     static std::string uniformTypeAsString( const osg::Uniform::Type type );
 
     /**@}*/
@@ -419,11 +473,10 @@ protected:
     osg::Program::addShader() is a no-op if the shader parameter is NULL. */
     osg::Shader* loadShader( const osg::Shader::Type type, const std::string& fileName );
 
-    /** \brief TBD
-    \details TBD */
+    /** \brief Register a uniform. */
     void registerUniform( const UniformInfo& info );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Get a non-const UniformInfo with the given \c name.
+    \details This method is useful for setting the value of the UniformInfo::_prototype. */
     UniformInfo& getUniform( const std::string& name );
 
 

@@ -19,6 +19,7 @@ support for large data sets, configurable, etc.
 
 \section Rendering
 
+  \li \link lfx::core::SurfaceRenderer Rendering Surface Data \endlink
   \li \link lfx::core::VectorRenderer Rendering Vector Data \endlink
   \li \link lfx::core::VolumeRenderer Rendering Volume Data \endlink
 

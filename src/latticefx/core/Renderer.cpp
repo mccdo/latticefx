@@ -145,42 +145,7 @@ const Renderer::UniformInfo& Renderer::getUniform( const std::string& name ) con
 }
 osg::Uniform* Renderer::createUniform( const UniformInfo& info )
 {
-    osg::ref_ptr< osg::Uniform > uniform( new osg::Uniform( *( info._prototype ) ) );
-    return (uniform.release() );
-#if 0
-    switch( info._type )
-    {
-    case osg::Uniform::FLOAT_MAT4:
-        uniform->set( info._mat4Value );
-        break;
-    case osg::Uniform::FLOAT_VEC2:
-        uniform->set( info._vec2Value );
-        break;
-    case osg::Uniform::FLOAT_VEC3:
-        uniform->set( info._vec3Value );
-        break;
-    case osg::Uniform::FLOAT_VEC4:
-        uniform->set( info._vec4Value );
-        break;
-    case osg::Uniform::FLOAT:
-        uniform->set( info._floatValue );
-        break;
-    case osg::Uniform::SAMPLER_1D:
-    case osg::Uniform::SAMPLER_2D:
-    case osg::Uniform::SAMPLER_3D:
-    case osg::Uniform::INT:
-        uniform->set( info._intValue );
-        break;
-    case osg::Uniform::BOOL:
-        uniform->set( info._boolValue );
-        break;
-    default:
-        LFX_WARNING_STATIC( "lfx.core", "Renderer::createUniform(): Unsupported uniform type." );
-        break;
-    }
-
-    return( uniform.release() );
-#endif
+    return( new osg::Uniform( *( info._prototype ) ) );
 }
 
 std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )
