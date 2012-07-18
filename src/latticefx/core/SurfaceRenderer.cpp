@@ -90,7 +90,6 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     }
     ChannelDataPtr posChannel( posAlias->getMaskedChannel( maskIn ) );
     osg::Array* sourceArray( posChannel->asOSGArray() );
-    const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* verts( static_cast< osg::Vec3Array* >( sourceArray ) );
 
     ChannelDataPtr normAlias( getInput( getInputTypeAlias( NORMAL ) ) );
@@ -162,7 +161,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     if( _primitiveSetGenerator == NULL )
         _primitiveSetGenerator = PrimitiveSetGeneratorPtr( new SimpleTrianglePrimitiveSetGenerator() );
-    (*_primitiveSetGenerator)( geom.get(), numElements );
+    (*_primitiveSetGenerator)( this, geom.get() );
 
     geode->addDrawable( geom.get() );
     return( geode.release() );
@@ -249,9 +248,10 @@ SimpleTrianglePrimitiveSetGenerator::~SimpleTrianglePrimitiveSetGenerator()
 {
 }
 
-void SimpleTrianglePrimitiveSetGenerator::operator()( osg::Geometry* geom, unsigned int numElements )
+void SimpleTrianglePrimitiveSetGenerator::operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom )
 {
-    osg::DrawArrays* da( new osg::DrawArrays( GL_TRIANGLES, 0, numElements ) );
+    osg::DrawArrays* da( new osg::DrawArrays( GL_TRIANGLES, 0,
+        geom->getVertexArray()->getNumElements() ) );
     geom->addPrimitiveSet( da );
 }
 

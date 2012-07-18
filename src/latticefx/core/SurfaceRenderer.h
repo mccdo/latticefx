@@ -45,6 +45,10 @@ namespace lfx {
 namespace core {
 
 
+// Forward
+class SurfaceRenderer;
+
+
 /** \class PrimitiveSetGenerator SurfaceRenderer.h <latticefx/core/SurfaceRenderer.h>
 \brief Creates OSG PrimitiveSets for the SurfaceRenderer.
 \details The SurfaceRenderer requires an instance of this class to create OSG
@@ -72,7 +76,7 @@ public:
     operator invocation.
     \param numElements is the number of vertecies in the \c geom vertex array.
     */
-    virtual void operator()( osg::Geometry* geom, unsigned int numElements ) = 0;
+    virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom ) = 0;
 };
 
 typedef boost::shared_ptr< PrimitiveSetGenerator > PrimitiveSetGeneratorPtr;
@@ -168,7 +172,7 @@ public:
     SimpleTrianglePrimitiveSetGenerator( const SimpleTrianglePrimitiveSetGenerator& rhs );
     virtual ~SimpleTrianglePrimitiveSetGenerator();
 
-    virtual void operator()( osg::Geometry* geom, unsigned int numElements );
+    virtual void operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom );
 };
 
 
