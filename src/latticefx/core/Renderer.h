@@ -256,16 +256,16 @@ public:
     \details If the Renderer uses textures, they will be stored in \c baseUnit
     or higher. The default for \c baseUnit is 8. This function implicitly calls
     resetTextureUnitAssignments(). */
-    void setTextureBaseUnit( const unsigned int baseUnit );
+    void setTextureBaseUnit( const int baseUnit );
     /** \brief Get the base texture unit used by the Renderer.
     \details Returns the base texture unit. */
-    unsigned int getTextureBaseUnit() const;
+    int getTextureBaseUnit() const;
 
     /** \brief Assign, or return the previously assigned texture unit.
     \details Primarily for use by derived classes that need to ensure the same
     texture unit is used for both the setTextureAttribute() call and the shader
     uniform value. */
-    unsigned int getOrAssignTextureUnit( const std::string& key );
+    int getOrAssignTextureUnit( const std::string& key );
     /** \brief Clears all previous texture unit assignments.
     \details Restores texture unit assignments to its initial state. A subsequent
     call to getOrAssignTextureUnit() will return the base unit. */
@@ -482,7 +482,7 @@ protected:
 
     UniformInfoVector _uniformInfo;
 
-    unsigned int _baseUnit;
+    int _baseUnit;
     unsigned int _unitAssignmentCounter;
     typedef std::map< std::string, unsigned int > UnitAssignmentMap;
     UnitAssignmentMap _unitAssignmentMap;

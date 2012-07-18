@@ -190,17 +190,17 @@ std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )
 
 
 
-void Renderer::setTextureBaseUnit( const unsigned int baseUnit )
+void Renderer::setTextureBaseUnit( const int baseUnit )
 {
     _baseUnit = baseUnit;
     // Setting the base unit clears all previous texture unit assignments.
     resetTextureUnitAssignments();
 }
-unsigned int Renderer::getTextureBaseUnit() const
+int Renderer::getTextureBaseUnit() const
 {
     return( _baseUnit );
 }
-unsigned int Renderer::getOrAssignTextureUnit( const std::string& key )
+int Renderer::getOrAssignTextureUnit( const std::string& key )
 {
     UnitAssignmentMap::const_iterator it( _unitAssignmentMap.find( key ) );
     if( it == _unitAssignmentMap.end() )
@@ -332,7 +332,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
         tf1dTex->setName( "donotpage" );
-        const unsigned int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
+        const int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
         stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf1d" ) );
@@ -346,7 +346,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
         tf2dTex->setName( "donotpage" );
-        const unsigned int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
+        const int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
         stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf2d" ) );
@@ -360,7 +360,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
         tf3dTex->setName( "donotpage" );
-        const unsigned int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
+        const int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
         stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
 
         UniformInfo& info( getUniform( "tf3d" ) );
