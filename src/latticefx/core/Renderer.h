@@ -254,7 +254,7 @@ public:
 
     /** \brief Set the base unit for Renderer texture usage.
     \details If the Renderer uses textures, they will be stored in \c baseUnit
-    or higher. The default for \c baseUnit is 8. This function implicitly calls
+    or higher. The default for \c baseUnit is 4. This function implicitly calls
     resetTextureUnitAssignments(). */
     void setTextureBaseUnit( const int baseUnit );
     /** \brief Get the base texture unit used by the Renderer.

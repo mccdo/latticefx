@@ -36,6 +36,7 @@
 #include <osgDB/FileUtils>
 
 #include <boost/foreach.hpp>
+#include <Poco/Platform.h>
 
 
 namespace lfx {
@@ -332,12 +333,8 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
         tf1dTex->setName( "donotpage" );
-        const int tf1dUnit( getOrAssignTextureUnit( "tf1d" ) );
-        stateSet->setTextureAttributeAndModes( tf1dUnit, tf1dTex, osg::StateAttribute::OFF );
-
-        UniformInfo& info( getUniform( "tf1d" ) );
-        info._prototype->set( tf1dUnit );
-        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+        stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf1d" ), tf1dTex,
+            osg::StateAttribute::OFF );
     }
     else if( function->r() == 1 )
     {
@@ -346,12 +343,8 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
         tf2dTex->setName( "donotpage" );
-        const int tf2dUnit( getOrAssignTextureUnit( "tf2d" ) );
-        stateSet->setTextureAttributeAndModes( tf2dUnit, tf2dTex, osg::StateAttribute::OFF );
-
-        UniformInfo& info( getUniform( "tf2d" ) );
-        info._prototype->set( tf2dUnit );
-        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+        stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf2d" ), tf2dTex,
+            osg::StateAttribute::OFF );
     }
     else
     {
@@ -360,13 +353,43 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
         tf3dTex->setName( "donotpage" );
-        const int tf3dUnit( getOrAssignTextureUnit( "tf3d" ) );
-        stateSet->setTextureAttributeAndModes( tf3dUnit, tf3dTex, osg::StateAttribute::OFF );
+        stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf3d" ), tf3dTex,
+            osg::StateAttribute::OFF );
+    }
 
-        UniformInfo& info( getUniform( "tf3d" ) );
-        info._prototype->set( tf3dUnit );
+    // Assign transfer function texture sampler uniform, based on texture dimension.
+    // Typically, only need to set one of these, as only one will ever be accessed
+    // by the shader.
+    //
+    // OSX NVIDIA device driver should be able to determine that only one of
+    // these uniforms can possibly be in use, but is failing to make that observation,
+    // so we must set all three uniforms to unique values. We do this by disabling
+    // the conditionals so that each case gets executed regardless of texture dimension.
+#if( POCO_OS != POCO_OS_MAC_OS_X )
+    if( tfDimension == 1 )
+#endif
+    {
+        UniformInfo& info( getUniform( "tf1d" ) );
+        info._prototype->set( getOrAssignTextureUnit( "tf1d" ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
+#if( POCO_OS != POCO_OS_MAC_OS_X )
+    else if( tfDimension == 2 )
+#endif
+    {
+        UniformInfo& info( getUniform( "tf2d" ) );
+        info._prototype->set( getOrAssignTextureUnit( "tf2d" ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+#if( POCO_OS != POCO_OS_MAC_OS_X )
+    else if( tfDimension == 3 )
+#endif
+    {
+        UniformInfo& info( getUniform( "tf3d" ) );
+        info._prototype->set( getOrAssignTextureUnit( "tf3d" ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+
 
     {
         UniformInfo& info( getUniform( "tfRange" ) );
