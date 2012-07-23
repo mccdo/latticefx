@@ -67,6 +67,11 @@ if( NOT BUILD_SHARED_LIBS )
 endif()
 
 
+option( LFX_BUILD_APPS "Build applications." ON )
+option( LFX_BUILD_EXAMPLES "Build examples." ON )
+option( LFX_BUILD_TESTS "Build tests." ON )
+
+
 #
 # Add all of the libraries to the build system
 add_subdirectory( data )
