@@ -579,7 +579,7 @@ double PagingCallback::getWrappedTime( const double& time, const double& minTime
     if( span == 0 )
         return( time );
     double intPart;
-    const double fractPart( modf( time / span, &intPart ) );
+    const double fractPart( modf( ( time - minTime ) / span, &intPart ) );
     return( fractPart * span + minTime );
 }
 
