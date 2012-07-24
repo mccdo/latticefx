@@ -22,19 +22,19 @@ vf-2011-12-13-right.jpg
 Scale: 0.995868 0.99788
 Trans: 0.00233254 0
 
-vf-2012-3-13-left.jpg
+vf-2012-03-13-left.jpg
 Scale: 1 1
 Trans: 0 0
 
-vf-2012-3-13-right.jpg
+vf-2012-03-13-right.jpg
 Scale: 0.997178 0.986585
 Trans: 0.00417553 0.00598922
 
-vf-2012-6-12-left.jpg
+vf-2012-06-12-left.jpg
 Scale: 0.987434 1.005
 Trans: 0.00584665 -0.00896795
 
-vf-2012-6-12-right.jpg
+vf-2012-06-12-right.jpg
 Scale: 0.981352 0.985
 Trans: 0.01 0
 

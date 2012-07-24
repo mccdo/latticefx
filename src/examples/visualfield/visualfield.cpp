@@ -36,10 +36,12 @@
 #include <osgwTools/Shapes.h>
 
 #include <osgViewer/Viewer>
-#include <osgGA/TrackballManipulator>
 #include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
+#include <osg/ComputeBoundsVisitor>
 #include <osg/Texture2D>
+#include <osg/Camera>
+#include <osgText/Text>
 #include <osg/io_utils>
 
 #include <iostream>
@@ -94,8 +96,9 @@ typedef boost::shared_ptr< ChannelDataVisualFieldSample > ChannelDataVisualField
 class VisualFieldRenderer : public Renderer
 {
 public:
-    VisualFieldRenderer()
-      : Renderer( "vf" )
+    VisualFieldRenderer( const bool swap )
+      : Renderer( "vf" ),
+        _swap( swap )
     {}
     ~VisualFieldRenderer()
     {}
@@ -105,14 +108,56 @@ public:
         ChannelDataPtr cdp( getInput( "data" ) );
         ChannelDataVisualFieldSamplePtr cdvf( boost::static_pointer_cast< ChannelDataVisualFieldSample >( cdp ) );
 
-        osg::ref_ptr< osg::Geode > root( new osg::Geode );
+        osg::ref_ptr< osg::Group > root( new osg::Group );
+        osg::Geode* geode( new osg::Geode );
+        root->addChild( geode );
 
-        root->addDrawable( createEye( cdvf->_baseString,
+        const osg::Vec3 leftPos( -1., -.5, 0. );
+        const osg::Vec3 rightPos( 0., -.5, 0. );
+        geode->addDrawable( createEye( cdvf->_baseString,
             cdvf->_leftScale, cdvf->_leftTrans,
-            osg::Vec3( -1., -.5, 0. ), "-left.jpg" ) );
-        root->addDrawable( createEye( cdvf->_baseString,
+            _swap ? rightPos : leftPos, "-left.jpg" ) );
+        geode->addDrawable( createEye( cdvf->_baseString,
             cdvf->_rightScale, cdvf->_rightTrans,
-            osg::Vec3( 0., -.5, 0. ), "-right.jpg" ) );
+            _swap ? leftPos : rightPos, "-right.jpg" ) );
+
+        osg::Camera* camera( new osg::Camera );
+        root->addChild( camera );
+        
+        // Add HUD Camera and test
+        camera->setClearMask( GL_DEPTH_BUFFER_BIT );
+        camera->setProjectionMatrix( osg::Matrix::ortho( -1., 1., -.5, .5, -1., 1. ) );
+        camera->setReferenceFrame( osg::Transform::ABSOLUTE_RF );
+        camera->setRenderOrder( osg::Camera::POST_RENDER );
+
+        osg::Geode* textGeode( new osg::Geode );
+        camera->addChild( textGeode );
+
+        osgText::Text* textDate( new osgText::Text() );
+        textGeode->addDrawable( textDate );
+        textDate->setCharacterSize( .1 );
+        textDate->setAxisAlignment( osgText::TextBase::XY_PLANE );
+        textDate->setColor( osg::Vec4( 0., 0., .75, 1. ) );
+        textDate->setFont( "Arial.ttf" );
+
+        textDate->setText( cdvf->_baseString );
+        textDate->setAlignment( osgText::TextBase::RIGHT_TOP );
+        textDate->setPosition( osg::Vec3( .97, .485, 0. ) );
+
+        osgText::Text* textLeft( new osgText::Text( *textDate ) );
+        textGeode->addDrawable( textLeft );
+
+        textDate->setText( _swap ? "Right" : "Left" );
+        textDate->setAlignment( osgText::TextBase::LEFT_BOTTOM );
+        textDate->setPosition( osg::Vec3( -.97, -.485, 0. ) );
+
+        osgText::Text* textRight( new osgText::Text( *textDate ) );
+        textGeode->addDrawable( textRight );
+
+        textDate->setText( _swap ? "Left" : "Right" );
+        textDate->setAlignment( osgText::TextBase::RIGHT_BOTTOM );
+        textDate->setPosition( osg::Vec3( .97, -.485, 0. ) );
+
 
         return( root.release() );
     }
@@ -157,6 +202,7 @@ protected:
         osg::Image* image( osgDB::readImageFile( imageName ) );
 
         osg::Texture2D* tex( new osg::Texture2D( image ) );
+        tex->setName( "donotpage" );
         tex->setResizeNonPowerOfTwoHint( false );
         tex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
@@ -165,13 +211,15 @@ protected:
 
         return( geom.release() );
     }
+
+    const bool _swap;
 };
 typedef boost::shared_ptr< VisualFieldRenderer > VisualFieldRendererPtr;
 
 
 
 
-DataSetPtr prepareDataSet()
+DataSetPtr prepareDataSet( const bool swap )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -229,7 +277,7 @@ DataSetPtr prepareDataSet()
     }
 
 
-    VisualFieldRendererPtr renderOp( new VisualFieldRenderer() );
+    VisualFieldRendererPtr renderOp( new VisualFieldRenderer( swap ) );
     renderOp->addInput( "data" );
 
     dsp->setRenderer( renderOp );
@@ -243,12 +291,14 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     LFX_INFO_STATIC( logstr, "Options:" );
+    LFX_INFO_STATIC( logstr, "--swap\tDisplay left eye on right side (left on left by default)." );
 
     osg::ArgumentParser arguments( &argc, argv );
+    const bool swap( arguments.find( "--swap" ) > 0 );
 
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    DataSetPtr dsp( prepareDataSet() );
+    DataSetPtr dsp( prepareDataSet( swap ) );
     root->addChild( dsp->getSceneData() );
 
     // Play the time series animation
@@ -256,9 +306,21 @@ int main( int argc, char** argv )
     playControl->setTimeRange( dsp->getTimeRange() );
 
     osgViewer::Viewer viewer;
-    viewer.setUpViewInWindow( 10, 30, 800, 440 );
-    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    viewer.setUpViewInWindow( 10, 30, 800, 400 );
     viewer.setSceneData( root );
+
+    osg::ComputeBoundsVisitor cbv;
+    cbv.setNodeMaskOverride( 0xffffffff ); // because time series initially has all children disabled.
+    root->accept( cbv );
+    const osg::BoundingBox& bb( cbv.getBoundingBox() );
+    const float xPad( ( bb._max[0] - bb._min[0] ) * .1 );
+    const float yPad( ( bb._max[1] - bb._min[1] ) * .1 );
+
+    viewer.getCamera()->setProjectionMatrix( osg::Matrix::ortho(
+        bb._min[0] - xPad, bb._max[0] + xPad, bb._min[1] - yPad, bb._max[1] + yPad, -1., 1. ) );
+    viewer.getCamera()->setViewMatrix( osg::Matrix::lookAt(
+        osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 0. ), osg::Vec3( 0., 1., 0. ) ) );
+    viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );
 
     double prevClockTime( 0. );
     while( !( viewer.done() ) )
