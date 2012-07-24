@@ -42,7 +42,9 @@ PlayControl::PlayControl( osg::Node* scene )
     _time( 0. ),
     _playRate( 1. ),
     _minTime( 0. ),
-    _maxTime( 1. )
+    _maxTime( 1. ),
+    _lastFrameHold( 0. ),
+    _holdCount( 0. )
 {
     PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
@@ -57,8 +59,10 @@ PlayControl::PlayControl( const PlayControl& rhs )
     _scenes( rhs._scenes ),
     _time( rhs._time ),
     _playRate( rhs._playRate ),
-    _minTime( 0. ),
-    _maxTime( 1. )
+    _minTime( rhs._minTime ),
+    _maxTime( rhs._maxTime ),
+    _lastFrameHold( rhs._lastFrameHold ),
+    _holdCount( 0. )
 {
 }
 PlayControl::~PlayControl()
@@ -80,11 +84,37 @@ void PlayControl::elapsedClockTick( double elapsed )
 {
     const double delta = elapsed * _playRate;
     if( _time + delta > _maxTime )
-        // Played forwards past end. Loop to beginning.
-        _time = _minTime + _time + delta - _maxTime;
+    {
+        // Played forwards past end.
+        if( ( _lastFrameHold > 0. ) && ( _holdCount < _lastFrameHold ) )
+        {
+            // Stay at _maxTime for a count of _lastFrameHold seconds.
+            _time = _maxTime;
+            _holdCount += delta;
+        }
+        else
+        {
+            // Loop to beginning.
+            _time = _minTime + _time + delta - _maxTime;
+            _holdCount = 0.;
+        }
+    }
     else if( _time + delta < _minTime )
-        // Played backwards past beginning. Loop to end.
-        _time = _maxTime + _time + delta - _minTime;
+    {
+        // Played backwards past beginning.
+        if( ( _lastFrameHold > 0. ) && ( _holdCount < _lastFrameHold ) )
+        {
+            // Stay at _minTime for a count of _lastFrameHold seconds.
+            _time = _minTime;
+            _holdCount += delta;
+        }
+        else
+        {
+            // Loop to end.
+            _time = _maxTime + _time + delta - _minTime;
+            _holdCount = 0.;
+        }
+    }
     else
         _time += delta;
 
@@ -104,6 +134,7 @@ void PlayControl::elapsedClockTick( double elapsed )
 void PlayControl::setAnimationTime( double time )
 {
     _time = time;
+    elapsedClockTick( 0. );
 }
 
 void PlayControl::setPlayRate( double playRate )
@@ -132,6 +163,11 @@ void PlayControl::getTimeRange( double& minTime, double& maxTime ) const
 {
     minTime = _minTime;
     maxTime = _maxTime;
+}
+
+void PlayControl::setLastFrameHold( const double hold )
+{
+    _lastFrameHold = hold;
 }
 
 

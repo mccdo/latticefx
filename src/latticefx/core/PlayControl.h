@@ -88,12 +88,17 @@ public:
 
     /** \brief Specify the elapsed clock time.
     \details In typical usage, the application calls this function once per frame and passed
-    the elapsed real clock time in seconds since the previous call to elapsedClockTick(). */
+    the elapsed real clock time in seconds since the previous call to elapsedClockTick().
+
+    This function adds \c elapsed to the current animation time \c _time, and wraps the
+    resulting animation time if it is out of range. Then the function calls into all
+    managed scene graphs to set their current animation time. */
     void elapsedClockTick( double elapsed );
 
     /** \brief Sets the current animation time.
-    \details Immediately jump to \c time. Results are undefined if \c time is outside the
-    time range (setTimeRange()). */
+    \details Immediately jump to \c time. Implicitly calls elapsedClockTick(0.0),
+    which handles wrapping in the event that \c time is out of range, and update all
+    managed scene graphs. */
     void setAnimationTime( double time );
     /** \brief Get the current animation time.
     \details Apps don't typically call this function, as elapsedClockTick() updates the
@@ -119,6 +124,10 @@ public:
     /** \overload */
     void getTimeRange( double& minTime, double& maxTime ) const;
 
+    /** \brief TBD
+    \details TBD */
+    void setLastFrameHold( const double hold );
+
 protected:
     typedef std::map< osg::ref_ptr< osg::Node >, osg::ref_ptr< PagingCallback > > NodeCBMap;
     NodeCBMap _scenes;
@@ -126,6 +135,8 @@ protected:
     double _time;
     double _playRate;
     double _minTime, _maxTime;
+
+    double _lastFrameHold, _holdCount;
 };
 
 typedef boost::shared_ptr< PlayControl > PlayControlPtr;

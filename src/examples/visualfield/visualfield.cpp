@@ -305,6 +305,8 @@ int main( int argc, char** argv )
     // Play the time series animation
     PlayControlPtr playControl( new PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );
+    playControl->setPlayRate( 1.6 );
+    playControl->setLastFrameHold( 9. );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 400 );
