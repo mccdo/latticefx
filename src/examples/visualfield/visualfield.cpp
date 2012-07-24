@@ -125,7 +125,7 @@ public:
         root->addChild( camera );
         
         // Add HUD Camera and test
-        camera->setClearMask( GL_DEPTH_BUFFER_BIT );
+        camera->setClearMask( 0 );
         camera->setProjectionMatrix( osg::Matrix::ortho( -1., 1., -.5, .5, -1., 1. ) );
         camera->setReferenceFrame( osg::Transform::ABSOLUTE_RF );
         camera->setRenderOrder( osg::Camera::POST_RENDER );
@@ -166,6 +166,7 @@ public:
     {
         osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
         stateSet->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+        stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
         return( stateSet.release() );
     }
 
@@ -320,7 +321,10 @@ int main( int argc, char** argv )
         bb._min[0] - xPad, bb._max[0] + xPad, bb._min[1] - yPad, bb._max[1] + yPad, -1., 1. ) );
     viewer.getCamera()->setViewMatrix( osg::Matrix::lookAt(
         osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 0. ), osg::Vec3( 0., 1., 0. ) ) );
+
+    // Clear color only, no depth (painter's algorithm).
     viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );
+    viewer.getCamera()->setClearMask( GL_COLOR_BUFFER_BIT );
 
     double prevClockTime( 0. );
     while( !( viewer.done() ) )
