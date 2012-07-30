@@ -46,6 +46,11 @@ if( VTK_FOUND )
     include( ${VTK_USE_FILE} )
 endif()
 
+find_package( crunchstore 0.2.0 )
+if( crunchstore_FOUND )
+    include( ${crunchstore_USE_FILE} )
+endif()
+
 include( CMakeMacros )
 
 option( LFX_DISABLE_LOGGING "If set, Lfx disables all console and log file writes." OFF )
