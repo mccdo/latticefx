@@ -108,3 +108,61 @@ if( MSVC )
         FILES_MATCHING PATTERN "*.pdb"
     )
 endif()
+
+#
+# Create and install all of the auto find tools
+# =============================================
+
+# Add all targets to the build-tree export set
+export(TARGETS latticefx latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk
+  FILE "${PROJECT_BINARY_DIR}/lib/latticefxLibraryDepends.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
+export(PACKAGE latticefx)
+
+# Create a latticefxBuildTreeSettings.cmake file for the use from the build tree
+configure_file(latticefxBuildTreeSettings.cmake.in
+  "${PROJECT_BINARY_DIR}/lib/latticefxBuildTreeSettings.cmake" @ONLY)
+
+#configure_file(latticefxConfig.cmake.in
+#  "${PROJECT_BINARY_DIR}/lib/latticefxConfig.cmake" @ONLY)
+configure_file(latticefxConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/lib/latticefxConfigVersion.cmake" @ONLY)
+configure_file(Uselatticefx.cmake.in
+  "${PROJECT_BINARY_DIR}/lib/Uselatticefx.cmake" @ONLY)
+
+# Install the export set for use with the install-tree
+install(EXPORT latticefx-targets DESTINATION lib)
+
+include( CMakePackageConfigHelpers )
+# Create the latticefxConfig.cmake and latticefxConfigVersion files
+file(RELATIVE_PATH CONF_REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+   "${CMAKE_INSTALL_PREFIX}/include")
+
+configure_package_config_file( 
+    latticefxConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfig.cmake
+    INSTALL_DESTINATION lib
+    PATH_VARS CONF_REL_INCLUDE_DIR )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfig.cmake 
+              ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/lib/Uselatticefx.cmake
+        DESTINATION lib )
+
+#
+# Setup the fpc auto detection files
+if(WIN32)
+    set(latticefx_FPC_LIBRARIES "/libpath:\"\${libdir}\" latticefx.lib latticefx_core_vtk.lib latticefx_translators_vtk.lib latticefx_utils_vtk.lib")
+    set(latticefx_FPC_INCLUDES "/I\"\${includedir}\"")
+else(WIN32)
+    set(latticefx_FPC_INCLUDES "-I\${includedir}")
+    set(latticefx_FPC_LIBRARIES "-L\${libdir} -llatticefx -llatticefx_core_vtk -llatticefx_translators_vtk -llatticefx_utils_vtk")
+endif(WIN32)
+
+configure_file(extra/latticefx.fpc.in
+  "${PROJECT_BINARY_DIR}/lib/flagpoll/latticefx.fpc" @ONLY)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/flagpoll/latticefx.fpc
+        DESTINATION lib/flagpoll )
+

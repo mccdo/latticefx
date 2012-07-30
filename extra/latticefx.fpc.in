@@ -1,0 +1,15 @@
+prefix=${fp_file_cwd}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: latticefx
+Description: latticefx release pre-compiled for VES
+Provides: latticefx
+Requires:
+Version: @latticefx_VERSION@
+Libs: @latticefx_FPC_LIBRARIES@
+Cflags: @latticefx_FPC_INCLUDES@
+Arch: noarch
+
+

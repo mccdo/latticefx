@@ -1,0 +1,29 @@
+# - Config file for the latticefx package
+# It defines the following variables
+#  latticefx_INCLUDE_DIRS - include directories for latticefx
+#  latticefx_LIBRARIES    - libraries to link against
+#  latticefx_EXECUTABLE   - the bar executable
+
+@PACKAGE_INIT@
+
+# These are IMPORTED targets created by latticefxLibraryDepends.cmake
+set(latticefx_LIBRARIES "latticefx;latticefx_core_vtk;latticefx_translators_vtk;latticefx_utils_vtk" )
+set(latticefx_EXECUTABLE test)
+
+# Compute paths
+# get_filename_component(latticefx_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+if(EXISTS "${PACKAGE_PREFIX_DIR}/CMakeCache.txt")
+    # In build tree
+    include("${PACKAGE_PREFIX_DIR}/lib/latticefxBuildTreeSettings.cmake")
+    # Our library dependencies (contains definitions for IMPORTED targets)
+    include("${PACKAGE_PREFIX_DIR}/lib/latticefxLibraryDepends.cmake")
+else()
+    set_and_check(latticefx_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include")
+    # The latticefx targets file.
+    if(EXISTS "${PACKAGE_PREFIX_DIR}/lib/latticefx-targets.cmake")
+        include("${PACKAGE_PREFIX_DIR}/lib/latticefx-targets.cmake")
+    endif()
+endif()
+
+# The location of the Uselatticefx.cmake file.
+set(latticefx_USE_FILE "${PACKAGE_PREFIX_DIR}/lib/Uselatticefx.cmake")
