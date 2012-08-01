@@ -226,7 +226,7 @@ DataSetPtr prepareDataSet( const bool swap )
 
     std::map< std::string, ChannelDataVisualFieldSamplePtr > cdmap;
 
-    std::ifstream ifs( osgDB::findDataFile( "vf-registration.txt" ) );
+    std::ifstream ifs( osgDB::findDataFile( "vf-registration.txt" ).c_str() );
     if( ifs.bad() )
     {
         LFX_FATAL_STATIC( logstr, "Can't open \"vf-registration.txt\"." );
