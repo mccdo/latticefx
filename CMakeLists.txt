@@ -114,7 +114,11 @@ endif()
 # =============================================
 
 # Add all targets to the build-tree export set
-export(TARGETS latticefx latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk
+set( _targets latticefx )
+if( VTK_FOUND )
+    list( APPEND _targets latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk )
+endif()
+export(TARGETS ${_targets}
   FILE "${PROJECT_BINARY_DIR}/lib/latticefxLibraryDepends.cmake")
 
 # Export the package for use from the build-tree
