@@ -66,6 +66,7 @@ set( _requiredDependencyIncludes
     ${Boost_INCLUDE_DIR}
 	#${OSGWORKS_INCLUDE_DIR}
     ${OSG_INCLUDE_DIRS}
+    ${crunchstore_INCLUDE_DIRS}
 )
 set( _projectIncludes
     ${PROJECT_SOURCE_DIR}/src
@@ -80,6 +81,7 @@ set( _requiredDependencyLibraries
     ${Boost_LIBRARIES}
 	${_osgWorksLibraries}
     ${OSG_LIBRARIES}
+    ${crunchstore_LIBRARIES}
     #${_vtkLibraries}
 )
 

@@ -60,7 +60,11 @@ endfunction()
 
 # Find the main Poco header.
 set( POCO_INCLUDE_DIR )
-find_path( POCO_INCLUDE_DIR Poco/Poco.h )
+find_path( POCO_INCLUDE_DIR Poco/Poco.h
+    PATHS ${POCO_ROOT}
+        ENV POCO_ROOT
+    PATH_SUFFIXES include
+)
 
 
 # Set POCO_VERSION in format MM.mm.vv.pp, where each component is a decimal
@@ -136,6 +140,8 @@ foreach( lib ${_requestedComponents} )
     find_library( POCO_${lib}_LIBRARY
         NAMES ${lib}${_crtSuffix}
             Poco${lib}${_crtSuffix}
+        PATHS ${POCO_ROOT}
+            ENV POCO_ROOT
         PATH_SUFFIXES lib
     )
     if( NOT POCO_${lib}_LIBRARY )
@@ -149,6 +155,8 @@ foreach( lib ${_requestedComponents} )
     find_library( POCO_${lib}_LIBRARY_DEBUG
         NAMES ${lib}${_crtDebugSuffix}
             Poco${lib}${_crtDebugSuffix}
+        PATHS ${POCO_ROOT}
+            ENV POCO_ROOT
         PATH_SUFFIXES lib
     )
     if( POCO_${lib}_LIBRARY_DEBUG )
