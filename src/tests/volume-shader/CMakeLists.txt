@@ -1,5 +1,5 @@
 _addExecutable( Test volume-shader
     volume-shader.cpp
     LATTICEFX_LIBRARIES
-        latticefx
+        latticefx_core
 )

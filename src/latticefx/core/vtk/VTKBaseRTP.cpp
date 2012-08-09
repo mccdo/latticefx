@@ -26,17 +26,6 @@
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
 #include <latticefx/core/vtk/VTKBaseRTP.h>
-#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
-#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
-
-#include <vtkDataObject.h>
-#include <vtkCompositeDataGeometryFilter.h>
-#include <vtkDataSetSurfaceFilter.h>
-#include <vtkCellDataToPointData.h>
-#include <vtkContourFilter.h>
-#include <vtkAlgorithm.h>
-#include <vtkAlgorithmOutput.h>
-#include <vtkPolyDataNormals.h>
 
 namespace lfx {
 
@@ -45,60 +34,11 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-/*lfx::core::ChannelDataPtr VTKBaseRTP::channel( const lfx::core::ChannelDataPtr maskIn )
+void VTKBaseRTP::SetMinMaxScalarRangeValue( double minVal, double maxVal )
 {
-    
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) );
-    vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
-
-    vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
-    c2p->SetInput( tempVtkDO );
-    //c2p->Update();
-    
-    vtkContourFilter* contourFilter = vtkContourFilter::New();
-    contourFilter->UseScalarTreeOn();
-    contourFilter->SetInputConnection( 0, c2p->GetOutputPort( 0 ) );
-    contourFilter->SetValue( 0, m_requestedValue );
-    contourFilter->ComputeNormalsOff();
-    contourFilter->SetInputArrayToProcess( 0, 0, 0,
-        vtkDataObject::FIELD_ASSOCIATION_POINTS,
-        "Scalar Name" );
-    //contourFilter->Update();
-    
-    vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
-    
-    if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
-    {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
-            vtkCompositeDataGeometryFilter::New();
-        m_multiGroupGeomFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
-        normals->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
-        m_multiGroupGeomFilter->Delete();
-    }
-    else
-    {
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
-            vtkDataSetSurfaceFilter::New();
-        m_surfaceFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
-
-        normals->SetInputConnection( m_surfaceFilter->GetOutputPort() );
-
-        m_surfaceFilter->Delete();
-    }
-    
-    normals->Update();
-
-    lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
-        new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
-    
-    normals->Delete();
-    c2p->Delete();
-    contourFilter->Delete();
-    
-    return( cdpd );
-}*/
+    m_minScalarValue = minVal;
+    m_maxScalarValue = maxVal;
+}
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetRequestedValue( double value )
 {

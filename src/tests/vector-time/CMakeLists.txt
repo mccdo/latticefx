@@ -1,5 +1,5 @@
 _addExecutable( Test vector-time
     vector-time.cpp
     LATTICEFX_LIBRARIES
-        latticefx
+        latticefx_core
 )

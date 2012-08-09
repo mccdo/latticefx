@@ -4,7 +4,7 @@ set( _libName OSGVolume )
 _addLibrary( Plugin ${_libName}
     OSGVolume.cpp
     LATTICEFX_LIBRARIES
-        latticefx
+        latticefx_core
 )
 
 _addPluginINI( OSGVolume.ini )

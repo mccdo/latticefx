@@ -4,7 +4,7 @@ set( _libName multiop )
 _addLibrary( Plugin ${_libName}
     multiop.cpp
     LATTICEFX_LIBRARIES
-        latticefx
+        latticefx_core
 )
 
 _addPluginINI( multiop.ini )

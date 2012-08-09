@@ -2,7 +2,7 @@ if(VTK_FOUND)
     add_subdirectory(vtk)
 endif(VTK_FOUND)
 
-set( _libName latticefx )
+set( _libName latticefx_core )
 
 if( BUILD_SHARED_LIBS )
     add_definitions( -DLATTICEFX_LIBRARY )

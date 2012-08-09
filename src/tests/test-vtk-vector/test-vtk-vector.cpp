@@ -31,6 +31,7 @@
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 #include <latticefx/core/vtk/VTKVectorFieldRTP.h>
 #include <latticefx/core/vtk/VTKVectorRenderer.h>
+#include <latticefx/core/vtk/VTKActorRenderer.h>
 
 #include <osgViewer/Viewer>
 
@@ -125,12 +126,19 @@ int main( int argc, char** argv )
     dsp->addOperation( vectorRTP );
     
     //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
-    lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
+    /*lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
+    renderOp->SetActiveVector( "Momentum" );
+    renderOp->SetActiveScalar( "Density" );
+    renderOp->addInput( "vtkPolyData" );
+    dsp->setRenderer( renderOp );*/
+
+    //Try the vtkActor renderer
+    lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyData" );
     dsp->setRenderer( renderOp );
-
+    
     std::cout << "lfx...creating data..." << std::endl;
     osg::Node* sceneNode = dsp->getSceneData();
     std::cout << "...finished creating data. " << std::endl;

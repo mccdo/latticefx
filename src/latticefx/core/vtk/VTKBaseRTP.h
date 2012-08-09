@@ -39,9 +39,9 @@ namespace core {
 namespace vtk {
 
 /** \class VTKBaseRTP VTKBaseRTP.h <latticefx/core/vtk/VTKBaseRTP.h>
- \brief Class the creates an isosurface polydata from a vtk dataset.
- \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
- name vtkDataObject and creates a vtkPolyData with the vector field. */
+ \brief Base class for VTK based RTP operations.
+ \details This class holds common functions that most VTK RTP operations utilized
+ in creating vtkPolyData. */
 
 class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : public lfx::core::RTPOperation
 {
@@ -51,7 +51,9 @@ public:
     VTKBaseRTP()
         : 
         lfx::core::RTPOperation( lfx::core::RTPOperation::Channel ),
-        m_requestedValue( 0.2 )    
+        m_requestedValue( 0.2 ),
+        m_minScalarValue( 0.0 ),
+        m_maxScalarValue( 100.0 )
     {
         ;
     }
@@ -61,15 +63,20 @@ public:
     {
         ;
     }
-    
-    ///We are going to be creating a ChannelDatavtkPolyData so we override the 
-    ///channel method since we do not have a ChannelData already
-    //virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
-    
+        
+    ///Set the value for a plane location or scalar value for an isosurface
     void SetRequestedValue( double value );
 
+    ///Set the min max values for scalar ranges for coloring objects
+    void SetMinMaxScalarRangeValue( double minVal, double maxVal );
+
 protected:
+    ///Value for setting the position or value for an iso surface
     double m_requestedValue;
+    
+    ///Values for setting color ranges on full VTK pipelines
+    double m_minScalarValue;
+    double m_maxScalarValue;
 };
 
 typedef boost::shared_ptr< VTKBaseRTP > VTKBaseRTPPtr;

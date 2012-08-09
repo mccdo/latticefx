@@ -114,7 +114,7 @@ endif()
 # =============================================
 
 # Add all targets to the build-tree export set
-set( _targets latticefx )
+set( _targets latticefx_core )
 if( VTK_FOUND )
     list( APPEND _targets latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk )
 endif()
@@ -157,11 +157,11 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfig.cmake
 #
 # Setup the fpc auto detection files
 if(WIN32)
-    set(latticefx_FPC_LIBRARIES "/libpath:\"\${libdir}\" latticefx.lib latticefx_core_vtk.lib latticefx_translators_vtk.lib latticefx_utils_vtk.lib")
+    set(latticefx_FPC_LIBRARIES "/libpath:\"\${libdir}\" latticefx_core.lib latticefx_core_vtk.lib latticefx_translators_vtk.lib latticefx_utils_vtk.lib")
     set(latticefx_FPC_INCLUDES "/I\"\${includedir}\"")
 else(WIN32)
     set(latticefx_FPC_INCLUDES "-I\${includedir}")
-    set(latticefx_FPC_LIBRARIES "-L\${libdir} -llatticefx -llatticefx_core_vtk -llatticefx_translators_vtk -llatticefx_utils_vtk")
+    set(latticefx_FPC_LIBRARIES "-L\${libdir} -llatticefx_core -llatticefx_core_vtk -llatticefx_translators_vtk -llatticefx_utils_vtk")
 endif(WIN32)
 
 configure_file(extra/latticefx.fpc.in

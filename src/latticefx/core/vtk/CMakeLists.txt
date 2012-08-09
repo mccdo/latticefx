@@ -14,7 +14,7 @@ _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
     LATTICEFX_LIBRARIES
-        latticefx
+        latticefx_core
         latticefx_utils_vtk
         ${_vtkLibraries}
 )
