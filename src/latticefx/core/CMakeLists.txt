@@ -25,6 +25,7 @@ set( _headerFiles
     LogBase.h
     LogMacros.h
     OperationBase.h
+    OperationValue.h
     PageData.h
     PagingCallback.h
     PagingThread.h
@@ -53,6 +54,7 @@ set( _sourceFiles
     LoadRequest.cpp
     Log.cpp
     OperationBase.cpp
+    OperationValue.cpp
     PageData.cpp
     PagingCallback.cpp
     PagingThread.cpp

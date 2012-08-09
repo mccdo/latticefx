@@ -67,7 +67,7 @@ public:
         // setValue( "threshold", OperationValue( floatVal ) );
         float threshold( 0.f );
         if( hasValue( "threshold" ) )
-            threshold = getValue( "threshold" )->getFloat();
+            threshold = getValue( "threshold" )->extract< float >();
 
         osg::Vec3Array* xyz = static_cast< osg::Vec3Array* >( input->asOSGArray() );
         unsigned int size( xyz->getNumElements() );

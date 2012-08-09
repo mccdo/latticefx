@@ -31,6 +31,7 @@
 
 
 #include <latticefx/core/Export.h>
+#include <latticefx/core/OperationValue.h>
 #include <latticefx/core/ChannelData.h>
 
 #include <osg/Vec3>
@@ -47,65 +48,6 @@ namespace core {
 
 // Forward declaration.
 class DataSet;
-
-
-/** \class OperationValue OperationBase.h <latticefx/core/OperationBase.h>
-\brief Stores a value for use by the name-value pair interface.
-\details This class allows arbitrary values to be passed to instances of an
-OperationBase. This is particularly useful for classes loaded from plugins, for
-which apps must pass configuration parameters without any compile-time knowledge
-of the class interface (except that it derives from OperationBase). */
-struct LATTICEFX_EXPORT OperationValue
-{
-public:
-    typedef enum {
-        NO_VALUE,
-        INT_VALUE,
-        FLOAT_VALUE,
-        VEC3_VALUE,
-        STRING_VALUE,
-        BOOL_VALUE
-    } ValueType;
-
-    OperationValue();
-    OperationValue( const OperationValue& rhs );
-    virtual ~OperationValue();
-
-    explicit OperationValue( const int value );
-    explicit OperationValue( const float value );
-    explicit OperationValue( const osg::Vec3& value );
-    explicit OperationValue( const std::string& value );
-    explicit OperationValue( const bool value );
-
-    void set( const int value );
-    void set( const float value );
-    void set( const osg::Vec3& value );
-    void set( const std::string& value );
-    void set( const bool value );
-
-    ValueType getType() const;
-
-    int getInt() const;
-    float getFloat() const;
-    osg::Vec3 getVec3() const;
-    const std::string& getString() const;
-    bool getBool() const;
-
-protected:
-    ValueType _valueType;
-    union {
-        int _int;
-        float _float;
-        float _vec3[ 3 ];
-        bool _bool;
-    } _value;
-    // Can't have a std::string in the union because types with copy constructors
-    // aren't allowed in unions.
-    std::string _valueString;
-};
-
-typedef std::map< std::string, OperationValue > NameValueMap;
-
 
 
 /** \class OperationBase OperationBase.h <latticefx/core/OperationBase.h>
