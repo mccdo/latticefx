@@ -55,6 +55,10 @@ namespace lfx {
 namespace core {
 
 
+// Forward
+class DataSet;
+
+
 /** \class Renderer Renderer.h <latticefx/core/Renderer.h>
 \brief Base class for Rendering Framework operations.
 \details Applications should create an instance of a class that derives from Renderer,
@@ -131,7 +135,7 @@ public:
 
     DataSet calls this function once for each time step. The \c maskIn will likely
     be different for every time step. */
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn ) = 0;
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn ) = 0;
 
     /** \brief Create a single state set for all scene graphs.
     \details Create a single state set that applies to all scene graphs created by

@@ -100,7 +100,7 @@ VectorRenderer::~VectorRenderer()
 {
 }
 
-osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
+osg::Node* VectorRenderer::getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 

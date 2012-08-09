@@ -43,8 +43,6 @@ namespace lfx {
 namespace core {
 
 
-#ifdef DB_IMPL_FILESYSTEM
-
 DBKey generateDBKey()
 {
     static unsigned int fileNameCounter( 0 );
@@ -55,15 +53,6 @@ DBKey generateDBKey()
     return( DBKey( ostr.str() ) );
 }
 
-bool storeSubGraph( const osg::Node* root, const DBKey& dbKey )
-{
-    return( osgDB::writeNodeFile( *root, dbKey ) );
-}
-osg::Node* loadSubGraph( const DBKey& dbKey )
-{
-    return( osgDB::readNodeFile( dbKey ) );
-}
-
 bool storeImage( const osg::Image* image, const DBKey& dbKey )
 {
     return( osgDB::writeImageFile( *image, dbKey ) );
@@ -72,24 +61,6 @@ osg::Image* loadImage( const DBKey& dbKey )
 {
     return( osgDB::readImageFile( dbKey ) );
 }
-
-#else
-
-DBKey generateDBKey()
-{
-    return( DBKey( "" ) );
-}
-
-bool storeSubGraph( const osg::Node* root, const DBKey& dbKey )
-{
-    return( false );
-}
-osg::Node* loadSubGraph( const DBKey& dbKey )
-{
-    return( NULL );
-}
-
-#endif
 
 
 // core

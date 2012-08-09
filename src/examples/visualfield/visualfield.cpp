@@ -103,7 +103,7 @@ public:
     ~VisualFieldRenderer()
     {}
 
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
     {
         ChannelDataPtr cdp( getInput( "data" ) );
         ChannelDataVisualFieldSamplePtr cdvf( boost::static_pointer_cast< ChannelDataVisualFieldSample >( cdp ) );

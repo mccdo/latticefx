@@ -94,7 +94,7 @@ public:
     /** \brief Override base class Renderer
     \details Invoked by DataSet once per time step to obtain a scene graph for
     rendering volumetric data. */
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn );
 
     /** \brief Override base class Renderer
     \details Invoked by DataSet to obtain a global StateSet for all child

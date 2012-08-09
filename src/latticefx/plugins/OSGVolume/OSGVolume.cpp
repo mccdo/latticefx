@@ -92,7 +92,7 @@ public:
         return( new Downsample );
     }
 
-    virtual ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()( DataSet& dataSet )
     {
         ChannelDataPtr cdp;
         if( !( _inputs.empty() ) )

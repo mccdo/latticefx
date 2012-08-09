@@ -78,7 +78,7 @@ SurfaceRenderer::~SurfaceRenderer()
 }
 
 
-osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
+osg::Node* SurfaceRenderer::getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 

@@ -58,7 +58,7 @@ public:
     virtual ~InstancedVectors()
     {}
 
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
     {
         const osg::Array* sourceArray( _inputs[ 0 ]->asOSGArray() );
         const osg::Vec3Array* positions( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );

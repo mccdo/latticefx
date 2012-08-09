@@ -236,7 +236,7 @@ bool DataSet::updatePreprocessing()
             // Assign actual / current data to the prePtr OperationBase.
             setInputs( prePtr, currentData );
 
-            ChannelDataPtr newData( (*prePtr)() );
+            ChannelDataPtr newData( (*prePtr)( *this ) );
 
             // The Proprocessor object tells us how to handle the new data
             // we just got back. This is so that apps can configure the Preprocessor
@@ -469,7 +469,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     else
     {
         setInputs( _renderer, data );
-        return( _renderer->getSceneGraph( mask ) );
+        return( _renderer->getSceneGraph( *this, mask ) );
     }
 
     return( NULL );

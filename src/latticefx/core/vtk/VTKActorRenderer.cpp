@@ -65,7 +65,7 @@ void VTKActorRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
-osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
+osg::Node* VTKActorRenderer::getSceneGraph( lfx::core::DataSet& dataSet, const lfx::core::ChannelDataPtr maskIn )
 {
     vtkPolyData* tempVtkPD = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();

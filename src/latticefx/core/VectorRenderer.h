@@ -139,7 +139,7 @@ public:
     /** \brief Override base class Renderer.
     \details Invoked by DataSet to obtain a scene graph for rendering points at a
     partivular time step. */
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn );
 
     /** \brief Override base class Renderer.
     \details Invoked by DataSet to obtain a root node StateSet globally applicable to

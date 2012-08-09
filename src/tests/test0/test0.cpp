@@ -103,7 +103,7 @@ public:
     virtual ~MyRenderer()
     {}
 
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
     {
         osg::ref_ptr< osg::Geode > geode( new osg::Geode );
         geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );

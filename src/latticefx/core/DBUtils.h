@@ -49,17 +49,11 @@ namespace lfx {
 namespace core {
 
 
-#ifdef DB_IMPL_FILESYSTEM
-    typedef std::string DBKey;
-    typedef std::list< DBKey > DBKeyList;
-#else
-#endif
+typedef std::string DBKey;
+typedef std::list< DBKey > DBKeyList;
 
 
 LATTICEFX_EXPORT DBKey generateDBKey();
-
-LATTICEFX_EXPORT bool storeSubGraph( const osg::Node* root, const DBKey& dbKey );
-LATTICEFX_EXPORT osg::Node* loadSubGraph( const DBKey& dbKey );
 
 LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
 LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );

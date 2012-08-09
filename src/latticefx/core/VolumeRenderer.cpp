@@ -136,7 +136,7 @@ void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
 }
 
 
-osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
+osg::Node* VolumeRenderer::getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 

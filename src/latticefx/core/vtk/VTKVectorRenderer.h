@@ -72,7 +72,7 @@ public:
     
     ///We are overriding the lfx::core::VectorRenderer method and then calling it 
     ///once we have given it all of the data it needs.
-    virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( lfx::core::DataSet& dataSet, const lfx::core::ChannelDataPtr maskIn );
     
 protected:
     ///The active vector to set which vector to use for rendering

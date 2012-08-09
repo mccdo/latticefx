@@ -60,7 +60,7 @@ public:
         setActionType( Preprocess::REPLACE_DATA );
     }
 
-    virtual ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()( DataSet& dataSet )
     {
         ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
 
@@ -80,7 +80,7 @@ public:
 class BoxRenderer : public Renderer
 {
 public:
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn )
     {
         ChannelDataOSGImage* cdi( static_cast< ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
         osg::Image* image( cdi->getImage() );

@@ -53,7 +53,7 @@ void VTKVectorRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
-osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
+osg::Node* VTKVectorRenderer::getSceneGraph( lfx::core::DataSet& dataSet, const lfx::core::ChannelDataPtr maskIn )
 {
     vtkPolyData* tempVtkPD = 
     boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
@@ -129,7 +129,7 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
     
-    return( lfx::core::VectorRenderer::getSceneGraph( maskIn ) );
+    return( lfx::core::VectorRenderer::getSceneGraph( dataSet, maskIn ) );
 }
 ////////////////////////////////////////////////////////////////////////////////    
 }

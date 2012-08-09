@@ -44,6 +44,10 @@ namespace lfx {
 namespace core {
 
 
+// Forward
+class DataSet;
+
+
 /** \class Preprocess Preprocess.h <latticefx/core/Preprocess.h>
 \brief Base class for Preprocessing & Caching operations.
 \details TBD
@@ -81,7 +85,7 @@ public:
     add it to the DataSet, replace the first input with \c newData, or ignore
     \c newData. (IGNORE_DATA is useful if this function stores the data, in the DB for
     example.) */
-    virtual ChannelDataPtr operator()()
+    virtual ChannelDataPtr operator()( DataSet& dataSet )
     {
         return( ChannelDataPtr( (ChannelData*)NULL ) );
     }

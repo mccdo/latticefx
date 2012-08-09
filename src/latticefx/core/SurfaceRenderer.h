@@ -117,7 +117,7 @@ public:
     SurfaceRenderer( const SurfaceRenderer& rhs );
     virtual ~SurfaceRenderer();
 
-    virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
+    virtual osg::Node* getSceneGraph( DataSet& dataSet, const ChannelDataPtr maskIn );
     virtual osg::StateSet* getRootState();
 
     /** \brief Specify the PrimitiveSetGenerator.
