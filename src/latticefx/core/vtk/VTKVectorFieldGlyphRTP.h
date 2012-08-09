@@ -28,7 +28,7 @@
 #ifndef __LATTICEFX_CORE_VTK_VECTORFIELDGLYPH_RTP_OPERATION_H__
 #define __LATTICEFX_CORE_VTK_VECTORFIELDGLYPH_RTP_OPERATION_H__ 1
 
-#include <latticefx/core/RTPOperation.h>
+#include <latticefx/core/vtk/VTKBaseRTP.h>
 
 #include <latticefx/core/vtk/Export.h>
 
@@ -43,7 +43,7 @@ namespace vtk {
  \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
  name vtkDataObject and creates a vtkPolyData with the vector field. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKVectorFieldGlyphRTP : public lfx::core::RTPOperation
+class LATTICEFX_CORE_VTK_EXPORT VTKVectorFieldGlyphRTP : public VTKBaseRTP
 {
 public:
     ///Default constructor
@@ -51,7 +51,7 @@ public:
     ///operation when we construct the VTKVectorFieldGlyphRTP.
     VTKVectorFieldGlyphRTP()
         : 
-        lfx::core::RTPOperation( lfx::core::RTPOperation::Channel ),
+        VTKBaseRTP( lfx::core::RTPOperation::Channel ),
         m_mask( 1.0 )
     {
         ;

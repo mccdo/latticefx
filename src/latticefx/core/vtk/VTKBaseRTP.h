@@ -48,9 +48,9 @@ class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : public lfx::core::RTPOperation
 public:
     
     ///Default constructor
-    VTKBaseRTP()
+    VTKBaseRTP( const RTPOpType rtpOpType )
         : 
-        lfx::core::RTPOperation( lfx::core::RTPOperation::Channel ),
+        lfx::core::RTPOperation( rtpOpType ),
         m_requestedValue( 0.2 ),
         m_minScalarValue( 0.0 ),
         m_maxScalarValue( 100.0 )
