@@ -25,7 +25,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
-#include <latticefx/core/vtk/VTKVectorFieldRTP.h>
+#include <latticefx/core/vtk/VTKBaseRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
@@ -33,9 +33,10 @@
 #include <vtkCompositeDataGeometryFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkMaskPoints.h>
+#include <vtkContourFilter.h>
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
+#include <vtkPolyDataNormals.h>
 
 namespace lfx {
 
@@ -44,61 +45,64 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDataPtr maskIn )
+/*lfx::core::ChannelDataPtr VTKBaseRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
+    
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
         getInput( "vtkDataObject" ) );
-    
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
+
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDO );
     //c2p->Update();
     
-    vtkMaskPoints* ptmask = vtkMaskPoints::New();
-    //This is required for use with VTK 5.10
-    ptmask->SetMaximumNumberOfPoints( cddoPtr->GetNumberOfPoints() );
-#if ( VTK_MAJOR_VERSION >= 5 ) && ( VTK_MINOR_VERSION >= 10 )
-    //New feature for selecting points at random in VTK 5.10
-    ptmask->SetRandomModeType( 0 );
-#else
-    ptmask->SetRandomOn();
-#endif
-    // get every nth point from the dataSet data
-    ptmask->SetOnRatio( m_mask );
+    vtkContourFilter* contourFilter = vtkContourFilter::New();
+    contourFilter->UseScalarTreeOn();
+    contourFilter->SetInputConnection( 0, c2p->GetOutputPort( 0 ) );
+    contourFilter->SetValue( 0, m_requestedValue );
+    contourFilter->ComputeNormalsOff();
+    contourFilter->SetInputArrayToProcess( 0, 0, 0,
+        vtkDataObject::FIELD_ASSOCIATION_POINTS,
+        "Scalar Name" );
+    //contourFilter->Update();
     
-    vtkPolyData* tempPd = 0;
+    vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
+    
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
         vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
             vtkCompositeDataGeometryFilter::New();
-        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
-        ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+        m_multiGroupGeomFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
+        normals->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
         m_multiGroupGeomFilter->Delete();
     }
     else
     {
         vtkDataSetSurfaceFilter* m_surfaceFilter = 
             vtkDataSetSurfaceFilter::New();
-        m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
-        ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+        m_surfaceFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
+
+        normals->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+
         m_surfaceFilter->Delete();
     }
     
-    ptmask->Update();
-    
+    normals->Update();
+
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
-        new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
+        new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
     
-    ptmask->Delete();
+    normals->Delete();
     c2p->Delete();
+    contourFilter->Delete();
     
     return( cdpd );
-}
+}*/
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::SetMaskValue( double value )
+void VTKBaseRTP::SetRequestedValue( double value )
 {
-    m_mask = value;
+    m_requestedValue = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

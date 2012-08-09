@@ -4,32 +4,9 @@ if( BUILD_SHARED_LIBS )
     add_definitions( -DLATTICEFX_CORE_VTK_LIBRARY )
 endif()
 
-set( _headerFiles
-    Export.h
-    ChannelDatavtkDataObject.h
-    ChannelDatavtkPolyData.h
-    VTKActorRenderer.h
-    VTKVectorFieldRTP.h
-    VTKVectorSliceRTP.h
-    VTKVectorRenderer.h
-    CuttingPlane.h
-    VTKContourSliceRTP.h
-    VTKIsosurfaceRTP.h
-    vtkActorToOSG.h
-)
+file(GLOB_RECURSE _headerFiles ${CMAKE_CURRENT_SOURCE_DIR}/*.h )
 
-set( _sourceFiles
-    ChannelDatavtkDataObject.cpp
-    ChannelDatavtkPolyData.cpp
-    VTKActorRenderer.cpp
-    VTKVectorFieldRTP.cpp
-    VTKVectorSliceRTP.cpp
-    VTKVectorRenderer.cpp
-    CuttingPlane.cpp
-    VTKContourSliceRTP.cpp
-    VTKIsosurfaceRTP.cpp
-    vtkActorToOSG.cpp
-)
+file(GLOB_RECURSE _sourceFiles ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp )
 
 set(INCLUDE_DIRECTORY_NAME "latticefx/core/vtk")
 

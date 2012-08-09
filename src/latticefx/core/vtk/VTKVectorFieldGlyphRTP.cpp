@@ -25,7 +25,7 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
-#include <latticefx/core/vtk/VTKVectorFieldRTP.h>
+#include <latticefx/core/vtk/VTKVectorFieldGlyphRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
@@ -44,7 +44,7 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDataPtr maskIn )
+lfx::core::ChannelDataPtr VTKVectorFieldGlyphRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
@@ -66,6 +66,7 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
 #endif
     // get every nth point from the dataSet data
     ptmask->SetOnRatio( m_mask );
+
     
     vtkPolyData* tempPd = 0;
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
@@ -96,7 +97,7 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
     return( cdpd );
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::SetMaskValue( double value )
+void VTKVectorFieldGlyphRTP::SetMaskValue( double value )
 {
     m_mask = value;
 }
