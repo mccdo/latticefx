@@ -43,7 +43,7 @@ namespace vtk {
 /** \class VTKVectorSliceRTP VTKVectorSliceRTP.h <latticefx/core/vtk/VTKVectorSliceRTP.h>
  \brief Class the creates a vector field polydata from a vtk dataset.
  \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
- name vtkDataObject and creates a vtkPolyData with the vector field. */
+ name vtkDataObject and creates a vtkPolyData slice of the vector field. */
 
 class LATTICEFX_CORE_VTK_EXPORT VTKVectorSliceRTP : public VTKBaseRTP
 {
@@ -55,9 +55,7 @@ public:
     VTKVectorSliceRTP( CuttingPlane::SliceDirection slice = CuttingPlane::X_PLANE )
         : 
         VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-        m_planeDirection( slice ),
-        m_requestedValue( 0.2 ),
-        m_mask( 1.0 )
+        m_planeDirection( slice )
     {
         ;
     }
@@ -72,14 +70,8 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
     
-    void SetRequestedValue( double value );
-    
-    void SetMaskValue( double value );
-
 protected:
     CuttingPlane::SliceDirection m_planeDirection;
-    double m_requestedValue;
-    double m_mask;
 };
 
 typedef boost::shared_ptr< VTKVectorSliceRTP > VTKVectorSliceRTPPtr;

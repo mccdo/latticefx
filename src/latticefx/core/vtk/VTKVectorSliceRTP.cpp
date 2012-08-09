@@ -75,6 +75,16 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
     cutter->Delete();
 
     vtkMaskPoints* ptmask = vtkMaskPoints::New();
+    //This is required for use with VTK 5.10
+    ptmask->SetMaximumNumberOfPoints( cddoPtr->GetNumberOfPoints() );
+#if ( VTK_MAJOR_VERSION >= 5 ) && ( VTK_MINOR_VERSION >= 10 )
+    //New feature for selecting points at random in VTK 5.10
+    ptmask->SetRandomModeType( 0 );
+#else
+    ptmask->SetRandomOn();
+#endif
+    // get every nth point from the dataSet data
+    ptmask->SetOnRatio( m_mask );
     
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
@@ -97,8 +107,6 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
         m_surfaceFilter->Delete();
     }
     
-    // get every nth point from the dataSet data
-    ptmask->SetOnRatio( m_mask );
     ptmask->Update();
     
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
@@ -108,16 +116,6 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
     c2p->Delete();
     
     return( cdpd );
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKVectorSliceRTP::SetRequestedValue( double value )
-{
-    m_requestedValue = value;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKVectorSliceRTP::SetMaskValue( double value )
-{
-    m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

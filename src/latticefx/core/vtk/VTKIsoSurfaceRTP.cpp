@@ -64,7 +64,7 @@ lfx::core::ChannelDataPtr VTKIsosurfaceRTP::channel( const lfx::core::ChannelDat
     contourFilter->ComputeNormalsOff();
     contourFilter->SetInputArrayToProcess( 0, 0, 0,
         vtkDataObject::FIELD_ASSOCIATION_POINTS,
-        "Scalar Name" );
+        m_activeScalar.c_str() );
     //contourFilter->Update();
     
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
@@ -98,11 +98,6 @@ lfx::core::ChannelDataPtr VTKIsosurfaceRTP::channel( const lfx::core::ChannelDat
     contourFilter->Delete();
     
     return( cdpd );
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKIsosurfaceRTP::SetRequestedValue( double value )
-{
-    m_requestedValue = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -67,7 +67,6 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
     // get every nth point from the dataSet data
     ptmask->SetOnRatio( m_mask );
     
-    vtkPolyData* tempPd = 0;
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
         vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
@@ -94,11 +93,6 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
     c2p->Delete();
     
     return( cdpd );
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::SetMaskValue( double value )
-{
-    m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

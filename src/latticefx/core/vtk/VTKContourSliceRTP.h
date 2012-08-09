@@ -55,9 +55,7 @@ public:
     VTKContourSliceRTP( CuttingPlane::SliceDirection slice = CuttingPlane::X_PLANE )
         : 
         VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-        m_planeDirection( slice ),
-        m_requestedValue( 0.2 ),
-        m_mask( 1.0 )
+        m_planeDirection( slice )
     {
         ;
     }
@@ -71,15 +69,9 @@ public:
     ///We are going to be creating a ChannelDatavtkPolyData so we override the 
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
-    
-    void SetRequestedValue( double value );
-    
-    void SetMaskValue( double value );
 
 protected:
     CuttingPlane::SliceDirection m_planeDirection;
-    double m_requestedValue;
-    double m_mask;
 };
 
 typedef boost::shared_ptr< VTKContourSliceRTP > VTKContourSliceRTPPtr;

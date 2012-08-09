@@ -34,15 +34,30 @@ namespace core {
 namespace vtk {
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKBaseRTP::SetMinMaxScalarRangeValue( double minVal, double maxVal )
+void VTKBaseRTP::SetMinMaxScalarRangeValue( double const minVal, double const maxVal )
 {
     m_minScalarValue = minVal;
     m_maxScalarValue = maxVal;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKBaseRTP::SetRequestedValue( double value )
+void VTKBaseRTP::SetRequestedValue( double const value )
 {
     m_requestedValue = value;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetActiveScalar( std::string const scalarName )
+{
+    m_activeScalar = scalarName;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetActiceVector( std::string const vectorName )
+{
+    m_activeVector = vectorName;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetMaskValue( double const value )
+{
+    m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

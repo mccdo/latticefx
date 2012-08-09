@@ -51,8 +51,7 @@ public:
     ///operation when we construct the VTKVectorFieldRTP.
     VTKVectorFieldRTP()
         : 
-        VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-        m_mask( 1.0 )
+        VTKBaseRTP( lfx::core::RTPOperation::Channel )
     {
         ;
     }
@@ -66,8 +65,6 @@ public:
     ///We are going to be creating a ChannelDatavtkPolyData so we override the 
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
-    
-    void SetMaskValue( double value );
 
 protected:
     double m_mask;

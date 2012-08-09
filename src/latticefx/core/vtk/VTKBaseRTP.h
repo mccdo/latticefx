@@ -53,7 +53,8 @@ public:
         lfx::core::RTPOperation( rtpOpType ),
         m_requestedValue( 0.2 ),
         m_minScalarValue( 0.0 ),
-        m_maxScalarValue( 100.0 )
+        m_maxScalarValue( 100.0 ),
+        m_mask( 1.0 )
     {
         ;
     }
@@ -65,10 +66,20 @@ public:
     }
         
     ///Set the value for a plane location or scalar value for an isosurface
-    void SetRequestedValue( double value );
+    void SetRequestedValue( double const value );
 
     ///Set the min max values for scalar ranges for coloring objects
-    void SetMinMaxScalarRangeValue( double minVal, double maxVal );
+    void SetMinMaxScalarRangeValue( double const minVal, double const maxVal );
+
+    ///Set the active scalar to use for this pipeline
+    void SetActiveScalar( std::string const scalarName );
+    
+    ///Set the active vector to use for this pipeline
+    void SetActiceVector( std::string const vectorName );
+
+    ///If points need to be masked via the vtkMaskPoints class this method
+    ///controls the number of points masked
+    void SetMaskValue( double const value );
 
 protected:
     ///Value for setting the position or value for an iso surface
@@ -77,6 +88,15 @@ protected:
     ///Values for setting color ranges on full VTK pipelines
     double m_minScalarValue;
     double m_maxScalarValue;
+    
+    ///The active scalar name
+    std::string m_activeScalar;
+    
+    ///The active vector name
+    std::string m_activeVector;
+    
+    ///Number of points to be masked
+    double m_mask;
 };
 
 typedef boost::shared_ptr< VTKBaseRTP > VTKBaseRTPPtr;

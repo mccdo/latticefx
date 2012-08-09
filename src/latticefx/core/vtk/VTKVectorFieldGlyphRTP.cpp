@@ -88,6 +88,8 @@ lfx::core::ChannelDataPtr VTKVectorFieldGlyphRTP::channel( const lfx::core::Chan
     
     ptmask->Update();
     
+    //The rest of the pipeline goes here
+    
     lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
         new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
     

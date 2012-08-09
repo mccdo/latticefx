@@ -50,8 +50,7 @@ public:
     ///Default constructor
     VTKIsosurfaceRTP()
         : 
-        VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-        m_requestedValue( 0.2 )    
+        VTKBaseRTP( lfx::core::RTPOperation::Channel )    
     {
         ;
     }
@@ -65,11 +64,8 @@ public:
     ///We are going to be creating a ChannelDatavtkPolyData so we override the 
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
-    
-    void SetRequestedValue( double value );
 
 protected:
-    double m_requestedValue;
 };
 
 typedef boost::shared_ptr< VTKIsosurfaceRTP > VTKIsosurfaceRTPPtr;
