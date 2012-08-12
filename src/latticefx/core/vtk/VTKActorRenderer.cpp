@@ -28,7 +28,7 @@
 // --- latticeFX Includes --- //
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 
-#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkAlgorithmOutput.h>
 #include <latticefx/core/vtk/vtkActorToOSG.h>
 
 #include <latticefx/core/ChannelDataOSGArray.h>
@@ -67,8 +67,8 @@ void VTKActorRenderer::SetActiveScalar( const std::string& activeScalar )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
-    vtkPolyData* tempVtkPD = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
+    vtkAlgorithmOutput* tempVtkPD = 
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkAlgorithmOutput >( getInput( "vtkAlgorithmOutput" ) )->GetAlgorithmOutput();
     
     //Setup the vtkActor and Mapper for the vtkActorToOSG utility
     double definedRange[ 2 ] = { 0.1, 1.0 };
@@ -90,7 +90,8 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     lut->ForceBuild();
     
     vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( tempVtkPD );
+    mapper->SetInputConnection( tempVtkPD );
+    mapper->DebugOn();
     //mapper->SetScalarModeToDefault();
     //mapper->SetColorModeToDefault();
     //mapper->SetColorModeToMapScalars();

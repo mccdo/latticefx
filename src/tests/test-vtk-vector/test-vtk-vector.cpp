@@ -32,6 +32,7 @@
 #include <latticefx/core/vtk/VTKVectorFieldRTP.h>
 #include <latticefx/core/vtk/VTKVectorRenderer.h>
 #include <latticefx/core/vtk/VTKActorRenderer.h>
+#include <latticefx/core/vtk/VTKContourSliceRTP.h>
 
 #include <osgViewer/Viewer>
 
@@ -120,10 +121,15 @@ int main( int argc, char** argv )
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     dsp->addChannel( dobjPtr );
     
-    //2nd Step - the output of this is a ChannelData containing vtkPolyData
-    lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
+    lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
+    vectorRTP->SetRequestedValue( 50.0 );
     vectorRTP->addInput( "vtkDataObject" );
     dsp->addOperation( vectorRTP );
+
+    //2nd Step - the output of this is a ChannelData containing vtkPolyData
+    //lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
+    //vectorRTP->addInput( "vtkDataObject" );
+    //dsp->addOperation( vectorRTP );
     
     //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
     /*lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
@@ -136,7 +142,7 @@ int main( int argc, char** argv )
     lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
-    renderOp->addInput( "vtkPolyData" );
+    renderOp->addInput( "vtkAlgorithmOutput" );
     dsp->setRenderer( renderOp );
     
     std::cout << "lfx...creating data..." << std::endl;
