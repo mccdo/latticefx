@@ -28,7 +28,7 @@
 // --- latticeFX Includes --- //
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 
-#include <latticefx/core/vtk/ChannelDatavtkAlgorithmOutput.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/vtkActorToOSG.h>
 
 #include <latticefx/core/ChannelDataOSGArray.h>
@@ -67,8 +67,8 @@ void VTKActorRenderer::SetActiveScalar( const std::string& activeScalar )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
-    vtkAlgorithmOutput* tempVtkPD = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkAlgorithmOutput >( getInput( "vtkAlgorithmOutput" ) )->GetAlgorithmOutput();
+    vtkPolyDataMapper* tempVtkPD = 
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper();
     
     //Setup the vtkActor and Mapper for the vtkActorToOSG utility
     double definedRange[ 2 ] = { 0.1, 1.0 };
@@ -89,15 +89,7 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     lut->SetTableRange( definedRange );
     lut->ForceBuild();
     
-    vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
-    mapper->SetInputConnection( tempVtkPD );
-    mapper->DebugOn();
-    //mapper->SetScalarModeToDefault();
-    //mapper->SetColorModeToDefault();
-    //mapper->SetColorModeToMapScalars();
-    //mapper->InterpolateScalarsBeforeMappingOff();
-    mapper->SetScalarModeToUsePointFieldData();
-    mapper->UseLookupTableScalarRangeOn();
+    vtkPolyDataMapper* mapper = tempVtkPD;
     mapper->SelectColorArray( m_activeScalar.c_str() );
     mapper->SetLookupTable( lut );
     //mapper->Update();
@@ -107,7 +99,6 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     actor->GetProperty()->SetSpecularPower( 20.0f );
     
     lut->Delete();
-    mapper->Delete();
     //Complete
     
     osg::ref_ptr< osg::Geode > tempGeode = vtkActorToOSG( actor, 0, 0 );

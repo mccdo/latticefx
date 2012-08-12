@@ -142,7 +142,7 @@ int main( int argc, char** argv )
     lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
-    renderOp->addInput( "vtkAlgorithmOutput" );
+    renderOp->addInput( "vtkPolyDataMapper" );
     dsp->setRenderer( renderOp );
     
     std::cout << "lfx...creating data..." << std::endl;

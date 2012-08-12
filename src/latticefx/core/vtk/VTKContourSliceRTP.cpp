@@ -26,7 +26,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
-#include <latticefx/core/vtk/ChannelDatavtkAlgorithmOutput.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
 #include <vtkDataObject.h>
@@ -170,10 +170,10 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     }*/
     vtkAlgorithmOutput* tempPolydata =  normals->GetOutputPort();
     
-    lfx::core::vtk::ChannelDatavtkAlgorithmOutputPtr cdpd( 
-        new lfx::core::vtk::ChannelDatavtkAlgorithmOutput( tempPolydata, "vtkAlgorithmOutput" ) );
+    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd( 
+        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( tempPolydata, "vtkPolyDataMapper" ) );
     
-    //normals->Delete();
+    normals->Delete();
     c2p->Delete();
     strip->Delete();
     tris->Delete();
