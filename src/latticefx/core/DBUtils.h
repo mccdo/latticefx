@@ -30,6 +30,7 @@
 #define __LFX_CORE_DB_UTILS_H__ 1
 
 #include <latticefx/core/Export.h>
+#include <Persistence/Persistable.h>
 
 #include <osg/Node>
 #include <osg/Image>
@@ -49,17 +50,15 @@ namespace lfx {
 namespace core {
 
 
-#ifdef DB_IMPL_FILESYSTEM
-    typedef std::string DBKey;
-    typedef std::list< DBKey > DBKeyList;
-#else
-#endif
 
+typedef std::string DBKey;
+typedef std::list< DBKey > DBKeyList;
+
+
+LATTICEFX_EXPORT void s_setPersistable( Persistence::PersistablePtr persist );
+LATTICEFX_EXPORT Persistence::PersistablePtr s_getPersistable();
 
 LATTICEFX_EXPORT DBKey generateDBKey();
-
-LATTICEFX_EXPORT bool storeSubGraph( const osg::Node* root, const DBKey& dbKey );
-LATTICEFX_EXPORT osg::Node* loadSubGraph( const DBKey& dbKey );
 
 LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
 LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );

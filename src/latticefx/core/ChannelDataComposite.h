@@ -112,7 +112,7 @@ public:
     \details Prior to processing ChannelData in the LatticeFX data pipeline,
     the DataSet calls ChannelData::reset() on all attached ChannelData
     instances. This is useful in situations where data processing modifies
-    ChannelData (such as a convolution filter or Gaussion blur). Dereived
+    ChannelData (such as a convolution filter or Gaussion blur). Derived
     ChannelData classes must store a copy of the original data to protect
     against such destruction. reset() allows the ChannelData to refresh the
     working copy of the data from the original. */
