@@ -2,6 +2,7 @@
 //#include <latticefx/core/ChannelDataDB.h>
 #include <osg/Array>
 #include <osg/Notify>
+#include <osg/io_utils>
 
 #include <iostream>
 
@@ -34,10 +35,15 @@ public:
         return &value;
     }
 
+
+    typedef osg::ref_ptr< osg::Referenced > RefPtr;
+
     /* constructors and destructor
-    * - nothing to do because the allocator has no state
     */
-    RefPtrAllocator() : _size( 0 ) {
+    RefPtrAllocator( RefPtr refAddress=NULL, const size_type size=0 )
+      : _refAddress( refAddress ),
+        _size( size )
+    {
     }
     RefPtrAllocator( const RefPtrAllocator& rhs )
       : _refAddress( rhs._refAddress ),
@@ -45,7 +51,9 @@ public:
     {
     }
     template <class U>
-    RefPtrAllocator( const RefPtrAllocator<U>& rhs ) : _size( 0 ) {
+    RefPtrAllocator( const RefPtrAllocator<U>& rhs )
+      : _size( 0 )
+    {
     }
     ~RefPtrAllocator()
     {
@@ -94,8 +102,6 @@ public:
     }
 
 
-    typedef osg::ref_ptr< osg::Referenced > RefPtr;
-
     void setAddress( RefPtr refAddress, const size_type size )
     {
         _refAddress = refAddress;
@@ -125,9 +131,11 @@ int main( int argc, char** argv )
 {
     Persistence::PersistablePtr persist( new Persistence::Persistable );
 
-    OSG_ALWAYS << "--- Simple copy ---" << std::endl;
+    typedef RefPtrAllocator< char > RefCharAllocator;
+    typedef std::vector< char, RefCharAllocator > CharVec;
 
-    typedef std::vector< char > SCharVec;
+    OSG_ALWAYS << "--- Custom allocator, no DB ---" << std::endl;
+
     {
         osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
         array->push_back( 1.f );
@@ -135,78 +143,73 @@ int main( int argc, char** argv )
         array->push_back( 9.99999f );
 
         const size_t sz( sizeof( *array ) );
-        const char* start( (char*)(array.get()) );
-        SCharVec scv( start, start+sz );
-        persist->AddDatum( "arraycopy", scv );
-    }
-    {
-        SCharVec& scv( persist->GetDatumValue< SCharVec >( "arraycopy" ) );
+        RefCharAllocator localAllocator(
+            RefCharAllocator::RefPtr( array.get() ), sz );
 
-        const size_t sz( scv.size() );
-        osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
-        array->ref();
+        CharVec cv( localAllocator );
+        cv.resize( sz );
 
-        OSG_ALWAYS << (*array)[0] << std::endl;
-        OSG_ALWAYS << (*array)[1] << std::endl;
-        OSG_ALWAYS << (*array)[2] << std::endl;
-    }
+        osg::ref_ptr< osg::FloatArray > a2( (osg::FloatArray*)&cv[0] );
 
-    typedef std::vector< char, RefPtrAllocator< char > > CharVec;
-
-    OSG_ALWAYS << "--- Custom allocator, no DB ---" << std::endl;
-
-    {
-        RefPtrAllocator< char > localAllocator;
-
-        {
-            osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
-            array->push_back( 1.f );
-            array->push_back( 3.14f );
-            array->push_back( 9.99999f );
-
-            const size_t sz( sizeof( *array ) );
-            localAllocator.setAddress( RefPtrAllocator< char >::RefPtr( array.get() ), sz );
-
-            CharVec cv( localAllocator );
-            cv.resize( sz );
-
-            osg::ref_ptr< osg::FloatArray > a2( (osg::FloatArray*)&cv[0] );
-
-            OSG_ALWAYS << (*a2)[0] << std::endl;
-            OSG_ALWAYS << (*a2)[1] << std::endl;
-            OSG_ALWAYS << (*a2)[2] << std::endl;
-        }
+        for( unsigned int idx=0; idx<array->size(); ++idx )
+            OSG_ALWAYS << (*a2)[ idx ] << std::endl;
     }
 
     OSG_ALWAYS << "--- Custom allocator, store in DB ---" << std::endl;
 
     {
-        RefPtrAllocator< char > localAllocator;
+        osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
+        array->push_back( 1.f );
+        array->push_back( 3.14f );
+        array->push_back( 9.99999f );
 
-        {
-            osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
-            array->push_back( 1.f );
-            array->push_back( 3.14f );
-            array->push_back( 9.99999f );
+        const size_t sz( sizeof( *array ) );
+        RefCharAllocator localAllocator(
+            RefCharAllocator::RefPtr( array.get() ), sz );
 
-            const size_t sz( sizeof( *array ) );
-            localAllocator.setAddress( RefPtrAllocator< char >::RefPtr( array.get() ), sz );
+        CharVec cv( localAllocator );
+        cv.resize( sz );
+        persist->AddDatum( "array", cv );
+        // Extra ref now that the data is stored in the DB.
+        array->ref();
+    }
+    {
+        CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
 
-            CharVec cv( localAllocator );
-            cv.resize( sz );
-            persist->AddDatum( "array", cv );
-        }
-        {
-            CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
+        const size_t sz( scv.size() );
+        osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
 
-            const size_t sz( scv.size() );
-            osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
-            array->ref();
+        for( unsigned int idx=0; idx<array->size(); ++idx )
+            OSG_ALWAYS << (*array)[ idx ] << std::endl;
+    }
 
-            OSG_ALWAYS << (*array)[0] << std::endl;
-            OSG_ALWAYS << (*array)[1] << std::endl;
-            OSG_ALWAYS << (*array)[2] << std::endl;
-        }
+    OSG_ALWAYS << "--- Vec3Array test ---" << std::endl;
+
+    {
+        osg::ref_ptr< osg::Vec3Array > array( new osg::Vec3Array );
+        array->push_back( osg::Vec3( 1., 2., 3. ) );
+        array->push_back( osg::Vec3( 4., 5., 6. ) );
+        array->push_back( osg::Vec3( 7., 8., 9. ) );
+        array->push_back( osg::Vec3( 10., 11., 12. ) );
+
+        const size_t sz( sizeof( *array ) );
+        RefCharAllocator localAllocator(
+            RefCharAllocator::RefPtr( array.get() ), sz );
+
+        CharVec cv( localAllocator );
+        cv.resize( sz );
+        persist->AddDatum( "v3array", cv );
+        // Extra ref now that the data is stored in the DB.
+        array->ref();
+    }
+    {
+        CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
+
+        const size_t sz( scv.size() );
+        osg::ref_ptr< osg::Vec3Array > array( (osg::Vec3Array*)&scv[0] );
+
+        for( unsigned int idx=0; idx<array->size(); ++idx )
+            OSG_ALWAYS << (*array)[ idx ] << std::endl;
     }
 
     OSG_ALWAYS << "--- Finished ---" << std::endl;
