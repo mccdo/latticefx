@@ -1,5 +1,5 @@
 #include <Persistence/Persistable.h>
-#include <latticefx/core/ChannelDataDB.h>
+//#include <latticefx/core/ChannelDataDB.h>
 #include <osg/Array>
 #include <osg/Notify>
 
