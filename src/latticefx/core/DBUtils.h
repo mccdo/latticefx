@@ -39,7 +39,7 @@
 #include <list>
 
 
-#define DB_IMPL_FILESYSTEM 1
+//#define DB_IMPL_FILESYSTEM 1
 
 
 namespace osg {

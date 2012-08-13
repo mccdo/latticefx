@@ -28,6 +28,7 @@
 
 #include <latticefx/core/DBUtils.h>
 #include <Persistence/Persistable.h>
+#include <latticefx/core/LogMacros.h>
 
 #ifdef DB_IMPL_FILESYSTEM
 #  include <osgDB/ReadFile>
@@ -45,14 +46,16 @@ namespace core {
 
 
 
-Persistence::PersistablePtr s_persist;
+db::PersistablePtr s_persist( db::PersistablePtr( (db::Persistable*)NULL ) );
 
-void s_setPersistable( Persistence::PersistablePtr persist )
+void s_setPersistable( db::PersistablePtr persist )
 {
     s_persist = persist;
 }
-Persistence::PersistablePtr s_getPersistable()
+db::PersistablePtr s_getPersistable()
 {
+    if( s_persist == NULL )
+        s_persist = db::PersistablePtr( new db::Persistable );
     return( s_persist );
 }
 
@@ -243,7 +246,7 @@ osg::Image* loadImage( const DBKey& dbKey )
     if( !( persist->DatumExists( dbKey ) ) )
         return( NULL );
 
-    DBCharVec& scv( persist->GetDatumValue< DBCharVec >( "array" ) );
+    DBCharVec& scv( persist->GetDatumValue< DBCharVec >( dbKey ) );
 
     // The address of the first element is a pointer to the osg::Image.
     // We do not need to use a ref_ptr here, or explicitly call ref(),
