@@ -28,6 +28,7 @@
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
@@ -50,7 +51,6 @@ namespace vtk {
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
-    
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
         getInput( "vtkDataObject" ) );
@@ -168,11 +168,18 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         //normals->ComputeCellNormalsOn();
         normals->FlipNormalsOn();
     }*/
-    vtkAlgorithmOutput* tempPolydata =  normals->GetOutputPort();
-    
-    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd( 
-        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( tempPolydata, "vtkPolyDataMapper" ) );
-    
+    lfx::core::ChannelDataPtr cdpd;
+    if( 0 )
+    {        
+        cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
+            new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
+    }
+    else
+    {        
+        cdpd = ChannelDatavtkPolyDataPtr( 
+            new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
+    }
+
     normals->Delete();
     c2p->Delete();
     strip->Delete();

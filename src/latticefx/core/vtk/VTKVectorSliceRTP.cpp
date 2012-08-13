@@ -89,7 +89,7 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
         vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
-        vtkCompositeDataGeometryFilter::New();
+            vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
         //return m_multiGroupGeomFilter->GetOutputPort(0);
         ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
@@ -100,7 +100,7 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
         //m_geometryFilter->SetInputConnection( input );
         //return m_geometryFilter->GetOutputPort();
         vtkDataSetSurfaceFilter* m_surfaceFilter = 
-        vtkDataSetSurfaceFilter::New();
+            vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
         //return m_surfaceFilter->GetOutputPort();
         ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );

@@ -18,4 +18,3 @@ _addLibrary( Lib ${_libName}
         latticefx_utils_vtk
         ${_vtkLibraries}
 )
-
