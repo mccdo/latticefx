@@ -246,7 +246,7 @@ osg::Image* loadImage( const DBKey& dbKey )
     if( !( persist->DatumExists( dbKey ) ) )
         return( NULL );
 
-    DBCharVec& scv( persist->GetDatumValue< DBCharVec >( dbKey ) );
+    const DBCharVec& scv( persist->GetDatumValue< DBCharVec >( dbKey ) );
 
     // The address of the first element is a pointer to the osg::Image.
     // We do not need to use a ref_ptr here, or explicitly call ref(),

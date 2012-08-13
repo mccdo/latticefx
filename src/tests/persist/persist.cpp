@@ -174,7 +174,7 @@ int main( int argc, char** argv )
         array->ref();
     }
     {
-        CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
+        const CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
 
         const size_t sz( scv.size() );
         osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
@@ -203,7 +203,7 @@ int main( int argc, char** argv )
         array->ref();
     }
     {
-        CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
+        const CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
 
         const size_t sz( scv.size() );
         osg::ref_ptr< osg::Vec3Array > array( (osg::Vec3Array*)&scv[0] );
