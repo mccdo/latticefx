@@ -62,7 +62,7 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
     //New feature for selecting points at random in VTK 5.10
     ptmask->SetRandomModeType( 0 );
 #else
-    ptmask->SetRandomOn();
+    ptmask->RandomModeOn();
 #endif
     // get every nth point from the dataSet data
     ptmask->SetOnRatio( m_mask );
