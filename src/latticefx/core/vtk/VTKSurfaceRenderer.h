@@ -76,19 +76,18 @@ public:
     ///We are overriding the lfx::core::VectorRenderer method and then calling it 
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
-    
-    void SetScalarRange( double* array );
-    
+
 protected:
+    ///Create the raw OSG primitives from the VTK data
     void ExtractVTKPrimitives();
 
     ///The active vector to set which vector to use for rendering
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering
     std::string m_activeScalar;
-    
+    ///The raw VTK data to render
     vtkPolyData* m_pd;
-    
+    ///The scalar range for the color component of the vis feature
     double m_scalarRange[ 2 ];
 };
 

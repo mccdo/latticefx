@@ -28,6 +28,7 @@
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/VTKPrimitiveSetGenerator.h>
 
@@ -60,17 +61,21 @@ void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKSurfaceRenderer::SetScalarRange( double* array )
-{
-    m_scalarRange[ 0 ] = array[ 0 ];
-    m_scalarRange[ 1 ] = array[ 1 ];
-}
-////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     m_pd = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
 
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr dataObject = 
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) );
+    if( !dataObject )
+    {
+        std::cout << "No vtkDataObject input was specified to VTKSurfaceRenderer." << std::endl;
+        return 0;
+    }
+
+    dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
+    
     ExtractVTKPrimitives();
     
     vtkPoints* points = m_pd->GetPoints();
@@ -80,11 +85,8 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
     vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
     
-    double scalarRange[ 2 ] = {0,1.0};
-    scalarArray->GetRange( scalarRange );
     double x[3];
     double val;
-    //double rgb[3];
     
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     vertArray->resize( dataSize );

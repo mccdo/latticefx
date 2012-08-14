@@ -229,6 +229,7 @@ int main( int argc, char** argv )
         renderOp->SetActiveVector( "Momentum" );
         renderOp->SetActiveScalar( "Density" );
         renderOp->addInput( "vtkPolyDataMapper" );
+        renderOp->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp );
         
         std::cout << "lfx...creating data..." << std::endl;
@@ -252,10 +253,10 @@ int main( int argc, char** argv )
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp2->SetScalarRange( scalarRange2 );
         renderOp2->SetActiveVector( "Momentum" );
         renderOp2->SetActiveScalar( "Momentum_magnitude" );
         renderOp2->addInput( "vtkPolyDataMapper" );
+        renderOp2->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp2 );
         
         std::cout << "lfx...creating data..." << std::endl;
