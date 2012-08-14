@@ -184,6 +184,7 @@ lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
         std::cout << "|\tData is loaded for file "
         << tempDataSetFilename
         << std::endl;
+        tempDataSet->Print();
         //if( lastDataAdded->GetParent() == lastDataAdded )
         //{
         //_activeModel->GetDCS()->
@@ -206,8 +207,9 @@ int main( int argc, char** argv )
 
     //Load the VTK data
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
-    double* scalarRange = tempDataSet->GetScalarRange( "Density" );
-    std::cout << scalarRange[ 0 ] << " " << scalarRange[ 1 ] << std::endl;
+    double* scalarRange1 = tempDataSet->GetScalarRange( "Density" );
+    double* scalarRange2 = tempDataSet->GetScalarRange( "Momentum_magnitude" );
+    
     {
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
@@ -223,7 +225,7 @@ int main( int argc, char** argv )
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp->SetScalarRange( scalarRange );
+        renderOp->SetScalarRange( scalarRange1 );
         renderOp->SetActiveVector( "Momentum" );
         renderOp->SetActiveScalar( "Density" );
         renderOp->addInput( "vtkPolyDataMapper" );
@@ -250,9 +252,9 @@ int main( int argc, char** argv )
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp2->SetScalarRange( scalarRange );
+        renderOp2->SetScalarRange( scalarRange2 );
         renderOp2->SetActiveVector( "Momentum" );
-        renderOp2->SetActiveScalar( "Density" );
+        renderOp2->SetActiveScalar( "Momentum_magnitude" );
         renderOp2->addInput( "vtkPolyDataMapper" );
         dsp->setRenderer( renderOp2 );
         

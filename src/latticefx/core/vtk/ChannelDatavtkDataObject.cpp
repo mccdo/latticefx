@@ -31,6 +31,7 @@
 #include <latticefx/utils/vtk/ComputeDataObjectBoundsCallback.h>
 #include <latticefx/utils/vtk/GetNumberOfPointsCallback.h>
 #include <latticefx/utils/vtk/DataObjectHandler.h>
+#include <latticefx/utils/vtk/ProcessScalarRangeCallback.h>
 
 #include <vtkDataObject.h>
 
@@ -104,6 +105,17 @@ void ChannelDatavtkDataObject::GetBounds( double* bounds )
     boundsCallback->GetDataObjectBounds( bounds );
     double bbDiagonal = boundsCallback->GetDataObjectBoundsDiagonal();
     delete boundsCallback;
+}
+////////////////////////////////////////////////////////////////////////////////
+void ChannelDatavtkDataObject::GetScalarRange( std::string const scalarName, double* scalarRange )
+{
+    lfx::vtk_utils::DataObjectHandler dataObjectHandler;
+    lfx::vtk_utils::ProcessScalarRangeCallback* processScalarRangeCbk =
+        new lfx::vtk_utils::ProcessScalarRangeCallback();
+    dataObjectHandler.SetDatasetOperatorCallback( processScalarRangeCbk );
+    dataObjectHandler.OperateOnAllDatasetsInObject( m_dobj );
+    processScalarRangeCbk->GetScalarRange( scalarName, scalarRange );
+    delete processScalarRangeCbk;
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

@@ -71,6 +71,7 @@ public:
     unsigned int GetNumberOfPoints();
     double* GetBounds();
     void GetBounds( double* bounds );
+    void GetScalarRange( std::string const scalarName, double* scalarRange );
 
 protected:
     vtkDataObject* m_dobj;

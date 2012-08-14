@@ -1606,6 +1606,7 @@ void DataSet::Print()
             << this->vectorMagRange[ 1 ]
             << std::endl;
     }
+    std::cout << out.str() << std::endl;
     //LOG_INFO( out.str() );
 }
 ////////////////////////////////////////////////////////////////////////////////
