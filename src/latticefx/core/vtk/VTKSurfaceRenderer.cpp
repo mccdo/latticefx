@@ -28,6 +28,8 @@
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
+#include <latticefx/core/vtk/VTKPrimitiveSetGenerator.h>
 
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/TransferFunctionUtils.h>
@@ -39,6 +41,7 @@
 #include <vtkStripper.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkCellArray.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lfx {
     
@@ -59,13 +62,15 @@ void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
-    vtkPolyData* tempVtkPD = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
+    m_pd = 
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
     
-    vtkPoints* points = tempVtkPD->GetPoints();
+    ExtractVTKPrimitives();
+    
+    vtkPoints* points = m_pd->GetPoints();
     size_t dataSize = points->GetNumberOfPoints();
     
-    vtkPointData* pointData = tempVtkPD->GetPointData();
+    vtkPointData* pointData = m_pd->GetPointData();
     vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
     vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
     
@@ -121,8 +126,8 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
     addInput( dirData );*/
     
-    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-    addInput( colorData );
+    //lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    //addInput( colorData );
     
     setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
     setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
@@ -141,12 +146,10 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 ////////////////////////////////////////////////////////////////////////////////
 void VTKSurfaceRenderer::ExtractVTKPrimitives()
 {
-    vtkPolyData* polydata = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
-    polydata->Update();
+    m_pd->Update();
     
     vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();
-    triangleFilter->SetInput( polydata );
+    triangleFilter->SetInput( m_pd );
     triangleFilter->PassVertsOff();
     triangleFilter->PassLinesOff();
     //triangleFilter->Update();
@@ -173,18 +176,18 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     triangleFilter->Delete();
     triangleStripper->Delete();
     
-    polydata = reTriangleStripper->GetOutput();
+    m_pd = reTriangleStripper->GetOutput();
     
-    vtkPointData* pointData = polydata->GetPointData();
+    vtkPointData* pointData = m_pd->GetPointData();
     vtkDataArray* normals = 0;
     
-    int numStrips = polydata->GetNumberOfStrips();
+    //int numStrips = m_pd->GetNumberOfStrips();
     //int numPts = polydata->GetNumberOfPoints();
-    pointData = polydata->GetPointData();
+    pointData = m_pd->GetPointData();
     normals = pointData->GetVectors( "Normals" );
     
     //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
-    vtkPoints* points = polydata->GetPoints();
+    vtkPoints* points = m_pd->GetPoints();
     
     //vtkDataArray* dataArray = pointData->GetScalars( colorScalar.c_str() );
     //double dataRange[2];
@@ -203,7 +206,10 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     //osg::Vec2Array* tc = new osg::Vec2Array;
     
     //int numCells = polydata->GetNumberOfCells();
-    vtkCellArray* strips = polydata->GetStrips();
+    vtkCellArray* strips = m_pd->GetStrips();
+    
+    VTKPrimitiveSetGeneratorPtr primitiveGenerator = VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( strips ) );
+    setPrimitiveSetGenerator( primitiveGenerator );
     
     //Number of vertex is potentially bigger than number of points,
     //Since same point can appear in different triangle strip.
@@ -214,11 +220,22 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     int stripNum = 0;
     
     for( strips->InitTraversal();
-        ( ( stripNum < numStrips ) && ( strips->GetNextCell( cStripNp, pts ) ) );
+        ( strips->GetNextCell( cStripNp, pts ) );
         ++stripNum )
     {
         numVetex += cStripNp;
     }
+    
+    
+    vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
+    
+    double scalarRange[ 2 ] = {0,1.0};
+    scalarArray->GetRange( scalarRange );
+    
+    double val;
+
+    osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
+    //colorArray->resize( dataSize );
     
     /*int am = mylog2( numVetex ) + 1;
     int mm = am / 2;
@@ -247,8 +264,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         
         stripNum = 0;
         
-        for( strips->InitTraversal();
-            ( stripNum < numStrips ) && ( strips->GetNextCell( cStripNp, pts ) );
+        for( strips->InitTraversal(); ( strips->GetNextCell( cStripNp, pts ) );
             stripNum++ )
         {
             for( int i = 0; i < cStripNp; ++i )
@@ -260,6 +276,10 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
                 
                 v->push_back( startVec );
                 n->push_back( normal );
+ 
+                scalarArray->GetTuple( pts[i], &val );
+                val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+                colorArray->push_back( val );
                 
                 //cVal = dataArray->GetTuple1( pts[i] );
                 //scalarArray.push_back( cVal );
@@ -296,6 +316,8 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     addInput( cdv );
     ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( n.get(), "normals" ) );
     addInput( cdn );
+    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    addInput( colorData );
 }
             
 }

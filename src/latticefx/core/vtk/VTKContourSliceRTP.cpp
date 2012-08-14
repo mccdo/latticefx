@@ -126,7 +126,6 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         normals->ComputePointNormalsOn();
         //normals->ComputeCellNormalsOn();
         normals->FlipNormalsOn();
-        //normals->Update();
     }
     /*else if( fillType == 1 ) // banded contours
     {
@@ -169,13 +168,14 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         normals->FlipNormalsOn();
     }*/
     lfx::core::ChannelDataPtr cdpd;
-    if( 0 )
+    if( 1 )
     {        
         cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
             new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
     }
     else
     {        
+        normals->Update();
         cdpd = ChannelDatavtkPolyDataPtr( 
             new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
     }

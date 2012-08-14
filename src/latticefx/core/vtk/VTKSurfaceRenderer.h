@@ -25,12 +25,14 @@
  * -----------------------------------------------------------------
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
-#ifndef __LATTICEFX_CORE_VTK_VECTORRENDERER_H__
-#define __LATTICEFX_CORE_VTK_VECTORRENDERER_H__ 1
+#ifndef __LATTICEFX_CORE_VTK_SURFACERENDERER_H__
+#define __LATTICEFX_CORE_VTK_SURFACERENDERER_H__ 1
 
 #include <latticefx/core/SurfaceRenderer.h>
 
 #include <latticefx/core/vtk/Export.h>
+
+class vtkPolyData;
 
 namespace lfx {
 
@@ -51,7 +53,8 @@ public:
     ///We are really a fancy lfx::core::VectorRenderer specific to VTK data
     VTKSurfaceRenderer() 
         : 
-        lfx::core::SurfaceRenderer()
+        lfx::core::SurfaceRenderer(),
+        m_pd( 0 )
     {
         ;
     }
@@ -81,6 +84,8 @@ protected:
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering
     std::string m_activeScalar;
+    
+    vtkPolyData* m_pd;
 };
 
 typedef boost::shared_ptr< VTKSurfaceRenderer > VTKSurfaceRendererPtr;
@@ -89,4 +94,4 @@ typedef boost::shared_ptr< VTKSurfaceRenderer > VTKSurfaceRendererPtr;
 }
 }
 
-#endif
+#endif //__LATTICEFX_CORE_VTK_SURFACERENDERER_H__
