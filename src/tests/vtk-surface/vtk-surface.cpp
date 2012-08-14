@@ -207,13 +207,15 @@ int main( int argc, char** argv )
 
     //Load the VTK data
     lfx::vtk_utils::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
+
+    //1st Step
+    //Since we are not modifying the original channel data we can create
+    //just one instance of it
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     
     {
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-        
-        //1st Step
-        lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
         dsp->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
@@ -237,9 +239,6 @@ int main( int argc, char** argv )
     {
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-        
-        //1st Step
-        lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
         dsp->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKIsosurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsosurfaceRTP() );
