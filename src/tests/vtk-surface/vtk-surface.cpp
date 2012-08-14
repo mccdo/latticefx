@@ -206,9 +206,7 @@ int main( int argc, char** argv )
     osg::ref_ptr< osg::Group > tempGroup = new osg::Group();
 
     //Load the VTK data
-    lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
-    double* scalarRange1 = tempDataSet->GetScalarRange( "Density" );
-    double* scalarRange2 = tempDataSet->GetScalarRange( "Momentum_magnitude" );
+    lfx::vtk_utils::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
     
     {
         //Create the DataSet for this visualization with VTK
@@ -262,9 +260,6 @@ int main( int argc, char** argv )
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
     }
-    
-    //Clean up the raw vtk memory
-    delete tempDataSet;
     
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );

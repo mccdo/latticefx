@@ -34,6 +34,7 @@
 #define VE_XPLORER_CFD_DATA_SET_PTR_H
 
 //#include <ves/util/PointerTypes.h>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 /**
  * \file
@@ -43,17 +44,19 @@
  * For the full declaration of ves::xplorer::DataSet
  * ves/xplorer/DataSet.h must be included, too.
  */
-/*
+
 namespace lfx
 {
-namespace xplorer
+namespace vtk_utils
 {
 class DataSet;
 /// Typedef for the SmartPtr types.
-typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;
-typedef ves::util::SharedPtrDef<DataSet>::type DataSetSharedPtr;
-typedef ves::util::WeakPtrDef<DataSet>::type   DataSetWeakPtr;
-typedef ves::util::ScopedPtrDef<DataSet>::type DataSetScopedPtr;
+//typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;
+//typedef ves::util::SharedPtrDef<DataSet>::type DataSetSharedPtr;
+//typedef ves::util::WeakPtrDef<DataSet>::type   DataSetWeakPtr;
+//typedef ves::util::ScopedPtrDef<DataSet>::type DataSetScopedPtr;
+typedef boost::shared_ptr< DataSet > DataSetPtr;
+
 }
-}*/
+}
 #endif

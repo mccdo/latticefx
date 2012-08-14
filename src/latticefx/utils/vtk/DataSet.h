@@ -35,7 +35,7 @@
 
 #include <latticefx/utils/vtk/Export.h>
 
-//#include <ves/xplorer/DataSetPtr.h>
+#include <latticefx/utils/vtk/DataSetPtr.h>
 
 #include <latticefx/utils/vtk/DataObjectHandler.h>
 

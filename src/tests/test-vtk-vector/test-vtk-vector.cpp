@@ -112,7 +112,7 @@ int main( int argc, char** argv )
     prototype->Delete();
 
     //Load the VTK data
-    lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
+    lfx::vtk_utils::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
     
     //Create the DataSet for this visualization with VTK
     lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
@@ -148,9 +148,6 @@ int main( int argc, char** argv )
     std::cout << "lfx...creating data..." << std::endl;
     osg::Node* sceneNode = dsp->getSceneData();
     std::cout << "...finished creating data. " << std::endl;
-
-    //Clean up the raw vtk memory
-    delete tempDataSet;
 
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
