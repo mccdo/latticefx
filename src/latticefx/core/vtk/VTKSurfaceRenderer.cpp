@@ -60,11 +60,17 @@ void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::SetScalarRange( double* array )
+{
+    m_scalarRange[ 0 ] = array[ 0 ];
+    m_scalarRange[ 1 ] = array[ 1 ];
+}
+////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     m_pd = 
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
-    
+
     ExtractVTKPrimitives();
     
     vtkPoints* points = m_pd->GetPoints();
@@ -76,7 +82,6 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     
     double scalarRange[ 2 ] = {0,1.0};
     scalarArray->GetRange( scalarRange );
-    
     double x[3];
     double val;
     //double rgb[3];
@@ -98,7 +103,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         {
             //Setup the color array
             scalarArray->GetTuple( i, &val );
-            val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+            val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
             (*colorArray)[ i ] = val;
             //lut->GetColor( val, rgb );
             //*scalarI++ = val;//rgb[0];
@@ -147,7 +152,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 void VTKSurfaceRenderer::ExtractVTKPrimitives()
 {
     m_pd->Update();
-    
+        
     vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();
     triangleFilter->SetInput( m_pd );
     triangleFilter->PassVertsOff();
@@ -183,7 +188,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     
     //int numStrips = m_pd->GetNumberOfStrips();
     //int numPts = polydata->GetNumberOfPoints();
-    pointData = m_pd->GetPointData();
+    //pointData = m_pd->GetPointData();
     normals = pointData->GetVectors( "Normals" );
     
     //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
@@ -228,10 +233,9 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     
     
     vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
-    
-    double scalarRange[ 2 ] = {0,1.0};
-    scalarArray->GetRange( scalarRange );
-    
+    //double scalarRange[ 2 ] = {0,1.0};
+    //scalarArray->GetRange( scalarRange );
+
     double val;
 
     osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
@@ -269,18 +273,17 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         {
             for( int i = 0; i < cStripNp; ++i )
             {
-                points->GetPoint( pts[i], x );
+               points->GetPoint( pts[i], x );
                 startVec.set( x[0], x[1], x[2] );
                 normals->GetTuple( pts[i], cnormal );
                 normal.set( cnormal[0], cnormal[1], cnormal[2] );
-                
+
                 v->push_back( startVec );
                 n->push_back( normal );
  
                 scalarArray->GetTuple( pts[i], &val );
-                val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+                val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
                 colorArray->push_back( val );
-                
                 //cVal = dataArray->GetTuple1( pts[i] );
                 //scalarArray.push_back( cVal );
                 //lut->GetColor(cVal,curColor);

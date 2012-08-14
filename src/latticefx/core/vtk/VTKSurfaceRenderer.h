@@ -77,6 +77,8 @@ public:
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
     
+    void SetScalarRange( double* array );
+    
 protected:
     void ExtractVTKPrimitives();
 
@@ -86,6 +88,8 @@ protected:
     std::string m_activeScalar;
     
     vtkPolyData* m_pd;
+    
+    double m_scalarRange[ 2 ];
 };
 
 typedef boost::shared_ptr< VTKSurfaceRenderer > VTKSurfaceRendererPtr;

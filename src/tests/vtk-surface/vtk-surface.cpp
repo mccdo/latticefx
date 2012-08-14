@@ -49,6 +49,7 @@
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
+#include <latticefx/core/vtk/VTKIsosurfaceRTP.h>
 
 #include <osgViewer/Viewer>
 
@@ -201,43 +202,64 @@ int main( int argc, char** argv )
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
     
+    osg::ref_ptr< osg::Group > tempGroup = new osg::Group();
+
     //Load the VTK data
     lfx::vtk_utils::DataSet* tempDataSet = LoadDataSet( argv[ 1 ] );
+    double* scalarRange = tempDataSet->GetScalarRange( "Density" );
+    std::cout << scalarRange[ 0 ] << " " << scalarRange[ 1 ] << std::endl;
+    {
+        //Create the DataSet for this visualization with VTK
+        lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
+        
+        //1st Step
+        lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
+        dsp->addChannel( dobjPtr );
+
+        lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
+        vectorRTP->SetRequestedValue( 50.0 );
+        vectorRTP->addInput( "vtkDataObject" );
+        dsp->addOperation( vectorRTP );
+        
+        //Try the vtkActor renderer
+        lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
+        renderOp->SetScalarRange( scalarRange );
+        renderOp->SetActiveVector( "Momentum" );
+        renderOp->SetActiveScalar( "Density" );
+        renderOp->addInput( "vtkPolyDataMapper" );
+        dsp->setRenderer( renderOp );
+        
+        std::cout << "lfx...creating data..." << std::endl;
+        tempGroup->addChild( dsp->getSceneData() );
+        std::cout << "...finished creating data. " << std::endl;
+    }
     
-    //Create the DataSet for this visualization with VTK
-    lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-    
-    //1st Step
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
-    dsp->addChannel( dobjPtr );
-    
-    lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
-    vectorRTP->SetRequestedValue( 50.0 );
-    vectorRTP->addInput( "vtkDataObject" );
-    dsp->addOperation( vectorRTP );
-    
-    //2nd Step - the output of this is a ChannelData containing vtkPolyData
-    //lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
-    //vectorRTP->addInput( "vtkDataObject" );
-    //dsp->addOperation( vectorRTP );
-    
-    //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
-    /*lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
-     renderOp->SetActiveVector( "Momentum" );
-     renderOp->SetActiveScalar( "Density" );
-     renderOp->addInput( "vtkPolyData" );
-     dsp->setRenderer( renderOp );*/
-    
-    //Try the vtkActor renderer
-    lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
-    renderOp->SetActiveVector( "Momentum" );
-    renderOp->SetActiveScalar( "Density" );
-    renderOp->addInput( "vtkPolyDataMapper" );
-    dsp->setRenderer( renderOp );
-    
-    std::cout << "lfx...creating data..." << std::endl;
-    osg::Node* sceneNode = dsp->getSceneData();
-    std::cout << "...finished creating data. " << std::endl;
+    {
+        //Create the DataSet for this visualization with VTK
+        lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
+        
+        //1st Step
+        lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
+        dsp->addChannel( dobjPtr );
+
+        lfx::core::vtk::VTKIsosurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsosurfaceRTP() );
+        isosurfaceRTP->SetRequestedValue( 0.3 );
+        isosurfaceRTP->SetActiveScalar( "Density" );
+        isosurfaceRTP->addInput( "vtkDataObject" );
+        dsp->addOperation( isosurfaceRTP );
+        
+        //Try the vtkActor renderer
+        lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
+        renderOp2->SetScalarRange( scalarRange );
+        renderOp2->SetActiveVector( "Momentum" );
+        renderOp2->SetActiveScalar( "Density" );
+        renderOp2->addInput( "vtkPolyDataMapper" );
+        dsp->setRenderer( renderOp2 );
+        
+        std::cout << "lfx...creating data..." << std::endl;
+        tempGroup->addChild( dsp->getSceneData() );
+        std::cout << "...finished creating data. " << std::endl;
+    }
     
     //Clean up the raw vtk memory
     delete tempDataSet;
@@ -248,7 +270,7 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
-    viewer.setSceneData( sceneNode );
+    viewer.setSceneData( tempGroup.get() );
     
     return( viewer.run() );
 }

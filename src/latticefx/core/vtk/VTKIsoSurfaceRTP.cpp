@@ -26,7 +26,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> **************/
 #include <latticefx/core/vtk/VTKIsosurfaceRTP.h>
-#include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
+#include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
 #include <vtkDataObject.h>
@@ -89,9 +89,9 @@ lfx::core::ChannelDataPtr VTKIsosurfaceRTP::channel( const lfx::core::ChannelDat
     }
     
     normals->Update();
-
-    lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
-        new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
+    
+    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd( 
+        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
     
     normals->Delete();
     c2p->Delete();
