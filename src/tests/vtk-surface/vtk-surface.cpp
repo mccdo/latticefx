@@ -225,7 +225,6 @@ int main( int argc, char** argv )
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp->SetScalarRange( scalarRange1 );
         renderOp->SetActiveVector( "Momentum" );
         renderOp->SetActiveScalar( "Density" );
         renderOp->addInput( "vtkPolyDataMapper" );
