@@ -61,16 +61,19 @@ endif()
 #        Cosmo
 #message( ${_vtkLibraries} )
 
+set( _projectIncludes
+    ${PROJECT_SOURCE_DIR}/src
+)
 set( _requiredDependencyIncludes
     ${POCO_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
 	#${OSGWORKS_INCLUDE_DIR}
     ${OSG_INCLUDE_DIRS}
-    ${crunchstore_INCLUDE_DIRS}
 )
-set( _projectIncludes
-    ${PROJECT_SOURCE_DIR}/src
-)
+set( _optionalDependencyIncludes )
+if( crunchstore_FOUND )
+    list( APPEND _optionalDependencyIncludes ${crunchstore_INCLUDE_DIRS} )
+endif()
 
 set(_osgWorksLibraries
     osgwTools
@@ -81,10 +84,14 @@ set( _requiredDependencyLibraries
     ${Boost_LIBRARIES}
 	${_osgWorksLibraries}
     ${OSG_LIBRARIES}
-    ${crunchstore_LIBRARIES}
-    #${_vtkLibraries}
 )
-
+set( _optionalDependencyLibraries )
+if( crunchstore_FOUND )
+    list( APPEND _optionalDependencyLibraries ${crunchstore_LIBRARIES} )
+endif()
+# if( VTK_FOUND )
+#     list( APPEND _optionalDependencyLibraries ${_vtkLibraries} )
+# endif()
 
 
 # Usage:
@@ -109,6 +116,7 @@ macro( _addLibrary _category _libName )
     include_directories(
         ${_projectIncludes}
         ${_requiredDependencyIncludes}
+        ${_optionalDependencyIncludes}
     )
 
     _splitList( LATTICEFX_LIBRARIES sources libs ${ARGN} )
@@ -122,6 +130,7 @@ macro( _addLibrary _category _libName )
     target_link_libraries( ${_libName}
         ${libs}
         ${_requiredDependencyLibraries}
+        ${_optionalDependencyLibraries}
     )
 
     set_target_properties( ${_libName} PROPERTIES VERSION ${LATTICEFX_VERSION} )
@@ -179,11 +188,13 @@ macro( _addExecutable _category _exeName )
     include_directories(
         ${_projectIncludes}
         ${_requiredDependencyIncludes}
+        ${_optionalDependencyIncludes}
     )
 
     target_link_libraries( ${_exeName}
         ${libs}
         ${_requiredDependencyLibraries}
+        ${_optionalDependencyLibraries}
     )
 
     if( ${_category} STREQUAL "App" )

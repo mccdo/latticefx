@@ -27,10 +27,11 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/DBUtils.h>
-#include <Persistence/Persistable.h>
 #include <latticefx/core/LogMacros.h>
 
-#ifdef DB_IMPL_FILESYSTEM
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <Persistence/Persistable.h>
+#else
 #  include <osgDB/ReadFile>
 #  include <osgDB/WriteFile>
 #endif
@@ -39,25 +40,8 @@
 #include <sstream>
 
 
-namespace db = Persistence;
-
 namespace lfx {
 namespace core {
-
-
-
-db::PersistablePtr s_persist( db::PersistablePtr( (db::Persistable*)NULL ) );
-
-void s_setPersistable( db::PersistablePtr persist )
-{
-    s_persist = persist;
-}
-db::PersistablePtr s_getPersistable()
-{
-    if( s_persist == NULL )
-        s_persist = db::PersistablePtr( new db::Persistable );
-    return( s_persist );
-}
 
 
 
@@ -68,25 +52,32 @@ DBKey generateDBKey()
     std::ostringstream ostr;
     ostr << "dbKey" << std::setfill( '0' ) <<
         std::setw( 5 ) << keyCounter++;
-#ifdef DB_IMPL_FILESYSTEM
+#ifndef LFX_USE_CRUNCHSTORE
     ostr << ".ive";
 #endif
     return( DBKey( ostr.str() ) );
 }
 
 
-#ifdef DB_IMPL_FILESYSTEM
+#ifdef LFX_USE_CRUNCHSTORE
 
-bool storeImage( const osg::Image* image, const DBKey& dbKey )
+
+namespace db = Persistence;
+
+
+PersistPtr s_persist( db::PersistablePtr( (db::Persistable*)NULL ) );
+
+void s_setPersistable( PersistPtr persist )
 {
-    return( osgDB::writeImageFile( *image, dbKey ) );
+    s_persist = persist;
 }
-osg::Image* loadImage( const DBKey& dbKey )
+PersistPtr s_getPersistable()
 {
-    return( osgDB::readImageFile( dbKey ) );
+    if( s_persist == NULL )
+        s_persist = db::PersistablePtr( new db::Persistable );
+    return( s_persist );
 }
 
-#else
 
 
 /** \class RefPtrAllocator
@@ -403,6 +394,30 @@ osg::Image* loadImage( const DBKey& dbKey )
         osg::Image::NO_DELETE, image->getPacking() );
 
     return( image );
+}
+
+
+#else
+
+
+PersistPtr s_persist( (void*)NULL );
+
+void s_setPersistable( PersistPtr persist )
+{
+    s_persist = persist;
+}
+PersistPtr s_getPersistable()
+{
+    return( s_persist );
+}
+
+bool storeImage( const osg::Image* image, const DBKey& dbKey )
+{
+    return( osgDB::writeImageFile( *image, dbKey ) );
+}
+osg::Image* loadImage( const DBKey& dbKey )
+{
+    return( osgDB::readImageFile( dbKey ) );
 }
 
 #endif

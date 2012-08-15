@@ -49,6 +49,7 @@ endif()
 find_package( crunchstore 0.2.0 )
 if( crunchstore_FOUND )
     include( ${crunchstore_USE_FILE} )
+    add_definitions( -DLFX_USE_CRUNCHSTORE )
 endif()
 
 include( CMakeMacros )

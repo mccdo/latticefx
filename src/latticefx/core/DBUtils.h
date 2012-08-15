@@ -30,7 +30,9 @@
 #define __LFX_CORE_DB_UTILS_H__ 1
 
 #include <latticefx/core/Export.h>
-#include <Persistence/Persistable.h>
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <Persistence/Persistable.h>
+#endif
 
 #include <osg/Node>
 #include <osg/Image>
@@ -39,7 +41,11 @@
 #include <list>
 
 
-#define DB_IMPL_FILESYSTEM 1
+#ifdef LFX_USE_CRUNCHSTORE
+#  define PersistPtr Persistence::PersistablePtr
+#else
+#  define PersistPtr void*
+#endif
 
 
 namespace osg {
@@ -55,8 +61,8 @@ typedef std::string DBKey;
 typedef std::list< DBKey > DBKeyList;
 
 
-LATTICEFX_EXPORT void s_setPersistable( Persistence::PersistablePtr persist );
-LATTICEFX_EXPORT Persistence::PersistablePtr s_getPersistable();
+LATTICEFX_EXPORT void s_setPersistable( PersistPtr persist );
+LATTICEFX_EXPORT PersistPtr s_getPersistable();
 
 LATTICEFX_EXPORT DBKey generateDBKey();
 
