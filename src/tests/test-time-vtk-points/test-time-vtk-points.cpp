@@ -152,7 +152,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             radArray->push_back( 0.05 );
             depthArray->push_back( float(j%6)/5. );
         }
-        if( tempCellGroups->size() > 0 )
+        //if( tempCellGroups->size() > 0 )
         {
         lfx::core::ChannelDataOSGArrayPtr posData( new lfx::core::ChannelDataOSGArray( posArray.get(), "positions" ) );
         dsp->addChannel( posData, i );
