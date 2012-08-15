@@ -236,7 +236,6 @@ void EnSightTranslator::EnSightTranslateCbk::Translate( vtkDataObject*& outputDa
                     tempDataSet->Update();
                     vtkTemporalDataSet::SafeDownCast( outputDataset )->
                     SetTimeStep( j, tempDataSet );
-
                     /*std::ostringstream strm;
                     strm << EnSightToVTK->GetOutputFileName()
                             << "_"

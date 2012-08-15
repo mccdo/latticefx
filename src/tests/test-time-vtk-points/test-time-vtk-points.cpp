@@ -34,6 +34,7 @@
 #include <latticefx/core/BoundUtils.h>
 #include <latticefx/core/VectorRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/PlayControl.h>
 
 #include <latticefx/core/vtk/DataSet.h>
 
@@ -44,6 +45,8 @@
 #include <osg/Program>
 #include <osg/Uniform>
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
+#include <osgGA/TrackballManipulator>
 #include <osgDB/FileUtils>
 
 #include <latticefx/utils/vtk/FindVertexCellsCallback.h>
@@ -134,23 +137,32 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         }
 
         std::vector< std::pair< vtkIdType, double* > >* tempCellGroups = &m_pointCollection.at( i );
-        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );        
+        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array ); 
+        if( tempCellGroups->size() == 0 )
+        {
+            std::cout << " size 0 " << std::endl;
+        }
+
         for( size_t j = 0; j < tempCellGroups->size(); ++j )
         {
+            //std::cout << tempCellGroups->size() << std::endl;
             double* tempData = tempCellGroups->at( j ).second;
             posArray->push_back( osg::Vec3d( tempData[ 0 ], tempData[ 1 ], tempData[ 2 ] ) );
             //std::cout << tempCellGroups->at( j ).first << " " << tempData[ 0 ] << " " << tempData[ 1 ] << " " << tempData[ 2 ] << std::endl;
-            radArray->push_back( 0.1 );
+            radArray->push_back( 0.05 );
             depthArray->push_back( float(j%6)/5. );
         }
+        if( tempCellGroups->size() > 0 )
+        {
         lfx::core::ChannelDataOSGArrayPtr posData( new lfx::core::ChannelDataOSGArray( posArray.get(), "positions" ) );
         dsp->addChannel( posData, i );
         lfx::core::ChannelDataOSGArrayPtr radData( new lfx::core::ChannelDataOSGArray( radArray.get(), "radii" ) );
         dsp->addChannel( radData, i );
         lfx::core::ChannelDataOSGArrayPtr depthData( new lfx::core::ChannelDataOSGArray( depthArray.get(), "depth" ) );
         dsp->addChannel( depthData, i );
+        }
     }
-    
+    //341 - 343
     lfx::core::VectorRendererPtr renderOp( new lfx::core::VectorRenderer() );
     renderOp->setPointStyle( lfx::core::VectorRenderer::SPHERES );
     renderOp->addInput( "positions" );
@@ -357,15 +369,32 @@ int main( int argc, char** argv )
 
     lfx::core::vtk::DataSetPtr tempDataSet = LoadDataSet( argv[ 1 ] );
     //vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
-    lfx::core::DataSetPtr testlfxDataSet = createInstanced( transientSeries, "test", "test" );
+    lfx::core::DataSetPtr dsp = createInstanced( transientSeries, "test", "test" );
     //tempVtkDataSet->Delete();
     //delete tempDataSet;
     // Create an example data set.
     //lfx::core::ChannelDataOSGArrayPtr dsp( prepareDataSet() );
+    // Play the time series animation
+    lfx::core::PlayControlPtr playControl( new lfx::core::PlayControl( dsp->getSceneData() ) );
+    playControl->setTimeRange( dsp->getTimeRange() );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
+    viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
+    viewer.addEventHandler( new osgViewer::StatsHandler() );
     // Obtain the data set's scene graph and add it to the viewer.
-    viewer.setSceneData( testlfxDataSet->getSceneData() );
-    return( viewer.run() );
+    viewer.setSceneData( dsp->getSceneData() );
+
+    double prevClockTime( 0. );
+    while( !( viewer.done() ) )
+    {
+        const double clockTime( viewer.getFrameStamp()->getReferenceTime() );
+        const double elapsed( clockTime - prevClockTime );
+        prevClockTime = clockTime;
+        playControl->elapsedClockTick( elapsed );
+
+        viewer.frame();
+    }
+
+    return( 0 );
 }

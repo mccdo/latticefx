@@ -95,7 +95,7 @@ namespace vtk
  * or properties for virtual environment interactive
  * computation.
  */
-class LATTICEFX_VTK_UTILS_EXPORT DataSet : public boost::enable_shared_from_this< DataSet >
+class LATTICEFX_CORE_VTK_EXPORT DataSet : public boost::enable_shared_from_this< DataSet >
 {
 public:
     // Construct vtkUnstructuredGrid and vtkLookupTable objects.
