@@ -290,7 +290,8 @@ void ChannelDataOSGArray::reset()
     if( _workingData == NULL )
         _workingData = dynamic_cast< osg::Array* >(
                 _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
-    else
+    else if( _data->getNumElements() > 0 )
+        // Only copy if there is data in the array.
         copyArray( _workingData.get(), _data.get() );
 }
 

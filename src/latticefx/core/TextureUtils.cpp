@@ -63,6 +63,10 @@ static unsigned short ceilPower2( unsigned short x )
 
 osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags )
 {
+    if( numElements == 0 )
+        // Crap. Can't have a zero-sized texture...
+        return( osg::Vec3( 1., 1., 1. ) );
+
     double dim( pow( (double)numElements, 1./3. ) );
     if( (double)( (int)dim ) != dim )
         dim = ceil( dim );
@@ -128,8 +132,11 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     {
     case osg::Array::Vec3ArrayType:
     {
-        const osg::Vec3Array* v3Array( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
-        sourceData = const_cast< osg::Vec3* >( &( (*v3Array)[ 0 ] ) );
+        if( sourceArray->getNumElements() > 0 )
+        {
+            const osg::Vec3Array* v3Array( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
+            sourceData = const_cast< osg::Vec3* >( &( (*v3Array)[ 0 ] ) );
+        }
         intFormat = GL_RGB32F_ARB;
         dataFormat = GL_RGB;
         dataType = GL_FLOAT;
@@ -137,8 +144,11 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     }
     case osg::Array::Vec2ArrayType:
     {
-        const osg::Vec2Array* v2Array( dynamic_cast< const osg::Vec2Array* >( sourceArray ) );
-        sourceData = const_cast< osg::Vec2* >( &( (*v2Array)[ 0 ] ) );
+        if( sourceArray->getNumElements() > 0 )
+        {
+            const osg::Vec2Array* v2Array( dynamic_cast< const osg::Vec2Array* >( sourceArray ) );
+            sourceData = const_cast< osg::Vec2* >( &( (*v2Array)[ 0 ] ) );
+        }
         // Shader retrieves values from the 'ba' components.
         intFormat = GL_LUMINANCE_ALPHA32F_ARB;
         dataFormat = GL_LUMINANCE_ALPHA;
@@ -147,8 +157,11 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     }
     case osg::Array::FloatArrayType:
     {
-        const osg::FloatArray* fArray( dynamic_cast< const osg::FloatArray* >( sourceArray ) );
-        sourceData = const_cast< GLfloat* >( &( (*fArray)[ 0 ] ) );
+        if( sourceArray->getNumElements() > 0 )
+        {
+            const osg::FloatArray* fArray( dynamic_cast< const osg::FloatArray* >( sourceArray ) );
+            sourceData = const_cast< GLfloat* >( &( (*fArray)[ 0 ] ) );
+        }
         // Shader retrieves values from the 'a' component.
         intFormat = GL_ALPHA32F_ARB;
         dataFormat = GL_ALPHA;
@@ -166,7 +179,8 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
 
     osg::ref_ptr< osg::Image > image( new osg::Image );
     image->allocateImage( texDim[ 0 ], texDim[ 1 ], texDim[ 2 ], dataFormat, dataType );
-    memcpy( image->data(), sourceData, sourceArray->getTotalDataSize() );
+    if( sourceData != NULL )
+        memcpy( image->data(), sourceData, sourceArray->getTotalDataSize() );
     image->setInternalTextureFormat( intFormat );
     image->setDataType( dataType );
 
