@@ -47,8 +47,10 @@
 
 namespace lfx
 {
-namespace vtk_utils
+namespace core
 {
+namespace vtk
+{        
 class DataSet;
 /// Typedef for the SmartPtr types.
 //typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;
@@ -57,6 +59,7 @@ class DataSet;
 //typedef ves::util::ScopedPtrDef<DataSet>::type DataSetScopedPtr;
 typedef boost::shared_ptr< DataSet > DataSetPtr;
 
+}
 }
 }
 #endif

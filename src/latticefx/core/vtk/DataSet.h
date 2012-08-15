@@ -33,9 +33,9 @@
 #ifndef VE_XPLORER_CFD_DATA_SET_H
 #define VE_XPLORER_CFD_DATA_SET_H
 
-#include <latticefx/utils/vtk/Export.h>
+#include <latticefx/core/vtk/DataSetPtr.h>
 
-#include <latticefx/utils/vtk/DataSetPtr.h>
+#include <latticefx/core/vtk/Export.h>
 
 #include <latticefx/utils/vtk/DataObjectHandler.h>
 
@@ -45,6 +45,8 @@
 #include <osg/Geode>
 
 //#include <ves/xplorer/Logging.h>
+
+#include <boost/enable_shared_from_this.hpp>
 
 #include <osg/ref_ptr>
 
@@ -66,37 +68,25 @@ class vtkAlgorithm;
 
 namespace lfx
 {
-namespace xplorer
-{
-//class cfdPlanes;
-//class DataSetAxis;
-//class DataSetScalarBar;
-//class Model;
-}
-}
-
-namespace lfx
-{
 namespace vtk_utils
 {
 class VTKFileHandler;
 }
 }
 
-/*namespace lfx
+namespace lfx
 {
-namespace builder
-{
-namespace DataLoader
+namespace vtk_translator
 {
 class DataLoader;
 }
 }
-}*/
 
 namespace lfx
 {
-namespace vtk_utils
+namespace core
+{
+namespace vtk
 {
 /*!\file DataSet.h
  * DataSet API
@@ -105,7 +95,7 @@ namespace vtk_utils
  * or properties for virtual environment interactive
  * computation.
  */
-class LATTICEFX_VTK_UTILS_EXPORT DataSet
+class LATTICEFX_VTK_UTILS_EXPORT DataSet : public boost::enable_shared_from_this< DataSet >
 {
 public:
     // Construct vtkUnstructuredGrid and vtkLookupTable objects.
@@ -320,11 +310,11 @@ public:
 
     ///Get Transient vectors for dataset
     ///\return The vector of datasets associated with this transient series
-    const std::vector< DataSet* >& GetTransientDataSets();
+    const std::vector< DataSetPtr >& GetTransientDataSets();
 
     ///Set the transient dataset vector so that sub transient datasets
     ///can tell other pipelines what the other datasets in the series are.
-    void SetTransientDataSetsList( std::vector< DataSet* >& tempTransientData );
+    void SetTransientDataSetsList( std::vector< DataSetPtr >& tempTransientData );
 
 protected:
 //#ifdef QT_ON
@@ -428,7 +418,7 @@ private:
     ///Tell other classes that this dataset is part of a transient domain
     int partOfTransientSeries;
     ///Translator interface
-    //lfx::vtk_translator::DataLoader::DataLoader* m_externalFileLoader;
+    lfx::vtk_translator::DataLoader* m_externalFileLoader;
 
     ///Easy way to tell if this dataset is a child of a composite dataset
     bool m_isPartOfCompositeDataset;
@@ -437,7 +427,7 @@ private:
     ///Set the active data arrays to load
     std::vector< std::string > m_activeDataArrays;
     ///List of transient datasets associated with this dataset
-    std::vector< DataSet* > m_transientDataSets;
+    std::vector< DataSetPtr > m_transientDataSets;
 #ifdef USE_OMP
     unsigned int noOfData;   // Total no. of octants.
     vtkUnstructuredGridReader* dataReader[MAX_DATA];
@@ -449,6 +439,7 @@ private:
     //ves::xplorer::LogStreamPtr m_logStream;
 
 };
+}
 }
 }
 #endif

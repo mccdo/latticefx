@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <latticefx/utils/vtk/DataSet.h>
+#include <latticefx/core/vtk/DataSet.h>
 
 #include <latticefx/utils/vtk/AccessoryFunctions.h>
 #include <latticefx/utils/vtk/fileIO.h>
@@ -49,7 +49,7 @@
 
 //#include <ves/xplorer/data/DatasetPropertySet.h>
 
-//#include <latticefx/utils/vtk/DataLoader.h>
+#include <latticefx/translators/vtk/DataLoader.h>
 //#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
 
 //#include <ves/open/xml/Command.h>
@@ -90,7 +90,9 @@
 
 namespace lfx
 {
-namespace vtk_utils
+namespace core
+{
+namespace vtk
 {
 ////////////////////////////////////////////////////////////////////////////////
 DataSet::DataSet()
@@ -632,11 +634,11 @@ void DataSet::LoadData()
         _vtkFHndlr->SetScalarsAndVectorsToRead( m_activeDataArrays );
         translatedDataObject = _vtkFHndlr->GetDataSetFromFile( fileName );
     }
-    /*else
+    else
     {
         if( !m_externalFileLoader )
         {
-            m_externalFileLoader = new DataLoader();
+            m_externalFileLoader = new lfx::vtk_translator::DataLoader();
         }
         m_externalFileLoader->SetInputData( "something", "somedir" );
         m_externalFileLoader->SetScalarsAndVectorsToRead( m_activeDataArrays );
@@ -671,11 +673,11 @@ void DataSet::LoadData()
         delete parameters;
         if( !translatedDataObject )
         {
-            vprDEBUG( vesDBG, 1 ) << "|\tInvalid input file: " << fileName
-                                  << std::endl << vprDEBUG_FLUSH;
+            //vprDEBUG( vesDBG, 1 ) << "|\tInvalid input file: " << fileName
+            //                      << std::endl << vprDEBUG_FLUSH;
             return;
         }
-    }*/
+    }
 
     //Now initialize the data based on the type of dataset
     if( translatedDataObject->IsA( "vtkTemporalDataSet" ) )
@@ -1938,7 +1940,7 @@ void DataSet::LoadTransientData( const std::string& dirName )
         //Do work
         //new dataset
         //m_tempModel->CreateCfdDataSet();
-        DataSet* tempDataset = new DataSet();//m_tempModel->GetCfdDataSet( -1 );
+        DataSetPtr tempDataset( new DataSet() );//m_tempModel->GetCfdDataSet( -1 );
         //set dcs
         tempDataset->SetDCS( GetDCS() );
         //set filename
@@ -1960,12 +1962,12 @@ void DataSet::LoadTransientData( const std::string& dirName )
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-const std::vector< DataSet* >& DataSet::GetTransientDataSets()
+const std::vector< DataSetPtr >& DataSet::GetTransientDataSets()
 {
     return m_transientDataSets;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void DataSet::SetTransientDataSetsList( std::vector< DataSet* >& tempTransientData )
+void DataSet::SetTransientDataSetsList( std::vector< DataSetPtr >& tempTransientData )
 {
     m_transientDataSets = tempTransientData;
 }
@@ -2023,7 +2025,7 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
 
     InitializeVTKDataObject( firstTimeStep );
     SetAsPartOfTransientSeries();
-    m_transientDataSets.push_back( this );
+    m_transientDataSets.push_back( shared_from_this() );
 
     unsigned int numTimeSteps = tempVtkDataSet->GetNumberOfTimeSteps();
     //Loop over all the other time steps
@@ -2034,7 +2036,7 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
         //Do work
         //new dataset
         //m_tempModel->CreateCfdDataSet();
-        DataSet* tempDataset = new DataSet();//m_tempModel->GetCfdDataSet( -1 );
+        DataSetPtr tempDataset( new DataSet() );//m_tempModel->GetCfdDataSet( -1 );
         //set dcs
         tempDataset->SetDCS( GetDCS() );
         //set filename
@@ -2174,4 +2176,6 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
 }
 ////////////////////////////////////////////////////////////////////////////////
 } // end xplorer
-} // end ves
+} // end ves    
+}
+

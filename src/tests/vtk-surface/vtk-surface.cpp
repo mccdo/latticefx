@@ -53,7 +53,7 @@
 
 #include <osgViewer/Viewer>
 
-#include <latticefx/utils/vtk/DataSet.h>
+#include <latticefx/core/vtk/DataSet.h>
 
 #include <vtkCompositeDataPipeline.h>
 #include <vtkAlgorithm.h>
@@ -136,9 +136,9 @@ void dumpUniformInfo( const RendererPtr renderOp )
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-lfx::vtk_utils::DataSet* LoadDataSet( std::string filename )
+lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 {
-    lfx::vtk_utils::DataSet* tempDataSet = new lfx::vtk_utils::DataSet();
+    lfx::core::vtk::DataSetPtr tempDataSet( new lfx::core::vtk::DataSet() );
     tempDataSet->SetFileName( filename );
     tempDataSet->SetUUID( "VTK_DATA_FILE", "test" );
     //ves::open::xml::DataValuePairPtr stringDVP =
@@ -206,7 +206,7 @@ int main( int argc, char** argv )
     osg::ref_ptr< osg::Group > tempGroup = new osg::Group();
 
     //Load the VTK data
-    lfx::vtk_utils::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
+    lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
 
     //1st Step
     //Since we are not modifying the original channel data we can create
