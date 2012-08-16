@@ -1,0 +1,31 @@
+# 
+# Thu Mar 18 14:27:47 2010
+# EnSight 9.0.3 ((c))
+# Case File: binary.case
+
+FORMAT
+
+type:  ensight gold
+
+GEOMETRY
+
+model:                     1 binary.geo_**
+
+VARIABLE
+
+scalar per element:        1 VelocityMagnitude binary.VelocityMagnitude_**
+scalar per node:           1 Diameter binary.Diameter_**
+
+TIME
+
+time set:          1
+number of steps:       41
+filename start number: 1
+filename increment:    1
+time values:           0 0.0504089 0.100108 0.150517 0.200215 0.250624
+                       0.30032301 0.35002199 0.40043101 0.45012999 0.500539
+                       0.55023801 0.60064602 0.65034503 0.70004398 0.750453
+                       0.800152 0.85056102 0.90025997 0.95066899 1.00037 1.05007
+                       1.10048 1.15017 1.20058 1.25028 1.3006901 1.35039 1.40009
+                       1.4505 1.5002 1.5506099 1.6003 1.65 1.70041 1.75011
+                       1.8005199 1.85022 1.90063 1.95033 2.00002
