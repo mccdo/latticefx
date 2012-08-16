@@ -380,21 +380,22 @@ osg::Image* loadImage( const DBKey& dbKey )
     // because the Image object should already have a ref count > 0
     // from when it was first stored in the DB.
 
+    const bool firstKey( dbKey == std::string("dbKey00000") );
+
     // Get the Image overhead block.
     const DBRefCharVec& overheadVec( persist->GetDatumValue< DBRefCharVec >( overheadKey ) );
     osg::Image* image( (osg::Image*) &overheadVec[0] );
 
     // Get the image data block.
-    const DBRawCharVec& dataVec( persist->GetDatumValue< DBRawCharVec >( dataKey ) );
-    // Interesting. For some reason, we can't just reuse 'image', we get a
-    // crash down in the bowels of the NVIDIA device driver (on Win7 64).
-    // For now, allocate a new image (which is very lightweight anyhow).
     osg::ref_ptr< osg::Image > newImage( new osg::Image );
+    const DBRawCharVec& dataVec( persist->GetDatumValue< DBRawCharVec >( dataKey ) );
     newImage->setImage( image->s(), image->t(), image->r(),
         image->getInternalTextureFormat(), image->getPixelFormat(),
         image->getDataType(),
         (unsigned char*) &dataVec[0],
         osg::Image::NO_DELETE, image->getPacking() );
+
+    newImage->setFileName( dbKey );
 
     return( newImage.release() );
 }
