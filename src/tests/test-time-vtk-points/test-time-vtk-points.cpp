@@ -37,6 +37,9 @@
 #include <latticefx/core/PlayControl.h>
 
 #include <latticefx/core/vtk/DataSet.h>
+#include <latticefx/core/vtk/VTKSurfaceWrapRTP.h>
+#include <latticefx/core/vtk/VTKActorRenderer.h>
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -62,6 +65,10 @@
 #include <vtkAlgorithmOutput.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+namespace fs = boost::filesystem;
 
 std::vector< lfx::core::vtk::DataSetPtr > transientSeries;
 
@@ -149,17 +156,17 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             double* tempData = tempCellGroups->at( j ).second;
             posArray->push_back( osg::Vec3d( tempData[ 0 ], tempData[ 1 ], tempData[ 2 ] ) );
             //std::cout << tempCellGroups->at( j ).first << " " << tempData[ 0 ] << " " << tempData[ 1 ] << " " << tempData[ 2 ] << std::endl;
-            radArray->push_back( 0.05 );
+            radArray->push_back( 0.02 );
             depthArray->push_back( float(j%6)/5. );
         }
         //if( tempCellGroups->size() > 0 )
         {
         lfx::core::ChannelDataOSGArrayPtr posData( new lfx::core::ChannelDataOSGArray( posArray.get(), "positions" ) );
-        dsp->addChannel( posData, i );
+        dsp->addChannel( posData, i * 0.25 );
         lfx::core::ChannelDataOSGArrayPtr radData( new lfx::core::ChannelDataOSGArray( radArray.get(), "radii" ) );
-        dsp->addChannel( radData, i );
+        dsp->addChannel( radData, i * 0.25 );
         lfx::core::ChannelDataOSGArrayPtr depthData( new lfx::core::ChannelDataOSGArray( depthArray.get(), "depth" ) );
-        dsp->addChannel( depthData, i );
+        dsp->addChannel( depthData, i * 0.25 );
         }
     }
     //341 - 343
@@ -301,20 +308,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     lfx::core::vtk::DataSetPtr tempDataSet( new lfx::core::vtk::DataSet() );
     tempDataSet->SetFileName( filename );
     tempDataSet->SetUUID( "VTK_DATA_FILE", "test" );
-    //ves::open::xml::DataValuePairPtr stringDVP =
-    //    tempInfoPacket->GetProperty( "VTK_ACTIVE_DATA_ARRAYS" );
-    /*std::vector< std::string > vecStringArray;
-    if( stringDVP )
-    {
-    ves::open::xml::OneDStringArrayPtr stringArray =
-    boost::dynamic_pointer_cast <
-    ves::open::xml::OneDStringArray > (
-    stringDVP->GetDataXMLObject() );
-    vecStringArray = stringArray->GetArray();
-    tempDataSet->SetActiveDataArrays( vecStringArray );
-    }*/
-    const std::string tempDataSetFilename = tempDataSet->GetFileName();
-    std::cout << "|\tLoading data for file " << tempDataSetFilename << std::endl;
+
     //tempDataSet->SetArrow(
     //                        ves::xplorer::ModelHandler::instance()->GetArrow() );
     //Check and see if the data is part of a transient series
@@ -327,10 +321,37 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     }
     else*/
     {
-        tempDataSet->LoadData();
-        tempDataSet->SetActiveVector( 0 );
-        tempDataSet->SetActiveScalar( 0 );
+        fs::path pathName( filename );
+        if( !fs::exists( pathName ) )
+        {
+            return lfx::core::vtk::DataSetPtr();
+        }
+
+        fs::path parentDir = pathName.parent_path();
+
+        tempDataSet->LoadTransientData( parentDir.string() );
     }
+
+    /*{
+        //ves::open::xml::DataValuePairPtr stringDVP =
+        //    tempInfoPacket->GetProperty( "VTK_ACTIVE_DATA_ARRAYS" );
+        //std::vector< std::string > vecStringArray;
+        //if( stringDVP )
+        //{
+        //ves::open::xml::OneDStringArrayPtr stringArray =
+        //boost::dynamic_pointer_cast <
+        //ves::open::xml::OneDStringArray > (
+        //stringDVP->GetDataXMLObject() );
+        //vecStringArray = stringArray->GetArray();
+        //tempDataSet->SetActiveDataArrays( vecStringArray );
+        //}
+        tempDataSet->LoadData();
+    }*/
+    tempDataSet->SetActiveVector( 0 );
+    tempDataSet->SetActiveScalar( 0 );
+
+    const std::string tempDataSetFilename = tempDataSet->GetFileName();
+    std::cout << "|\tLoading data for file " << tempDataSetFilename << std::endl;
 
     if( tempDataSet->IsPartOfTransientSeries() )
     {
@@ -378,12 +399,36 @@ int main( int argc, char** argv )
     lfx::core::PlayControlPtr playControl( new lfx::core::PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );
 
+    osg::ref_ptr< osg::Group > rootGroup = new osg::Group();
+    rootGroup->addChild( dsp->getSceneData() );
+
+    {
+        //Create the DataSet for this visualization with VTK
+        lfx::core::DataSetPtr dsp2( new lfx::core::DataSet() );
+
+        lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
+        dsp2->addChannel( dobjPtr );
+        
+        lfx::core::vtk::VTKSurfaceWrapRTPPtr surfaceRTP( new lfx::core::vtk::VTKSurfaceWrapRTP() );
+        surfaceRTP->addInput( "vtkDataObject" );
+        dsp2->addOperation( surfaceRTP );
+
+        //Try the vtkActor renderer
+        lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
+        //renderOp->SetActiveVector( "Momentum" );
+        //renderOp->SetActiveScalar( "Density" );
+        renderOp->addInput( "vtkPolyDataMapper" );
+        dsp2->setRenderer( renderOp );
+
+        rootGroup->addChild( dsp2->getSceneData() );
+    }
+
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     // Obtain the data set's scene graph and add it to the viewer.
-    viewer.setSceneData( dsp->getSceneData() );
+    viewer.setSceneData( rootGroup.get() );
 
     double prevClockTime( 0. );
     while( !( viewer.done() ) )
