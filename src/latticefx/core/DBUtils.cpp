@@ -30,7 +30,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #ifdef LFX_USE_CRUNCHSTORE
-#  include <Persistence/Persistable.h>
+#  include <crunchstore/Persistable.h>
 #else
 #  include <osgDB/ReadFile>
 #  include <osgDB/WriteFile>
@@ -62,7 +62,7 @@ DBKey generateDBKey()
 #ifdef LFX_USE_CRUNCHSTORE
 
 
-namespace db = Persistence;
+namespace db = crunchstore;
 
 
 PersistPtr s_persist( db::PersistablePtr( (db::Persistable*)NULL ) );
@@ -231,7 +231,7 @@ public:
 
     /* constructors and destructor
     */
-    RawMemoryAllocator( pointer address=(pointer)(NULL), const size_type size=0 )
+    RawMemoryAllocator( pointer address=(pointer)NULL, const size_type size=0 )
       : _address( address ),
         _size( size )
     {
@@ -243,7 +243,8 @@ public:
     }
     template <class U>
     RawMemoryAllocator( const RawMemoryAllocator<U>& rhs )
-      : _size( 0 )
+      : _address( (pointer)NULL ),
+        _size( 0 )
     {
     }
     ~RawMemoryAllocator()
@@ -385,15 +386,17 @@ osg::Image* loadImage( const DBKey& dbKey )
 
     // Get the image data block.
     const DBRawCharVec& dataVec( persist->GetDatumValue< DBRawCharVec >( dataKey ) );
-    // Funny. osg::Image has a setData() function that just sets the pointer,
-    // but it's protected; we have to use the full-blown setImage() instead.
-    image->setImage( image->s(), image->t(), image->r(),
+    // Interesting. For some reason, we can't just reuse 'image', we get a
+    // crash down in the bowels of the NVIDIA device driver (on Win7 64).
+    // For now, allocate a new image (which is very lightweight anyhow).
+    osg::ref_ptr< osg::Image > newImage( new osg::Image );
+    newImage->setImage( image->s(), image->t(), image->r(),
         image->getInternalTextureFormat(), image->getPixelFormat(),
         image->getDataType(),
         (unsigned char*) &dataVec[0],
         osg::Image::NO_DELETE, image->getPacking() );
 
-    return( image );
+    return( newImage.release() );
 }
 
 

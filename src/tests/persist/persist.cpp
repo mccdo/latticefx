@@ -26,7 +26,7 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <Persistence/Persistable.h>
+#include <crunchstore/Persistable.h>
 //#include <latticefx/core/ChannelDataDB.h>
 #include <osg/Array>
 #include <osg/Notify>
@@ -157,7 +157,7 @@ bool operator!= (const RefPtrAllocator<T1>&,
 
 int main( int argc, char** argv )
 {
-    Persistence::PersistablePtr persist( new Persistence::Persistable );
+    crunchstore::PersistablePtr persist( new crunchstore::Persistable );
 
     typedef RefPtrAllocator< char > RefCharAllocator;
     typedef std::vector< char, RefCharAllocator > CharVec;

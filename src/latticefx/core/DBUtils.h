@@ -31,7 +31,7 @@
 
 #include <latticefx/core/Export.h>
 #ifdef LFX_USE_CRUNCHSTORE
-#  include <Persistence/Persistable.h>
+#  include <crunchstore/Persistable.h>
 #endif
 
 #include <osg/Node>
@@ -42,7 +42,7 @@
 
 
 #ifdef LFX_USE_CRUNCHSTORE
-#  define PersistPtr Persistence::PersistablePtr
+#  define PersistPtr crunchstore::PersistablePtr
 #else
 #  define PersistPtr void*
 #endif
