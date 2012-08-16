@@ -376,28 +376,24 @@ osg::Image* loadImage( const DBKey& dbKey )
         !( persist->DatumExists( dataKey ) ) )
         return( NULL );
 
-    // We do not need to use a ref_ptr here, or explicitly call ref(),
-    // because the Image object should already have a ref count > 0
-    // from when it was first stored in the DB.
-
-    const bool firstKey( dbKey == std::string("dbKey00000") );
-
     // Get the Image overhead block.
     const DBRefCharVec& overheadVec( persist->GetDatumValue< DBRefCharVec >( overheadKey ) );
     osg::Image* image( (osg::Image*) &overheadVec[0] );
 
+    // We're going to overwrite whatever _data value we stored the image with, so
+    // tell OSG to *not* try to delete that pointer, as it's almost certainly not
+    // valid any longer (or if it is, it's pointing to the data we want to use!).
+    image->setAllocationMode( osg::Image::NO_DELETE );
+
     // Get the image data block.
-    osg::ref_ptr< osg::Image > newImage( new osg::Image );
     const DBRawCharVec& dataVec( persist->GetDatumValue< DBRawCharVec >( dataKey ) );
-    newImage->setImage( image->s(), image->t(), image->r(),
+    image->setImage( image->s(), image->t(), image->r(),
         image->getInternalTextureFormat(), image->getPixelFormat(),
         image->getDataType(),
         (unsigned char*) &dataVec[0],
         osg::Image::NO_DELETE, image->getPacking() );
 
-    newImage->setFileName( dbKey );
-
-    return( newImage.release() );
+    return( image );
 }
 
 
