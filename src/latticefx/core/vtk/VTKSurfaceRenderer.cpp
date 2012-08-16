@@ -138,11 +138,6 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     
     setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
     setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
-
-    // Configure transfer function.
-    setTransferFunctionInput( "scalar" );
-    setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
-    setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     
 #if WRITE_IMAGE_DATA            
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
@@ -186,43 +181,29 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     m_pd = reTriangleStripper->GetOutput();
     
     vtkPointData* pointData = m_pd->GetPointData();
-    vtkDataArray* normals = 0;
-    
-    //int numStrips = m_pd->GetNumberOfStrips();
-    //int numPts = polydata->GetNumberOfPoints();
-    //pointData = m_pd->GetPointData();
-    normals = pointData->GetVectors( "Normals" );
-    
-    //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
     vtkPoints* points = m_pd->GetPoints();
-    
-    //vtkDataArray* dataArray = pointData->GetScalars( colorScalar.c_str() );
-    //double dataRange[2];
-    //dataArray->GetRange( dataRange );
-    
-    //Call to lut tools
-    
-    double cVal;
-    //double curColor[3];
-    
+    vtkCellArray* strips = m_pd->GetStrips();
+    vtkDataArray* normals = pointData->GetVectors( "Normals" );
+    vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
+    //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
+
     osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
     //osg::ref_ptr< osg::Vec3Array> vDest = new osg::Vec3Array;
-    //std::vector< double > scalarArray;
     osg::ref_ptr< osg::Vec3Array > n = new osg::Vec3Array;
     //osg::Vec3Array* colors = new osg::Vec3Array;
     //osg::Vec2Array* tc = new osg::Vec2Array;
-    
-    //int numCells = polydata->GetNumberOfCells();
-    vtkCellArray* strips = m_pd->GetStrips();
-    
-    VTKPrimitiveSetGeneratorPtr primitiveGenerator = VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( strips ) );
-    setPrimitiveSetGenerator( primitiveGenerator );
+
+    {
+        VTKPrimitiveSetGeneratorPtr primitiveGenerator = 
+            VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( strips ) );
+        setPrimitiveSetGenerator( primitiveGenerator );
+    }
     
     //Number of vertex is potentially bigger than number of points,
     //Since same point can appear in different triangle strip.
     
     int numVetex = 0;
-    vtkIdType* pts;
+    vtkIdType* pts = 0;
     vtkIdType cStripNp;
     int stripNum = 0;
     
@@ -232,35 +213,17 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     {
         numVetex += cStripNp;
     }
-    
-    
-    vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
-    //double scalarRange[ 2 ] = {0,1.0};
-    //scalarArray->GetRange( scalarRange );
 
     double val;
 
     osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
     //colorArray->resize( dataSize );
-    
-    /*int am = mylog2( numVetex ) + 1;
-    int mm = am / 2;
-    int nn = am - am / 2;
-    
-    // Dimensions of the textures.
-    unsigned int s = mypow2( mm );
-    unsigned int t = mypow2( nn );
-    
-    double bounds[6];
-    points->GetBounds( bounds );
-    //VTK does bounds xmin, xmax,....
-    //OSG does bounds xmin, ymin, zmin, xmax, ymax,...
-    osg::BoundingBox bb( bounds[0] - 1, bounds[2] - 1, bounds[4] - 1, bounds[1] + 1, bounds[3] + 1, bounds[5] + 1 );
-    */
+
     double x[3];
     double cnormal[3];
     double displacement[3];
-    
+    double cVal;
+
     {
         //osg::Vec3 destVec;
         //osg::Vec3 ccolor;
@@ -275,7 +238,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         {
             for( int i = 0; i < cStripNp; ++i )
             {
-               points->GetPoint( pts[i], x );
+                points->GetPoint( pts[i], x );
                 startVec.set( x[0], x[1], x[2] );
                 normals->GetTuple( pts[i], cnormal );
                 normal.set( cnormal[0], cnormal[1], cnormal[2] );
@@ -283,9 +246,13 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
                 v->push_back( startVec );
                 n->push_back( normal );
  
-                scalarArray->GetTuple( pts[i], &val );
-                val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
-                colorArray->push_back( val );
+                if( scalarArray )
+                {
+                    scalarArray->GetTuple( pts[i], &val );
+                    val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
+                    colorArray->push_back( val );
+                }
+
                 //cVal = dataArray->GetTuple1( pts[i] );
                 //scalarArray.push_back( cVal );
                 //lut->GetColor(cVal,curColor);
@@ -321,8 +288,17 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     addInput( cdv );
     ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( n.get(), "normals" ) );
     addInput( cdn );
-    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-    addInput( colorData );
+    
+    if( scalarArray )
+    {
+        lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+        addInput( colorData );
+        
+        // Configure transfer function.
+        setTransferFunctionInput( "scalar" );
+        setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
+        setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
+    }
 }
             
 }
