@@ -40,6 +40,8 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
 #include <osg/ClipNode>
+#include <osg/LightSource>
+#include <osg/Material>
 
 #include <iostream>
 #include <sstream>
@@ -368,13 +370,17 @@ int main( int argc, char** argv )
     LFX_INFO_STATIC( logstr, "Options:" );
     LFX_INFO_STATIC( logstr, "\t-ps\tRender as point sprites." );
     LFX_INFO_STATIC( logstr, "\t-s\tRender as spheres." );
-    LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors.\n" );
+    LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors." );
+    LFX_INFO_STATIC( logstr, "\t-l <n>\tLight config: 0, 1, or 2 (default: 0).\n" );
 
     osg::ArgumentParser arguments( &argc, argv );
     VectorRenderer::PointStyle style( VectorRenderer::SIMPLE_POINTS );
     if( arguments.find( "-ps" ) > 0 ) style = VectorRenderer::POINT_SPRITES;
     if( arguments.find( "-s" ) > 0 ) style = VectorRenderer::SPHERES;
     if( arguments.find( "-d" ) > 0 ) style = VectorRenderer::DIRECTION_VECTORS;
+
+    int lightConfig( 0 );
+    arguments.read( "-l", lightConfig );
 
     // Create an example data set.
     osg::Group* root( new osg::Group );
@@ -385,15 +391,52 @@ int main( int argc, char** argv )
     {
         osg::StateSet* stateSet( root->getOrCreateStateSet() );
 
+        // Add uniform to control transfer function min/max range.
+        stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2f( -3.f, 2.f ) ),
+            osg::StateAttribute::OVERRIDE );
+
+        if( lightConfig != 0 )
+        {
+            // Set Material specular color.
+            osg::Material* mat( new osg::Material );
+            mat->setAmbient( osg::Material::FRONT_AND_BACK, osg::Vec4( 1., 1., 1., 1. ) );
+            mat->setDiffuse( osg::Material::FRONT_AND_BACK, osg::Vec4( 1., 1., 1., 1. ) );
+            mat->setSpecular( osg::Material::FRONT_AND_BACK, osg::Vec4( 1., 1., 1., 1. ) );
+            stateSet->setAttribute( mat );
+        }
+
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
         cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., 3. ) );
         root->addChild( cn );
         stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
 
-        // Add uniform to control transfer function min/max range.
-        stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2f( -3.f, 2.f ) ),
-            osg::StateAttribute::OVERRIDE );
+        // Test lighting
+        osg::ref_ptr< osg::LightSource > lightNode( NULL );
+        osg::Light* light( NULL );
+        switch( lightConfig ) {
+        case 0:
+            // Use osgViewer default.
+            break;
+        case 1:
+            lightNode = new osg::LightSource;
+            light = lightNode->getLight();
+            light->setSpecular( osg::Vec4( 0., 0., 0., 0. ) );
+            break;
+        case 2:
+            lightNode = new osg::LightSource;
+            light = lightNode->getLight();
+            light->setSpecular( osg::Vec4( 1., 1., 1., 0. ) );
+            break;
+        }
+        if( light )
+        {
+            light->setLightNum( 0 );
+            light->setPosition( osg::Vec4( -10., -10., 20., 1. ) );
+            light->setAmbient( osg::Vec4( .2, .2, .2, 0. ) );
+            light->setDiffuse( osg::Vec4( 1., 1., 1., 0. ) );
+            root->addChild( lightNode.get() );
+        }
     }
     
     // Play the time series animation
