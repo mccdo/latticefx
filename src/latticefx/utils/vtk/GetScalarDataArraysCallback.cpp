@@ -37,6 +37,7 @@
 #include <vtkPoints.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkPointData.h>
 
 #include <iostream>
 
@@ -63,12 +64,21 @@ void GetScalarDataArraysCallback::OperateOnDataset( vtkDataSet* dataset )
     vtkIdType numCells = dataset->GetNumberOfCells();
     for( size_t j = 0; j < m_scalarNames.size(); ++j )
     {
-        vtkDataArray* scalarArray = dataset->GetCellData()->GetScalars( m_scalarNames.at( j ).c_str() );
+        vtkDataArray* scalarArray = 0;
+        if( dataset->GetCellData()->GetScalars( m_scalarNames.at( j ).c_str() ) )
+        {
+            scalarArray = dataset->GetCellData()->GetScalars( m_scalarNames.at( j ).c_str() );
+        }
+        else
+        {
+            scalarArray = dataset->GetPointData()->GetScalars( m_scalarNames.at( j ).c_str() );
+        }
+
         std::vector< double > scalarVector;
         for( vtkIdType i = 0; i < numCells; ++i )
         {
             vtkCell* tempCell = dataset->GetCell( i );
-            if( VTK_VERTEX == tempCell->GetCellType() )
+            if( ( VTK_VERTEX == tempCell->GetCellType() ) && scalarArray )
             {
                 scalarVector.push_back( scalarArray->GetTuple1( i ) );
             }
