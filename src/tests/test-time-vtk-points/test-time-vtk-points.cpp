@@ -130,6 +130,47 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         std::cout << " scalar names " << scalarNames.at( i ) << std::endl;
     }
 
+    lfx::vtk_utils::ProcessScalarRangeCallback* processScalarRangeCbk =
+        new lfx::vtk_utils::ProcessScalarRangeCallback();
+    double* diamRange = new double[ 2 ];
+    double* vmagRange = new double[ 2 ];
+    double diamRangeF[ 2 ] = {10000000.,-10000000.};
+    double vmagRangeF[ 2 ] = {10000000.,-10000000.};
+    for( size_t j = 0; j < m_transientDataSet.size(); ++j )
+    {
+        dataObjectHandler->SetDatasetOperatorCallback( processScalarRangeCbk );
+        vtkDataObject* tempDataSet = m_transientDataSet.at( j )->GetDataSet();
+        dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
+        processScalarRangeCbk->GetScalarRange( "Diameter", diamRange ); 
+        processScalarRangeCbk->GetScalarRange( "VelocityMagnitude", vmagRange );
+        if( diamRange[ 0 ] < diamRangeF[ 0 ] )
+        {
+            diamRangeF[ 0 ] = diamRange[ 0 ];
+        }
+
+        if( diamRange[ 1 ] > diamRangeF[ 1 ] )
+        {
+            diamRangeF[ 1 ] = diamRange[ 1 ];
+        }
+
+        if( vmagRange[ 0 ] < vmagRangeF[ 0 ] )
+        {
+            vmagRangeF[ 0 ] = vmagRange[ 0 ];
+        }
+
+        if( vmagRange[ 1 ] > vmagRangeF[ 1 ] )
+        {
+            vmagRangeF[ 1 ] = vmagRange[ 1 ];
+        }
+    }    
+    delete [] diamRange;
+    diamRange = 0;
+    delete [] vmagRange;
+    vmagRange = 0;
+
+    std::cout << " range " << diamRangeF[ 0 ] << " " << diamRangeF[ 1 ] << std::endl;
+    std::cout << " range " << vmagRangeF[ 0 ] << " " << vmagRangeF[ 1 ] << std::endl;
+
     lfx::vtk_utils::GetScalarDataArraysCallback* getScalarDataArrayCbk =
         new lfx::vtk_utils::GetScalarDataArraysCallback();
     dataObjectHandler->SetDatasetOperatorCallback( getScalarDataArrayCbk );
@@ -146,8 +187,9 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     }
     
     delete getScalarDataArrayCbk;
-    //delete dataObjectHandler;
+    delete dataObjectHandler;
     delete getNumParamsCbk;
+    delete processScalarRangeCbk;
 
     lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );    
     for( size_t i = 0; i < transData.size(); ++i )
@@ -159,8 +201,6 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         //depthArray->resize( samplesPerTime );
         std::vector< double >* diamArray = 0;
         std::vector< double >* vmagArray = 0;
-        double* diamRange = new double[ 2 ];
-        double* vmagRange = new double[ 2 ];
 
         for( size_t j = 0; j < tempScalarData->size(); ++j )
         {
@@ -176,18 +216,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             }
             //std::cout << " scalar name " << tempScalarData->at( j ).first << " " << tempScalarData->at( j ).second.size() << std::endl;
         }
-        
-        {
-            lfx::vtk_utils::ProcessScalarRangeCallback* processScalarRangeCbk =
-                new lfx::vtk_utils::ProcessScalarRangeCallback();
-            dataObjectHandler->SetDatasetOperatorCallback( processScalarRangeCbk );
-            vtkDataObject* tempDataSet = m_transientDataSet.at( i )->GetDataSet();
-            dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
-            processScalarRangeCbk->GetScalarRange( "Diameter", diamRange ); 
-            processScalarRangeCbk->GetScalarRange( "VelocityMagnitude", vmagRange ); 
-        }
-        std::cout << " range " << diamRange[ 0 ] << " " << diamRange[ 1 ] << std::endl;
-        std::cout << " range " << vmagRange[ 0 ] << " " << vmagRange[ 1 ] << std::endl;
+
 
         std::vector< std::pair< vtkIdType, double* > >* tempCellGroups = 
             &m_pointCollection.at( i );
@@ -203,8 +232,8 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             //radArray->push_back( 0.02 );
             if( diamArray )
             {
-                val = diamArray->at( j );
-                val = vtkMath::ClampAndNormalizeValue( val, diamRange );
+                val = diamArray->at( j ) * 0.5;
+                //val = vtkMath::ClampAndNormalizeValue( val, diamRange );
 
                 radArray->push_back( val );
             }
@@ -217,7 +246,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             if( vmagArray )
             {
                 val = vmagArray->at( j );
-                val = vtkMath::ClampAndNormalizeValue( val, vmagRange );
+                val = vtkMath::ClampAndNormalizeValue( val, vmagRangeF );
 
                 depthArray->push_back( val );
             }
@@ -233,9 +262,6 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         dsp->addChannel( radData, i * 0.25 );
         lfx::core::ChannelDataOSGArrayPtr depthData( new lfx::core::ChannelDataOSGArray( depthArray.get(), "depth" ) );
         dsp->addChannel( depthData, i * 0.25 );
-        
-        delete [] diamRange;
-        delete [] vmagRange;
     }
     //341 - 343
     lfx::core::VectorRendererPtr renderOp( new lfx::core::VectorRenderer() );
