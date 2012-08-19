@@ -34,9 +34,6 @@
 #  include <crunchstore/Persistable.h>
 #endif
 
-#include <osg/Node>
-#include <osg/Image>
-
 #include <string>
 #include <list>
 
@@ -49,7 +46,8 @@
 
 
 namespace osg {
-    class Node;
+    class Image;
+    class Array;
 }
 
 namespace lfx {
@@ -68,6 +66,9 @@ LATTICEFX_EXPORT DBKey generateDBKey();
 
 LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
 LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );
+
+LATTICEFX_EXPORT bool storeArray( const osg::Array* array, const DBKey& dbKey );
+LATTICEFX_EXPORT osg::Array* loadArray( const DBKey& dbKey );
 
 
 // core

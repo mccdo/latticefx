@@ -36,6 +36,9 @@
 #  include <osgDB/WriteFile>
 #endif
 
+#include <osg/Image>
+#include <osg/Array>
+
 #include <iomanip>
 #include <sstream>
 
@@ -337,22 +340,22 @@ bool storeImage( const osg::Image* image, const DBKey& dbKey )
             RefCharAllocator::RefPtr( const_cast< osg::Image* >(image) ), sz );
 
         // Create std::vector<char> for storing in DB. We use the custom
-        // allocator to avoid an expensive data copy. A simple resize()
+        // allocator to avoid the data copy. A simple resize()
         // changes the internal size member var and the array is immediately
-        // filled the the storage referenced by 'image'.
+        // filled with the storage referenced by 'image'.
         DBRefCharVec cv( localAllocator );
         cv.resize( sz );
 
         // Add to database. This mean's we now own a copy of this memory,
         // but it is not stored in a ref_ptr. So, to ensure it isn't deleted
         // when the last ref_ptr goes away, do an explicit call to ref().
-        persist->AddDatum( dbKey+std::string("-imageoverhead"), cv );
+        persist->AddDatum( dbKey+std::string("-imageOverhead"), cv );
         image->ref();
     }
 
     // Now do essentially the same thing with the Image's data, but no need
     // for a RefPtrAllocator. Instead use a RawMemoryAllocator to avoid
-    // initial data copy.
+    // expensive data copy.
     {
         const size_t sz( image->getTotalSizeInBytes() );
         RawCharAllocator localAllocator(
@@ -361,7 +364,7 @@ bool storeImage( const osg::Image* image, const DBKey& dbKey )
         DBRawCharVec cv( localAllocator );
         cv.resize( sz );
 
-        persist->AddDatum( dbKey+std::string("-imagedata"), cv );
+        persist->AddDatum( dbKey+std::string("-imageData"), cv );
     }
 
     return( true );
@@ -370,8 +373,8 @@ osg::Image* loadImage( const DBKey& dbKey )
 {
     db::PersistablePtr persist( s_getPersistable() );
 
-    const DBKey overheadKey( dbKey+std::string("-imageoverhead") );
-    const DBKey dataKey( dbKey+std::string("-imagedata") );
+    const DBKey overheadKey( dbKey+std::string("-imageOverhead") );
+    const DBKey dataKey( dbKey+std::string("-imageData") );
     if( !( persist->DatumExists( overheadKey ) ) ||
         !( persist->DatumExists( dataKey ) ) )
         return( NULL );
@@ -397,6 +400,258 @@ osg::Image* loadImage( const DBKey& dbKey )
 }
 
 
+
+#if 0
+// This is just too much.
+class RawMemoryArray : public osg::Array
+{
+public:
+    RawMemoryArray( const osg::Array::Type arrayType, const GLint dataSize, const GLenum dataType )
+      : osg::Array( arrayType, dataSize, dataType )
+    {}
+    RawMemoryArray( const RawMemoryArray& rhs )
+      : osg::Array( rhs ),
+        _address( rhs._address ),
+        _size( rhs._size )
+    {}
+
+    virtual void accept( osg::ArrayVisitor& av )
+    {
+        av.apply( *this );
+    }
+    virtual void accept( osg::ConstArrayVisitor& cav ) const
+    {
+        cav.apply( *this );
+    }
+    virtual void accept( unsigned int index, osg::ValueVisitor& vv )
+    {
+        switch( _arrayType ) {
+        case osg::Array::ByteArrayType:
+            vv.apply( ((GLbyte*)_address)[ index ] );
+            break;
+        case osg::Array::FloatArrayType:
+            vv.apply( ((GLfloat*)_address)[ index ] );
+            break;
+        case osg::Array::Vec2ArrayType:
+            vv.apply( ((osg::Vec2*)_address)[ index ] );
+            break;
+        case osg::Array::Vec3ArrayType:
+            vv.apply( ((osg::Vec3*)_address)[ index ] );
+            break;
+        case osg::Array::Vec4ArrayType:
+            vv.apply( ((osg::Vec4*)_address)[ index ] );
+            break;
+        }
+    }
+    virtual void accept( unsigned int index, osg::ConstValueVisitor& cvv ) const
+    {
+        switch( _arrayType ) {
+        case osg::Array::ByteArrayType:
+            cvv.apply( ((GLbyte*)_address)[ index ] );
+            break;
+        case osg::Array::FloatArrayType:
+            cvv.apply( ((GLfloat*)_address)[ index ] );
+            break;
+        case osg::Array::Vec2ArrayType:
+            cvv.apply( ((osg::Vec2*)_address)[ index ] );
+            break;
+        case osg::Array::Vec3ArrayType:
+            cvv.apply( ((osg::Vec3*)_address)[ index ] );
+            break;
+        case osg::Array::Vec4ArrayType:
+            cvv.apply( ((osg::Vec4*)_address)[ index ] );
+            break;
+        }
+    }
+
+    /** Return -1 if lhs element is less than rhs element, 0 if equal,
+        * 1 if lhs element is greater than rhs element. */
+    virtual int compare(unsigned int lhs,unsigned int rhs) const
+    {
+        switch( _arrayType ) {
+        case osg::Array::ByteArrayType:
+        {
+            const GLbyte leftVal( ((GLbyte*)_address)[ lhs ] );
+            const GLbyte rightVal( ((GLbyte*)_address)[ rhs ] );
+            if( leftVal < rightVal )
+                return( -1 );
+            else if( leftVal > rightVal )
+                return( 1 );
+            else
+                return( 0 );
+            break;
+        }
+        case osg::Array::FloatArrayType:
+        {
+            const GLfloat leftVal( ((GLfloat*)_address)[ lhs ] );
+            const GLfloat rightVal( ((GLfloat*)_address)[ rhs ] );
+            if( leftVal < rightVal )
+                return( -1 );
+            else if( leftVal > rightVal )
+                return( 1 );
+            else
+                return( 0 );
+            break;
+        }
+        case osg::Array::Vec2ArrayType:
+        {
+            const osg::Vec2 leftVal( ((osg::Vec2*)_address)[ lhs ] );
+            const osg::Vec2 rightVal( ((osg::Vec2*)_address)[ rhs ] );
+            if( leftVal < rightVal )
+                return( -1 );
+            else if( leftVal > rightVal )
+                return( 1 );
+            else
+                return( 0 );
+            break;
+        }
+        case osg::Array::Vec3ArrayType:
+        {
+            const osg::Vec3 leftVal( ((osg::Vec3*)_address)[ lhs ] );
+            const osg::Vec3 rightVal( ((osg::Vec3*)_address)[ rhs ] );
+            if( leftVal < rightVal )
+                return( -1 );
+            else if( leftVal > rightVal )
+                return( 1 );
+            else
+                return( 0 );
+            break;
+        }
+        case osg::Array::Vec4ArrayType:
+        {
+            const osg::Vec4 leftVal( ((osg::Vec4*)_address)[ lhs ] );
+            const osg::Vec4 rightVal( ((osg::Vec4*)_address)[ rhs ] );
+            if( leftVal < rightVal )
+                return( -1 );
+            else if( leftVal > rightVal )
+                return( 1 );
+            else
+                return( 0 );
+            break;
+        }
+        }
+    }
+
+    virtual const GLvoid* getDataPointer() const
+    {
+        return( _address );
+    }
+    virtual unsigned int getTotalDataSize() const
+    {
+        switch( _arrayType ) {
+        case osg::Array::ByteArrayType:
+            return( sizeof( GLbyte ) * _size );
+            break;
+        case osg::Array::FloatArrayType:
+            return( sizeof( GLfloat ) * _size );
+            break;
+        case osg::Array::Vec2ArrayType:
+            return( sizeof( osg::Vec2 ) * _size );
+            break;
+        case osg::Array::Vec3ArrayType:
+            return( sizeof( osg::Vec3 ) * _size );
+            break;
+        case osg::Array::Vec4ArrayType:
+            return( sizeof( osg::Vec4 ) * _size );
+            break;
+        }
+    }
+    virtual unsigned int    getNumElements() const
+    {
+        return( _size );
+    }
+
+protected:
+    virtual ~RawMemoryArray() {}
+
+    void* _address;
+    size_t _size;
+};
+#endif
+
+bool storeArray( const osg::Array* array, const DBKey& dbKey )
+{
+    db::PersistablePtr persist( s_getPersistable() );
+
+    {
+        // Create an STL allocator that allocates memory using the address
+        // stored in 'array'. No actual allocation is done.
+        const size_t sz( sizeof( *array ) );
+        RefCharAllocator localAllocator(
+            RefCharAllocator::RefPtr( const_cast< osg::Array* >(array) ), sz );
+
+        // Create std::vector<char> for storing in DB. We use the custom
+        // allocator to avoid the data copy. A simple resize()
+        // changes the internal size member var and the array is immediately
+        // filled with the storage referenced by 'array'.
+        DBRefCharVec cv( localAllocator );
+        cv.resize( sz );
+
+        // Add to database. This mean's we now own a copy of this memory,
+        // but it is not stored in a ref_ptr. So, to ensure it isn't deleted
+        // when the last ref_ptr goes away, do an explicit call to ref().
+        persist->AddDatum( dbKey+std::string("-arrayOverhead"), cv );
+        array->ref();
+    }
+
+    // Now do essentially the same thing with the Array's data, but no need
+    // for a RefPtrAllocator. Instead use a RawMemoryAllocator to avoid
+    // expensive data copy.
+    {
+        const size_t sz( array->getTotalDataSize() );
+        RawCharAllocator localAllocator(
+            (RawCharAllocator::pointer)( array->getDataPointer() ), sz );
+
+        DBRawCharVec cv( localAllocator );
+        cv.resize( sz );
+
+        persist->AddDatum( dbKey+std::string("-arrayData"), cv );
+    }
+
+    return( true );
+}
+osg::Array* loadArray( const DBKey& dbKey )
+{
+    db::PersistablePtr persist( s_getPersistable() );
+
+    const DBKey overheadKey( dbKey+std::string("-arrayOverhead") );
+    const DBKey dataKey( dbKey+std::string("-arrayData") );
+    if( !( persist->DatumExists( overheadKey ) ) ||
+        !( persist->DatumExists( dataKey ) ) )
+        return( NULL );
+
+    // Get the Array overhead block.
+    const DBRefCharVec& overheadVec( persist->GetDatumValue< DBRefCharVec >( overheadKey ) );
+    osg::Array* array( (osg::Array*) &overheadVec[0] );
+
+    // Get the array data block.
+    const DBRawCharVec& dataVec( persist->GetDatumValue< DBRawCharVec >( dataKey ) );
+
+    // TBD
+    // If there's a way to avoid a data copy here, it's going to be dang complicated.
+    osg::Array* returnArray;
+    switch( array->getType() ) {
+    case osg::Array::ByteArrayType:
+        returnArray = new osg::ByteArray( array->getNumElements(), (GLbyte*)&dataVec[0] );
+        break;
+    case osg::Array::FloatArrayType:
+        returnArray = new osg::FloatArray( array->getNumElements(), (GLfloat*)&dataVec[0] );
+        break;
+    case osg::Array::Vec2ArrayType:
+        returnArray = new osg::Vec2Array( array->getNumElements(), (osg::Vec2*)&dataVec[0] );
+        break;
+    case osg::Array::Vec3ArrayType:
+        returnArray = new osg::Vec3Array( array->getNumElements(), (osg::Vec3*)&dataVec[0] );
+        break;
+    case osg::Array::Vec4ArrayType:
+        returnArray = new osg::Vec4Array( array->getNumElements(), (osg::Vec4*)&dataVec[0] );
+        break;
+    }
+
+    return( returnArray );
+}
+
+
 #else
 
 
@@ -419,6 +674,16 @@ osg::Image* loadImage( const DBKey& dbKey )
 {
     return( osgDB::readImageFile( dbKey ) );
 }
+
+bool storeArray( const osg::Array* array, const DBKey& dbKey )
+{
+    return( osgDB::writeObjectFile( *array, dbKey ) );
+}
+osg::Array* loadArray( const DBKey& dbKey )
+{
+    return( dynamic_cast< osg::Array* >( osgDB::readObjectFile( dbKey ) ) );
+}
+
 
 #endif
 
