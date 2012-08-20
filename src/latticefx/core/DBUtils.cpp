@@ -629,7 +629,7 @@ osg::Array* loadArray( const DBKey& dbKey )
 
     // TBD
     // If there's a way to avoid a data copy here, it's going to be dang complicated.
-    osg::Array* returnArray;
+    osg::ref_ptr< osg::Array > returnArray;
     switch( array->getType() ) {
     case osg::Array::ByteArrayType:
         returnArray = new osg::ByteArray( array->getNumElements(), (GLbyte*)&dataVec[0] );
@@ -648,7 +648,7 @@ osg::Array* loadArray( const DBKey& dbKey )
         break;
     }
 
-    return( returnArray );
+    return( returnArray.release() );
 }
 
 

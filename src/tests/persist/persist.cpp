@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <crunchstore/Persistable.h>
+#include <latticefx/core/DBUtils.h>
 //#include <latticefx/core/ChannelDataDB.h>
 #include <osg/Array>
 #include <osg/Notify>
@@ -238,6 +239,25 @@ int main( int argc, char** argv )
 
         for( unsigned int idx=0; idx<array->size(); ++idx )
             OSG_ALWAYS << (*array)[ idx ] << std::endl;
+    }
+
+    OSG_ALWAYS << "--- Vec4Array and DBUtils test ---" << std::endl;
+
+    {
+        osg::ref_ptr< osg::Vec4Array > array( new osg::Vec4Array );
+        array->push_back( osg::Vec4( 1., 2., 3., 1. ) );
+        array->push_back( osg::Vec4( 4., 5., 6., 1. ) );
+        array->push_back( osg::Vec4( 7., 8., 9., 1. ) );
+        array->push_back( osg::Vec4( 10., 11., 12., 1. ) );
+
+        lfx::core::storeArray( array.get(), "foo" );
+    }
+    {
+        osg::ref_ptr< osg::Array > array( lfx::core::loadArray( "foo" ) );
+        osg::Vec4Array* v4a( dynamic_cast< osg::Vec4Array* >( array.get() ) );
+
+        for( unsigned int idx=0; idx<v4a->size(); ++idx )
+            OSG_ALWAYS << (*v4a)[ idx ] << std::endl;
     }
 
     OSG_ALWAYS << "--- Finished ---" << std::endl;
