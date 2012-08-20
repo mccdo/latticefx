@@ -80,9 +80,9 @@ public:
 
     /** \brief
     \details */
-    virtual osg::Array* asOSGArray() { return( _workingData.get() ); }
+    virtual osg::Array* asOSGArray();
     /** \overload osg::Array* ChannelDataOSGArray::asOSGArray(); */
-    virtual const osg::Array* asOSGArray() const { return( _workingData.get() ); }
+    virtual const osg::Array* asOSGArray() const;
 
     /** \brief Return this ChannelData with the specified mask applied.
     \detailt If \maskIn indicates no masking (no zero values), getMaskedChannel()

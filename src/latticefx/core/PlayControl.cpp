@@ -80,9 +80,9 @@ void PlayControl::addScene( osg::Node* scene )
     _scenes[ scene ] = rootcb;
 }
 
-void PlayControl::elapsedClockTick( double elapsed )
+void PlayControl::elapsedClockTick( TimeValue elapsed )
 {
-    const double delta = elapsed * _playRate;
+    const TimeValue delta = elapsed * _playRate;
     if( _time + delta > _maxTime )
     {
         // Played forwards past end.
@@ -131,7 +131,7 @@ void PlayControl::elapsedClockTick( double elapsed )
     }
 }
 
-void PlayControl::setAnimationTime( double time )
+void PlayControl::setAnimationTime( TimeValue time )
 {
     _time = time;
     elapsedClockTick( 0. );
@@ -150,7 +150,7 @@ void PlayControl::setTimeRange( const osg::Vec2d& timeRange )
 {
     setTimeRange( timeRange.x(), timeRange.y() );
 }
-void PlayControl::setTimeRange( const double minTime, const double maxTime )
+void PlayControl::setTimeRange( const TimeValue minTime, const TimeValue maxTime )
 {
     _minTime = minTime;
     _maxTime = maxTime;
@@ -159,13 +159,13 @@ osg::Vec2d PlayControl::getTimeRange() const
 {
     return( osg::Vec2d( _minTime, _maxTime ) );
 }
-void PlayControl::getTimeRange( double& minTime, double& maxTime ) const
+void PlayControl::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const
 {
     minTime = _minTime;
     maxTime = _maxTime;
 }
 
-void PlayControl::setLastFrameHold( const double hold )
+void PlayControl::setLastFrameHold( const TimeValue hold )
 {
     _lastFrameHold = hold;
 }

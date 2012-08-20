@@ -54,7 +54,7 @@ DBKey generateDBKey()
 
     std::ostringstream ostr;
     ostr << "dbKey" << std::setfill( '0' ) <<
-        std::setw( 5 ) << keyCounter++;
+        std::setw( 10 ) << keyCounter++;
 #ifndef LFX_USE_CRUNCHSTORE
     ostr << ".ive";
 #endif

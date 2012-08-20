@@ -32,6 +32,7 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/LogBase.h>
+#include <latticefx/core/types.h>
 
 #include <osg/Node>
 
@@ -93,17 +94,17 @@ public:
     This function adds \c elapsed to the current animation time \c _time, and wraps the
     resulting animation time if it is out of range. Then the function calls into all
     managed scene graphs to set their current animation time. */
-    void elapsedClockTick( double elapsed );
+    void elapsedClockTick( TimeValue elapsed );
 
     /** \brief Sets the current animation time.
     \details Immediately jump to \c time. Implicitly calls elapsedClockTick(0.0),
     which handles wrapping in the event that \c time is out of range, and update all
     managed scene graphs. */
-    void setAnimationTime( double time );
+    void setAnimationTime( TimeValue time );
     /** \brief Get the current animation time.
     \details Apps don't typically call this function, as elapsedClockTick() updates the
     registered subgraph. */
-    double getAnimationTime() const { return( _time ); }
+    TimeValue getAnimationTime() const { return( _time ); }
 
     /** \brief Set the play rate.
     \details The default play rate is 1.0, which plays the animation in sync with the time
@@ -118,25 +119,25 @@ public:
     calculated in the elapsedClockTick() function. */
     void setTimeRange( const osg::Vec2d& timeRange );
     /** \overload */
-    void setTimeRange( const double minTime, const double maxTime );
+    void setTimeRange( const TimeValue minTime, const TimeValue maxTime );
     /** \brief Retrieve the time range. */
     osg::Vec2d getTimeRange() const;
     /** \overload */
-    void getTimeRange( double& minTime, double& maxTime ) const;
+    void getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const;
 
     /** \brief TBD
     \details TBD */
-    void setLastFrameHold( const double hold );
+    void setLastFrameHold( const TimeValue hold );
 
 protected:
     typedef std::map< osg::ref_ptr< osg::Node >, osg::ref_ptr< PagingCallback > > NodeCBMap;
     NodeCBMap _scenes;
 
-    double _time;
+    TimeValue _time;
     double _playRate;
-    double _minTime, _maxTime;
+    TimeValue _minTime, _maxTime;
 
-    double _lastFrameHold, _holdCount;
+    TimeValue _lastFrameHold, _holdCount;
 };
 
 typedef boost::shared_ptr< PlayControl > PlayControlPtr;

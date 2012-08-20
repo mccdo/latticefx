@@ -33,6 +33,7 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LoadRequest.h>
 #include <latticefx/core/LogBase.h>
+#include <latticefx/core/types.h>
 
 #include <osg/NodeCallback>
 #include <osg/Group>
@@ -90,9 +91,9 @@ public:
     used. The calling code is responsible for updating the animation time as
     the animation plays forwards or backwards, and handling effects like ffwd,
     rew, or stop/pause. */
-    void setAnimationTime( const double time );
+    void setAnimationTime( const TimeValue time );
     /** \brief Get the current animation time. */
-    double getAnimationTime() const;
+    TimeValue getAnimationTime() const;
 
     /** \brief Set the paging time range.
     \details Children are paged in if their time value falls within the
@@ -124,9 +125,9 @@ protected:
 
     /** \brief Return \c time, biased into the given time range.
     \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */
-    static double getWrappedTime( const double& time, const double& minTime, const double& maxTime );
+    static TimeValue getWrappedTime( const TimeValue& time, const TimeValue& minTime, const TimeValue& maxTime );
 
-    double _animationTime;
+    TimeValue _animationTime;
     RangeValues _timeRange;
 };
 

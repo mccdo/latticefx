@@ -31,7 +31,8 @@
 
 
 #include <latticefx/core/Export.h>
-#include <latticefx/core/DBUtils.h>
+#include <latticefx/core/types.h>
+
 #include <osg/observer_ptr>
 #include <osg/Object>
 #include <osg/Group>
@@ -89,8 +90,8 @@ public:
 
     /** \brief For TIME_RANGE, the min and max time values of the entire time series.
     \details Called by DataSet during scene graph creation. */
-    void setMinMaxTime( const double minTime, const double maxTime );
-    void getMinMaxTime( double& minTime, double& maxTime );
+    void setMinMaxTime( const TimeValue minTime, const TimeValue maxTime );
+    void getMinMaxTime( TimeValue& minTime, TimeValue& maxTime );
 
     /** \brief Data for each pageable child.
     \details Contains information required for paging. Client code should add one
@@ -150,7 +151,7 @@ protected:
     virtual ~PageData();
 
     RangeMode _rangeMode;
-    double _minTime, _maxTime;
+    TimeValue _minTime, _maxTime;
 
     RangeDataMap _rangeDataMap;
     osg::observer_ptr< osg::Group > _parent;

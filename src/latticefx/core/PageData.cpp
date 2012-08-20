@@ -61,12 +61,12 @@ PageData::RangeMode PageData::getRangeMode() const
     return( _rangeMode );
 }
 
-void PageData::setMinMaxTime( const double minTime, const double maxTime )
+void PageData::setMinMaxTime( const TimeValue minTime, const TimeValue maxTime )
 {
     _minTime = minTime;
     _maxTime = maxTime;
 }
-void PageData::getMinMaxTime( double& minTime, double& maxTime )
+void PageData::getMinMaxTime( TimeValue& minTime, TimeValue& maxTime )
 {
     minTime = _minTime;
     maxTime = _maxTime;

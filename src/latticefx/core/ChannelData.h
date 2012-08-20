@@ -32,6 +32,7 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LogBase.h>
+#include <latticefx/core/types.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/enable_shared_from_this.hpp>
@@ -80,6 +81,27 @@ public:
     /** \brief
     \details */
     const std::string& getName() const;
+
+    /** \brief
+    \details */
+    void setTime( const TimeValue time );
+    /** \brief
+    \details */
+    TimeValue getTime() const;
+
+    typedef enum {
+        RAM,
+        DB
+    } StorageModeHint;
+    /** \brief TBD
+    \details Default is RAM. */
+    void setStorageModeHint( const StorageModeHint& storageMode );
+    /** \brief TBD
+    \details TBD */
+    StorageModeHint getStorageModeHint() const;
+    /** \brief TBD
+    \details TBD */
+    std::string getDBKey() const;
 
     /** \brief
     \details */
@@ -140,6 +162,10 @@ public:
 
 protected:
     std::string _name;
+    TimeValue _time;
+
+    StorageModeHint _storageMode;
+    mutable DBKey _dbKey;
 };
 
 

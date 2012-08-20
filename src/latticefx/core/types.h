@@ -26,46 +26,21 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#ifndef __LFX_CORE_DB_UTILS_H__
-#define __LFX_CORE_DB_UTILS_H__ 1
-
-#include <latticefx/core/Export.h>
-#include <latticefx/core/types.h>
-#ifdef LFX_USE_CRUNCHSTORE
-#  include <crunchstore/Persistable.h>
-#endif
+#ifndef __LFX_CORE_TYPES_H__
+#define __LFX_CORE_TYPES_H__ 1
 
 #include <string>
 #include <list>
 
 
-#ifdef LFX_USE_CRUNCHSTORE
-#  define PersistPtr crunchstore::PersistablePtr
-#else
-#  define PersistPtr void*
-#endif
-
-
-namespace osg {
-    class Image;
-    class Array;
-}
-
 namespace lfx {
 namespace core {
 
 
+typedef double TimeValue;
 
-LATTICEFX_EXPORT void s_setPersistable( PersistPtr persist );
-LATTICEFX_EXPORT PersistPtr s_getPersistable();
-
-LATTICEFX_EXPORT DBKey generateDBKey();
-
-LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
-LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );
-
-LATTICEFX_EXPORT bool storeArray( const osg::Array* array, const DBKey& dbKey );
-LATTICEFX_EXPORT osg::Array* loadArray( const DBKey& dbKey );
+typedef std::string DBKey;
+typedef std::list< DBKey > DBKeyList;
 
 
 // core
@@ -74,5 +49,5 @@ LATTICEFX_EXPORT osg::Array* loadArray( const DBKey& dbKey );
 }
 
 
-// __LFX_CORE_DB_UTILS_H__
+// __LFX_CORE_TYPES_H__
 #endif

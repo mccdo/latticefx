@@ -66,13 +66,14 @@ DataSet::~DataSet()
 {
 }
 
-void DataSet::addChannel( const ChannelDataPtr channel, const double time )
+void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue time )
 {
+    channel->setTime( time );
     _data[ time ].push_back( channel );
     _dataNames.insert( channel->getName() );
     setDirty( ALL_DIRTY );
 }
-void DataSet::replaceChannel( const ChannelDataPtr channel, const double time )
+void DataSet::replaceChannel( const ChannelDataPtr channel, const TimeValue time )
 {
     ChannelDataTimeMap::iterator cdlIt( _data.find( time ) );
     if( cdlIt == _data.end() )
@@ -83,11 +84,12 @@ void DataSet::replaceChannel( const ChannelDataPtr channel, const double time )
     }
     // Found a ChannelDataList for the specified 'time'. Now replace any
     // existing ChannelData with 'channel' (or append 'channel' to the end).
+    channel->setTime( time );
     cdlIt->second.replaceData( channel );
     setDirty( ALL_DIRTY );
 }
 
-ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
+ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue time )
 {
     ChannelDataPtr cdp;
     ChannelDataTimeMap::iterator cdlIt( _data.find( time ) );
@@ -115,7 +117,7 @@ ChannelDataPtr DataSet::getChannel( const std::string& name, const double time )
     }
     return( cdp );
 }
-const ChannelDataPtr DataSet::getChannel( const std::string& name, const double time ) const
+const ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue time ) const
 {
     DataSet* nonConstThis = const_cast< DataSet* >( this );
     return( nonConstThis->getChannel( name, time ) );
@@ -123,11 +125,11 @@ const ChannelDataPtr DataSet::getChannel( const std::string& name, const double 
 
 osg::Vec2d DataSet::getTimeRange() const
 {
-    double minTime, maxTime;
+    TimeValue minTime, maxTime;
     getTimeRange( minTime, maxTime );
     return( osg::Vec2d( minTime, maxTime ) );
 }
-void DataSet::getTimeRange( double& minTime, double& maxTime ) const 
+void DataSet::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const 
 {
     TimeSet timeSet( getTimeSet() );
     if( timeSet.empty() )
@@ -222,7 +224,7 @@ bool DataSet::updatePreprocessing()
         return( true );
 
     // Iterate over all time steps.
-    BOOST_FOREACH( double time, timeSet )
+    BOOST_FOREACH( TimeValue time, timeSet )
     {
         // Get the data at the current time.
         ChannelDataList currentData( getDataAtTime( time ) );
@@ -273,7 +275,7 @@ bool DataSet::updateRunTimeProcessing()
     }
 
     // Iterate over all time steps.
-    BOOST_FOREACH( double time, timeSet )
+    BOOST_FOREACH( TimeValue time, timeSet )
     {
         // Get the data at the current time.
         ChannelDataList currentData( getDataAtTime( time ) );
@@ -348,7 +350,7 @@ bool DataSet::updateRenderer()
 
     unsigned int childIndex( 0 );
     ChannelDataList::iterator maskIt( _maskList.begin() );
-    BOOST_FOREACH( double time, timeSet )
+    BOOST_FOREACH( TimeValue time, timeSet )
     {
         // Get the data at the current time and assign as inputs to the Renderer.
         ChannelDataList currentData( getDataAtTime( time ) );
@@ -495,7 +497,7 @@ TimeSet DataSet::getTimeSet() const
     return( timeSet );
 }
 
-ChannelDataList DataSet::getDataAtTime( const double time )
+ChannelDataList DataSet::getDataAtTime( const TimeValue time )
 {
     ChannelDataList cdl;
     BOOST_FOREACH( const std::string& name, _dataNames )

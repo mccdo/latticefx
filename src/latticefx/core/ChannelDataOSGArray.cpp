@@ -127,6 +127,15 @@ const char* ChannelDataOSGArray::asCharPtr() const
     return( nonConstThis->asCharPtr() );
 }
 
+osg::Array* ChannelDataOSGArray::asOSGArray()
+{
+    return( _workingData.get() );
+}
+const osg::Array* ChannelDataOSGArray::asOSGArray() const
+{
+    return( _workingData.get() );
+}
+
 ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskIn )
 {
 #define MASK_LOOP( _sIt, _sArr, _mIt, _mArr, _dIt, _dArr ) \

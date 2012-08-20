@@ -93,11 +93,11 @@ PagingCallback::~PagingCallback()
 {
 }
 
-void PagingCallback::setAnimationTime( const double time )
+void PagingCallback::setAnimationTime( const TimeValue time )
 {
     _animationTime = time;
 }
-double PagingCallback::getAnimationTime() const
+TimeValue PagingCallback::getAnimationTime() const
 {
     return( _animationTime );
 }
@@ -135,10 +135,10 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         // min and max values between the PageData's min and max time values. Note that when the
         // animation reaches the end, it's possible that the min validRange value could be greater than
         // the max validRange value to support smooth playback as time wraps around.
-        double minTime, maxTime;
+        TimeValue minTime, maxTime;
         pageData->getMinMaxTime( minTime, maxTime );
 
-        const double time( getAnimationTime() );
+        const TimeValue time( getAnimationTime() );
         validRange.first = getWrappedTime( _timeRange.first + time, minTime, maxTime );
         validRange.second = getWrappedTime( _timeRange.second + time, minTime, maxTime );
     }
@@ -270,7 +270,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     if( pageData->getRangeMode() == PageData::TIME_RANGE )
     {
         osg::Node* bestChild( grp->getChild( 0 ) );
-        double minTimeDifference( FLT_MAX );
+        TimeValue minTimeDifference( FLT_MAX );
 
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
@@ -281,7 +281,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
                 // the status isn't ACTIVE, we don't care about it.
                 continue;
 
-            double timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
+            TimeValue timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
             if( timeDifference < minTimeDifference )
             {
                 minTimeDifference = timeDifference;
@@ -573,9 +573,9 @@ void PagingCallback::reclaimImages( osg::Node* child )
     child->accept( reclaim );
 }
 
-double PagingCallback::getWrappedTime( const double& time, const double& minTime, const double& maxTime )
+TimeValue PagingCallback::getWrappedTime( const TimeValue& time, const TimeValue& minTime, const TimeValue& maxTime )
 {
-    const double span( maxTime - minTime );
+    const TimeValue span( maxTime - minTime );
     if( span == 0 )
         return( time );
     double intPart;

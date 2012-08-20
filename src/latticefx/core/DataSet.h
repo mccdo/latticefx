@@ -37,6 +37,7 @@
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/LogBase.h>
+#include <latticefx/core/types.h>
 
 #include <osg/ref_ptr>
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -62,11 +63,11 @@ namespace core {
 
 
 /** An ordered set of time values. */
-typedef std::set< double > TimeSet;
+typedef std::set< TimeValue > TimeSet;
 
 /** \brief Map of time values to ChannelDataPtr.
 When ChannelData are added for a specific time, they are added to a map of this type. */
-typedef std::map< double, ChannelDataPtr > TimeDataMap;
+typedef std::map< TimeValue, ChannelDataPtr > TimeDataMap;
 
 
 /** \class DataSet DataSet.h <latticefx/core/DataSet.h>
@@ -93,25 +94,25 @@ public:
     
     ///\{
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
-    void addChannel( const ChannelDataPtr channel, const double time=0. );
+    void addChannel( const ChannelDataPtr channel, const TimeValue time=0. );
 
     /** \brief Replaces a ChannelData with the same name as \c channel.
     \details If no ChannelData can be found with the same name as \c channel, this function
     behaves the same as addChannel. */
-    void replaceChannel( const ChannelDataPtr channel, const double time=0. );
+    void replaceChannel( const ChannelDataPtr channel, const TimeValue time=0. );
 
     /** \brief Get a named channel for a specific time value \c time.
     \returns NULL if the named channel doesn't exist at the specified time. */
-    ChannelDataPtr getChannel( const std::string& name, const double time=0. );
-    /** \overload ChannelDataPtr getChannel(const std::string&,const double) */
-    const ChannelDataPtr getChannel( const std::string& name, const double time=0. ) const;
+    ChannelDataPtr getChannel( const std::string& name, const TimeValue time=0. );
+    /** \overload ChannelDataPtr getChannel(const std::string&,const TimeValue) */
+    const ChannelDataPtr getChannel( const std::string& name, const TimeValue time=0. ) const;
 
 
 
     /** \brief Returns the min and max time extents of all attached data. */
     osg::Vec2d getTimeRange() const;
     /** \overload */
-    void getTimeRange( double& minTime, double& maxTime ) const;
+    void getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const;
     ///\}
 
 
@@ -226,14 +227,14 @@ protected:
     osg::Node* recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask );
 
     TimeSet getTimeSet() const;
-    ChannelDataList getDataAtTime( const double time );
+    ChannelDataList getDataAtTime( const TimeValue time );
     ChannelDataList getCompositeChannels( ChannelDataList data, const unsigned int index );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
     ChannelDataOSGArrayPtr createSizedMask(  const ChannelDataList& dataList );
 
 
-    typedef std::map< double, ChannelDataList > ChannelDataTimeMap;
+    typedef std::map< TimeValue, ChannelDataList > ChannelDataTimeMap;
     ChannelDataTimeMap _data;
 
     typedef std::set< std::string > StringSet;

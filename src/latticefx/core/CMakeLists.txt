@@ -37,6 +37,7 @@ set( _headerFiles
     SurfaceRenderer.h
     TextureUtils.h
     TransferFunctionUtils.h
+    types.h
     VectorRenderer.h
     VolumeRenderer.h
 )
