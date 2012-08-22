@@ -150,7 +150,7 @@ DataSetPtr prepareDataSet()
     if( DBUsesCrunchStore() )
     {
         const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
-        cdp->setDBKey( DBKey( cdp->getName() + uuid.toString() ) );
+        cdp->setDBKey( DBKey( cdp->getName() + "-" + uuid.toString() ) );
         cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
     }
 

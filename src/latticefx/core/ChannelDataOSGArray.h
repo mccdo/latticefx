@@ -67,6 +67,9 @@ public:
     /** \brief
     \details */
     virtual void setStorageModeHint( const StorageModeHint& storageMode );
+    /** \brief
+    \details */
+    virtual void flushToDB();
 
     /** \brief
     \details */

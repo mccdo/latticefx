@@ -101,11 +101,18 @@ public:
     StorageModeHint getStorageModeHint() const;
     /** \brief Set the DB key.
     \details If the storage mode hint is STORE_IN_DB, this key is used as a base for
-    DB data associated with this ChannelData. It is set by the DataSet during scene
-    graph construction and consists of the ChannelData's name along with a time stamp. */
+    DB data associated with this ChannelData. The application is responsible for setting
+    a unique \c dbKey. */
     void setDBKey( const DBKey dbKey );
     /** \brief Retrieve the DB key. */
     DBKey getDBKey() const;
+    /** \brief Flush memory-based cache to DB.
+    \details If the storage mode hint is STORE_IN_DB, the ChannelData likely maintains
+    a memory-based cache. This cache could be out of sync with the actual DB contents
+    after, for example, a RTPOperation::filter() executaion. Operations that modify
+    the ChannelData (such as RTPOperation::filter()) should call flushToDB() to flush
+    the memory-based cache to DB. */
+    virtual void flushToDB() {}
     /**\}*/
 
     /** \brief
