@@ -365,7 +365,11 @@ bool storeImage( const osg::Image* image, const DBKey& dbKey )
         // Add to database. This mean's we now own a copy of this memory,
         // but it is not stored in a ref_ptr. So, to ensure it isn't deleted
         // when the last ref_ptr goes away, do an explicit call to ref().
-        persist->AddDatum( dbKey+std::string("-imageOverhead"), cv );
+        const DBKey key( dbKey+std::string("-imageOverhead") );
+        if( persist->DatumExists( key ) )
+            persist->SetDatumValue( key, cv );
+        else
+            persist->AddDatum( key, cv );
         image->ref();
     }
 
@@ -380,7 +384,11 @@ bool storeImage( const osg::Image* image, const DBKey& dbKey )
         DBRawCharVec cv( localAllocator );
         cv.resize( sz );
 
-        persist->AddDatum( dbKey+std::string("-imageData"), cv );
+        const DBKey key( dbKey+std::string("-imageData") );
+        if( persist->DatumExists( key ) )
+            persist->SetDatumValue( key, cv );
+        else
+            persist->AddDatum( key, cv );
     }
 
     return( true );
@@ -606,7 +614,11 @@ bool storeArray( const osg::Array* array, const DBKey& dbKey )
         // Add to database. This mean's we now own a copy of this memory,
         // but it is not stored in a ref_ptr. So, to ensure it isn't deleted
         // when the last ref_ptr goes away, do an explicit call to ref().
-        persist->AddDatum( dbKey+std::string("-arrayOverhead"), cv );
+        const DBKey key( dbKey+std::string("-arrayOverhead") );
+        if( persist->DatumExists( key ) )
+            persist->SetDatumValue( key, cv );
+        else
+            persist->AddDatum( key, cv );
         array->ref();
     }
 
@@ -621,7 +633,11 @@ bool storeArray( const osg::Array* array, const DBKey& dbKey )
         DBRawCharVec cv( localAllocator );
         cv.resize( sz );
 
-        persist->AddDatum( dbKey+std::string("-arrayData"), cv );
+        const DBKey key( dbKey+std::string("-arrayData") );
+        if( persist->DatumExists( key ) )
+            persist->SetDatumValue( key, cv );
+        else
+            persist->AddDatum( key, cv );
     }
 
     return( true );
