@@ -66,11 +66,11 @@ public:
 
     /** \brief
     \details */
-    void setOSGArray( osg::Array* array );
+    virtual void setStorageModeHint( const StorageModeHint& storageMode );
 
     /** \brief
     \details */
-    virtual void getDimensions( unsigned int& x, unsigned int& y, unsigned int& z );
+    void setOSGArray( osg::Array* array );
 
     /** \brief
     \details */

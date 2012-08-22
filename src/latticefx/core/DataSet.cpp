@@ -68,7 +68,6 @@ DataSet::~DataSet()
 
 void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue time )
 {
-    channel->setTime( time );
     _data[ time ].push_back( channel );
     _dataNames.insert( channel->getName() );
     setDirty( ALL_DIRTY );
@@ -84,7 +83,6 @@ void DataSet::replaceChannel( const ChannelDataPtr channel, const TimeValue time
     }
     // Found a ChannelDataList for the specified 'time'. Now replace any
     // existing ChannelData with 'channel' (or append 'channel' to the end).
-    channel->setTime( time );
     cdlIt->second.replaceData( channel );
     setDirty( ALL_DIRTY );
 }

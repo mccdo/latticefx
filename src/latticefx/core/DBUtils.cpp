@@ -48,6 +48,15 @@ namespace core {
 
 
 
+bool DBUsesCrunchStore()
+{
+#ifdef LFX_USE_CRUNCHSTORE
+    return( true );
+#else
+    return( false );
+#endif
+}
+
 DBKey generateDBKey()
 {
     static unsigned int keyCounter( 0 );
@@ -60,6 +69,14 @@ DBKey generateDBKey()
 #endif
     return( DBKey( ostr.str() ) );
 }
+DBKey generateDBKey( const std::string& baseName, const TimeValue time )
+{
+    std::ostringstream ostr;
+    ostr.precision( 20 );
+    ostr << baseName << "-" << time;
+    return( (DBKey) ostr.str() );
+}
+
 
 
 #ifdef LFX_USE_CRUNCHSTORE
@@ -80,7 +97,6 @@ PersistPtr s_getPersistable()
         s_persist = db::PersistablePtr( new db::Persistable );
     return( s_persist );
 }
-
 
 
 /** \class RefPtrAllocator

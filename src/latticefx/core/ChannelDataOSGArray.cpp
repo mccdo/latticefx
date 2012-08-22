@@ -27,6 +27,7 @@
 *************** <auto-copyright.rb END do not edit this line> **************/
 
 #include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
 
 
@@ -51,9 +52,10 @@ ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name )
 {
 }
 ChannelDataOSGArray::ChannelDataOSGArray( osg::Array* data, const std::string& name )
-  : ChannelData( name ),
-    _data( data )
+  : ChannelData( name )
 {
+    if( data != NULL )
+        setOSGArray( data );
     reset();
 }
 ChannelDataOSGArray::ChannelDataOSGArray( const ChannelDataOSGArray& rhs )
@@ -68,50 +70,64 @@ ChannelDataOSGArray::~ChannelDataOSGArray()
 }
 
 
+void ChannelDataOSGArray::setStorageModeHint( const StorageModeHint& storageMode )
+{
+    ChannelData::setStorageModeHint( storageMode );
+
+    if( ( getStorageModeHint() == STORE_IN_DB ) && ( _data != NULL ) )
+        setOSGArray( _data.get() );
+}
+
 void ChannelDataOSGArray::setOSGArray( osg::Array* data )
 {
-    ChannelDataOSGArray::_data = data;
-    reset();
-}
-
-
-void ChannelDataOSGArray::getDimensions( unsigned int& x, unsigned int& y, unsigned int& z )
-{
-    if( _data.valid() )
+    if( getStorageModeHint() == STORE_IN_DB )
     {
-        x = _data->getNumElements();
-        y = z = 1;
+        storeArray( data, getDBKey() + DBKey( "-base" ) );
+        _data = NULL;
+        _workingData = NULL;
     }
+    else // STORE_IN_RAM
+    {
+        _data = data;
+    }
+
+    if( ( data != NULL ) && ( data->getNumElements() > 0 ) )
+        setDimensions( data->getNumElements(), 1, 1 );
     else
-    {
-        x = y = z = 0;
-    }
+        setDimensions( 0, 0, 0 );
 }
+
 
 char* ChannelDataOSGArray::asCharPtr()
 {
-    switch( _workingData->getType() )
+    osg::Array* array;
+    if( getStorageModeHint() == STORE_IN_DB )
+        array = loadArray( getDBKey() + DBKey( "-working" ) );
+    else
+        array = _workingData.get();
+
+    switch( array->getType() )
     {
     case osg::Array::ByteArrayType:
-        return( AS_CHAR_PTR( osg::ByteArray, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::ByteArray, array ) );
         break;
     case osg::Array::IntArrayType:
-        return( AS_CHAR_PTR( osg::IntArray, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::IntArray, array ) );
         break;
     case osg::Array::FloatArrayType:
-        return( AS_CHAR_PTR( osg::FloatArray, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::FloatArray, array ) );
         break;
     case osg::Array::DoubleArrayType:
-        return( AS_CHAR_PTR( osg::DoubleArray, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::DoubleArray, array ) );
         break;
     case osg::Array::Vec2ArrayType:
-        return( AS_CHAR_PTR( osg::Vec2Array, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::Vec2Array, array ) );
         break;
     case osg::Array::Vec3ArrayType:
-        return( AS_CHAR_PTR( osg::Vec3Array, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::Vec3Array, array ) );
         break;
     case osg::Array::Vec4ArrayType:
-        return( AS_CHAR_PTR( osg::Vec4Array, _workingData.get() ) );
+        return( AS_CHAR_PTR( osg::Vec4Array, array ) );
         break;
     default:
     {
@@ -129,11 +145,19 @@ const char* ChannelDataOSGArray::asCharPtr() const
 
 osg::Array* ChannelDataOSGArray::asOSGArray()
 {
-    return( _workingData.get() );
+    if( getStorageModeHint() == STORE_IN_DB )
+    {
+        return( loadArray( getDBKey() + DBKey( "-working" ) ) );
+    }
+    else
+    {
+        return( _workingData.get() );
+    }
 }
 const osg::Array* ChannelDataOSGArray::asOSGArray() const
 {
-    return( _workingData.get() );
+    ChannelDataOSGArray* nonConstThis( const_cast< ChannelDataOSGArray* >( this ) );
+    return( nonConstThis->asOSGArray() );
 }
 
 ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskIn )
@@ -227,11 +251,17 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
 
 void ChannelDataOSGArray::setAll( const char value )
 {
-    switch( _workingData->getType() )
+    osg::Array* array;
+    if( getStorageModeHint() == STORE_IN_DB )
+        array = loadArray( getDBKey() + DBKey( "-working" ) );
+    else
+        array = _workingData.get();
+
+    switch( array->getType() )
     {
     case osg::Array::ByteArrayType:
     {
-        osg::ByteArray* array( static_cast< osg::ByteArray* >( _workingData.get() ) );
+        osg::ByteArray* array( static_cast< osg::ByteArray* >( array ) );
         osg::ByteArray::iterator it;
         for( it = array->begin(); it != array->end(); ++it )
         {
@@ -245,14 +275,23 @@ void ChannelDataOSGArray::setAll( const char value )
         break;
     }
     }
+
+    if( getStorageModeHint() == STORE_IN_DB )
+        storeArray( array, getDBKey() + DBKey( "-working" ) );
 }
 void ChannelDataOSGArray::setAll( const float value )
 {
-    switch( _workingData->getType() )
+    osg::Array* array;
+    if( getStorageModeHint() == STORE_IN_DB )
+        array = loadArray( getDBKey() + DBKey( "-working" ) );
+    else
+        array = _workingData.get();
+
+    switch( array->getType() )
     {
     case osg::Array::FloatArrayType:
     {
-        osg::FloatArray* array( static_cast< osg::FloatArray* >( _workingData.get() ) );
+        osg::FloatArray* array( static_cast< osg::FloatArray* >( array ) );
         osg::FloatArray::iterator it;
         for( it = array->begin(); it != array->end(); ++it )
         {
@@ -266,6 +305,9 @@ void ChannelDataOSGArray::setAll( const float value )
         break;
     }
     }
+
+    if( getStorageModeHint() == STORE_IN_DB )
+        storeArray( array, getDBKey() + DBKey( "-working" ) );
 }
 
 void ChannelDataOSGArray::andValues( const ChannelData* rhs )
@@ -274,11 +316,17 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
     if( inPtr == NULL )
         return;
 
-    switch( _workingData->getType() )
+    osg::Array* array;
+    if( getStorageModeHint() == STORE_IN_DB )
+        array = loadArray( getDBKey() + DBKey( "-working" ) );
+    else
+        array = _workingData.get();
+
+    switch( array->getType() )
     {
     case osg::Array::ByteArrayType:
     {
-        osg::ByteArray* array( static_cast< osg::ByteArray* >( _workingData.get() ) );
+        osg::ByteArray* array( static_cast< osg::ByteArray* >( array ) );
         osg::ByteArray::iterator it;
         for( it = array->begin(); it != array->end(); ++it )
         {
@@ -292,47 +340,70 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
         break;
     }
     }
+
+    if( getStorageModeHint() == STORE_IN_DB )
+        storeArray( array, getDBKey() + DBKey( "-working" ) );
 }
 
 void ChannelDataOSGArray::reset()
 {
-    if( _workingData == NULL )
-        _workingData = dynamic_cast< osg::Array* >(
-                _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
-    else if( _data->getNumElements() > 0 )
-        // Only copy if there is data in the array.
-        copyArray( _workingData.get(), _data.get() );
+    if( getStorageModeHint() == STORE_IN_DB )
+    {
+        osg::Array* array( loadArray( getDBKey() + DBKey( "-base" ) ) );
+        storeArray( array, getDBKey() + DBKey( "-working" ) );
+    }
+    else // STORE_IN_RAM
+    {
+        if( _workingData == NULL )
+            _workingData = dynamic_cast< osg::Array* >(
+                    _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
+        else if( _data->getNumElements() > 0 )
+            // Only copy if there is data in the array.
+            copyArray( _workingData.get(), _data.get() );
+    }
 }
 
 void ChannelDataOSGArray::resize( size_t size )
 {
-    if( _workingData == NULL )
-        _workingData = dynamic_cast< osg::Array* >(
-                _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
+    osg::Array* array;
+    if( getStorageModeHint() == STORE_IN_DB )
+        array = loadArray( getDBKey() + DBKey( "-base" ) );
+    else
+        array = _data.get();
 
     switch( _data->getType() )
     {
     case osg::Array::ByteArrayType:
-        ( dynamic_cast< osg::ByteArray* >( _data.get() ) )->resize( size );
-        ( dynamic_cast< osg::ByteArray* >( _workingData.get() ) )->resize( size );
+        ( dynamic_cast< osg::ByteArray* >( array ) )->resize( size );
+        if( getStorageModeHint() == STORE_IN_RAM )
+            ( dynamic_cast< osg::ByteArray* >( _workingData.get() ) )->resize( size );
         break;
     case osg::Array::FloatArrayType:
-        ( dynamic_cast< osg::FloatArray* >( _data.get() ) )->resize( size );
-        ( dynamic_cast< osg::FloatArray* >( _workingData.get() ) )->resize( size );
+        ( dynamic_cast< osg::FloatArray* >( array ) )->resize( size );
+        if( getStorageModeHint() == STORE_IN_RAM )
+            ( dynamic_cast< osg::FloatArray* >( _workingData.get() ) )->resize( size );
         break;
     case osg::Array::Vec2ArrayType:
-        ( dynamic_cast< osg::Vec2Array* >( _data.get() ) )->resize( size );
-        ( dynamic_cast< osg::Vec2Array* >( _workingData.get() ) )->resize( size );
+        ( dynamic_cast< osg::Vec2Array* >( array ) )->resize( size );
+        if( getStorageModeHint() == STORE_IN_RAM )
+            ( dynamic_cast< osg::Vec2Array* >( _workingData.get() ) )->resize( size );
         break;
     case osg::Array::Vec3ArrayType:
-        ( dynamic_cast< osg::Vec3Array* >( _data.get() ) )->resize( size );
-        ( dynamic_cast< osg::Vec3Array* >( _workingData.get() ) )->resize( size );
+        ( dynamic_cast< osg::Vec3Array* >( array ) )->resize( size );
+        if( getStorageModeHint() == STORE_IN_RAM )
+            ( dynamic_cast< osg::Vec3Array* >( _workingData.get() ) )->resize( size );
         break;
     default:
     {
         LFX_WARNING( "OSGArray::resize(): Unsupported array type." );
         break;
     }
+    }
+
+    if( getStorageModeHint() == STORE_IN_DB )
+    {
+        storeArray( array, getDBKey() + DBKey( "-base" ) );
+        storeArray( array, getDBKey() + DBKey( "-working" ) );
     }
 }
 

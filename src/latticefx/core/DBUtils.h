@@ -56,10 +56,13 @@ namespace core {
 
 
 
+LATTICEFX_EXPORT bool DBUsesCrunchStore();
+
 LATTICEFX_EXPORT void s_setPersistable( PersistPtr persist );
 LATTICEFX_EXPORT PersistPtr s_getPersistable();
 
 LATTICEFX_EXPORT DBKey generateDBKey();
+LATTICEFX_EXPORT DBKey generateDBKey( const std::string& baseName, const TimeValue time=(TimeValue)0. );
 
 LATTICEFX_EXPORT bool storeImage( const osg::Image* image, const DBKey& dbKey );
 LATTICEFX_EXPORT osg::Image* loadImage( const DBKey& dbKey );

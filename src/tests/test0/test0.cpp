@@ -26,16 +26,19 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 #include <latticefx/core/DataSet.h>
-#include <latticefx/core/ChannelData.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
+#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osgViewer/Viewer>
+
+#include <Poco/UUID.h>
+#include <Poco/UUIDGenerator.h>
 
 
 using namespace lfx::core;
@@ -88,7 +91,7 @@ public:
             maskValue = ( v.z() + v.y() > threshold ) ? 0 : 1;
         }
 
-        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( maskData.get() ) );
+        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( maskData.get(), input->getName() ) );
         return( cdp );
     }
 
@@ -144,6 +147,12 @@ DataSetPtr prepareDataSet()
         }
     }
     ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( xyzData.get(), "vertices" ) );
+    if( DBUsesCrunchStore() )
+    {
+        const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
+        cdp->setDBKey( DBKey( cdp->getName() + uuid.toString() ) );
+        cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
+    }
 
     // Create a data set and add the vertex data.
     DataSetPtr dsp( new DataSet() );

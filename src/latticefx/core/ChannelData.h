@@ -82,30 +82,35 @@ public:
     \details */
     const std::string& getName() const;
 
-    /** \brief
-    \details */
-    void setTime( const TimeValue time );
-    /** \brief
-    \details */
-    TimeValue getTime() const;
+
+    /** \name Database Control */
+    /** \{ */
 
     typedef enum {
-        RAM,
-        DB
+        STORE_IN_RAM,
+        STORE_IN_DB
     } StorageModeHint;
-    /** \brief TBD
-    \details Default is RAM. */
-    void setStorageModeHint( const StorageModeHint& storageMode );
-    /** \brief TBD
-    \details TBD */
+    /** \brief Specify the storage mode for the ChannelData's actual data.
+    \details If STORE_IN_RAM, the ChannelData does not access the DB and keeps all
+    data resident in memory. If STORE_IN_DB, the ChannelData may decide to store all, some, or
+    none of its data in the DB.
+
+    Default is STORE_IN_RAM. */
+    virtual void setStorageModeHint( const StorageModeHint& storageMode );
+    /** \brief Retrieve the storage mode hint. */
     StorageModeHint getStorageModeHint() const;
-    /** \brief TBD
-    \details TBD */
-    std::string getDBKey() const;
+    /** \brief Set the DB key.
+    \details If the storage mode hint is STORE_IN_DB, this key is used as a base for
+    DB data associated with this ChannelData. It is set by the DataSet during scene
+    graph construction and consists of the ChannelData's name along with a time stamp. */
+    void setDBKey( const DBKey dbKey );
+    /** \brief Retrieve the DB key. */
+    DBKey getDBKey() const;
+    /**\}*/
 
     /** \brief
     \details */
-    virtual void getDimensions( unsigned int& x, unsigned int& y, unsigned int& z ) {}
+    virtual void getDimensions( unsigned int& x, unsigned int& y, unsigned int& z );
 
     /** \brief Return a pointer to (possibly a copy of) the data.
     \details This function should be overridden in derived classes.
@@ -161,11 +166,16 @@ public:
     virtual void resize( size_t size ) {}
 
 protected:
+    /** \brief
+    \details */
+    virtual void setDimensions( const unsigned int x, const unsigned int y, const unsigned int z );
+
     std::string _name;
-    TimeValue _time;
 
     StorageModeHint _storageMode;
-    mutable DBKey _dbKey;
+    DBKey _dbKey;
+
+    unsigned int _dimensions[ 3 ];
 };
 
 
