@@ -103,7 +103,7 @@ public:
     \details If the storage mode hint is STORE_IN_DB, this key is used as a base for
     DB data associated with this ChannelData. The application is responsible for setting
     a unique \c dbKey. */
-    void setDBKey( const DBKey dbKey );
+    virtual void setDBKey( const DBKey dbKey );
     /** \brief Retrieve the DB key. */
     DBKey getDBKey() const;
     /** \brief Flush memory-based cache to DB.

@@ -149,9 +149,9 @@ DataSetPtr prepareDataSet()
     ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( xyzData.get(), "vertices" ) );
     if( DBUsesCrunchStore() )
     {
+        cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
         const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
         cdp->setDBKey( DBKey( cdp->getName() + "-" + uuid.toString() ) );
-        cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
     }
 
     // Create a data set and add the vertex data.

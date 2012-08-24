@@ -69,6 +69,9 @@ public:
     virtual void setStorageModeHint( const StorageModeHint& storageMode );
     /** \brief
     \details */
+    virtual void setDBKey( const DBKey dbKey );
+    /** \brief
+    \details */
     virtual void flushToDB();
 
     /** \brief

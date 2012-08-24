@@ -74,7 +74,16 @@ void ChannelDataOSGArray::setStorageModeHint( const StorageModeHint& storageMode
 {
     ChannelData::setStorageModeHint( storageMode );
 
-    if( ( getStorageModeHint() == STORE_IN_DB ) && ( _data != NULL ) )
+    if( ( getStorageModeHint() == STORE_IN_DB ) &&
+        ( _data != NULL ) && !( getDBKey().empty() ) )
+        setOSGArray( _data.get() );
+}
+void ChannelDataOSGArray::setDBKey( const DBKey dbKey )
+{
+    ChannelData::setDBKey( dbKey );
+
+    if( ( getStorageModeHint() == STORE_IN_DB ) &&
+        ( _data != NULL ) && !( getDBKey().empty() ) )
         setOSGArray( _data.get() );
 }
 void ChannelDataOSGArray::flushToDB()
@@ -85,13 +94,13 @@ void ChannelDataOSGArray::flushToDB()
 
 void ChannelDataOSGArray::setOSGArray( osg::Array* data )
 {
-    if( getStorageModeHint() == STORE_IN_DB )
+    if( ( getStorageModeHint() == STORE_IN_DB ) && !( getDBKey().empty() ) )
     {
         storeArray( data, getDBKey() + DBKey( "-base" ) );
         _data = NULL;
         _workingData = NULL;
     }
-    else // STORE_IN_RAM
+    else // STORE_IN_RAM or there is no DB key yet.
     {
         _data = data;
     }
