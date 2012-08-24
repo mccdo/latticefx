@@ -81,10 +81,14 @@ protected:
         std::ostringstream ostr;
         ostr << fileName << depth << ".png";
 
-        osg::Image* image( new osg::Image );
-        image->setFileName( ostr.str() );
-        return( ChannelDataOSGImagePtr(
-            new ChannelDataOSGImage( dataName, image ) ) );
+        const std::string imageName( ostr.str() );
+        osg::Image* localImage( osgDB::readImageFile( imageName ) );
+        localImage->setFileName( imageName );
+        ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( dataName, localImage ) );
+        cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
+        cdip->setDBKey( imageName );
+        cdip->reset();
+        return( cdip );
     }
 
     ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange )
@@ -97,8 +101,8 @@ protected:
 
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( channelName ) );
-        cdLOD->setRange( cdLOD->addChannel( generateImageData( baseName, depth, channelName ) ),
-            RangeValues( minRange, maxRange ) );
+        unsigned int channelIdx( cdLOD->addChannel( generateImageData( baseName, depth, channelName ) ) );
+        cdLOD->setRange( channelIdx, RangeValues( minRange, maxRange ) );
 
         const unsigned int nextDepth( depth + 1 );
         // If nextDepth == _depth, then we're at the end, so set nextMax to FLT_MAX.
@@ -110,36 +114,43 @@ protected:
 
         ChannelDataPtr brick;            
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( -1., -1., -1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( 1., -1., -1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., -1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( -1., 1., -1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., -1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( 1., 1., -1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., -1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( -1., -1., 1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., 1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( 1., -1., 1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., 1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( -1., 1., 1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., 1. ) );
+
         brick = recurseBuildTree( nextDepth, 0., nextMax );
-        cdImageSet->setOffset( cdImageSet->addChannel( brick ),
-            osg::Vec3( 1., 1., 1. ) );
+        channelIdx = cdImageSet->addChannel( brick );
+        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., 1. ) );
 
         // Regardless of the depth level, there are two LODs. The first is displayed
         // for range (0., maxRange), and the second is displayed for range
         // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
         // LODs that are displayed at subranges of (maxRange, FLT_MAX).
-        cdLOD->setRange( cdLOD->addChannel( cdImageSet ),
-            RangeValues( maxRange, FLT_MAX ) );
+        channelIdx = cdLOD->addChannel( cdImageSet );
+        cdLOD->setRange( channelIdx, RangeValues( maxRange, FLT_MAX ) );
         return( cdLOD );
     }
 
@@ -152,11 +163,18 @@ public:
     virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
         ChannelDataOSGImage* cdi( static_cast< ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
-        osg::Image* image( cdi->getImage() );
+        osg::ref_ptr< osg::Image > image( cdi->getImage() );
+        osg::Image* stubImage( new osg::Image() );
+        stubImage->setImage( image->s(), image->t(), image->r(),
+            image->getInternalTextureFormat(), image->getPixelFormat(),
+            image->getDataType(),
+            (unsigned char*) NULL,
+            osg::Image::NO_DELETE, image->getPacking() );
+        stubImage->setFileName( image->getFileName() );
 
         osg::Geode* geode( new osg::Geode() );
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-        stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( image ) );
+        stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( stubImage ) );
 
         osg::Geometry* geom( osgwTools::makeBox( osg::Matrix::translate( getVolumeOrigin() ),
             getVolumeDims() * .5 ) );
@@ -176,9 +194,12 @@ public:
 
 DataSetPtr createDataSet()
 {
-    osg::Image* image( new osg::Image() );
-    image->setFileName( "pagetex-near0.png" );
+    const std::string baseFileName( "pagetex-near0.png" );
+    osg::Image* image( osgDB::readImageFile( baseFileName ) );
+    image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
+    imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
+    imageData->setDBKey( baseFileName );
 
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );

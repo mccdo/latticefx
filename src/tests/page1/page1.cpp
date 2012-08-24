@@ -46,6 +46,7 @@
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
+#include <osgDB/ReadFile>
 
 
 using namespace lfx::core;
@@ -64,9 +65,13 @@ public:
     {
         ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
 
-        osg::Image* farImage( new osg::Image );
-        farImage->setFileName( "pagetex-far.png" );
+        const std::string farFileName( "pagetex-far.png" );
+        osg::Image* farImage( osgDB::readImageFile( farFileName ) );
+        farImage->setFileName( farFileName );
         ChannelDataOSGImagePtr newImage( new ChannelDataOSGImage( "texture", farImage ) );
+        newImage->setStorageModeHint( ChannelData::STORE_IN_DB );
+        newImage->setDBKey( farFileName );
+        newImage->reset();
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
@@ -83,11 +88,18 @@ public:
     virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
         ChannelDataOSGImage* cdi( static_cast< ChannelDataOSGImage* >( _inputs[ 0 ].get() ) );
-        osg::Image* image( cdi->getImage() );
+        osg::ref_ptr< osg::Image > image( cdi->getImage() );
+        osg::Image* stubImage( new osg::Image() );
+        stubImage->setImage( image->s(), image->t(), image->r(),
+            image->getInternalTextureFormat(), image->getPixelFormat(),
+            image->getDataType(),
+            (unsigned char*) NULL,
+            osg::Image::NO_DELETE, image->getPacking() );
+        stubImage->setFileName( image->getFileName() );
 
         osg::Geode* geode( new osg::Geode() );
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-        stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( image ) );
+        stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( stubImage ) );
 
         osg::Geometry* geom( osgwTools::makeBox( osg::Vec3( .5, .5, .5 ) ) );
         geom->setColorBinding( osg::Geometry::BIND_OVERALL );
@@ -99,9 +111,12 @@ public:
 
 DataSetPtr createDataSet()
 {
-    osg::Image* image( new osg::Image() );
-    image->setFileName( "pagetex-near0.png" );
+    const std::string baseFileName( "pagetex-near0.png" );
+    osg::Image* image( osgDB::readImageFile( baseFileName ) );
+    image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
+    imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
+    imageData->setDBKey( baseFileName );
 
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );
@@ -121,6 +136,7 @@ DataSetPtr createDataSet()
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
 
