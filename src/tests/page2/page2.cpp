@@ -85,9 +85,12 @@ protected:
         osg::Image* localImage( osgDB::readImageFile( imageName ) );
         localImage->setFileName( imageName );
         ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( dataName, localImage ) );
-        cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
-        cdip->setDBKey( imageName );
-        cdip->reset();
+        if( DBUsesCrunchStore() )
+        {
+            cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
+            cdip->setDBKey( imageName );
+            cdip->reset();
+        }
         return( cdip );
     }
 
@@ -198,8 +201,11 @@ DataSetPtr createDataSet()
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
-    imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
-    imageData->setDBKey( baseFileName );
+    if( DBUsesCrunchStore() )
+    {
+        imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
+        imageData->setDBKey( baseFileName );
+    }
 
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );

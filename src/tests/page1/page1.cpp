@@ -69,9 +69,12 @@ public:
         osg::Image* farImage( osgDB::readImageFile( farFileName ) );
         farImage->setFileName( farFileName );
         ChannelDataOSGImagePtr newImage( new ChannelDataOSGImage( "texture", farImage ) );
-        newImage->setStorageModeHint( ChannelData::STORE_IN_DB );
-        newImage->setDBKey( farFileName );
-        newImage->reset();
+        if( DBUsesCrunchStore() )
+        {
+            newImage->setStorageModeHint( ChannelData::STORE_IN_DB );
+            newImage->setDBKey( farFileName );
+            newImage->reset();
+        }
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
@@ -115,8 +118,11 @@ DataSetPtr createDataSet()
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
-    imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
-    imageData->setDBKey( baseFileName );
+    if( DBUsesCrunchStore() )
+    {
+        imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
+        imageData->setDBKey( baseFileName );
+    }
 
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( imageData );
