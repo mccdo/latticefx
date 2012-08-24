@@ -83,7 +83,7 @@ void ChannelDataOSGArray::setDBKey( const DBKey dbKey )
 }
 void ChannelDataOSGArray::flushToDB()
 {
-    storeArray( _workingData.get(), getDBKey() + DBKey( "-working" ) );
+    storeArray( _workingData.get(), getDBKey() );
     _workingData = NULL;
 }
 
@@ -110,7 +110,7 @@ void ChannelDataOSGArray::setOSGArray( osg::Array* data )
 char* ChannelDataOSGArray::asCharPtr()
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
 
     switch( _workingData->getType() )
     {
@@ -152,7 +152,7 @@ const char* ChannelDataOSGArray::asCharPtr() const
 osg::Array* ChannelDataOSGArray::asOSGArray()
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
     return( _workingData.get() );
 }
 const osg::Array* ChannelDataOSGArray::asOSGArray() const
@@ -253,7 +253,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
 void ChannelDataOSGArray::setAll( const char value )
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
 
     switch( _workingData->getType() )
     {
@@ -280,7 +280,7 @@ void ChannelDataOSGArray::setAll( const char value )
 void ChannelDataOSGArray::setAll( const float value )
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
 
     switch( _workingData->getType() )
     {
@@ -312,7 +312,7 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
         return;
 
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
 
     switch( _workingData->getType() )
     {
@@ -342,7 +342,7 @@ void ChannelDataOSGArray::reset()
     if( getStorageModeHint() == STORE_IN_DB )
     {
         osg::Array* array( loadArray( getDBKey() + DBKey( "-base" ) ) );
-        storeArray( array, getDBKey() + DBKey( "-working" ) );
+        storeArray( array, getDBKey() );
     }
     else // STORE_IN_RAM
     {
@@ -360,7 +360,7 @@ void ChannelDataOSGArray::resize( size_t size )
     if( getStorageModeHint() == STORE_IN_DB )
     {
         _data = loadArray( getDBKey() + DBKey( "-base" ) );
-        _workingData = loadArray( getDBKey() + DBKey( "-working" ) );
+        _workingData = loadArray( getDBKey() );
     }
 
     switch( _data->getType() )
@@ -391,7 +391,7 @@ void ChannelDataOSGArray::resize( size_t size )
     if( getStorageModeHint() == STORE_IN_DB )
     {
         storeArray( _data.get(), getDBKey() + DBKey( "-base" ) );
-        storeArray( _workingData.get(), getDBKey() + DBKey( "-working" ) );
+        storeArray( _workingData.get(), getDBKey() );
         _data = _workingData = NULL;
     }
 }

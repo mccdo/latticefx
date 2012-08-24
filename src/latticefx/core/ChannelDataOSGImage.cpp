@@ -73,7 +73,7 @@ void ChannelDataOSGImage::setDBKey( const DBKey dbKey )
 }
 void ChannelDataOSGImage::flushToDB()
 {
-    storeImage( _workingImage.get(), getDBKey() + DBKey( "-working" ) );
+    storeImage( _workingImage.get(), getDBKey() );
     _workingImage = NULL;
 }
 
@@ -81,7 +81,7 @@ void ChannelDataOSGImage::flushToDB()
 char* ChannelDataOSGImage::asCharPtr()
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingImage = loadImage( getDBKey() + DBKey( "-working" ) );
+        _workingImage = loadImage( getDBKey() );
 
     if( _workingImage != NULL )
         return( const_cast< char* >( (const char*)( _workingImage->data() ) ) );
@@ -115,7 +115,7 @@ void ChannelDataOSGImage::setImage( osg::Image* image )
 osg::Image* ChannelDataOSGImage::getImage()
 {
     if( getStorageModeHint() == STORE_IN_DB )
-        _workingImage = loadImage( getDBKey() + DBKey( "-working" ) );
+        _workingImage = loadImage( getDBKey() );
     return( _workingImage.get() );
 }
 const osg::Image* ChannelDataOSGImage::getImage() const
@@ -135,7 +135,7 @@ void ChannelDataOSGImage::reset()
     if( getStorageModeHint() == STORE_IN_DB )
     {
         osg::Image* image( loadImage( getDBKey() + DBKey( "-base" ) ) );
-        storeImage( image, getDBKey() + DBKey( "-working" ) );
+        storeImage( image, getDBKey() );
     }
     else // STORE_IN_RAM
     {

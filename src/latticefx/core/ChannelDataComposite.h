@@ -116,7 +116,7 @@ public:
     ChannelData classes must store a copy of the original data to protect
     against such destruction. reset() allows the ChannelData to refresh the
     working copy of the data from the original. */
-    virtual void reset() {}
+    virtual void reset();
 
     /** \brief Specify the size of the ChannelData.
     \details Used by derived classes to resize internal arrays. */

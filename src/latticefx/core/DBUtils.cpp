@@ -401,7 +401,10 @@ osg::Image* loadImage( const DBKey& dbKey )
     const DBKey dataKey( dbKey+std::string("-imageData") );
     if( !( persist->DatumExists( overheadKey ) ) ||
         !( persist->DatumExists( dataKey ) ) )
+    {
+        LFX_WARNING_STATIC( "lfx.core.db", "loadImage() failed to find key " + dbKey );
         return( NULL );
+    }
 
     // Get the Image overhead block.
     const DBRefCharVec& overheadVec( persist->GetDatumValue< DBRefCharVec >( overheadKey ) );
@@ -650,7 +653,10 @@ osg::Array* loadArray( const DBKey& dbKey )
     const DBKey dataKey( dbKey+std::string("-arrayData") );
     if( !( persist->DatumExists( overheadKey ) ) ||
         !( persist->DatumExists( dataKey ) ) )
+    {
+        LFX_WARNING_STATIC( "lfx.core.db", "loadArray() failed to find key " + dbKey );
         return( NULL );
+    }
 
     // Get the Array overhead block.
     const DBRefCharVec& overheadVec( persist->GetDatumValue< DBRefCharVec >( overheadKey ) );

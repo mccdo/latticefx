@@ -73,16 +73,6 @@ public:
     const osg::Vec3& getOffset( const unsigned int index ) const;
 
 
-    /** \brief Prepare the ChannelData for processing by the DataSet.
-    \details Prior to processing ChannelData in the LatticeFX data pipeline,
-    the DataSet calls ChannelData::reset() on all attached ChannelData
-    instances. This is useful in situations where data processing modifies
-    ChannelData (such as a convolution filter or Gaussion blur). Derived
-    ChannelData classes must store a copy of the original data to protect
-    against such destruction. reset() allows the ChannelData to refresh the
-    working copy of the data from the original. */
-    virtual void reset() {}
-
     /** \brief TBD
     \details TBD */
     static bool allImageSetData( const ChannelDataList& data );

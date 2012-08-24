@@ -52,6 +52,7 @@ as follows:
       <li>\link lfx::core::PluginManager plugmgr \endlink
       <li>\link lfx::core::VectorRenderer vec \endlink
     </ul>
+    <li>db Database utilities
     <li>foo (the foo module)
     <ul>
       <li>\link foo::FooClass fooclass \endlink

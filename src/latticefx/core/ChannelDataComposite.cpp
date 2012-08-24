@@ -103,6 +103,15 @@ void ChannelDataComposite::getDimensions( unsigned int& x, unsigned int& y, unsi
     }
 }
 
+void ChannelDataComposite::reset()
+{
+    BOOST_FOREACH( ChannelDataPtr cdp, _data )
+    {
+        cdp->reset();
+    }
+}
+
+
 
 // core
 }
