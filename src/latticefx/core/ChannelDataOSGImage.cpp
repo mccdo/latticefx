@@ -28,6 +28,7 @@
 
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/DBUtils.h>
 
 #include <boost/foreach.hpp>
 
@@ -37,9 +38,10 @@ namespace core {
 
 
 ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* image )
-  : ChannelData( name ),
-    _image( image )
+  : ChannelData( name )
 {
+    if( image != NULL )
+        setImage( image );
     reset();
 }
 ChannelDataOSGImage::ChannelDataOSGImage( const ChannelDataOSGImage& rhs )
@@ -53,45 +55,72 @@ ChannelDataOSGImage::~ChannelDataOSGImage()
 }
 
 
+void ChannelDataOSGImage::setStorageModeHint( const StorageModeHint& storageMode )
+{
+    ChannelData::setStorageModeHint( storageMode );
+
+    if( ( getStorageModeHint() == STORE_IN_DB ) &&
+        ( _image != NULL ) && !( getDBKey().empty() ) )
+        setImage( _image.get() );
+}
+void ChannelDataOSGImage::setDBKey( const DBKey dbKey )
+{
+    ChannelData::setDBKey( dbKey );
+
+    if( ( getStorageModeHint() == STORE_IN_DB ) &&
+        ( _image != NULL ) && !( getDBKey().empty() ) )
+        setImage( _image.get() );
+}
+void ChannelDataOSGImage::flushToDB()
+{
+    storeImage( _workingImage.get(), getDBKey() + DBKey( "-working" ) );
+    _workingImage = NULL;
+}
+
+
 char* ChannelDataOSGImage::asCharPtr()
 {
-    if( _image != NULL )
-        return( const_cast< char* >( (const char*)( _image->data() ) ) );
+    if( getStorageModeHint() == STORE_IN_DB )
+        _workingImage = loadImage( getDBKey() + DBKey( "-working" ) );
+
+    if( _workingImage != NULL )
+        return( const_cast< char* >( (const char*)( _workingImage->data() ) ) );
     else
         return( NULL );
 }
 const char* ChannelDataOSGImage::asCharPtr() const
 {
-    if( _image != NULL )
-        return( (char*) _image->data() );
-    else
-        return( NULL );
-}
-
-void ChannelDataOSGImage::getDimensions( unsigned int& x, unsigned int& y, unsigned int& z )
-{
-    if( _image != NULL )
-    {
-        x = _image->s();
-        y = _image->t();
-        z = _image->r();
-    }
-    else
-        z = y = z = 0;
+    ChannelDataOSGImage* nonConstThis( const_cast< ChannelDataOSGImage* >( this ) );
+    return( nonConstThis->asCharPtr() );
 }
 
 void ChannelDataOSGImage::setImage( osg::Image* image )
 {
-    _image = image;
+    if( ( getStorageModeHint() == STORE_IN_DB ) && !( getDBKey().empty() ) )
+    {
+        storeImage( image, getDBKey() + DBKey( "-base" ) );
+        _image = NULL;
+        _workingImage = NULL;
+    }
+    else // STORE_IN_RAM or there is no DB key yet.
+    {
+        _image = image;
+    }
+
+    if( image != NULL )
+        setDimensions( image->s(), image->t(), image->r() );
+    else
+        setDimensions( 0, 0, 0 );
 }
 osg::Image* ChannelDataOSGImage::getImage()
 {
-    return( _image.get() );
+    if( getStorageModeHint() == STORE_IN_DB )
+        _workingImage = loadImage( getDBKey() + DBKey( "-working" ) );
+    return( _workingImage.get() );
 }
 const osg::Image* ChannelDataOSGImage::getImage() const
 {
-    ChannelDataOSGImage* nonConstThis( const_cast<
-        ChannelDataOSGImage*>( this ) );
+    ChannelDataOSGImage* nonConstThis( const_cast< ChannelDataOSGImage*>( this ) );
     return( nonConstThis->getImage() );
 }
 
@@ -103,16 +132,24 @@ ChannelDataPtr ChannelDataOSGImage::getMaskedChannel( const ChannelDataPtr maskI
 
 void ChannelDataOSGImage::reset()
 {
-    if( _workingImage == NULL )
+    if( getStorageModeHint() == STORE_IN_DB )
     {
-        _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
+        osg::Image* image( loadImage( getDBKey() + DBKey( "-base" ) ) );
+        storeImage( image, getDBKey() + DBKey( "-working" ) );
     }
-    else if( _workingImage->data() != NULL )
+    else // STORE_IN_RAM
     {
-        // Only do the copy if _workingImage has data. It will not have any data
-        // if the image has not yet been paged in.
-        memcpy( _workingImage->data(), _image->data(),
-            _image->getTotalSizeInBytes() );
+        if( _workingImage == NULL )
+        {
+            _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
+        }
+        else if( _workingImage->data() != NULL )
+        {
+            // Only do the copy if _workingImage has data. It will not have any data
+            // if the image has not yet been paged in.
+            memcpy( _workingImage->data(), _image->data(),
+                _image->getTotalSizeInBytes() );
+        }
     }
 }
 
