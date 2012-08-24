@@ -74,7 +74,7 @@ public:
             depth->push_back( z );
         }
 
-        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( depth, "depth" ) ) );
+        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "depth", depth ) ) );
     }
 };
 
@@ -128,7 +128,7 @@ DataSetPtr prepareSimplePoints()
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
         totalSamples += count;
-        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "positions", posArray.get() ) ) );
         dsp->addChannel( posData, time );
     }
     {
@@ -190,7 +190,7 @@ DataSetPtr prepareSpheres()
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
         totalSamples += count;
-        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( posArray.get(), "positions" ) ) );
+        ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "positions", posArray.get() ) ) );
         dsp->addChannel( posData, time );
 
         // Array of radius values.
@@ -211,7 +211,7 @@ DataSetPtr prepareSpheres()
                 }
             }
         }
-        ChannelDataOSGArrayPtr radData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( radArray.get(), "radii" ) ) );
+        ChannelDataOSGArrayPtr radData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "radii", radArray.get() ) ) );
         dsp->addChannel( radData, time );
     }
     {
@@ -273,7 +273,7 @@ DataSetPtr prepareDirectionVectors()
         }
     }
 
-    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( "positions", vertArray.get() ) );
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( vertData );
 
@@ -306,7 +306,7 @@ DataSetPtr prepareDirectionVectors()
                 }
             }
         }
-        ChannelDataOSGArrayPtr dirData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( dirArray.get(), "directions" ) ) );
+        ChannelDataOSGArrayPtr dirData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "directions", dirArray.get() ) ) );
         dsp->addChannel( dirData, time );
     }
     {

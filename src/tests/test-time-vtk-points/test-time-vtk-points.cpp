@@ -256,11 +256,11 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             }
         }
 
-        lfx::core::ChannelDataOSGArrayPtr posData( new lfx::core::ChannelDataOSGArray( posArray.get(), "positions" ) );
+        lfx::core::ChannelDataOSGArrayPtr posData( new lfx::core::ChannelDataOSGArray( "positions", posArray.get() ) );
         dsp->addChannel( posData, i * 0.25 );
-        lfx::core::ChannelDataOSGArrayPtr radData( new lfx::core::ChannelDataOSGArray( radArray.get(), "radii" ) );
+        lfx::core::ChannelDataOSGArrayPtr radData( new lfx::core::ChannelDataOSGArray( "radii", radArray.get() ) );
         dsp->addChannel( radData, i * 0.25 );
-        lfx::core::ChannelDataOSGArrayPtr depthData( new lfx::core::ChannelDataOSGArray( depthArray.get(), "depth" ) );
+        lfx::core::ChannelDataOSGArrayPtr depthData( new lfx::core::ChannelDataOSGArray( "depth", depthArray.get() ) );
         dsp->addChannel( depthData, i * 0.25 );
     }
     //341 - 343

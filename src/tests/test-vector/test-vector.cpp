@@ -130,8 +130,8 @@ DataSetPtr prepareDataSet()
             }
         }
     }
-    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    ChannelDataOSGArrayPtr dirData( new ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    ChannelDataOSGArrayPtr vertData( new ChannelDataOSGArray( "positions", vertArray.get() ) );
+    ChannelDataOSGArrayPtr dirData( new ChannelDataOSGArray( "directions", dirArray.get() ) );
 
     // Create a data set and add the vertex and direction data.
     DataSetPtr dsp( new DataSet() );

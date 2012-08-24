@@ -47,11 +47,7 @@ namespace core {
 
 
 
-ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name )
-  : ChannelData( name )
-{
-}
-ChannelDataOSGArray::ChannelDataOSGArray( osg::Array* data, const std::string& name )
+ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* data )
   : ChannelData( name )
 {
     if( data != NULL )
@@ -64,7 +60,6 @@ ChannelDataOSGArray::ChannelDataOSGArray( const ChannelDataOSGArray& rhs )
 {
     reset();
 }
-
 ChannelDataOSGArray::~ChannelDataOSGArray()
 {
 }
@@ -218,7 +213,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
 
         MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
 
-        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( getName(), maskedData.get() ) );
         return( newData );
     }
     case osg::Array::Vec2ArrayType:
@@ -230,7 +225,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
 
         MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
 
-        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( getName(), maskedData.get() ) );
         return( newData );
     }
     case osg::Array::Vec3ArrayType:
@@ -242,7 +237,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
 
         MASK_LOOP( srcIt, osgSource, maskIt, osgMask, destIt, maskedData );
 
-        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( maskedData.get(), getName() ) );
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( getName(), maskedData.get() ) );
         return( newData );
     }
     default:

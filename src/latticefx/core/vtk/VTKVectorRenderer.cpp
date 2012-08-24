@@ -111,13 +111,13 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
     
     //by this stage of the game the render has already had setInputs called 
     //on it by lfx::core::DataSet therefore we can modify the _inputs array
-    lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( vertArray.get(), "positions" ) );
+    lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( "positions", vertArray.get() ) );
     addInput( vertData );
     
-    lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
+    lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( "directions", dirArray.get() ) );
     addInput( dirData );
     
-    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+    lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( "scalar", colorArray.get() ) );
     addInput( colorData );
     
     // Configure transfer function.

@@ -555,14 +555,14 @@ ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList
 
     osg::ByteArray* byteArray( new osg::ByteArray );
     byteArray->resize( size );
-    return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( byteArray ) ) );
+    return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "DataSet-SizedMask", byteArray ) ) );
 }
 
 void DataSet::createFallbackMaskList()
 {
     osg::ByteArray* osgMask( new osg::ByteArray );
     osgMask->resize( 1 );
-    ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( osgMask ) );
+    ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( "DataSet-FallbackMask", osgMask ) );
     mask->setAll( (char)1 );
     _maskList.push_back( mask );
 }

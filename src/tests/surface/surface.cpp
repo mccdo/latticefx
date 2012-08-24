@@ -141,7 +141,7 @@ public:
             scalar->push_back( l );
         }
 
-        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( scalar, "scalar" ) ) );
+        return( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "scalar", scalar ) ) );
     }
 };
 
@@ -199,16 +199,16 @@ DataSetPtr prepareDataSet()
     osg::ref_ptr< osg::Vec3Array > verts( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > norms( new osg::Vec3Array );
     createTriangles( verts.get(), norms.get() );
-    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( verts.get(), "vertices" ) );
-    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( norms.get(), "normals" ) );
+    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", verts.get() ) );
+    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", norms.get() ) );
 
     osg::ref_ptr< osg::Vec3Array > warpVerts( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > warpNorms( new osg::Vec3Array );
     createWarpTriangles( warpVerts.get(), warpNorms.get() );
     subtract( warpVerts.get(), verts.get() );
     subtract( warpNorms.get(), norms.get() );
-    ChannelDataOSGArrayPtr cdwv( new ChannelDataOSGArray( warpVerts.get(), "warp vertices" ) );
-    ChannelDataOSGArrayPtr cdwn( new ChannelDataOSGArray( warpNorms.get(), "warp normals" ) );
+    ChannelDataOSGArrayPtr cdwv( new ChannelDataOSGArray( "warp vertices", warpVerts.get() ) );
+    ChannelDataOSGArrayPtr cdwn( new ChannelDataOSGArray( "warp normals", warpNorms.get() ) );
 
     // Create a data set and add the vertex data.
     DataSetPtr dsp( new DataSet() );

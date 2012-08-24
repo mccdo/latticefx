@@ -284,14 +284,14 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         }
     }
     
-    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( v.get(), "vertices" ) );
+    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
     addInput( cdv );
-    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( n.get(), "normals" ) );
+    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
     addInput( cdn );
     
     if( scalarArray )
     {
-        lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
+        lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( "scalar", colorArray.get() ) );
         addInput( colorData );
         
         // Configure transfer function.

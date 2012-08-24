@@ -63,7 +63,7 @@ public:
 
         osg::Vec3Array* color( new osg::Vec3Array );
         color->push_back( osg::Vec3( 0., 1., 0. ) );
-        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( color, input->getName() ) );
+        ChannelDataOSGArrayPtr newData( new ChannelDataOSGArray( input->getName(), color ) );
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
@@ -100,7 +100,7 @@ DataSetPtr createDataSet()
 {
     osg::Vec3Array* c( new osg::Vec3Array );
     c->push_back( osg::Vec3( 1., 0., 0. ) );
-    ChannelDataOSGArrayPtr colorData( new ChannelDataOSGArray( c, "color" ) );
+    ChannelDataOSGArrayPtr colorData( new ChannelDataOSGArray( "color", c ) );
 
     DataSetPtr dsp( new DataSet() );
     dsp->addChannel( colorData );

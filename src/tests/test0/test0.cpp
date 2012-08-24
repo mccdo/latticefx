@@ -91,7 +91,7 @@ public:
             maskValue = ( v.z() + v.y() > threshold ) ? 0 : 1;
         }
 
-        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( maskData.get(), input->getName() ) );
+        ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( input->getName(), maskData.get() ) );
         return( cdp );
     }
 
@@ -146,7 +146,7 @@ DataSetPtr prepareDataSet()
                 x, y, -( x*x + y*y ) );
         }
     }
-    ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( xyzData.get(), "vertices" ) );
+    ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( "vertices", xyzData.get() ) );
     if( DBUsesCrunchStore() )
     {
         cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
