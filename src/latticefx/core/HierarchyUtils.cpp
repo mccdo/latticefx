@@ -97,11 +97,25 @@ void traverseHeirarchy( ChannelDataPtr cdp, HierarchyCallback& cb )
 AssembleHierarchy::AssembleHierarchy( RangeVec ranges )
   : _ranges( ranges )
 {
+    if( _ranges.size() < 1 )
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: RangeVec must have at least 1 element." );
+    }
+
     _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
     recurseInit( _root, 0 );
 }
 AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
 {
+    if( maxDepth < 2 )
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: maxDepth must be >= 2." );
+    }
+    if( baseRange <= 0. )
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: baseRange must be > 0." );
+    }
+
     double range( baseRange );
     unsigned int idx( maxDepth-1 );
     do {
@@ -127,6 +141,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         const osg::Vec3& offset, const unsigned int depth )
 {
     if( depth == 0 )
+        // Special-case the initial condition.
         _iterator = _root;
 
     osg::Vec3 localOffset( offset );
@@ -151,93 +166,75 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         }
     }
 
-    if( !( nameString.empty() ) )
+    // Walk down the hierarchy. We will encounter 1 of 3 situations.
+    // Case 1: The nameString is empty. If so, the current iterator is an LOD and we
+    //      must insert cdp as child 0 of that LOD.
+    //
+    // If the nameString is not empty, the second child of the LOD is an ImageSet.
+    // We use the nameString to determine the ImageSet's child of interest.
+    // Case 2: If that child is NULL, we're at the bottom of the hierarchy and must
+    //     insert cdp as the child of the ImageSet.
+    // Case 3: If the child is not NULL, recurse.
+
+    ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( _iterator.get() ) );
+    if( comp == NULL )
     {
-        // Recurse
-        const std::string newName( nameString.substr( 1 ) );
-        const unsigned int newDepth( depth + 1 );
-
-        // Walk down the hierarchy. We should have a composite that is an LOD.
-        // It's first child is the ChannelData for that LOD, but since nameString
-        // is not empty, we want to go further, so we take the second child which
-        // must be a composite that is an ImageSet. We then take one of the ImageSet's
-        // children based on the nameString, and that child in turn is an LOD.
-        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( _iterator.get() ) );
-        if( comp == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-Composite." );
-            return;
-        }
-        ChannelDataLOD* lodData( comp->getAsLOD() );
-        if( lodData == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-LOD." );
-            return;
-        }
-        _iterator = lodData->getChannel( 1 ); // Get second child.
-        comp = dynamic_cast< ChannelDataComposite* >( _iterator.get() );
-        if( comp == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-Composite." );
-            return;
-        }
-        ChannelDataImageSet* imageData( comp->getAsSet() );
-        if( imageData == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-ImageSet." );
-            return;
-        }
-
-        const unsigned int childIndex( (unsigned int)( nameString.front() - '0' ) );
-        if( imageData->getChannel( childIndex ) == NULL )
-        {
-            // This is the insertion point!
-            imageData->setChannel( childIndex, cdp );
-
-            // Inserted! Clear the iterator. Not necessary, but nice to not have
-            // garbage left here for debugging purposes.
-            _iterator = ChannelDataPtr( (ChannelData*)NULL );
-        }
-        else
-        {
-            _iterator = imageData->getChannel( childIndex );
-            if( newName.empty() )
-            {
-                // Next recursion is the insersion point, so set offset here.
-                imageData->setOffset( childIndex, localOffset );
-            }
-
-            addChannelData( cdp, newName, localOffset, newDepth );
-        }
+        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-Composite." );
+        return;
     }
-    else
+    ChannelDataLOD* lodData( comp->getAsLOD() );
+    if( lodData == NULL )
     {
-        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: How did I get here?" );
+        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-LOD." );
+        return;
     }
-#if 0
-    else
+
+    if( nameString.empty() )
     {
-        // nameString is empty, so we must be at the insertion point.
-        ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( _iterator.get() ) );
-        if( comp == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-Composite." );
-            return;
-        }
-        ChannelDataLOD* lodData( comp->getAsLOD() );
-        if( lodData == NULL )
-        {
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-LOD." );
-            return;
-        }
+        // Case 1
+        // This is the lower LOD at this level. The other (higher) LOD is an ImageSet.
+        lodData->setChannel( 0, cdp );
+        // Set to NULL for debugging purposes (not actually necessary).
+        _iterator = ChannelDataPtr( (ChannelData*)NULL );
+        return;
+    }
 
-        lodData->setChannel( 0, cdp ); // First child of an LOD.
+    _iterator = lodData->getChannel( 1 ); // Get second child.
+    comp = dynamic_cast< ChannelDataComposite* >( _iterator.get() );
+    if( comp == NULL )
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-Composite." );
+        return;
+    }
+    ChannelDataImageSet* imageData( comp->getAsSet() );
+    if( imageData == NULL )
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-ImageSet." );
+        return;
+    }
 
-        // Inserted! Clear the iterator. Not necessary, but nice to not have
-        // garbage left here for debugging purposes.
+    const unsigned int childIndex( (unsigned int)( nameString.front() - '0' ) );
+    if( imageData->getChannel( childIndex ) == NULL )
+    {
+        // Case 2
+        // This is the insertion point.
+        imageData->setChannel( childIndex, cdp );
+        // Set to NULL for debugging purposes (not actually necessary).
         _iterator = ChannelDataPtr( (ChannelData*)NULL );
     }
-#endif
+    else
+    {
+        // Case 3 Recurse
+        const std::string newName( nameString.substr( 1 ) );
+        if( newName.empty() )
+        {
+            // Next recursion is the insersion point, so set offset here.
+            imageData->setOffset( childIndex, localOffset );
+        }
+
+        _iterator = imageData->getChannel( childIndex );
+        addChannelData( cdp, newName, localOffset, depth+1 );
+    }
 } 
 
 ChannelDataPtr AssembleHierarchy::getRoot() const

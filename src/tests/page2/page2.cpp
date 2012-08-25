@@ -229,24 +229,53 @@ class MyHierarchyDB : public HierarchyCallback
 public:
     virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString )
     {
-        LFX_CRITICAL_STATIC( "lfx.demo", hierarchyNameString );
+        if( cdp == NULL )
+        {
+            LFX_CRITICAL_STATIC( "lfx.demo", "NULL: " + hierarchyNameString );
+        }
+        else
+        {
+            LFX_CRITICAL_STATIC( "lfx.demo", cdp->getName() + ": " + hierarchyNameString );
+        }
     }
 };
 
+std::string intToString( const unsigned int n )
+{
+    std::ostringstream ostr;
+    ostr << n;
+    return( ostr.str() );
+}
+
 void assemble()
 {
-    AssembleHierarchy ah( 3, 25000. );
+    unsigned int counter( 0 );
 
-    ah.addChannelData( ChannelDataPtr( new ChannelData ), "" );
+    const unsigned int depth( 3 );
+    AssembleHierarchy ah( depth, 25000. );
+
+    ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), "" );
     for( unsigned int mIdx=0; mIdx<8; ++mIdx )
     {
         std::string string1( 1, '0' + mIdx );
-        ah.addChannelData( ChannelDataPtr( new ChannelData ), string1 );
+        ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 );
 
-        for( unsigned int nIdx=0; nIdx<8; ++nIdx )
+        if( depth >= 3 )
         {
-            std::string string2( 1, '0' + nIdx );
-            ah.addChannelData( ChannelDataPtr( new ChannelData ), string1 + string2 );
+            for( unsigned int nIdx=0; nIdx<8; ++nIdx )
+            {
+                std::string string2( 1, '0' + nIdx );
+                ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 + string2 );
+
+                if( depth >= 4 )
+                {
+                    for( unsigned int oIdx=0; oIdx<8; ++oIdx )
+                    {
+                        std::string string3( 1, '0' + oIdx );
+                        ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 + string2 + string3 );
+                    }
+                }
+            }
         }
     }
 
