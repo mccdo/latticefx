@@ -20,6 +20,7 @@ set( _headerFiles
     ChannelDataOSGImage.h
     DataSet.h
     DBUtils.h
+    HierarchyUtils.h
     LoadRequest.h
     Log.h
     LogBase.h
@@ -52,6 +53,7 @@ set( _sourceFiles
     ChannelDataOSGImage.cpp
     DataSet.cpp
     DBUtils.cpp
+    HierarchyUtils.cpp
     LoadRequest.cpp
     Log.cpp
     OperationBase.cpp

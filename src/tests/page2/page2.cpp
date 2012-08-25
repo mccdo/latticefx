@@ -36,7 +36,7 @@
 #include <latticefx/core/ChannelDataImageSet.h>
 #include <latticefx/core/Preprocess.h>
 #include <latticefx/core/Renderer.h>
-#include <latticefx/core/PageData.h>
+#include <latticefx/core/HierarchyUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -224,6 +224,15 @@ DataSetPtr createDataSet()
 }
 
 
+class MyHierarchyDB : public HierarchyCallback
+{
+public:
+    virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString )
+    {
+        LFX_CRITICAL_STATIC( "lfx.demo", hierarchyNameString );
+    }
+};
+
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
@@ -244,6 +253,8 @@ int main( int argc, char** argv )
     root->addChild( osgDB::readNodeFile( "axes.osg" ) );
     viewer.setSceneData( root );
     tbm->home( 0. );
+
+    traverseHeirarchy( dsp->getChannel( "texture" ), MyHierarchyDB() );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
