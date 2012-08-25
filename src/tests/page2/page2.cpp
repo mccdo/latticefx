@@ -233,10 +233,34 @@ public:
     }
 };
 
+void assemble()
+{
+    AssembleHierarchy ah( 3, 25000. );
+
+    ah.addChannelData( ChannelDataPtr( new ChannelData ), "" );
+    for( unsigned int mIdx=0; mIdx<8; ++mIdx )
+    {
+        std::string string1( 1, '0' + mIdx );
+        ah.addChannelData( ChannelDataPtr( new ChannelData ), string1 );
+
+        for( unsigned int nIdx=0; nIdx<8; ++nIdx )
+        {
+            std::string string2( 1, '0' + nIdx );
+            ah.addChannelData( ChannelDataPtr( new ChannelData ), string1 + string2 );
+        }
+    }
+
+    traverseHeirarchy( ah.getRoot(), MyHierarchyDB() );
+    LFX_CRITICAL_STATIC( "lfx.demo", "---------------------------" );
+}
+
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
+
+    // Test hierarchy utils
+    assemble();
 
     osg::ArgumentParser arguments( &argc, argv );
 
@@ -254,6 +278,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( root );
     tbm->home( 0. );
 
+    // Test hierarchy utils
     traverseHeirarchy( dsp->getChannel( "texture" ), MyHierarchyDB() );
 
     // Really we would need to change the projection matrix and viewport

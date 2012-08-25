@@ -57,7 +57,7 @@ protected:
 LATTICEFX_EXPORT void traverseHeirarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
 
-class AssembleHierarchy
+class LATTICEFX_EXPORT AssembleHierarchy
 {
 public:
     typedef std::vector< double > RangeVec;
@@ -67,14 +67,12 @@ public:
     AssembleHierarchy( const AssembleHierarchy& rhs );
     virtual ~AssembleHierarchy();
 
-    // TBD remove depth param, not needed except for debugging/testing.
     void addChannelData( ChannelDataPtr cdp, const std::string nameString,
             const osg::Vec3& offset=osg::Vec3( 0., 0., 0. ), const unsigned int depth=0 );
 
     ChannelDataPtr getRoot() const;
 
 protected:
-    void initHierarchy();
     void recurseInit( ChannelDataPtr cdp, unsigned int depth );
 
     ChannelDataPtr _root;

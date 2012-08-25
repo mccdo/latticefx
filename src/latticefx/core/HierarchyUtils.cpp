@@ -33,6 +33,7 @@
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/PageData.h>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
 #include <deque>
@@ -92,9 +93,12 @@ void traverseHeirarchy( ChannelDataPtr cdp, HierarchyCallback& cb )
 
 
 
+
 AssembleHierarchy::AssembleHierarchy( RangeVec ranges )
   : _ranges( ranges )
 {
+    _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
+    recurseInit( _root, 0 );
 }
 AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
 {
@@ -105,11 +109,15 @@ AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
         range *= 4.;
         --idx;
     } while( idx > 0 );
+
+    _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
+    recurseInit( _root, 0 );
 }
 AssembleHierarchy::AssembleHierarchy( const AssembleHierarchy& rhs )
-  : _root( rhs._root ),
-    _ranges( rhs._ranges )
+  : _ranges( rhs._ranges )
 {
+    _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
+    recurseInit( _root, 0 );
 }
 AssembleHierarchy::~AssembleHierarchy()
 {
@@ -118,18 +126,6 @@ AssembleHierarchy::~AssembleHierarchy()
 void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string nameString,
         const osg::Vec3& offset, const unsigned int depth )
 {
-    // Check for error conditions
-    if( ( depth == 0 ) && !( nameString.empty() ) )
-    {
-        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: depth=0 and nameString not empty." );
-        return;
-    }
-    if( ( depth > 0 ) && ( _iterator == NULL ) )
-    {
-        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: depth>0 and _iterator is NULL." );
-        return;
-    }
-
     if( depth == 0 )
         _iterator = _root;
 
@@ -192,17 +188,33 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
             return;
         }
 
-        const unsigned int childIndex( (unsigned int) nameString.front() );
-        _iterator = imageData->getChannel( childIndex );
-        if( newName.empty() )
+        const unsigned int childIndex( (unsigned int)( nameString.front() - '0' ) );
+        if( imageData->getChannel( childIndex ) == NULL )
         {
-            // Next recursion is the insersion point, so set offset here.
-            imageData->setOffset( childIndex, localOffset );
+            // This is the insertion point!
+            imageData->setChannel( childIndex, cdp );
+
+            // Inserted! Clear the iterator. Not necessary, but nice to not have
+            // garbage left here for debugging purposes.
+            _iterator = ChannelDataPtr( (ChannelData*)NULL );
         }
+        else
+        {
+            _iterator = imageData->getChannel( childIndex );
+            if( newName.empty() )
+            {
+                // Next recursion is the insersion point, so set offset here.
+                imageData->setOffset( childIndex, localOffset );
+            }
 
-        addChannelData( cdp, newName, localOffset, newDepth );
+            addChannelData( cdp, newName, localOffset, newDepth );
+        }
     }
-
+    else
+    {
+        LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: How did I get here?" );
+    }
+#if 0
     else
     {
         // nameString is empty, so we must be at the insertion point.
@@ -225,18 +237,12 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         // garbage left here for debugging purposes.
         _iterator = ChannelDataPtr( (ChannelData*)NULL );
     }
+#endif
 } 
 
 ChannelDataPtr AssembleHierarchy::getRoot() const
 {
     return( _root );
-}
-
-void AssembleHierarchy::initHierarchy()
-{
-    ChannelDataLODPtr cdLOD( new ChannelDataLOD() );
-    _root = cdLOD;
-    recurseInit( cdLOD, 0 );
 }
 
 void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
@@ -263,7 +269,7 @@ void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
     cdLOD->setChannel( 1, cdImage );
 
     cdImage->reserveChannels( 8 );
-    if( depth < _ranges.size() )
+    if( depth+1 < _ranges.size() )
     {
         // We haven't hit max depth yet, so we'll add LOD children and recurse.
         // Otherwise we do nothing, as the children will be inserted by the app
