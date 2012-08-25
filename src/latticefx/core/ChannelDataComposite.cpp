@@ -65,6 +65,16 @@ unsigned int ChannelDataComposite::addChannel( const ChannelDataPtr channel )
     return( index );
 }
 
+void ChannelDataComposite::setChannel( const unsigned int index, const ChannelDataPtr channel )
+{
+    _data[ index ] = channel;
+}
+
+void ChannelDataComposite::reserveChannels( const unsigned int count )
+{
+    _data.resize( count );
+}
+
 unsigned int ChannelDataComposite::getNumChannels() const
 {
     return( _data.size() );

@@ -74,7 +74,7 @@ ChannelDataLOD.
 PageData contains PageData::RangeData for each pageable child. RangeData contains a
 RangeValues std::pair of ranges for the child. When paging based on pixel size,
 a given child is paged in (and eventually displayed) when the computed pixel size
-of its projected bounding volume falls between the RangeValue's min and max values.
+of its projected bounding volume falls between the RangeValues' min and max values.
 
 When paging based on time, the RangeValues pair contains a single time value. A given
 child is paged in when this time value falls within range of the owning PageData's

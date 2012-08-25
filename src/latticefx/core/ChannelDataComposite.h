@@ -88,6 +88,12 @@ public:
     \details Returns the index of \channel. */
     unsigned int addChannel( const ChannelDataPtr channel );
 
+    /** \brief Sets the ChannelData at the specified index. */
+    void setChannel( const unsigned int index, const ChannelDataPtr channel );
+
+    /** \brief Resizes the ChannelDataList of child ChannelData objects. */
+    void reserveChannels( const unsigned int count );
+
     /** \brief Get the total number of ChannelData inside this composite. */
     unsigned int getNumChannels() const;
 

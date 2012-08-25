@@ -32,17 +32,22 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/ChannelData.h>
 
+#include <osg/Vec3>
+
+#include <vector>
+
 
 
 namespace lfx {
 namespace core {
 
 
-class HierarchyCallback {
+class HierarchyCallback
+{
 public:
     HierarchyCallback() {}
     HierarchyCallback( const HierarchyCallback& rhs ) {}
-    ~HierarchyCallback() {}
+    virtual ~HierarchyCallback() {}
 
     virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString ) {}
 
@@ -50,6 +55,33 @@ protected:
 };
 
 LATTICEFX_EXPORT void traverseHeirarchy( ChannelDataPtr root, HierarchyCallback& cb );
+
+
+class AssembleHierarchy
+{
+public:
+    typedef std::vector< double > RangeVec;
+
+    AssembleHierarchy( RangeVec ranges );
+    AssembleHierarchy( unsigned int maxDepth, double baseRange=25000. );
+    AssembleHierarchy( const AssembleHierarchy& rhs );
+    virtual ~AssembleHierarchy();
+
+    // TBD remove depth param, not needed except for debugging/testing.
+    void addChannelData( ChannelDataPtr cdp, const std::string nameString,
+            const osg::Vec3& offset=osg::Vec3( 0., 0., 0. ), const unsigned int depth=0 );
+
+    ChannelDataPtr getRoot() const;
+
+protected:
+    void initHierarchy();
+    void recurseInit( ChannelDataPtr cdp, unsigned int depth );
+
+    ChannelDataPtr _root;
+    RangeVec _ranges;
+
+    ChannelDataPtr _iterator;
+};
 
 
 // core
