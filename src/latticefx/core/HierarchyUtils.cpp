@@ -39,6 +39,7 @@
 #include <deque>
 #include <sstream>
 
+#include <string>
 
 
 namespace lfx {
@@ -151,7 +152,9 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         // from last digit of name string.
         // This can only happen when addChannelData is called from the app.
         //   Once we start recursing, offset will always be non-zero.
-        switch( nameString.back() ) {
+        std::string::const_iterator iter = nameString.end() - 1;
+        
+        switch( *iter ) {
         case '0': localOffset.set( -1., -1., -1. ); break;
         case '1': localOffset.set( 1., -1., -1. ); break;
         case '2': localOffset.set( -1., 1., -1. ); break;
@@ -161,7 +164,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         case '6': localOffset.set( -1., 1., 1. ); break;
         case '7': localOffset.set( 1., 1., 1. ); break;
         default:
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Invalid nameString digit: " + nameString.back() );
+            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Invalid nameString digit: " + *iter );
             break;
         }
     }
@@ -213,7 +216,8 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         return;
     }
 
-    const unsigned int childIndex( (unsigned int)( nameString.front() - '0' ) );
+    std::string::const_iterator iter = nameString.begin();
+    const unsigned int childIndex( (unsigned int)( *iter - '0' ) );
     if( imageData->getChannel( childIndex ) == NULL )
     {
         // Case 2
