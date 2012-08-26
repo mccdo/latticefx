@@ -279,7 +279,8 @@ void assemble()
         }
     }
 
-    traverseHeirarchy( ah.getRoot(), MyHierarchyDB() );
+    MyHierarchyDB myDB;
+    traverseHeirarchy( ah.getRoot(), myDB );
     LFX_CRITICAL_STATIC( "lfx.demo", "---------------------------" );
 }
 
@@ -308,7 +309,8 @@ int main( int argc, char** argv )
     tbm->home( 0. );
 
     // Test hierarchy utils
-    traverseHeirarchy( dsp->getChannel( "texture" ), MyHierarchyDB() );
+    MyHierarchyDB myDB;
+    traverseHeirarchy( dsp->getChannel( "texture" ), myDB );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
