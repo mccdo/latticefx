@@ -70,7 +70,7 @@ public:
     } ActionType;
 
     /** \brief TBD
-    \details TBD */
+    \details The default is IGNORE_DATA. */
     void setActionType( const ActionType& action );
     /** \brief TBD
     \details TBD */

@@ -51,14 +51,17 @@ ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* d
   : ChannelData( name )
 {
     if( data != NULL )
+    {
         setOSGArray( data );
-    reset();
+        reset();
+    }
 }
 ChannelDataOSGArray::ChannelDataOSGArray( const ChannelDataOSGArray& rhs )
   : ChannelData( rhs ),
     _data( rhs._data )
 {
-    reset();
+    if( _data != NULL )
+        reset();
 }
 ChannelDataOSGArray::~ChannelDataOSGArray()
 {

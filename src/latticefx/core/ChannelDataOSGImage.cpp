@@ -41,14 +41,17 @@ ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* i
   : ChannelData( name )
 {
     if( image != NULL )
+    {
         setImage( image );
-    reset();
+        reset();
+    }
 }
 ChannelDataOSGImage::ChannelDataOSGImage( const ChannelDataOSGImage& rhs )
   : ChannelData( rhs ),
     _image( rhs._image )
 {
-    reset();
+    if( _image != NULL )
+        reset();
 }
 ChannelDataOSGImage::~ChannelDataOSGImage()
 {

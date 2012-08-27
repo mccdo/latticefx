@@ -35,8 +35,14 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osgViewer/Viewer>
+#include <osgDB/FileUtils>
+#include <osgDB/FileNameUtils>
 #include <osg/Group>
 #include <osg/ArgumentParser>
+
+#include <Poco/Path.h>
+#include <Poco/Glob.h>
+#include <boost/foreach.hpp>
 
 #include <string>
 
@@ -49,16 +55,87 @@ using namespace lfx::core;
 class ImageHierarchyLoader : public Preprocess
 {
 public:
-    ImageHierarchyLoader()
+    ImageHierarchyLoader( const std::string fileName )
+      : _fileName( fileName )
     {
+        setActionType( Preprocess::ADD_DATA );
     }
     ~ImageHierarchyLoader() {}
 
     virtual ChannelDataPtr operator()()
     {
-        LFX_INFO_STATIC( logstr, "Preprocessing." );
-        return( ChannelDataPtr( (ChannelData*)NULL ) );
+        const std::string fullName( osgDB::findDataFile( _fileName ) );
+        if( fullName.empty() )
+        {
+            LFX_WARNING_STATIC( logstr, "Can't find \"" + _fileName + "\"." );
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
+        }
+        const std::string pathOnly( osgDB::getFilePath( fullName ) );
+
+        // Create a glob pattern from the given _fileName.
+        const std::string nameOnly( osgDB::getSimpleFileName( fullName ) );
+        const size_t firstDash( nameOnly.find_first_of( "-" ) );
+        const size_t lastDash( nameOnly.find_last_of( "-" ) );
+        if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
+            ( lastDash == std::string::npos ) )
+        {
+            LFX_WARNING_STATIC( logstr, "\"" + _fileName + "\" has invalid name pattern." );
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
+        }
+        const std::string globPattern( nameOnly.substr( 0, firstDash+1 ) + "*" +
+            nameOnly.substr( lastDash ) );
+        LFX_DEBUG_STATIC( logstr, pathOnly );
+        LFX_DEBUG_STATIC( logstr, globPattern );
+
+        // Find all files matching pattern.
+        Poco::Path globPath( osgDB::concatPaths( pathOnly, globPattern ) );
+        std::set< std::string > results;
+        Poco::Glob::glob( globPath, results );
+        if( results.empty() )
+        {
+            LFX_WARNING_STATIC( logstr, "No files found matching pattern: \"" + globPattern + "\"." );
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
+        }
+
+        // Determine the hierarchy maxDepth from the longest hierarchy name.
+        unsigned int maxDepth( 1 );
+        BOOST_FOREACH( const std::string& fName, results )
+        {
+            Poco::Path fullName( fName );
+            const std::string& actualName( fullName.getFileName() );
+            size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
+            if( depth > maxDepth )
+                maxDepth = depth;
+        }
+
+        // Create the ChannelData hierarchy.
+        AssembleHierarchy ah( maxDepth, 10000. );
+        BOOST_FOREACH( const std::string& fName, results )
+        {
+            // Create this ChannelData.
+            ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
+            cdImage->setStorageModeHint( ChannelData::STORE_IN_DB );
+            cdImage->setDBKey( DBKey( fName ) );
+
+            // Get the hierarchy name string.
+            Poco::Path fullName( fName );
+            const std::string& actualName( fullName.getFileName() );
+            const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
+            const size_t lastLoc( actualName.find_last_of( "-" ) );
+            const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
+
+            LFX_DEBUG_STATIC( logstr, "Adding " + fName + ": " + hierarchyName );
+            ah.addChannelData( cdImage, hierarchyName );
+        }
+
+        // Return the hierarchy root.
+        ChannelDataPtr cdp( ah.getRoot() );
+        cdp->setName( "volumeData" );
+        return( cdp );
     }
+
+protected:
+    std::string _fileName;
 };
 
 
@@ -66,7 +143,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 {
     DataSetPtr dsp( new DataSet() );
 
-    ImageHierarchyLoader* ihl = new ImageHierarchyLoader();
+    ImageHierarchyLoader* ihl = new ImageHierarchyLoader( fileName );
     dsp->addPreprocess( PreprocessPtr( (Preprocess*)ihl ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );

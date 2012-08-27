@@ -220,14 +220,17 @@ bool DataSet::updatePreprocessing()
     TimeSet timeSet( getTimeSet() );
     if( timeSet.empty() )
     {
-        // This might have a valid use, as in a preprocess op
-        // that generates the new ChannelData procedurally.
+        // Execute Preprocess ops with no input. A Preprocess op could generate
+        // a new ChannelData procedurally.
+
         BOOST_FOREACH( PreprocessPtr prePtr, _preprocess )
         {
             if( !( prePtr->getEnable() ) )
                 continue;
 
             ChannelDataPtr newData( (*prePtr)() );
+            if( newData == NULL )
+                continue;
 
             // The Proprocessor object tells us how to handle the new data
             // we just got back. This is so that apps can configure the Preprocessor
@@ -266,6 +269,8 @@ bool DataSet::updatePreprocessing()
             setInputs( prePtr, currentData );
 
             ChannelDataPtr newData( (*prePtr)() );
+            if( newData == NULL )
+                continue;
 
             // The Proprocessor object tells us how to handle the new data
             // we just got back. This is so that apps can configure the Preprocessor
@@ -361,10 +366,10 @@ bool DataSet::updateRenderer()
     if( timeSet.size() == 0 )
     {
         // No ChannelData was added to the DataSet.
-        // It would be nice, for dev purposes, if we had a way to handle this
-        // case. But for now, just do nothing, which is probably the right thing
-        // to do for production code anyway.
-        LFX_WARNING( "updateRenderer: timeSet.size() == 0." );
+        // It might be useful for a Renderer to generate the scene graph procedurally
+        // from other input data, but for now we require that this be done as a
+        // Preprocess op, and possibly as an RTP channel creation op in the future.
+        LFX_WARNING( "updateRenderer: timeSet.size() == 0. No scene graph generated." );
         return( false );
     }
 
