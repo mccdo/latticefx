@@ -57,6 +57,37 @@ protected:
 LATTICEFX_EXPORT void traverseHeirarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
 
+/** \class AssembleHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief A utility class for creating hierarchies of volume data.
+\details
+Basically you make an instance of an AssembleHierarchy class. You must pass the
+LOD range info to the constructor. You can pass an explicit vector of values, or
+you can have the class create that implicitly by providing a max depth and the
+switch size for the lowest LOD. If your hierarchy has 4 levels of detail, then
+your maxDepth is 4 and there would be three range values (one for each switch
+point).
+
+The constructor takes the range values and creates the skeleton of the hierarchy,
+composed of ChannelDataLOD and ChannelDataImageSet objects, but no data. The
+class fills in the ranges for the LODs at this point, but does not fill in the
+offsets for the ImageSets.
+
+Next, you call addChannelData for each texture brick you want to add. The second
+param is the name string as I described previously. The third parameter is an
+optional offset vector, the normalized offset for this brick within its current
+ImageSet. (Do not pass the fourth (depth) parameter; it's for internal use during
+recursion.)
+
+If you don't pass in the offset, an offset is inferred from the last digit of the
+name string.
+
+addChannelData() recurses / calls itself as it traverses down the skeleton created
+by the constructor, until it finds the appropriate insertion point for the data as
+determined by the name string.
+
+After you have added all of your ChannelData bricks, call getRoot() to obtain the
+top-level ChannelData of the hierarchy. 
+*/
 class LATTICEFX_EXPORT AssembleHierarchy
 {
 public:
