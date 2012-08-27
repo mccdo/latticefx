@@ -219,7 +219,36 @@ bool DataSet::updatePreprocessing()
 {
     TimeSet timeSet( getTimeSet() );
     if( timeSet.empty() )
+    {
+        // This might have a valid use, as in a preprocess op
+        // that generates the new ChannelData procedurally.
+        BOOST_FOREACH( PreprocessPtr prePtr, _preprocess )
+        {
+            if( !( prePtr->getEnable() ) )
+                continue;
+
+            ChannelDataPtr newData( (*prePtr)() );
+
+            // The Proprocessor object tells us how to handle the new data
+            // we just got back. This is so that apps can configure the Preprocessor
+            // directly. In the future, we might have to support adding the returned
+            // data to the DB.
+            switch( prePtr->getActionType() )
+            {
+            case Preprocess::ADD_DATA:
+                addChannel( newData );
+                break;
+            case Preprocess::REPLACE_DATA:
+                LFX_WARNING( "Preprocess op withn REPLACE_DATA action, not currently supported with empty TimeSet." );
+                break;
+            default:
+            case Preprocess::IGNORE_DATA:
+                // No-op. Do nothing.
+                break;
+            }
+        }
         return( true );
+    }
 
     // Iterate over all time steps.
     BOOST_FOREACH( TimeValue time, timeSet )
@@ -268,8 +297,11 @@ bool DataSet::updateRunTimeProcessing()
     TimeSet timeSet( getTimeSet() );
     if( timeSet.empty() )
     {
-        // Not the typical case.
-        return( true );
+        // This might have a valid use, as in a channel creation op
+        // that generates the new ChannelData procedurally.
+        // Not yet supported.
+        LFX_WARNING( "updateRunTimeProcessing: timeSet.size() == 0." );
+        return( false );
     }
 
     // Iterate over all time steps.
@@ -332,7 +364,7 @@ bool DataSet::updateRenderer()
         // It would be nice, for dev purposes, if we had a way to handle this
         // case. But for now, just do nothing, which is probably the right thing
         // to do for production code anyway.
-        LFX_WARNING( "timeSet.size() == 0." );
+        LFX_WARNING( "updateRenderer: timeSet.size() == 0." );
         return( false );
     }
 

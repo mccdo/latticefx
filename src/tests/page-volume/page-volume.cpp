@@ -34,6 +34,14 @@
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
+#include <osgViewer/Viewer>
+#include <osg/Group>
+#include <osg/ArgumentParser>
+
+#include <string>
+
+
+static std::string logstr( "lfx.demo" );
 
 using namespace lfx::core;
 
@@ -48,6 +56,7 @@ public:
 
     virtual ChannelDataPtr operator()()
     {
+        LFX_INFO_STATIC( logstr, "Preprocessing." );
         return( ChannelDataPtr( (ChannelData*)NULL ) );
     }
 };
@@ -82,5 +91,29 @@ int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
-    return( 0 );
+    osg::ArgumentParser arguments( &argc, argv );
+
+    std::string fileName;
+    arguments.read( "-f", fileName );
+    if( fileName.empty() )
+    {
+        LFX_FATAL_STATIC( logstr, "Must specify \"-f <filename>\" on command line." );
+        return( 1 );
+    }
+
+    osg::Vec3 dims( 50., 50., 50. );
+    arguments.read( "-d", dims[0],dims[1],dims[2] );
+
+    // Create an example data set.
+    osg::Group* root (new osg::Group);
+    root->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
+    DataSetPtr dsp( prepareVolume( fileName, dims ) );
+    root->addChild( dsp->getSceneData() );
+
+    osgViewer::Viewer viewer;
+    viewer.setUpViewInWindow( 20, 30, 800, 460 );
+    viewer.setSceneData( root );
+
+    return( viewer.run() );
 }
