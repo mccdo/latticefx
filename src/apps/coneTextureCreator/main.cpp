@@ -368,6 +368,8 @@ DataSetPtr createDataSet()
 
 int main( int argc, char** argv )
 {
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+
 #if 0
     size_t numPixels = TEXTURE_X * TEXTURE_Y * TEXTURE_Z;
     unsigned char* pixels( new unsigned char[ numPixels ] );
@@ -385,8 +387,6 @@ int main( int argc, char** argv )
 
     writeVoxel( numPixels, pixels );
 #else
-    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
-
     DataSetPtr dsp( createDataSet() );
     
     dsp->updateAll();

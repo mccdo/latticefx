@@ -186,12 +186,6 @@ public:
     \details implicitly calls updateAll(), then returns the \c _sceneGraph
     member variable. */
     osg::Node* getSceneData();
-
-
-    /** Interface to tell DataSet to use an experimental method to
-    construct a scene graph that doesn't page geometry, pages only
-    texture data instead. */
-    void setSceneGraphPagesTexturesOnly();
     ///\}
 
 
