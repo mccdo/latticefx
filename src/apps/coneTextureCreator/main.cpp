@@ -163,11 +163,12 @@ protected:
         const std::string baseName( "conetexture" );
         const std::string channelName( "texture" );
         
+        //Remember that 0.5^0 = 1 therefore this works for all depths to
+        //partition the dataset properly.
         double factor = std::pow( 0.5, int(depth) );
         double x = (m_dataBB.xMax() - m_dataBB.xMin()) * factor; 
         double y = (m_dataBB.yMax() - m_dataBB.yMin()) * factor; 
         double z = (m_dataBB.zMax() - m_dataBB.zMin()) * factor;
-        //std::cout << x << " " << y << " " << z << std::endl;
         m_brickBB.set( brickOrigin.x(),     brickOrigin.y(),     brickOrigin.z(), 
                        brickOrigin.x() + x, brickOrigin.y() + y, brickOrigin.z() + z );
 
@@ -186,8 +187,10 @@ protected:
         
         ChannelDataImageSetPtr cdImageSet( new ChannelDataImageSet( channelName ) );
 
-      
-        ChannelDataPtr brick;
+        //We multiply by another 1/2 because we are really at nextDepth at this
+        //point which is an additional depth down than what we are at above. We
+        //need these new locations now to tell where we should be positioning
+        //the subOrigins in world space for further sampling.
         x *= 0.5;
         y *= 0.5;
         z *= 0.5;
@@ -196,6 +199,7 @@ protected:
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y(), 
                        brickOrigin.z() );
+        ChannelDataPtr brick;
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
