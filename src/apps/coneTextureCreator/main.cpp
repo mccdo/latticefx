@@ -102,8 +102,8 @@ protected:
         LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "Processing " + ostr.str() );
 
         //std::cout << " Depth " << depth << " " << m_brickBB.radius() << std::endl 
-        //    << m_brickBB.xMin() << " " <<  m_brickBB.yMin() << " " <<   m_brickBB.zMin() << std::endl
-        //    << m_brickBB.xMax() << " " <<  m_brickBB.yMax() << " " <<   m_brickBB.zMax() << std::endl;
+        //    << m_brickBB._min << std::endl
+        //    << m_brickBB._max << std::endl;
         double factor = 1./double(SUBSAMPLE_SIZE - 1);
         double deltaX = (m_brickBB.xMax() - m_brickBB.xMin()) * factor; 
         double deltaY = (m_brickBB.yMax() - m_brickBB.yMin()) * factor; 
@@ -137,6 +137,7 @@ protected:
             }
         }
         
+
         ChannelDataOSGImagePtr cdip;
         if( !pixelsPresent )
         {
@@ -277,8 +278,9 @@ protected:
         if( z >= CONE_HEIGHT )
             return false;
         
-        const double radiusTest = double( (x) * (x) +
-                                         (y) * (y) );
+        //Since x and y are in world space there is no need to center the data
+        //about 0,0,0
+        const double radiusTest = double( (x * x) + (y * y) );
         
         const double coneConstant = double( CONE_RADIUS ) / double( CONE_HEIGHT );
         
@@ -297,10 +299,6 @@ protected:
         //We will let osg manage the raw image data
         image->setImage( SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                         pixels, osg::Image::USE_NEW_DELETE );
-        
-        //osg::Texture3D* texture = new osg::Texture3D( image );
-        //texture->setFilter( osg::Texture::MIN_FILTER, osg::Texture2D::NEAREST );
-        //texture->setFilter( osg::Texture::MAG_FILTER, osg::Texture2D::NEAREST );
         
         osgDB::writeImageFile( *image, filename );
         return image.release();
@@ -337,10 +335,6 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
     image->setImage( TEXTURE_X, TEXTURE_Y, TEXTURE_Z, GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                 pixels, osg::Image::USE_NEW_DELETE );
 
-    //osg::Texture3D* texture = new osg::Texture3D( image );
-    //texture->setFilter( osg::Texture::MIN_FILTER, osg::Texture2D::NEAREST );
-    //texture->setFilter( osg::Texture::MAG_FILTER, osg::Texture2D::NEAREST );
-    
     osgDB::writeImageFile( *image, "cone_texture.ive" );
 }
 
@@ -357,17 +351,13 @@ DataSetPtr createDataSet()
     }
     
     DataSetPtr dsp( new DataSet() );
+    //We add a dummy dataset just for the purpose of being able to generate
+    //the test bricks.
     dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
     op->addInput( "texture" );
     dsp->addPreprocess( PreprocessPtr( op ) );
-    
-    /*BoxRenderer* renderOp( new BoxRenderer );
-    renderOp->setVolumeDims( osg::Vec3( TEXTURE_X, TEXTURE_Y, TEXTURE_Z ) );
-    renderOp->setVolumeOrigin( osg::Vec3( -TEXTURE_HALF_X, -TEXTURE_HALF_Y, 0. ) );
-    renderOp->addInput( "texture" );
-    dsp->setRenderer( RendererPtr( renderOp ) );*/
     
     return( dsp );
 }
@@ -396,35 +386,6 @@ int main( int argc, char** argv )
     DataSetPtr dsp( createDataSet() );
     
     dsp->updateAll();
-    /*osgViewer::Viewer viewer;
-    viewer.setUpViewInWindow( 20, 30, 800, 460 );
-    osg::ref_ptr< osgGA::TrackballManipulator > tbm( new osgGA::TrackballManipulator() );
-    viewer.setCameraManipulator( tbm.get() );
-    
-    osg::Group* root( new osg::Group );
-    root->addChild( dsp->getSceneData() );
-    root->addChild( osgDB::readNodeFile( "axes.osg" ) );
-    viewer.setSceneData( root );
-    tbm->home( 0. );*/
-    
-    // Test hierarchy utils
-    //MyHierarchyDB myDB;
-    //traverseHeirarchy( dsp->getChannel( "texture" ), myDB );
-    
-    // Really we would need to change the projection matrix and viewport
-    // in an event handler that catches window size changes. We're cheating.
-    /*PagingThread* pageThread( PagingThread::instance() );
-    const osg::Camera* cam( viewer.getCamera() );
-    pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
-    
-    osg::Vec3d eye, center, up;
-    while( !viewer.done() )
-    {
-        tbm->getInverseMatrix().getLookAt( eye, center, up );
-        pageThread->setTransforms( osg::Vec3( eye ) );
-        viewer.frame();
-    }
-    return( 0 );*/
 #endif
     //OSG handles the memory
     //delete [] pixels;
