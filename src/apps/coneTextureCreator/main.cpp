@@ -148,7 +148,7 @@ protected:
         osg::ref_ptr< osg::Image > localImage = writeVoxel( pixels, imageName );
         localImage->setFileName( imageName );
         
-        cdip = ChannelDataOSGImagePtr( new ChannelDataOSGImage( dataName, localImage ) );
+        cdip = ChannelDataOSGImagePtr( new ChannelDataOSGImage( dataName, localImage.get() ) );
         if( DBUsesCrunchStore() )
         {
             cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
