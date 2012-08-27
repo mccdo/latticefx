@@ -89,28 +89,31 @@ public:
         ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
         const std::string dataName( input->getName() );
         osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
-        return( recurseBuildTree( 0, 0., 25000., subOrigin ) );
+        std::string brickNum;
+        return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
     }
     
 protected:
-    ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const unsigned int depth, const std::string& dataName )
+    ChannelDataOSGImagePtr generateImageData( const std::string& fileName, const unsigned int depth, const std::string& dataName, const std::string& brickNum )
     {
         std::ostringstream ostr;
-        ostr << fileName << depth << "_" << m_brickBB.xMin() << "_" 
-            << m_brickBB.yMin() << "_" << m_brickBB.zMin() << ".png";
+        ostr << fileName << "-" << brickNum << "-" << ".ive";
         
-        std::cout << " Depth " << depth << " " << m_brickBB.radius() << std::endl 
-            << m_brickBB.xMin() << " " <<  m_brickBB.yMin() << " " <<   m_brickBB.zMin() << std::endl
-            << m_brickBB.xMax() << " " <<  m_brickBB.yMax() << " " <<   m_brickBB.zMax() << std::endl;
-        double factor = 1./double(SUBSAMPLE_SIZE - 1);
-        double deltaX = (m_dataBB.xMax() - m_dataBB.xMin()) * factor; 
-        double deltaY = (m_dataBB.yMax() - m_dataBB.yMin()) * factor; 
-        double deltaZ = (m_dataBB.zMax() - m_dataBB.zMin()) * factor;
+        LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "Processing " + ostr.str() );
 
+        //std::cout << " Depth " << depth << " " << m_brickBB.radius() << std::endl 
+        //    << m_brickBB.xMin() << " " <<  m_brickBB.yMin() << " " <<   m_brickBB.zMin() << std::endl
+        //    << m_brickBB.xMax() << " " <<  m_brickBB.yMax() << " " <<   m_brickBB.zMax() << std::endl;
+        double factor = 1./double(SUBSAMPLE_SIZE - 1);
+        double deltaX = (m_brickBB.xMax() - m_brickBB.xMin()) * factor; 
+        double deltaY = (m_brickBB.yMax() - m_brickBB.yMin()) * factor; 
+        double deltaZ = (m_brickBB.zMax() - m_brickBB.zMin()) * factor;
+        //std::cout << deltaX << " " << deltaY << " " << deltaZ << std::endl;
         size_t numPixels = SUBSAMPLE_SIZE * SUBSAMPLE_SIZE * SUBSAMPLE_SIZE;
         unsigned char* pixels( new unsigned char[ numPixels ] );
         unsigned char* pixelPtr( pixels );
         double x, y, z;
+        bool pixelsPresent = false;
         for( size_t k = 0; k < SUBSAMPLE_SIZE; ++k )
         {
             for( size_t j = 0; j < SUBSAMPLE_SIZE; ++j )
@@ -121,16 +124,30 @@ protected:
                     y = m_brickBB.yMin() + j * deltaY;
                     z = m_brickBB.zMin() + k * deltaZ;
 
-                    *pixelPtr++ = ( testVoxel( x, y, z ) ? 255 : 0 );
+                    if( testVoxel( x, y, z ) )
+                    {
+                        *pixelPtr++ = 255;
+                        pixelsPresent = true;
+                    }
+                    else
+                    {
+                        *pixelPtr++ = 0;
+                    }
                 }
             }
         }
         
+        ChannelDataOSGImagePtr cdip;
+        if( !pixelsPresent )
+        {
+            std::cout << "nothing in this brick" << std::endl;
+        }
+
         const std::string imageName( ostr.str() );
         osg::ref_ptr< osg::Image > localImage = writeVoxel( pixels, imageName );
         localImage->setFileName( imageName );
         
-        ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( dataName, localImage ) );
+        cdip = ChannelDataOSGImagePtr( new ChannelDataOSGImage( dataName, localImage ) );
         if( DBUsesCrunchStore() )
         {
             cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
@@ -140,23 +157,24 @@ protected:
         return( cdip );
     }
     
-    ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange, osg::Vec3d& brickOrigin )
+    ChannelDataPtr recurseBuildTree( unsigned int depth, const double minRange, const double maxRange, osg::Vec3d& brickOrigin, std::string& brickNum )
     {
-        const std::string baseName( "pagetex-near" );
+        const std::string baseName( "conetexture" );
         const std::string channelName( "texture" );
         
         double factor = std::pow( 0.5, int(depth) );
         double x = (m_dataBB.xMax() - m_dataBB.xMin()) * factor; 
         double y = (m_dataBB.yMax() - m_dataBB.yMin()) * factor; 
         double z = (m_dataBB.zMax() - m_dataBB.zMin()) * factor;
+        //std::cout << x << " " << y << " " << z << std::endl;
         m_brickBB.set( brickOrigin.x(),     brickOrigin.y(),     brickOrigin.z(), 
                        brickOrigin.x() + x, brickOrigin.y() + y, brickOrigin.z() + z );
 
         if( depth == _depth )
-            return( generateImageData( baseName, depth, channelName ) );
+            return( generateImageData( baseName, depth, channelName, brickNum ) );
         
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( channelName ) );
-        unsigned int channelIdx( cdLOD->addChannel( generateImageData( baseName, depth, channelName ) ) );
+        unsigned int channelIdx( cdLOD->addChannel( generateImageData( baseName, depth, channelName, brickNum ) ) );
         cdLOD->setRange( channelIdx, RangeValues( minRange, maxRange ) );
         
         const unsigned int nextDepth( depth + 1 );
@@ -172,63 +190,79 @@ protected:
         x *= 0.5;
         y *= 0.5;
         z *= 0.5;
+        brickNum.append( "0" );
         osg::Vec3d subOrigin;
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y(), 
                        brickOrigin.z() );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
+        brickNum.erase( brickNum.end() - 1 );
 
+        brickNum.append( "1" );
         subOrigin.set( brickOrigin.x() + x, 
                        brickOrigin.y(), 
                        brickOrigin.z() );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., -1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "2" );
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y() + y, 
                        brickOrigin.z() );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., -1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "3" );
         subOrigin.set( brickOrigin.x() + x, 
                        brickOrigin.y() + y, 
                        brickOrigin.z() );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., -1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "4" );
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y(), 
                        brickOrigin.z() + z );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., 1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "5" );
         subOrigin.set( brickOrigin.x() + x, 
                        brickOrigin.y(), 
                        brickOrigin.z() + z );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., 1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "6" );
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y() + y, 
                        brickOrigin.z() + z );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., 1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
+        brickNum.append( "7" );
         subOrigin.set( brickOrigin.x() + x, 
                        brickOrigin.y() + y, 
                        brickOrigin.z() + z );
-        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin );
+        brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., 1. ) );
-        
+        brickNum.erase( brickNum.end() - 1 );
+
         // Regardless of the depth level, there are two LODs. The first is displayed
         // for range (0., maxRange), and the second is displayed for range
         // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
@@ -243,8 +277,8 @@ protected:
         if( z >= CONE_HEIGHT )
             return false;
         
-        const double radiusTest = double( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
-                                         (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
+        const double radiusTest = double( (x) * (x) +
+                                         (y) * (y) );
         
         const double coneConstant = double( CONE_RADIUS ) / double( CONE_HEIGHT );
         
@@ -312,7 +346,7 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
 
 DataSetPtr createDataSet()
 {
-    /*const std::string baseFileName( "pagetex-near0.png" );
+    const std::string baseFileName( "pagetex-near0.png" );
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
@@ -320,10 +354,10 @@ DataSetPtr createDataSet()
     {
         imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
         imageData->setDBKey( baseFileName );
-    }*/
+    }
     
     DataSetPtr dsp( new DataSet() );
-    //dsp->addChannel( imageData );
+    dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
     op->addInput( "texture" );
@@ -361,7 +395,8 @@ int main( int argc, char** argv )
 
     DataSetPtr dsp( createDataSet() );
     
-    osgViewer::Viewer viewer;
+    dsp->updateAll();
+    /*osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
     osg::ref_ptr< osgGA::TrackballManipulator > tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm.get() );
@@ -370,7 +405,7 @@ int main( int argc, char** argv )
     root->addChild( dsp->getSceneData() );
     root->addChild( osgDB::readNodeFile( "axes.osg" ) );
     viewer.setSceneData( root );
-    tbm->home( 0. );
+    tbm->home( 0. );*/
     
     // Test hierarchy utils
     //MyHierarchyDB myDB;
@@ -378,7 +413,7 @@ int main( int argc, char** argv )
     
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
-    PagingThread* pageThread( PagingThread::instance() );
+    /*PagingThread* pageThread( PagingThread::instance() );
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
     
@@ -389,7 +424,7 @@ int main( int argc, char** argv )
         pageThread->setTransforms( osg::Vec3( eye ) );
         viewer.frame();
     }
-    return( 0 );
+    return( 0 );*/
 #endif
     //OSG handles the memory
     //delete [] pixels;
