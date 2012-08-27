@@ -93,11 +93,35 @@ class LATTICEFX_EXPORT AssembleHierarchy
 public:
     typedef std::vector< double > RangeVec;
 
+    ///Constructor
     AssembleHierarchy( RangeVec ranges );
+    ///Constructor
+    ///\param maxDepth The maximum depth achieved by the bricked textures
     AssembleHierarchy( unsigned int maxDepth, double baseRange=25000. );
+    ///Copy constructor
     AssembleHierarchy( const AssembleHierarchy& rhs );
+    ///Destructor
     virtual ~AssembleHierarchy();
 
+    ///In this method if an \ref offset  is not provided the name string will be
+    ///used to decide which octant a channel belongs to. This is done as follows:
+    /// 0 = -1., -1., -1.
+    /// 1 =  1., -1., -1. 
+    /// 2 = -1.,  1., -1.
+    /// 3 =  1.,  1., -1.
+    /// 4 = -1., -1.,  1.
+    /// 5 =  1., -1.,  1.
+    /// 6 = -1.,  1.,  1.
+    /// 7 =  1.,  1.,  1.
+    ///\param cdp The channel data representing the octant
+    ///\param nameString The integer value encoded as a string that contains
+    ///the location of the octant relative to the whole. It may look like:
+    /// - 000
+    /// - 017
+    /// - 701
+    ///\param offset The offset for a brick in normalized coordinate space. An 
+    ///example of these values is listed above.
+    ///\param depth Do not use this value. It is for internal processing only.
     void addChannelData( ChannelDataPtr cdp, const std::string nameString,
             const osg::Vec3& offset=osg::Vec3( 0., 0., 0. ), const unsigned int depth=0 );
 

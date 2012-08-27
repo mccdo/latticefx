@@ -194,6 +194,14 @@ protected:
         x *= 0.5;
         y *= 0.5;
         z *= 0.5;
+        //The numbers listed here follow the same order of the code in this
+        //method:
+        //  void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, 
+        //                                          const std::string nameString,
+        //                                          const osg::Vec3& offset, 
+        //                                          const unsigned int depth )
+        //The numbers correspond to the appropriate octant that is paired with
+        //the octants listed below.
         brickNum.append( "0" );
         osg::Vec3d subOrigin;
         subOrigin.set( brickOrigin.x(), 
