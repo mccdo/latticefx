@@ -84,9 +84,6 @@ void ChannelData::setDBKey( const DBKey dbKey )
 }
 DBKey ChannelData::getDBKey() const
 {
-    if( _dbKey.empty() )
-    {
-    }
     return( _dbKey );
 }
 

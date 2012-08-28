@@ -26,7 +26,6 @@
 *
 *************** <auto-copyright.rb END do not edit this line> **************/
 
-#include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/DataSet.h>
 #include <latticefx/core/VolumeRenderer.h>

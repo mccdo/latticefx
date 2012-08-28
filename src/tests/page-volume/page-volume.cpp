@@ -30,6 +30,7 @@
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/HierarchyUtils.h>
+#include <latticefx/core/PagingThread.h>
 #include <latticefx/core/TransferFunctionUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
@@ -39,6 +40,7 @@
 #include <osgDB/FileNameUtils>
 #include <osg/Group>
 #include <osg/ArgumentParser>
+#include <osgGA/TrackballManipulator>
 
 #include <Poco/Path.h>
 #include <Poco/Glob.h>
@@ -109,7 +111,7 @@ public:
         }
 
         // Create the ChannelData hierarchy.
-        AssembleHierarchy ah( maxDepth, 10000. );
+        AssembleHierarchy ah( maxDepth, 30000. );
         BOOST_FOREACH( const std::string& fName, results )
         {
             // Create this ChannelData.
@@ -168,6 +170,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
 
@@ -191,7 +194,23 @@ int main( int argc, char** argv )
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
+    osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
+    viewer.setCameraManipulator( tbm );
     viewer.setSceneData( root );
 
-    return( viewer.run() );
+
+    // Really we would need to change the projection matrix and viewport
+    // in an event handler that catches window size changes. We're cheating.
+    PagingThread* pageThread( PagingThread::instance() );
+    const osg::Camera* cam( viewer.getCamera() );
+    pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
+
+    osg::Vec3d eye, center, up;
+    while( !viewer.done() )
+    {
+        tbm->getInverseMatrix().getLookAt( eye, center, up );
+        pageThread->setTransforms( osg::Vec3( eye ) );
+        viewer.frame();
+    }
+    return( 0 );
 }
