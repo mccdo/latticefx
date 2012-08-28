@@ -71,16 +71,6 @@ const std::string& ChannelData::getName() const
 
 void ChannelData::setStorageModeHint( const StorageModeHint& storageMode )
 {
-#ifndef LFX_USE_CRUNCHSTORE
-    // Without crunchstore, the DB becomes storage on disk.
-    // Currently do not allow this, use memory instead of DB.
-    if( storageMode == STORE_IN_DB )
-    {
-        LFX_WARNING( "setStorageModeHint(): STORE_IN_DB ignored without crunchstore. Using STORE_IN_RAM" );
-        _storageMode = STORE_IN_RAM;
-        return;
-    }
-#endif
     _storageMode = storageMode;
 }
 ChannelData::StorageModeHint ChannelData::getStorageModeHint() const

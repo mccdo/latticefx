@@ -223,6 +223,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         // Case 2
         // This is the insertion point.
         imageData->setChannel( childIndex, cdp );
+        imageData->setOffset( childIndex, localOffset );
         // Set to NULL for debugging purposes (not actually necessary).
         _iterator = ChannelDataPtr( (ChannelData*)NULL );
     }

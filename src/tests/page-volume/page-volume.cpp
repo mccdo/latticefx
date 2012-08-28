@@ -125,12 +125,13 @@ public:
             const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
 
             LFX_DEBUG_STATIC( logstr, "Adding " + fName + ": " + hierarchyName );
+            cdImage->setName( "volumedata" );
             ah.addChannelData( cdImage, hierarchyName );
         }
 
         // Return the hierarchy root.
         ChannelDataPtr cdp( ah.getRoot() );
-        cdp->setName( "volumeData" );
+        cdp->setName( "volumedata" );
         return( cdp );
     }
 
