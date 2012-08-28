@@ -106,33 +106,28 @@ int main( int argc, char** argv )
 
     if( arguments.find( "-mt" ) > 0 )
     {
-        osg::MatrixTransform* mtA( new osg::MatrixTransform );
-        osg::MatrixTransform* mtB( new osg::MatrixTransform );
-        osg::MatrixTransform* mtC( new osg::MatrixTransform );
-        // Test Matrix position/scale
-        osg::Matrix transformA, transformB, transformC;
         // the translate will occur in the unscaled units, and the scaling will occur around the new origin.
         // A is just translate and nominal scale
-        transformA *= osg::Matrixd::scale(1.0, 1.0, 0.5);
-        transformA *= osg::Matrixd::translate(-75.0, 0.0, 0.0);
-        mtA->setMatrix(transformA);
-        // B: scale and rotate but no translate
-        transformB *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 0.0, 1.0, 0.0); // 45 degrees about +Y axis
-        transformB *= osg::Matrixd::scale(2.0, 2.0, 2.0);
-        transformB *= osg::Matrixd::translate(0.0, 50.0, 0.0);
-        mtB->setMatrix(transformB);
-        // C: translate, scale AND rotate
-        transformC *= osg::Matrixd::rotate(osg::DegreesToRadians(45.0), 1.0, 0.0, 0.0); // 45 degrees about +X axis
-        transformC *= osg::Matrixd::scale(2.0, 2.0, 1.0);
-        transformC *= osg::Matrixd::translate(100.0, 0.0, 50.0);
-        mtC->setMatrix(transformC);
-        root->addChild(mtA);
-        root->addChild(mtB);
-        root->addChild(mtC);
-        // multi-parent the same scene data
+        const osg::Matrix transformA = osg::Matrixd::scale( .5, .5, .5 ) *
+                osg::Matrixd::translate(-75.0, -75.0, -75.0);
+        osg::MatrixTransform* mtA( new osg::MatrixTransform( transformA ) );
         mtA->addChild( dsp->getSceneData() );
+        root->addChild( mtA );
+
+        // B: scale and rotate but no translate
+        const osg::Matrix transformB = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 0.0, 1.0, 0.0 ) *
+                osg::Matrixd::scale( 2.0, 2.0, 2.0 );
+        osg::MatrixTransform* mtB( new osg::MatrixTransform( transformB ) );
         mtB->addChild( dsp->getSceneData() );
+        root->addChild( mtB );
+
+        // C: translate, scale AND rotate
+        const osg::Matrix transformC = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 1.0, 0.0, 0.0 ) *
+                osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
+                osg::Matrixd::translate( 100.0, 0.0, 0.0 );
+        osg::MatrixTransform* mtC( new osg::MatrixTransform( transformC ) );
         mtC->addChild( dsp->getSceneData() );
+        root->addChild( mtC );
         // Put wireframe boxes around volumes to test rotation and scaling of texture versus osg object
         // This requires a pre-built cube object of unit size.
         if (0)

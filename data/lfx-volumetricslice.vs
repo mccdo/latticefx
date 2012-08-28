@@ -172,8 +172,9 @@ void main( void )
     // Find the coordinates in model space relative to the data cube
     // newVertexPos is in eye coords. vertexCopy is in object coords.
     vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
-    Texcoord    = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
-    .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y, .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
+    Texcoord = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
+        .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y,
+        .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
             
     // Surrounding texture coords used for surface normal derivation
     TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);

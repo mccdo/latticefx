@@ -185,14 +185,14 @@ int main( int argc, char** argv )
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
-    // Create an example data set.
+    // Create the lfx data set.
     osg::Group* root (new osg::Group);
-    root->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
 
     DataSetPtr dsp( prepareVolume( fileName, dims ) );
     root->addChild( dsp->getSceneData() );
 
     osgViewer::Viewer viewer;
+    viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm );

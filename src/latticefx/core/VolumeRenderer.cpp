@@ -42,7 +42,6 @@
 #include <osg/Program>
 #include <osg/Uniform>
 #include <osgDB/FileUtils>
-#include <osg/Depth>
 
 
 namespace lfx {
@@ -184,6 +183,8 @@ osg::StateSet* VolumeRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
 
+    stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
+
     // position, direction, transfer function input, and hardware mask input texture
     // units are the same for all time steps, so set their sampler uniform unit
     // values in the root state.
@@ -222,8 +223,11 @@ osg::StateSet* VolumeRenderer::getRootState()
     fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
     stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
-    osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
-    stateSet->setAttributeAndModes( depth, osg::StateAttribute::ON );
+    // Do not need to read, test against, or write the depth buffer.
+    // This should be fine as long as the volume is the last thing rendered
+    // in a frame; if something is rendered *after* the volume and intersects
+    // the volume, then we would have incorrect rendering.
+    stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
 
     // Set base class transfer function and volume texture uniforms.
     addHardwareFeatureUniforms( stateSet.get() );
