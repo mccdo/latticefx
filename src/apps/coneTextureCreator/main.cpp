@@ -88,8 +88,8 @@ public:
     
     virtual ChannelDataPtr operator()()
     {
-        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
-        const std::string dataName( input->getName() );
+        //ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        const std::string dataName( "volumetexture" );//input->getName() );
         osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
         std::string brickNum;
         return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
@@ -311,8 +311,9 @@ protected:
     {
         osg::ref_ptr< osg::Image > image = new osg::Image();
         //We will let osg manage the raw image data
-        image->setImage( SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                        pixels, osg::Image::USE_NEW_DELETE );
+        image->setImage( SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, 
+                         GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         pixels, osg::Image::USE_NEW_DELETE );
         
         osgDB::writeImageFile( *image, filename );
         return image.release();
@@ -337,8 +338,8 @@ public:
     
     virtual ChannelDataPtr operator()()
     {
-        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
-        const std::string dataName( input->getName() );
+        //ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        const std::string dataName( "volumetexture" );//input->getName() );
         osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
         std::string brickNum;
         return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
@@ -375,8 +376,8 @@ public:
     
     virtual ChannelDataPtr operator()()
     {
-        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
-        const std::string dataName( input->getName() );
+        //ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        const std::string dataName( "volumetexture" );//input->getName() );
         osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
         std::string brickNum;
         return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
@@ -430,7 +431,7 @@ void writeVoxel( const size_t numPixels, unsigned char* pixels )
 
 DataSetPtr createDataSet()
 {
-    const std::string baseFileName( "pagetex-near0.png" );
+    /*const std::string baseFileName( "pagetex-near0.png" );
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
@@ -438,12 +439,12 @@ DataSetPtr createDataSet()
     {
         imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
         imageData->setDBKey( baseFileName );
-    }
+    }*/
     
     DataSetPtr dsp( new DataSet() );
     //We add a dummy dataset just for the purpose of being able to generate
     //the test bricks.
-    dsp->addChannel( imageData );
+    //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
     op->addInput( "texture" );
