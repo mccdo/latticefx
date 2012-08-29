@@ -34,7 +34,8 @@ PocoMenuSetup()
 
 include( FindOSGHelper )
 PocoFinder()
-find_package( Boost REQUIRED thread date_time filesystem system chrono)
+
+find_package( Boost REQUIRED thread date_time filesystem system chrono program_options)
 
 find_package( osgWorks 2.0.0 REQUIRED )
 if( osgWorks_FOUND )

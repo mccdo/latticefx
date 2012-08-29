@@ -3,3 +3,4 @@ if(VTK_FOUND)
 endif(VTK_FOUND)
 
 add_subdirectory( coneTextureCreator )
+add_subdirectory( raw2ive )
