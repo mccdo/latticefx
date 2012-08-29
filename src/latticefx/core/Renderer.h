@@ -285,7 +285,7 @@ public:
     on the transfer function result.
 
     The intent is that this will be implemented in a GPU shader program, but it could
-    execute in either a vertex or fragment shader depending on the implementation.
+    execute in either a vertex or fragment shader depending on the implementation. */
     /**@{*/
 
     /** \brief Set the transfer function image.

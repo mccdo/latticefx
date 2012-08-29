@@ -108,7 +108,7 @@ int main( int argc, char** argv )
     unsigned char* pixelPtr( pixels );
     
     BOOST_ASSERT_MSG( length == numPixels, "The length of the file is different than the size specified on the command line." );
-    for( size_t i=0; i < (xSize * ySize * zSize); ++i ) 
+    for( size_t i=0; i < length; ++i ) 
     { 
         *pixelPtr++ = buffer[ i ];
     } 
