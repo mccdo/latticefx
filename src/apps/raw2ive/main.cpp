@@ -42,6 +42,7 @@
 #endif
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/assert.hpp>
 
 #include <osg/Image>
 #include <osg/Texture3D>
@@ -89,9 +90,7 @@ int main( int argc, char** argv )
         return 1;
     }
 
-    std::ifstream rawStream(raw_filename.c_str(), std::ifstream::binary);
-    //Check is file exists
-    
+    std::ifstream rawStream(raw_filename.c_str(), std::ifstream::binary);    
     
     // get length of file:
     rawStream.seekg(0, std::ios::end);
@@ -108,7 +107,7 @@ int main( int argc, char** argv )
     unsigned char* pixels( new unsigned char[ numPixels ] );
     unsigned char* pixelPtr( pixels );
     
-    std::cout << "File length = " << length << " Texture size = " << (xSize * ySize * zSize) << std::endl;
+    BOOST_ASSERT_MSG( length == numPixels, "The length of the file is different than the size specified on the command line." );
     for( size_t i=0; i < (xSize * ySize * zSize); ++i ) 
     { 
         *pixelPtr++ = buffer[ i ];
