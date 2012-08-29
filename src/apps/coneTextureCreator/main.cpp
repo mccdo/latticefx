@@ -60,6 +60,8 @@
 #define CONE_HEIGHT 250
 #define CONE_RADIUS 125
 
+#define SPHERE_RADIUS 128
+
 #define TEXTURE_X 256
 #define TEXTURE_Y 256
 #define TEXTURE_Z 256
@@ -285,7 +287,7 @@ protected:
         return( cdLOD );
     }
     
-    bool testVoxel( const double x, const double y, const double z )
+    virtual bool testVoxel( const double x, const double y, const double z )
     {
         if( z >= CONE_HEIGHT )
             return false;
@@ -321,6 +323,82 @@ protected:
     osg::BoundingBoxd m_brickBB;
 };
 
+class CircleImageProcess : public ImageProcess
+{
+public:
+    CircleImageProcess( unsigned int depth=3 )
+        : 
+        ImageProcess( depth )
+    {
+        setActionType( Preprocess::REPLACE_DATA );
+        m_dataBB.set( -TEXTURE_HALF_X, -TEXTURE_HALF_Y,        0.,
+                       TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
+    }
+    
+    virtual ChannelDataPtr operator()()
+    {
+        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        const std::string dataName( input->getName() );
+        osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
+        std::string brickNum;
+        return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
+    }
+    
+protected:
+    virtual bool testVoxel( const double x, const double y, const double z )
+    {
+        if( y >= SPHERE_RADIUS || x >= SPHERE_RADIUS )
+            return false;
+        
+        //Since x and y are in world space there is no need to center the data
+        //about 0,0,0. We do need to sift the sphere up by the radius so that
+        //it fits in the volume correctly.
+        const double radiusTest = double( (x * x) + (y * y) + ( (z - SPHERE_RADIUS) * (z - SPHERE_RADIUS) ) );
+        
+        const double sphereConstant = double( SPHERE_RADIUS ) * double( SPHERE_RADIUS );
+                
+        return( sphereConstant >= radiusTest );
+    }
+};
+
+class CylinderImageProcess : public ImageProcess
+{
+public:
+    CylinderImageProcess( unsigned int depth=3 )
+    : 
+    ImageProcess( depth )
+    {
+        setActionType( Preprocess::REPLACE_DATA );
+        m_dataBB.set( -TEXTURE_HALF_X, -TEXTURE_HALF_Y,        0.,
+                       TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
+    }
+    
+    virtual ChannelDataPtr operator()()
+    {
+        ChannelDataOSGImagePtr input( boost::static_pointer_cast< ChannelDataOSGImage >( _inputs[ 0 ] ) );
+        const std::string dataName( input->getName() );
+        osg::Vec3d subOrigin( m_dataBB.xMin(), m_dataBB.yMin(), m_dataBB.zMin() );
+        std::string brickNum;
+        return( recurseBuildTree( 0, 0., 25000., subOrigin, brickNum ) );
+    }
+    
+protected:
+    virtual bool testVoxel( const double x, const double y, const double z )
+    {
+        if( y >= SPHERE_RADIUS || x >= SPHERE_RADIUS )
+            return false;
+        
+        //Since x and y are in world space there is no need to center the data
+        //about 0,0,0. We do need to sift the sphere up by the radius so that
+        //it fits in the volume correctly.
+        const double radiusTest = double( (x * x) + (y * y) );
+        
+        const double sphereConstant = double( SPHERE_RADIUS ) * double( SPHERE_RADIUS );
+        
+        return( sphereConstant >= radiusTest );
+    }
+};
+
 bool testVoxel( const int x, const int y, const int z )
 {
     if( z >= CONE_HEIGHT )
@@ -339,7 +417,7 @@ bool testVoxel( const int x, const int y, const int z )
     
     return( heightRadius >= radiusTest );
 }
-
+    
 void writeVoxel( const size_t numPixels, unsigned char* pixels )
 {
     osg::ref_ptr< osg::Image > image = new osg::Image();
