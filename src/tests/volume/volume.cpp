@@ -41,6 +41,8 @@
 #include <osg/MatrixTransform>
 #include <osg/PolygonMode>
 
+#include <osgwTools/Shapes.h>
+
 #include <iostream>
 
 
@@ -122,6 +124,8 @@ int main( int argc, char** argv )
         root->addChild( mtB );
 
         // C: translate, scale AND rotate
+        // Note this is a non-uniform scale, performed after the rotation,
+        // so the volume will be skewed.
         const osg::Matrix transformC = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 1.0, 0.0, 0.0 ) *
                 osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
                 osg::Matrixd::translate( 100.0, 0.0, 0.0 );
@@ -130,21 +134,13 @@ int main( int argc, char** argv )
         root->addChild( mtC );
         // Put wireframe boxes around volumes to test rotation and scaling of texture versus osg object
         // This requires a pre-built cube object of unit size.
-        if (0)
+        if( true )
         {
-           osg::Node* cubeNode = osgDB::readNodeFile("1mCube.lwo");
-           osg::MatrixTransform* cubeTransform( new osg::MatrixTransform );
-           osg::Matrix cubeScale;
-           cubeScale *= osg::Matrixd::scale(dims);
-           cubeTransform->setMatrix(cubeScale);
-           cubeTransform->addChild(cubeNode);
-           osg::PolygonMode *mode = new osg::PolygonMode;
-           mode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-           cubeTransform->getOrCreateStateSet()->setAttribute(mode);
-
-           mtA->addChild(cubeTransform);
-           mtB->addChild(cubeTransform);
-           mtC->addChild(cubeTransform);
+            osg::Geode* cubeNode( new osg::Geode() );
+            cubeNode->addDrawable( osgwTools::makeWireBox( osg::Matrixd::scale( dims ), osg::Vec3( .5, .5, .5 ) ) );
+            mtA->addChild( cubeNode );
+            mtB->addChild( cubeNode );
+            mtC->addChild( cubeNode );
         }
     }
     else
