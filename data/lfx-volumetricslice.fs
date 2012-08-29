@@ -22,7 +22,9 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
         pow( max( dot( reflectVec, eyeVec ), 0. ), specExp );
     spec = clamp( spec, 0., 1. );
 
-    return( gl_FrontLightModelProduct.sceneColor + amb + diff + spec );
+    vec4 outColor = gl_FrontLightModelProduct.sceneColor + amb + diff + spec;
+    outColor.a = baseColor.a;
+    return( outColor );
 }
 
 /** end light **/
@@ -159,7 +161,6 @@ void main( void )
     vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
-    finalColor.a = color.a;
 
 
     gl_FragData[ 0 ] = finalColor;
