@@ -41,6 +41,7 @@
 #include <osg/Shader>
 #include <osg/Program>
 #include <osg/Uniform>
+#include <osg/Depth>
 #include <osgDB/FileUtils>
 
 
@@ -223,11 +224,9 @@ osg::StateSet* VolumeRenderer::getRootState()
     fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
     stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
-    // Do not need to read, test against, or write the depth buffer.
-    // This should be fine as long as the volume is the last thing rendered
-    // in a frame; if something is rendered *after* the volume and intersects
-    // the volume, then we would have incorrect rendering.
-    stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+    // Do not need to write the depth buffer.
+    osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
+    stateSet->setAttributeAndModes( depth );
 
     // Set base class transfer function and volume texture uniforms.
     addHardwareFeatureUniforms( stateSet.get() );
