@@ -447,7 +447,7 @@ DataSetPtr createDataSet()
     //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
-    op->addInput( "texture" );
+    //op->addInput( "texture" );
     dsp->addPreprocess( PreprocessPtr( op ) );
     
     return( dsp );
