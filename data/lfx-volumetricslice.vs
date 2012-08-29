@@ -126,7 +126,7 @@ void main( void )
    vec3 modelTranslation = vec3(modelMat[0].w, modelMat[1].w, modelMat[2].w);
    vec3 cubeDims;
    
-   float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims) * .5;
+   float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims);
    vec3 cubeCenter = getCubeCenterPos(modelTranslation);
    
    vec4 mvNearestVertex, mvFarthestVertex;
@@ -151,14 +151,9 @@ void main( void )
     vec4 quadPosition = vec4(mvCubeDirection.xyz * curQuadDist, 1.0);
          
     // Resize the quad's vertex by the distance across the cube diagonally
-    if (gl_Vertex.x >= 0.0)
-        newVertexPos.x = cubeDiagonal;
-    else
-        newVertexPos.x = -cubeDiagonal;
-    if (gl_Vertex.y >= 0.0)
-        newVertexPos.y = cubeDiagonal;
-    else
-        newVertexPos.y = -cubeDiagonal;
+    // gl_Vertex.x & y values are +/- 0.5, so just multiply by the diagonal.
+    newVertexPos.x = gl_Vertex.x * cubeDiagonal;
+    newVertexPos.y = gl_Vertex.y * cubeDiagonal;
     newVertexPos.z = 0.0;
           
     // rotate the point so normal aligns with the view vector
