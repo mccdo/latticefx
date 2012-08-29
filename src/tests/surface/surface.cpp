@@ -112,6 +112,11 @@ void dumpUniformInfo( const RendererPtr renderOp )
                 ostr << b;
                 break;
             }
+            default:
+            {
+                std::cout << "unsupported uniform type." << std::endl;
+                break;
+            }
             }
             LFX_CRITICAL_STATIC( logstr, ostr.str() );
         }
