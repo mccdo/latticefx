@@ -20,7 +20,7 @@ varying vec3 TexcoordFront;
 varying vec3 ecVertex;
 
 
-vec4 rotatePointToVector(vec4 point, vec4 vector)
+vec4 rotatePointToVector( vec4 point, vec4 vector )
 {
    // build a rotation matrix that will rotate the point that begins at 0,0,1
    mat4 yrot;
@@ -55,47 +55,67 @@ vec4 rotatePointToVector(vec4 point, vec4 vector)
    return rotPoint;
 }
 
-void findNearFarCubeVertexDist(vec3 cubeCenter, vec3 cubeDims, out vec4 mvNearestVertex, out vec4 mvFarthestVertex, out float nearVertDist, out float farVertDist)
+void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float nearVertDist, out float farVertDist )
 {
-   nearVertDist = 100000.0;
-   farVertDist = -100000.0;
-   vec4 cubeVertex = vec4(0.0, 0.0, 0.0, 1.0);
-   mvNearestVertex = vec4(0.0, 0.0, 0.0, nearVertDist);
-   mvFarthestVertex = vec4(0.0, 0.0, 0.0, farVertDist);
-   
-   for (int cubeX = 0; cubeX < 2; ++cubeX)
-   {
-      cubeVertex.x = cubeCenter.x;
-      cubeVertex.x += (cubeX == 1 ? cubeDims.x * .5: -cubeDims.x * .5);
-      for (int cubeY = 0; cubeY < 2; ++cubeY)
-      {
-         cubeVertex.y = cubeCenter.y;
-         cubeVertex.y += (cubeY == 1 ? cubeDims.y * .5: -cubeDims.y * .5);
-         for (int cubeZ = 0; cubeZ < 2; ++cubeZ)
-         {
-            cubeVertex.z = cubeCenter.z;
-            cubeVertex.z += (cubeZ == 1 ? cubeDims.z * .5: -cubeDims.z * .5);
-            vec4 mvCubeVertex = gl_ModelViewMatrix * cubeVertex;
+    // This could all be done with nested loops and in fact was originally coded that way.
+    // However, unrolling the loops makes it much more efficient.
 
-            // In view space -z is in front of the camera
-             float vertDistZ = -mvCubeVertex.z;
-             float vertDistLen = length(mvCubeVertex);
-             if (mvCubeVertex.z > 0.0) vertDistLen = -vertDistLen;
-             float minVertDist = vertDistLen < vertDistZ ? vertDistLen: vertDistZ;
-             float maxVertDist = vertDistLen > vertDistZ ? vertDistLen: vertDistZ;
-             if (minVertDist < nearVertDist)
-             {
-                nearVertDist = minVertDist;
-                mvNearestVertex = mvCubeVertex;
-             }
-             if (maxVertDist > farVertDist)
-             {
-                farVertDist = maxVertDist;
-                mvFarthestVertex = mvCubeVertex;
-             }
-         }
-      }
-   }
+    // Compute the 8 cube verts in eye coords.
+    vec3 c = cubeCenter;
+    vec3 hd = cubeDims * .5;
+    vec4 v0 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z - hd.z, 1. );
+    vec4 v1 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z - hd.z, 1. );
+    vec4 v2 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z - hd.z, 1. );
+    vec4 v3 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z - hd.z, 1. );
+    vec4 v4 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z + hd.z, 1. );
+    vec4 v5 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z + hd.z, 1. );
+    vec4 v6 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z + hd.z, 1. );
+    vec4 v7 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z + hd.z, 1. );
+
+    // The farthest vert distance will be the length of the eye coord vector.
+    // However, length() involves a sqrt. So, instead we use the dot product of
+    // the eye coord vector to determine the max distance, then, once we've
+    // finally found it, we take the sqrt of that dot product. This means just
+    // one sqrt is performed.
+    // Mathematically:
+    //   sqrt( dot( v, v ) ) == length( v )
+    farVertDist = -1000000000.;
+    if( v0.z < 0. ) // Don't even consider it if it's not in front of the 'eye'.
+        farVertDist = max( farVertDist, dot( v0, v0 ) );
+    if( v1.z < 0. )
+        farVertDist = max( farVertDist, dot( v1, v1 ) );
+    if( v2.z < 0. )
+        farVertDist = max( farVertDist, dot( v2, v2 ) );
+    if( v3.z < 0. )
+        farVertDist = max( farVertDist, dot( v3, v3 ) );
+    if( v4.z < 0. )
+        farVertDist = max( farVertDist, dot( v4, v4 ) );
+    if( v5.z < 0. )
+        farVertDist = max( farVertDist, dot( v5, v5 ) );
+    if( v6.z < 0. )
+        farVertDist = max( farVertDist, dot( v6, v6 ) );
+    if( v7.z < 0. )
+        farVertDist = max( farVertDist, dot( v7, v7 ) );
+
+    if( farVertDist < 0. )
+    {
+        // The entire volume is behind the 'eye'.
+        nearVertDist = farVertDist;
+        return;
+    }
+    // Take our single sqrt here.
+    farVertDist = sqrt( farVertDist );
+
+    // The nearest vert distance will always be the eye coord z. However, eye coords are
+    // right handed, so -z is in front of the 'eye'. Therefore, negate each z value.
+    nearVertDist = min( 1000000000., -v0.z );
+    nearVertDist = min( nearVertDist, -v1.z );
+    nearVertDist = min( nearVertDist, -v2.z );
+    nearVertDist = min( nearVertDist, -v3.z );
+    nearVertDist = min( nearVertDist, -v4.z );
+    nearVertDist = min( nearVertDist, -v5.z );
+    nearVertDist = min( nearVertDist, -v6.z );
+    nearVertDist = min( nearVertDist, -v7.z );
 }
 
 vec3 getCubeScales(mat4 modelMat)
@@ -129,9 +149,8 @@ void main( void )
    float cubeDiagonal = getCubeDiagonalLength(getCubeScales(modelMat), cubeDims);
    vec3 cubeCenter = getCubeCenterPos(modelTranslation);
    
-   vec4 mvNearestVertex, mvFarthestVertex;
    float farVertDist, nearVertDist;
-   findNearFarCubeVertexDist(cubeCenter, cubeDims, mvNearestVertex, mvFarthestVertex, nearVertDist, farVertDist);
+   findNearFarCubeVertexDist( cubeCenter, cubeDims, nearVertDist, farVertDist );
    
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
     if( ( farVertDist <= 0.0 ) ||
@@ -144,11 +163,11 @@ void main( void )
 
     // All work to be done in (eye coords) view space
     // Find center of cube in (eye coords) model space where the origin is the camera location
-    vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4(cubeCenter, 1.0);
+    vec4 mvVolumeCenter = gl_ModelViewMatrix * vec4( cubeCenter, 1.0 );
     // find the view vector from camera to object
-    vec4 mvCubeDirection = vec4(normalize(mvVolumeCenter.xyz), 1.0);
+    vec3 mvCubeDirection = normalize( mvVolumeCenter.xyz );
     // Find location of our new quad
-    vec4 quadPosition = vec4(mvCubeDirection.xyz * curQuadDist, 1.0);
+    vec4 quadPosition = vec4( mvCubeDirection * curQuadDist, 1.0);
          
     // Resize the quad's vertex by the distance across the cube diagonally
     // gl_Vertex.x & y values are +/- 0.5, so just multiply by the diagonal.
@@ -157,7 +176,7 @@ void main( void )
     newVertexPos.z = 0.0;
           
     // rotate the point so normal aligns with the view vector
-    newVertexPos = rotatePointToVector(newVertexPos, normalize(-quadPosition) );
+    newVertexPos = rotatePointToVector( newVertexPos, vec4( -mvCubeDirection, 1. ) );
    
     // move quad to target position in view space
     newVertexPos.x += quadPosition.x;
@@ -167,9 +186,9 @@ void main( void )
     // Find the coordinates in model space relative to the data cube
     // newVertexPos is in eye coords. vertexCopy is in object coords.
     vec4 vertexCopy = gl_ModelViewMatrixInverse * newVertexPos;
-    Texcoord = vec3(.5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
+    Texcoord = vec3( .5 + (vertexCopy.x - cubeCenter.x) / VolumeDims.x,
         .5 + (vertexCopy.y - cubeCenter.y) / VolumeDims.y,
-        .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z);
+        .5 + (vertexCopy.z - cubeCenter.z) / VolumeDims.z );
             
     // Surrounding texture coords used for surface normal derivation
     TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
