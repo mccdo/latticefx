@@ -137,13 +137,11 @@ void main( void )
 {
     mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
     vec3 ocCenter = VolumeCenter;
-    vec3 wcCenter = ocCenter + vec3( modelMat[0].w, modelMat[1].w, modelMat[2].w );
-    //vec3 wcCenter = getCubeCenterPos( modelMat[3].xyz );
     vec3 wcCubeDims;
     float wcDiagLength = getCubeDiagonalLength( getCubeScales( modelMat ), wcCubeDims );
 
     float farVertDist, nearVertDist;
-    findNearFarCubeVertexDist( wcCenter, wcCubeDims, nearVertDist, farVertDist );
+    findNearFarCubeVertexDist( ocCenter, wcCubeDims, nearVertDist, farVertDist );
    
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
     if( ( farVertDist <= 0.0 ) ||
