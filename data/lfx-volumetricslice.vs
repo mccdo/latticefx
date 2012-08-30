@@ -141,7 +141,7 @@ void main( void )
     float wcDiagLength = getCubeDiagonalLength( getCubeScales( gl_ModelViewMatrix ), wcCubeDims );
 
     float farVertDist, nearVertDist;
-    findNearFarCubeVertexDist( ocCenter, wcCubeDims, nearVertDist, farVertDist );
+    findNearFarCubeVertexDist( ocCenter, ocDims, nearVertDist, farVertDist );
    
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
     if( ( farVertDist <= 0.0 ) ||
