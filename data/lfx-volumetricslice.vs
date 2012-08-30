@@ -22,37 +22,37 @@ varying vec3 ecVertex;
 
 vec4 rotatePointToVector( vec4 point, vec4 vector )
 {
-   // build a rotation matrix that will rotate the point that begins at 0,0,1
-   mat4 yrot;
-   mat4 xrot;
-  
-   // rotate around y first
-   float hypot = vector.x * vector.x + vector.z * vector.z;
-   hypot = sqrt(hypot);
-   float cosTheta = vector.z / hypot;
-   float sinTheta = vector.x / hypot;
+    // build a rotation matrix that will rotate the point that begins at 0,0,1
+    mat4 yrot;
+    mat4 xrot;
 
-   yrot[0] = vec4(cosTheta, 0.0, sinTheta, 0.0);
-   yrot[1] = vec4(0.0, 1.0, 0.0, 0.0);
-   yrot[2] = vec4(-sinTheta, 0.0, cosTheta, 0.0);
-   yrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
+    // rotate around y first
+    float hypot = vector.x * vector.x + vector.z * vector.z;
+    hypot = sqrt(hypot);
+    float cosTheta = vector.z / hypot;
+    float sinTheta = vector.x / hypot;
 
-   vec4 temp = vector * yrot;
-   
-   // rotate around x
-   hypot = temp.y * temp.y + temp.z * temp.z;
-   cosTheta = temp.z / hypot;
-   sinTheta = temp.y / hypot;
-   
-   xrot[0] = vec4(1.0, 0.0, 0.0, 0.0);
-   xrot[1] = vec4(0.0, cosTheta, sinTheta, 0.0);
-   xrot[2] = vec4(0.0, -sinTheta, cosTheta, 0.0);
-   xrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
-   
-   mat4 finalRot = yrot * xrot;
-   
-   vec4 rotPoint = point * finalRot;
-   return rotPoint;
+    yrot[0] = vec4(cosTheta, 0.0, sinTheta, 0.0);
+    yrot[1] = vec4(0.0, 1.0, 0.0, 0.0);
+    yrot[2] = vec4(-sinTheta, 0.0, cosTheta, 0.0);
+    yrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
+
+    vec4 temp = vector * yrot;
+
+    // rotate around x
+    hypot = temp.y * temp.y + temp.z * temp.z;
+    cosTheta = temp.z / hypot;
+    sinTheta = temp.y / hypot;
+
+    xrot[0] = vec4(1.0, 0.0, 0.0, 0.0);
+    xrot[1] = vec4(0.0, cosTheta, sinTheta, 0.0);
+    xrot[2] = vec4(0.0, -sinTheta, cosTheta, 0.0);
+    xrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
+
+    mat4 finalRot = yrot * xrot;
+
+    vec4 rotPoint = point * finalRot;
+    return rotPoint;
 }
 
 void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float nearVertDist, out float farVertDist )
@@ -120,30 +120,32 @@ void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float 
 
 vec3 getCubeScales(mat4 modelMat)
 {
-   vec3 modelMatScales;
-   modelMatScales.x = length(vec3(modelMat[0].x, modelMat[1].x, modelMat[2].x));
-   modelMatScales.y = length(vec3(modelMat[0].y, modelMat[1].y, modelMat[2].y));
-   modelMatScales.z = length(vec3(modelMat[0].z, modelMat[1].z, modelMat[2].z));
-   return modelMatScales;
+    vec3 modelMatScales;
+    modelMatScales.x = length(vec3(modelMat[0].x, modelMat[1].x, modelMat[2].x));
+    modelMatScales.y = length(vec3(modelMat[0].y, modelMat[1].y, modelMat[2].y));
+    modelMatScales.z = length(vec3(modelMat[0].z, modelMat[1].z, modelMat[2].z));
+    return modelMatScales;
 }
 
-float getCubeDiagonalLength( in vec3 modelMatScales, out vec3 cubeDims  )
+float getCubeDiagonalLength( in vec3 modelMatScales )
 {
-   cubeDims = VolumeDims * modelMatScales;
-   return( length( cubeDims ) );
+    vec3 cubeDims = VolumeDims * modelMatScales;
+    return( length( cubeDims ) );
 }
 
 void main( void )
 {
+    // Shortcut names with coordinate system prefix.
     vec3 ocDims = VolumeDims;
     vec3 ocCenter = VolumeCenter;
-    vec3 wcCubeDims;
-    float wcDiagLength = getCubeDiagonalLength( getCubeScales( gl_ModelViewMatrix ), wcCubeDims );
 
+    // Compute nearest and furthest distances to the min and max cube extents.
     float farVertDist, nearVertDist;
     findNearFarCubeVertexDist( ocCenter, ocDims, nearVertDist, farVertDist );
-   
+
+    // Determine distance to current quad slice, based on plane spacing and the instance ID.
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
+    // Shortcut return: Clip entire quad slice if no more rendering is needed.
     if( ( farVertDist <= 0.0 ) ||
         ( curQuadDist <= nearVertDist ) )
     {
@@ -152,31 +154,35 @@ void main( void )
         return;
     }
 
-    // All work to be done in (eye coords) view space
-    // Find center of cube in (eye coords) model space where the origin is the camera location
+    // Compute a normalized direction vector to the volume center in eye coordinates.
     vec4 ecCenter = gl_ModelViewMatrix * vec4( ocCenter, 1.0 );
-    // find the view vector from camera to object
     vec3 ecCenterDir = normalize( ecCenter.xyz );
-    // Find location of our new quad
+    // Compute the center position of the current quad.
     vec4 ecQuadCenter = vec4( ecCenterDir * curQuadDist, 1.0);
 
-    // Resize the quad's vertex by the distance across the cube diagonally
-    // gl_Vertex.x and y values are +/- 0.5, so just multiply by the diagonal.
-    vec4 quadVertex = vec4( gl_Vertex.xy * wcDiagLength, 0., gl_Vertex.w );
+    // Resize the quad's vertex xy coords by the distance across the cube diagonally.
+    // Incoming gl_Vertex.x and y values are +/- 0.5, so just multiply by the diagonal length.
+    float ecDiagLength = getCubeDiagonalLength( getCubeScales( gl_ModelViewMatrix ) );
+    vec4 quadVertex = vec4( gl_Vertex.xy * ecDiagLength, 0., gl_Vertex.w );
 
-    // rotate the point so normal aligns with the view vector
+    // rotate the quad so its normal aligns with the volume center vector.
     quadVertex = rotatePointToVector( quadVertex, vec4( -ecCenterDir, 1. ) );
-   
-    // move quad to target position in view space
+
+    // move quad to target position in eye coordinates.
     vec4 ecQuadVertex = vec4( ecQuadCenter.xyz + quadVertex.xyz, 1. );
-         
-    // Find the coordinates in obj coord space relative to the data cube
-    vec4 vertexCopy = gl_ModelViewMatrixInverse * ecQuadVertex;
-    Texcoord = vec3( .5 + (vertexCopy.x - ocCenter.x) / ocDims.x,
-        .5 + (vertexCopy.y - ocCenter.y) / ocDims.y,
-        .5 + (vertexCopy.z - ocCenter.z) / ocDims.z );
-            
-    // Surrounding texture coords used for surface normal derivation
+
+    // Compute the texture coordinate for the quad vertex.
+    // The extent of the volume (accounting for ocCenter and ocDims) is -0.5 to 0.5
+    // in all axes. By adding 0.5 to each coordinate, we get tex coords in the range
+    // 0.0 to 1.0. Our tex coords will be outside that range (we render with overlap
+    // to account for a worst-case view alignment).
+    vec4 ocQuadVertex = gl_ModelViewMatrixInverse * ecQuadVertex;
+    Texcoord = vec3(
+        ( ocQuadVertex.x - ocCenter.x ) / ocDims.x + .5,
+        ( ocQuadVertex.y - ocCenter.y ) / ocDims.y + .5,
+        ( ocQuadVertex.z - ocCenter.z ) / ocDims.z + .5 );
+
+    // Surrounding texture coords used for surface normal derivation.
     TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
     TexcoordRight = Texcoord + vec3(.01, 0.0, 0.0);
     TexcoordBack    = Texcoord + vec3(0.0, 0.0, .01);
@@ -185,10 +191,11 @@ void main( void )
     TexcoordFront  = Texcoord + vec3(0.0, 0.0, -.01);
 
 
-    // set the position
+    // Wrap-uo code.
+    // Compute clip coordinates.
     gl_Position = gl_ProjectionMatrix * ecQuadVertex;
 
-    // Lighting
+    // Additional values used in fragment lighting code.
     ecVertex = ecQuadVertex.xyz;
     gl_FrontColor = gl_Color;
     gl_BackColor = gl_Color;
