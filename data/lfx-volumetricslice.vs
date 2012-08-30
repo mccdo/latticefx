@@ -135,10 +135,10 @@ float getCubeDiagonalLength( in vec3 modelMatScales, out vec3 cubeDims  )
 
 void main( void )
 {
-    mat4 modelMat = osg_ViewMatrixInverse * gl_ModelViewMatrix;
+    vec3 ocDims = VolumeDims;
     vec3 ocCenter = VolumeCenter;
     vec3 wcCubeDims;
-    float wcDiagLength = getCubeDiagonalLength( getCubeScales( modelMat ), wcCubeDims );
+    float wcDiagLength = getCubeDiagonalLength( getCubeScales( gl_ModelViewMatrix ), wcCubeDims );
 
     float farVertDist, nearVertDist;
     findNearFarCubeVertexDist( ocCenter, wcCubeDims, nearVertDist, farVertDist );
@@ -172,9 +172,9 @@ void main( void )
          
     // Find the coordinates in obj coord space relative to the data cube
     vec4 vertexCopy = gl_ModelViewMatrixInverse * ecQuadVertex;
-    Texcoord = vec3( .5 + (vertexCopy.x - ocCenter.x) / VolumeDims.x,
-        .5 + (vertexCopy.y - ocCenter.y) / VolumeDims.y,
-        .5 + (vertexCopy.z - ocCenter.z) / VolumeDims.z );
+    Texcoord = vec3( .5 + (vertexCopy.x - ocCenter.x) / ocDims.x,
+        .5 + (vertexCopy.y - ocCenter.y) / ocDims.y,
+        .5 + (vertexCopy.z - ocCenter.z) / ocDims.z );
             
     // Surrounding texture coords used for surface normal derivation
     TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
