@@ -332,7 +332,8 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 1;
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
-        tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_BORDER );
+        tf1dTex->setResizeNonPowerOfTwoHint( false );
+        tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tf1dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf1d" ), tf1dTex,
             osg::StateAttribute::OFF );
@@ -343,8 +344,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 2;
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
-        tf2dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_BORDER );
-        tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_BORDER );
+        tf2dTex->setResizeNonPowerOfTwoHint( false );
+        tf2dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
         tf2dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf2d" ), tf2dTex,
             osg::StateAttribute::OFF );
@@ -355,9 +357,10 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tfDimension = 3;
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
-        tf3dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_BORDER );
-        tf3dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_BORDER );
-        tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_BORDER );
+        tf3dTex->setResizeNonPowerOfTwoHint( false );
+        tf3dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        tf3dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+        tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE );
         tf3dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf3d" ), tf3dTex,
             osg::StateAttribute::OFF );
