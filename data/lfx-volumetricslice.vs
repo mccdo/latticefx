@@ -23,8 +23,6 @@ varying vec3 ecVertex;
 vec4 rotatePointToVector( vec4 point, vec4 vector )
 {
     // build a rotation matrix that will rotate the point that begins at 0,0,1
-    mat4 yrot;
-    mat4 xrot;
 
     // rotate around y first
     float hypot = vector.x * vector.x + vector.z * vector.z;
@@ -32,30 +30,30 @@ vec4 rotatePointToVector( vec4 point, vec4 vector )
     float cosTheta = vector.z / hypot;
     float sinTheta = vector.x / hypot;
 
-    yrot[0] = vec4(cosTheta, 0.0, sinTheta, 0.0);
-    yrot[1] = vec4(0.0, 1.0, 0.0, 0.0);
-    yrot[2] = vec4(-sinTheta, 0.0, cosTheta, 0.0);
-    yrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
+    mat4 yrot = mat4(
+        cosTheta, 0.0, -sinTheta, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        sinTheta, 0.0, cosTheta, 0.0,
+        0.0, 0.0, 0.0, 1.0 );
 
-    vec4 temp = vector * yrot;
+    vec4 temp = yrot * vector;
 
     // rotate around x
     hypot = temp.y * temp.y + temp.z * temp.z;
     cosTheta = temp.z / hypot;
     sinTheta = temp.y / hypot;
 
-    xrot[0] = vec4(1.0, 0.0, 0.0, 0.0);
-    xrot[1] = vec4(0.0, cosTheta, sinTheta, 0.0);
-    xrot[2] = vec4(0.0, -sinTheta, cosTheta, 0.0);
-    xrot[3] = vec4(0.0, 0.0, 0.0, 1.0);
+    mat4 xrot = mat4( 
+        1.0, 0.0, 0.0, 0.0,
+        0.0, cosTheta, -sinTheta, 0.0,
+        0.0, sinTheta, cosTheta, 0.0,
+        0.0, 0.0, 0.0, 1.0 );
 
-    mat4 finalRot = yrot * xrot;
-
-    vec4 rotPoint = point * finalRot;
-    return rotPoint;
+    vec4 rotPoint = xrot * yrot * point;
+    return( rotPoint );
 }
 
-void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float nearVertDist, out float farVertDist )
+void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3 cubeDims, out float nearVertDist, out float farVertDist )
 {
     // This could all be done with nested loops and in fact was originally coded that way.
     // However, unrolling the loops makes it much more efficient.
@@ -73,52 +71,146 @@ void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float 
     vec4 v7 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z + hd.z, 1. );
 
     // The farthest vert distance will be the length of the eye coord vector.
-    // However, length() involves a sqrt. So, instead we use the dot product of
-    // the eye coord vector to determine the max distance, then, once we've
-    // finally found it, we take the sqrt of that dot product. This means just
-    // one sqrt is performed.
-    // Mathematically:
-    //   sqrt( dot( v, v ) ) == length( v )
-    farVertDist = -1000000000.;
+    // However, length() involves a sqrt. So, for efficiency, use the squared
+    // length (dot product).
+    float farDist = -1000000000.;
+    vec4 farVert;
     if( v0.z < 0. ) // Don't even consider it if it's not in front of the 'eye'.
-        farVertDist = max( farVertDist, dot( v0, v0 ) );
+    {
+        float d = dot( v0, v0 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v0;
+        }
+    }
     if( v1.z < 0. )
-        farVertDist = max( farVertDist, dot( v1, v1 ) );
+    {
+        float d = dot( v1, v1 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v1;
+        }
+    }
     if( v2.z < 0. )
-        farVertDist = max( farVertDist, dot( v2, v2 ) );
+    {
+        float d = dot( v2, v2 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v2;
+        }
+    }
     if( v3.z < 0. )
-        farVertDist = max( farVertDist, dot( v3, v3 ) );
+    {
+        float d = dot( v3, v3 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v3;
+        }
+    }
     if( v4.z < 0. )
-        farVertDist = max( farVertDist, dot( v4, v4 ) );
+    {
+        float d = dot( v4, v4 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v4;
+        }
+    }
     if( v5.z < 0. )
-        farVertDist = max( farVertDist, dot( v5, v5 ) );
+    {
+        float d = dot( v5, v5 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v5;
+        }
+    }
     if( v6.z < 0. )
-        farVertDist = max( farVertDist, dot( v6, v6 ) );
+    {
+        float d = dot( v6, v6 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v6;
+        }
+    }
     if( v7.z < 0. )
-        farVertDist = max( farVertDist, dot( v7, v7 ) );
+    {
+        float d = dot( v7, v7 );
+        if( d > farDist )
+        {
+            farDist = d;
+            farVert = v7;
+        }
+    }
 
-    if( farVertDist < 0. )
+    if( farDist < 0. )
     {
         // The entire volume is behind the 'eye'.
+        farVertDist = farDist;
         nearVertDist = 0.;
         return;
     }
-    // Take our single sqrt here.
-    farVertDist = sqrt( farVertDist );
 
     // The nearest vert distance will always be the eye coord z. However, eye coords are
     // right handed, so -z is in front of the 'eye'. Therefore, negate each z value.
-    nearVertDist = min( 1000000000., -v0.z );
-    nearVertDist = min( nearVertDist, -v1.z );
-    nearVertDist = min( nearVertDist, -v2.z );
-    nearVertDist = min( nearVertDist, -v3.z );
-    nearVertDist = min( nearVertDist, -v4.z );
-    nearVertDist = min( nearVertDist, -v5.z );
-    nearVertDist = min( nearVertDist, -v6.z );
-    nearVertDist = min( nearVertDist, -v7.z );
+    float nearDist = 1000000000.;
+    vec4 nearVert;
+    if( -v0.z < nearDist )
+    {
+        nearDist = -v0.z;
+        nearVert = v0;
+    }
+    if( -v1.z < nearDist )
+    {
+        nearDist = -v1.z;
+        nearVert = v1;
+    }
+    if( -v2.z < nearDist )
+    {
+        nearDist = -v2.z;
+        nearVert = v2;
+    }
+    if( -v3.z < nearDist )
+    {
+        nearDist = -v3.z;
+        nearVert = v3;
+    }
+    if( -v4.z < nearDist )
+    {
+        nearDist = -v4.z;
+        nearVert = v4;
+    }
+    if( -v5.z < nearDist )
+    {
+        nearDist = -v5.z;
+        nearVert = v5;
+    }
+    if( -v6.z < nearDist )
+    {
+        nearDist = -v6.z;
+        nearVert = v6;
+    }
+    if( -v7.z < nearDist )
+    {
+        nearDist = -v7.z;
+        nearVert = v7;
+    }
+
+    // Compute the distances to the planes defined by the given normal
+    // ecCenterDir, and containing the vertices farVert and nearVert.
+    //   Distance d = dot( n, p ) / dot( n, n )
+    // n must be normalized.
+    float ecDirDot = dot( ecCenterDir, ecCenterDir );
+    farVertDist = dot( ecCenterDir, farVert.xyz ) / ecDirDot;
+
     // Should never have a near distance less than 0; we would never
     // render a quad at that distance.
-    nearVertDist = max( nearVertDist, 0. );
+    nearVertDist = max( dot( ecCenterDir, nearVert.xyz ) / ecDirDot, 0. );
 }
 
 vec3 getCubeScales(mat4 modelMat)
@@ -142,23 +234,24 @@ void main( void )
     vec3 ocDims = VolumeDims;
     vec3 ocCenter = VolumeCenter;
 
+    // Compute a normalized direction vector to the volume center in eye coordinates.
+    vec4 ecCenter = gl_ModelViewMatrix * vec4( ocCenter, 1.0 );
+    vec3 ecCenterDir = normalize( ecCenter.xyz );
+
     // Compute nearest and furthest distances to the min and max cube extents.
     float farVertDist, nearVertDist;
-    findNearFarCubeVertexDist( ocCenter, ocDims, nearVertDist, farVertDist );
+    findNearFarCubeVertexDist( ecCenterDir, ocCenter, ocDims, nearVertDist, farVertDist );
 
     // Determine distance to current quad slice, based on plane spacing and the instance ID.
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
     // Shortcut return: Clip entire quad slice if no more rendering is needed.
-    if( curQuadDist <= 0.0 )
+    if( curQuadDist <= nearVertDist )
     {
         // Clip the vertex.
         gl_Position = vec4( 1., 1., 1., 0. );
         return;
     }
 
-    // Compute a normalized direction vector to the volume center in eye coordinates.
-    vec4 ecCenter = gl_ModelViewMatrix * vec4( ocCenter, 1.0 );
-    vec3 ecCenterDir = normalize( ecCenter.xyz );
     // Compute the center position of the current quad.
     vec4 ecQuadCenter = vec4( ecCenterDir * curQuadDist, 1.0);
 
