@@ -183,12 +183,13 @@ void main( void )
         ( ocQuadVertex.z - ocCenter.z ) / ocDims.z + .5 );
 
     // Surrounding texture coords used for surface normal derivation.
-    TexcoordUp  = Texcoord + vec3(0.0, .01, 0.0);
-    TexcoordRight = Texcoord + vec3(.01, 0.0, 0.0);
-    TexcoordBack    = Texcoord + vec3(0.0, 0.0, .01);
-    TexcoordDown = Texcoord + vec3(0.0, -.01, 0.0);
-    TexcoordLeft  = Texcoord + vec3(-.01, 0.0, 0.0);
-    TexcoordFront  = Texcoord + vec3(0.0, 0.0, -.01);
+    const float delta = 0.01;
+    TexcoordUp  = Texcoord + vec3( 0., delta, 0. );
+    TexcoordRight = Texcoord + vec3( delta, 0. , 0. );
+    TexcoordBack    = Texcoord + vec3( 0., 0., delta );
+    TexcoordDown = Texcoord + vec3( 0., -delta, 0. );
+    TexcoordLeft  = Texcoord + vec3( -delta, 0., 0. );
+    TexcoordFront  = Texcoord + vec3( 0., 0., -delta );
 
 
     // Wrap-uo code.

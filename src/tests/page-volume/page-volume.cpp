@@ -36,6 +36,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 #include <osgDB/FileUtils>
 #include <osgDB/FileNameUtils>
 #include <osg/Group>
@@ -194,6 +195,7 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer;
     viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
+    viewer.addEventHandler( new osgViewer::StatsHandler() );
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm );
     viewer.setSceneData( root );

@@ -47,7 +47,7 @@ vec4 transferFunction( in float index )
 
     // If tfDimension is non-zero, we get the normal destination mask.
     // If zero, set dest mask to all zeros to get all gl_Color.
-    vec4 localDestMask = tfDest * max( float( tfDimension ), 1. );
+    vec4 localDestMask = tfDest * min( float( tfDimension ), 1. );
 
     // localDestMask is rgba floats, and will be either 1.0 or 0.0 for each element.
     // For element=1.0, take element from the xfer function.
