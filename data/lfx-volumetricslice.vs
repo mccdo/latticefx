@@ -100,7 +100,7 @@ void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float 
     if( farVertDist < 0. )
     {
         // The entire volume is behind the 'eye'.
-        nearVertDist = farVertDist;
+        nearVertDist = 0.;
         return;
     }
     // Take our single sqrt here.
@@ -116,6 +116,9 @@ void findNearFarCubeVertexDist( in vec3 cubeCenter, in vec3 cubeDims, out float 
     nearVertDist = min( nearVertDist, -v5.z );
     nearVertDist = min( nearVertDist, -v6.z );
     nearVertDist = min( nearVertDist, -v7.z );
+    // Should never have a near distance less than 0; we would never
+    // render a quad at that distance.
+    nearVertDist = max( nearVertDist, 0. );
 }
 
 vec3 getCubeScales(mat4 modelMat)
@@ -146,8 +149,7 @@ void main( void )
     // Determine distance to current quad slice, based on plane spacing and the instance ID.
     float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
     // Shortcut return: Clip entire quad slice if no more rendering is needed.
-    if( ( farVertDist <= 0.0 ) ||
-        ( curQuadDist <= nearVertDist ) )
+    if( curQuadDist <= 0.0 )
     {
         // Clip the vertex.
         gl_Position = vec4( 1., 1., 1., 0. );
