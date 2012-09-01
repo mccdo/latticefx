@@ -154,6 +154,7 @@ int main( int argc, char** argv )
     */
     
     osgViewer::Viewer viewer;
+    viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
     viewer.setUpViewInWindow( 10, 30, 1200, 690 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );

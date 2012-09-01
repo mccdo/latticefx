@@ -193,7 +193,7 @@ int main( int argc, char** argv )
     root->addChild( dsp->getSceneData() );
 
     osgViewer::Viewer viewer;
-    viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );
+    viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
