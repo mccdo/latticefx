@@ -223,6 +223,7 @@ osg::StateSet* VolumeRenderer::getRootState()
     osg::BlendFunc *fn = new osg::BlendFunc();
     fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
     stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
+    stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
 
     // Do not need to write the depth buffer.
     osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
