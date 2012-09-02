@@ -203,14 +203,13 @@ void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3
 
     // Compute the distances to the planes defined by the given normal
     // ecCenterDir, and containing the vertices farVert and nearVert.
-    //   Distance d = dot( n, p ) / dot( n, n )
+    //   Distance d = dot( n, p )
     // n must be normalized.
-    float ecDirDot = dot( ecCenterDir, ecCenterDir );
-    farVertDist = dot( ecCenterDir, farVert.xyz ) / ecDirDot;
+    farVertDist = dot( ecCenterDir, farVert.xyz );
 
     // Should never have a near distance less than 0; we would never
     // render a quad at that distance.
-    nearVertDist = max( dot( ecCenterDir, nearVert.xyz ) / ecDirDot, 0. );
+    nearVertDist = max( dot( ecCenterDir, nearVert.xyz ), 0. );
 }
 
 vec3 getCubeScales(mat4 modelMat)
