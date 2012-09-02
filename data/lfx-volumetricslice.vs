@@ -270,20 +270,17 @@ void main( void )
     // in all axes. By adding 0.5 to each coordinate, we get tex coords in the range
     // 0.0 to 1.0. Our tex coords will be outside that range (we render with overlap
     // to account for a worst-case view alignment).
-    vec4 ocQuadVertex = gl_ModelViewMatrixInverse * ecQuadVertex;
-    Texcoord = vec3(
-        ( ocQuadVertex.x - ocCenter.x ) / ocDims.x + .5,
-        ( ocQuadVertex.y - ocCenter.y ) / ocDims.y + .5,
-        ( ocQuadVertex.z - ocCenter.z ) / ocDims.z + .5 );
+    vec3 ocQuadVertex = ( gl_ModelViewMatrixInverse * ecQuadVertex ).xyz;
+    Texcoord = ( ocQuadVertex - ocCenter ) / ocDims + vec3( .5 );
 
     // Surrounding texture coords used for surface normal derivation.
     const float delta = 0.01;
-    TexcoordUp  = Texcoord + vec3( 0., delta, 0. );
+    TexcoordUp = Texcoord + vec3( 0., delta, 0. );
     TexcoordRight = Texcoord + vec3( delta, 0. , 0. );
-    TexcoordBack    = Texcoord + vec3( 0., 0., delta );
+    TexcoordBack = Texcoord + vec3( 0., 0., delta );
     TexcoordDown = Texcoord + vec3( 0., -delta, 0. );
-    TexcoordLeft  = Texcoord + vec3( -delta, 0., 0. );
-    TexcoordFront  = Texcoord + vec3( 0., 0., -delta );
+    TexcoordLeft = Texcoord + vec3( -delta, 0., 0. );
+    TexcoordFront = Texcoord + vec3( 0., 0., -delta );
 
 
     // Wrap-uo code.
