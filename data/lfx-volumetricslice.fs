@@ -131,6 +131,23 @@ bool TestInBounds(vec3 sample)
    return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
 }
 
+// Return (0,0,0,0) if clipped.
+// Return (1,1,1,1) if not clipped.
+vec4 clipping( in vec3 ec )
+{
+    // Determine if inside the view. We really only care about the
+    // front plant, so set inView=true if not clipped by front plane.
+    vec4 cc = gl_ProjectionMatrix * vec4( ec, 1. );
+    bool inView = cc.z >= -cc.w;
+
+    // Inside plane 0? Set inPlane0=true if not clipped by plane 0.
+    bool inPlane0 = dot( vec4( ec, 1. ), gl_ClipPlane[ 0 ] ) > 0.;
+
+    // Return (1,1,1,1) if not plassed all the above clip tests.
+    // Return (0,0,0,0) if one or more of the about tests failed.
+    return( vec4( float( inView && inPlane0 ) ) );
+}
+
 void main( void )
 {
     // Vectex shader always sends (eye oriented) quads. Much of the quad
@@ -154,24 +171,12 @@ void main( void )
         discard;
 
 
-    vec4 fvUpColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecUp, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvUpColor = transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
-    vec4 fvRightColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecRight, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvRightColor = transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
-    vec4 fvBackColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecBack, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvBackColor = transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
-    vec4 fvDownColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecDown, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvDownColor = transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
-    vec4 fvLeftColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecLeft, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvLeftColor = transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
-    vec4 fvFrontColor = vec4( 0., 0., 0., 0. );
-    if( dot( vec4( ecFront, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
-        fvFrontColor = transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
+    vec4 fvUpColor = clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
+    vec4 fvRightColor = clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
+    vec4 fvBackColor = clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
+    vec4 fvDownColor = clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
+    vec4 fvLeftColor = clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
+    vec4 fvFrontColor = clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
     vec4 xVec = fvLeftColor - fvRightColor;
     vec4 yVec = fvDownColor - fvUpColor;
     vec4 zVec = fvFrontColor - fvBackColor;
