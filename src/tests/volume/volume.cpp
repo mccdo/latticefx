@@ -145,13 +145,14 @@ int main( int argc, char** argv )
     else
         root->addChild( dsp->getSceneData() );
 
-    /*
-    // Test hardware clip planes
-    osg::ClipNode* cn( new osg::ClipNode() );
-    cn->addClipPlane( new osg::ClipPlane( 0, 1., 0., 0., 3. ) );
-    root->addChild( cn );
-    root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
-    */
+    {
+        // Test hardware clip planes
+        osg::ClipNode* cn( new osg::ClipNode() );
+        osg::Vec3 n( .9, .8, 0. ); n.normalize();
+        cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 10. ) );
+        root->addChild( cn );
+        root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+    }
     
     osgViewer::Viewer viewer;
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );

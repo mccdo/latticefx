@@ -18,6 +18,12 @@ varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
 
 varying vec3 ecVertex;
+varying vec3 ecUp;
+varying vec3 ecRight;
+varying vec3 ecBack;
+varying vec3 ecDown;
+varying vec3 ecLeft;
+varying vec3 ecFront;
 
 
 vec4 rotatePointToVector( vec4 point, vec4 vector )
@@ -281,6 +287,14 @@ void main( void )
     TexcoordDown = Texcoord + vec3( 0., -delta, 0. );
     TexcoordLeft = Texcoord + vec3( -delta, 0., 0. );
     TexcoordFront = Texcoord + vec3( 0., 0., -delta );
+
+    // Compute corresponding eye coords for clip plane tests.
+    ecUp = ( gl_ModelViewMatrix * vec4( ( TexcoordUp - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
+    ecRight = ( gl_ModelViewMatrix * vec4( ( TexcoordRight - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
+    ecBack = ( gl_ModelViewMatrix * vec4( ( TexcoordBack - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
+    ecDown = ( gl_ModelViewMatrix * vec4( ( TexcoordDown - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
+    ecLeft = ( gl_ModelViewMatrix * vec4( ( TexcoordLeft - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
+    ecFront = ( gl_ModelViewMatrix * vec4( ( TexcoordFront - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
 
 
     // Wrap-uo code.

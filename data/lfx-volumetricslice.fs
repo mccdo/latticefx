@@ -118,6 +118,13 @@ varying vec3 TexcoordDown;
 varying vec3 TexcoordLeft;
 varying vec3 TexcoordFront;
 
+varying vec3 ecUp;
+varying vec3 ecRight;
+varying vec3 ecBack;
+varying vec3 ecDown;
+varying vec3 ecLeft;
+varying vec3 ecFront;
+
 
 bool TestInBounds(vec3 sample)
 {
@@ -143,16 +150,28 @@ void main( void )
 
 
     // Clip plane test.
-    //if( dot( vec4( ecVertex, 1. ), gl_ClipPlane[ 0 ] ) < 0. )
-    //    discard;
+    if( dot( vec4( ecVertex, 1. ), gl_ClipPlane[ 0 ] ) < 0. )
+        discard;
 
 
-    vec4 fvUpColor = transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
-    vec4 fvRightColor = transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
-    vec4 fvBackColor = transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
-    vec4 fvDownColor = transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
-    vec4 fvLeftColor = transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
-    vec4 fvFrontColor = transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
+    vec4 fvUpColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecUp, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvUpColor = transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
+    vec4 fvRightColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecRight, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvRightColor = transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
+    vec4 fvBackColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecBack, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvBackColor = transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
+    vec4 fvDownColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecDown, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvDownColor = transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
+    vec4 fvLeftColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecLeft, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvLeftColor = transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
+    vec4 fvFrontColor = vec4( 0., 0., 0., 0. );
+    if( dot( vec4( ecFront, 1. ), gl_ClipPlane[ 0 ] ) > 0. )
+        fvFrontColor = transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
     vec4 xVec = fvLeftColor - fvRightColor;
     vec4 yVec = fvDownColor - fvUpColor;
     vec4 zVec = fvFrontColor - fvBackColor;
