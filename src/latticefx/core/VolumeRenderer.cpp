@@ -87,7 +87,8 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
     _maxSlices( 1024 ),
-    _planeSpacing( 1.f )
+    _planeSpacing( 1.f ),
+    _numPlanes( 100.f )
 {
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -105,13 +106,17 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "PlaneSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
     registerUniform( info );
 
+    info = UniformInfo( "volumeNumPlanes", osg::Uniform::FLOAT, "Number of planes to render the volume." );
+    registerUniform( info );
+
     info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
     registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
     _maxSlices( rhs._maxSlices ),
-    _planeSpacing( rhs._planeSpacing )
+    _planeSpacing( rhs._planeSpacing ),
+    _numPlanes( rhs._numPlanes )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -224,6 +229,12 @@ osg::StateSet* VolumeRenderer::getRootState()
     }
 
     {
+        UniformInfo& info( getUniform( "volumeNumPlanes" ) );
+        info._prototype->set( _numPlanes );
+        stateSet->addUniform( createUniform( info ) );
+    }
+
+    {
         UniformInfo& info( getUniform( "volumeClipPlaneEnables" ) );
         info._prototype->set( osg::Vec4( 0., 0., 0., 0. ) );
         stateSet->addUniform( createUniform( info ) );
@@ -264,6 +275,14 @@ void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
 float VolumeRenderer::getPlaneSpacing() const
 {
     return( _planeSpacing );
+}
+void VolumeRenderer::setNumPlanes( const float& numPlanes )
+{
+    _numPlanes = numPlanes;
+}
+float VolumeRenderer::getNumPlanes() const
+{
+    return( _numPlanes );
 }
 
 osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )

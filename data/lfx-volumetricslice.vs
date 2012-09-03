@@ -6,6 +6,7 @@
 uniform vec3 VolumeDims;
 uniform vec3 VolumeCenter;
 uniform float PlaneSpacing;
+uniform float volumeNumPlanes;
 
 uniform mat4 osg_ViewMatrixInverse;
 
@@ -248,7 +249,13 @@ void main( void )
     findNearFarCubeVertexDist( ecCenterDir, ocCenter, ocDims, nearVertDist, farVertDist );
 
     // Determine distance to current quad slice, based on plane spacing and the instance ID.
-    float curQuadDist = farVertDist - PlaneSpacing * gl_InstanceIDARB;
+    float planeSpacing;
+    if( volumeNumPlanes > 0. )
+        planeSpacing = ( farVertDist - nearVertDist ) / volumeNumPlanes;
+    else
+        planeSpacing = PlaneSpacing;
+    float curQuadDist = farVertDist - planeSpacing * gl_InstanceIDARB;
+
     // Shortcut return: Clip entire quad slice if no more rendering is needed.
     if( curQuadDist <= nearVertDist )
     {

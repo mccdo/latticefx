@@ -113,11 +113,18 @@ public:
     /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
     float getPlaneSpacing() const;
 
+    /** \brief Set the number of planes to use to render the volume.
+    \details The default is 100.0f planes. */
+    void setNumPlanes( const float& numPlanes );
+    /** \brief Get the number of planes to use to render the volume. */
+    float getNumPlanes() const;
+
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
 
     unsigned int _maxSlices;
     float _planeSpacing;
+    float _numPlanes;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

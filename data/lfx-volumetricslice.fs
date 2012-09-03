@@ -210,7 +210,6 @@ void main( void )
     vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
-    //vec4 finalColor = ( ecNormal.z >= 0. ) ? fragmentLighting( color, ecNormal ) : vec4(0.,0.,0.,0.);
 
 
     gl_FragData[ 0 ] = finalColor;
