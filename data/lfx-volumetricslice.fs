@@ -5,11 +5,12 @@
 
 varying vec3 ecVertex;
 
+// 'normal' must be normalized.
 vec4 fragmentLighting( vec4 baseColor, vec3 normal )
 {
     vec3 lightVec = normalize( gl_LightSource[0].position.xyz - ecVertex );
     vec3 eyeVec = normalize( -ecVertex );
-    vec3 reflectVec = normalize( -reflect( lightVec, normal ) );
+    vec3 reflectVec = -reflect( lightVec, normal ); // lightVec and normal are already normalized,
 
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
@@ -135,6 +136,9 @@ bool TestInBounds(vec3 sample)
    return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
 }
 
+
+uniform vec4 volumeClipPlaneEnables;
+
 // Return 0.0 if clipped.
 // Return 1.0 if not clipped.
 float clipping( in vec3 ec )
@@ -142,24 +146,26 @@ float clipping( in vec3 ec )
     // Determine if inside the view. We really only care about the
     // front plant, so set inView=true if not clipped by front plane.
     vec4 cc = gl_ProjectionMatrix * vec4( ec, 1. );
+    // step(a,b) = 1.0 if b>=a, 0.0 otherwise.
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
     vec4 ec4 = vec4( ec, 1. );
-    bool inClipPlane = dot( ec4, gl_ClipPlane[ 0 ] ) >= 0.;
-    /*
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 4 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 5 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 6 ] ) >= 0. );
-    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 7 ] ) >= 0. );
-    */
+#if 1
+    // Only support one plane for now for performance reasons.
+    bool inClipPlane = (volumeClipPlaneEnables.x > 0.) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true;
 
     // Return 1.0 if not plassed all the above clip tests.
     // Return 0.0 if one or more of the about tests failed.
     return( float( inView && inClipPlane ) );
+#else
+    bvec4 clipResult0 = bvec4(
+        ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
+    return( float( inView && all( clipResult0 ) ) );
+#endif
 }
 
 void main( void )
@@ -204,6 +210,7 @@ void main( void )
     vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
+    //vec4 finalColor = ( ecNormal.z >= 0. ) ? fragmentLighting( color, ecNormal ) : vec4(0.,0.,0.,0.);
 
 
     gl_FragData[ 0 ] = finalColor;

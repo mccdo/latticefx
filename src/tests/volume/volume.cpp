@@ -152,7 +152,13 @@ int main( int argc, char** argv )
         osg::Vec3 n( .9, .8, 0. ); n.normalize();
         cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 10. ) );
         root->addChild( cn );
-        root->getOrCreateStateSet()->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+
+        osg::StateSet* stateSet( root->getOrCreateStateSet() );
+        stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+
+        // Also need to send array of bool uniforms so shader can do correct lighting.
+        osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnables", osg::Vec4f( 1., 0., 0., 0. ) ) );
+        stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
     }
     
     osgViewer::Viewer viewer;

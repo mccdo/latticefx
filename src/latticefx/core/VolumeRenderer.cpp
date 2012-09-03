@@ -104,6 +104,9 @@ VolumeRenderer::VolumeRenderer()
 
     info = UniformInfo( "PlaneSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
     registerUniform( info );
+
+    info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
+    registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
@@ -217,6 +220,12 @@ osg::StateSet* VolumeRenderer::getRootState()
     {
         UniformInfo& info( getUniform( "PlaneSpacing" ) );
         info._prototype->set( _planeSpacing );
+        stateSet->addUniform( createUniform( info ) );
+    }
+
+    {
+        UniformInfo& info( getUniform( "volumeClipPlaneEnables" ) );
+        info._prototype->set( osg::Vec4( 0., 0., 0., 0. ) );
         stateSet->addUniform( createUniform( info ) );
     }
 
