@@ -176,6 +176,11 @@ void main( void )
         discard;
 
 
+#if 0
+    // Support for non-linear transfer function requires that each volume sample
+    // be used in turn as an index into the transfer function. Only then can we
+    // compute a correct normal for the resulting surface.
+    // Note: Expensive.
     vec4 fvUpColor = clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
     vec4 fvRightColor = clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
     vec4 fvBackColor = clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
@@ -187,6 +192,21 @@ void main( void )
     vec4 zVec = fvFrontColor - fvBackColor;
 
     vec3 ocNormal = vec3( xVec.a, yVec.a, zVec.a );
+#else
+    // For performance reasons, do not use transfer function. This means the transfer
+    // function alpha is a direct map with volume samples.
+    vec4 fvUpColor = clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp );
+    vec4 fvRightColor = clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight );
+    vec4 fvBackColor = clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack );
+    vec4 fvDownColor = clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown );
+    vec4 fvLeftColor = clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft );
+    vec4 fvFrontColor = clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront );
+    vec4 xVec = fvLeftColor - fvRightColor;
+    vec4 yVec = fvDownColor - fvUpColor;
+    vec4 zVec = fvFrontColor - fvBackColor;
+
+    vec3 ocNormal = vec3( xVec.r, yVec.r, zVec.r );
+#endif
     vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
