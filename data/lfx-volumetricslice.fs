@@ -140,12 +140,22 @@ vec4 clipping( in vec3 ec )
     vec4 cc = gl_ProjectionMatrix * vec4( ec, 1. );
     bool inView = cc.z >= -cc.w;
 
-    // Inside plane 0? Set inPlane0=true if not clipped by plane 0.
-    bool inPlane0 = dot( vec4( ec, 1. ), gl_ClipPlane[ 0 ] ) > 0.;
+    // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
+    vec4 ec4 = vec4( ec, 1. );
+    bool inClipPlane = dot( ec4, gl_ClipPlane[ 0 ] ) >= 0.;
+    /*
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 4 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 5 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 6 ] ) >= 0. );
+    inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 7 ] ) >= 0. );
+    */
 
     // Return (1,1,1,1) if not plassed all the above clip tests.
     // Return (0,0,0,0) if one or more of the about tests failed.
-    return( vec4( float( inView && inPlane0 ) ) );
+    return( vec4( float( inView && inClipPlane ) ) );
 }
 
 void main( void )
@@ -163,11 +173,6 @@ void main( void )
 
     vec4 color = transferFunction( fvBaseColor.r );
     if( !hardwareMask( Texcoord, color ) )
-        discard;
-
-
-    // Clip plane test.
-    if( dot( vec4( ecVertex, 1. ), gl_ClipPlane[ 0 ] ) < 0. )
         discard;
 
 

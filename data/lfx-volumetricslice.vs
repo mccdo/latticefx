@@ -307,5 +307,5 @@ void main( void )
     gl_BackColor = gl_Color;
 
     // Clip plane support: Clip vertex is eye coord vertex.
-    gl_ClipVertex = vec4( vec3( ecVertex ), 1. );
+    gl_ClipVertex = vec4( ecVertex, 1. );
 }

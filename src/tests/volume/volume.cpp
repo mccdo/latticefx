@@ -145,6 +145,7 @@ int main( int argc, char** argv )
     else
         root->addChild( dsp->getSceneData() );
 
+    if( true )
     {
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
