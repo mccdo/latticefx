@@ -14,13 +14,17 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
     vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
-    diff = clamp( diff, 0., 1. );
+    // TBD we should not need to clamp, and this should be removed from
+    // all shader lighting code and then tested.
+    //diff = clamp( diff, 0., 1. );
    
     // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
     float specExp = 10.; // gl_FrontMaterial.shininess
     vec4 spec = gl_FrontLightProduct[0].specular *
         pow( max( dot( reflectVec, eyeVec ), 0. ), specExp );
-    spec = clamp( spec, 0., 1. );
+    // TBD we should not need to clamp, and this should be removed from
+    // all shader lighting code and then tested.
+    //spec = clamp( spec, 0., 1. );
 
     vec4 outColor = gl_FrontLightModelProduct.sceneColor + amb + diff + spec;
     outColor.a = baseColor.a;
@@ -131,9 +135,9 @@ bool TestInBounds(vec3 sample)
    return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
 }
 
-// Return (0,0,0,0) if clipped.
-// Return (1,1,1,1) if not clipped.
-vec4 clipping( in vec3 ec )
+// Return 0.0 if clipped.
+// Return 1.0 if not clipped.
+float clipping( in vec3 ec )
 {
     // Determine if inside the view. We really only care about the
     // front plant, so set inView=true if not clipped by front plane.
@@ -153,9 +157,9 @@ vec4 clipping( in vec3 ec )
     inClipPlane = inClipPlane && ( dot( ec4, gl_ClipPlane[ 7 ] ) >= 0. );
     */
 
-    // Return (1,1,1,1) if not plassed all the above clip tests.
-    // Return (0,0,0,0) if one or more of the about tests failed.
-    return( vec4( float( inView && inClipPlane ) ) );
+    // Return 1.0 if not plassed all the above clip tests.
+    // Return 0.0 if one or more of the about tests failed.
+    return( float( inView && inClipPlane ) );
 }
 
 void main( void )
@@ -181,33 +185,23 @@ void main( void )
     // be used in turn as an index into the transfer function. Only then can we
     // compute a correct normal for the resulting surface.
     // Note: Expensive.
-    vec4 fvUpColor = clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r );
-    vec4 fvRightColor = clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).r );
-    vec4 fvBackColor = clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r );
-    vec4 fvDownColor = clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).r );
-    vec4 fvLeftColor = clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r );
-    vec4 fvFrontColor = clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).r );
-    vec4 xVec = fvLeftColor - fvRightColor;
-    vec4 yVec = fvDownColor - fvUpColor;
-    vec4 zVec = fvFrontColor - fvBackColor;
-
-    vec3 ocNormal = vec3( xVec.a, yVec.a, zVec.a );
+    vec3 frontVec = vec3( clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r ).a,
+        clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).r ).a,
+        clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).r ).a );
+    vec3 backVec = vec3( clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).r ).a,
+        clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r ).a,
+        clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r ).a );
 #else
     // For performance reasons, do not use transfer function. This means the transfer
     // function alpha is a direct map with volume samples.
-    vec4 fvUpColor = clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp );
-    vec4 fvRightColor = clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight );
-    vec4 fvBackColor = clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack );
-    vec4 fvDownColor = clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown );
-    vec4 fvLeftColor = clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft );
-    vec4 fvFrontColor = clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront );
-    vec4 xVec = fvLeftColor - fvRightColor;
-    vec4 yVec = fvDownColor - fvUpColor;
-    vec4 zVec = fvFrontColor - fvBackColor;
-
-    vec3 ocNormal = vec3( xVec.r, yVec.r, zVec.r );
+    vec3 frontVec = vec3( clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft ).r,
+        clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown ).r,
+        clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront ).r );
+    vec3 backVec = vec3( clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight ).r,
+        clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp ).r,
+        clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack ).r );
 #endif
-    vec3 ecNormal = normalize( gl_NormalMatrix * ocNormal );
+    vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
 
