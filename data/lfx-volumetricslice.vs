@@ -68,144 +68,52 @@ void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3
     // Compute the 8 cube verts in eye coords.
     vec3 c = cubeCenter;
     vec3 hd = cubeDims * .5;
-    vec4 v0 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z - hd.z, 1. );
-    vec4 v1 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z - hd.z, 1. );
-    vec4 v2 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z - hd.z, 1. );
-    vec4 v3 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z - hd.z, 1. );
-    vec4 v4 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z + hd.z, 1. );
-    vec4 v5 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z + hd.z, 1. );
-    vec4 v6 = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z + hd.z, 1. );
-    vec4 v7 = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z + hd.z, 1. );
+    vec4 v[8];
+    v[0] = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z - hd.z, 1. );
+    v[1] = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z - hd.z, 1. );
+    v[2] = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z - hd.z, 1. );
+    v[3] = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z - hd.z, 1. );
+    v[4] = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y - hd.y, c.z + hd.z, 1. );
+    v[5] = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y - hd.y, c.z + hd.z, 1. );
+    v[6] = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z + hd.z, 1. );
+    v[7] = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z + hd.z, 1. );
 
     // The farthest vert distance will be the length of the eye coord vector.
     // However, length() involves a sqrt. So, for efficiency, use the squared
     // length (dot product).
+
+    // The nearest vert distance will always be the eye coord z. However, eye coords are
+    // right handed, so -z is in front of the 'eye'. Therefore, negate each z value.
+    // HOWEVER: Bug: if two vertices have the *same* eye coordinate, relying on ec z
+    // alone might cause us to get the wrong closest vertex. This needs to be fixed.
+
     float farDist = -1000000000.;
-    vec4 farVert;
-    if( v0.z < 0. ) // Don't even consider it if it's not in front of the 'eye'.
+    float nearDist = 1000000000.;
+    vec4 farVert, nearVert;
+    for( int idx=0; idx<7; ++idx )
     {
-        float d = dot( v0, v0 );
-        if( d > farDist )
+        if( v[idx].z < 0. ) // Don't even consider it if it's not in front of the 'eye'.
         {
-            farDist = d;
-            farVert = v0;
+            float d = dot( v[idx], v[idx] );
+            if( d > farDist )
+            {
+                farDist = d;
+                farVert = v[idx];
+            }
         }
-    }
-    if( v1.z < 0. )
-    {
-        float d = dot( v1, v1 );
-        if( d > farDist )
+        if( -v[idx].z < nearDist )
         {
-            farDist = d;
-            farVert = v1;
-        }
-    }
-    if( v2.z < 0. )
-    {
-        float d = dot( v2, v2 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v2;
-        }
-    }
-    if( v3.z < 0. )
-    {
-        float d = dot( v3, v3 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v3;
-        }
-    }
-    if( v4.z < 0. )
-    {
-        float d = dot( v4, v4 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v4;
-        }
-    }
-    if( v5.z < 0. )
-    {
-        float d = dot( v5, v5 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v5;
-        }
-    }
-    if( v6.z < 0. )
-    {
-        float d = dot( v6, v6 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v6;
-        }
-    }
-    if( v7.z < 0. )
-    {
-        float d = dot( v7, v7 );
-        if( d > farDist )
-        {
-            farDist = d;
-            farVert = v7;
+            nearDist = -v[idx].z;
+            nearVert = v[idx];
         }
     }
 
-    if( farDist < 0. )
+    if( farDist <= 0. )
     {
         // The entire volume is behind the 'eye'.
         farVertDist = farDist;
         nearVertDist = 0.;
         return;
-    }
-
-    // The nearest vert distance will always be the eye coord z. However, eye coords are
-    // right handed, so -z is in front of the 'eye'. Therefore, negate each z value.
-    float nearDist = 1000000000.;
-    vec4 nearVert;
-    if( -v0.z < nearDist )
-    {
-        nearDist = -v0.z;
-        nearVert = v0;
-    }
-    if( -v1.z < nearDist )
-    {
-        nearDist = -v1.z;
-        nearVert = v1;
-    }
-    if( -v2.z < nearDist )
-    {
-        nearDist = -v2.z;
-        nearVert = v2;
-    }
-    if( -v3.z < nearDist )
-    {
-        nearDist = -v3.z;
-        nearVert = v3;
-    }
-    if( -v4.z < nearDist )
-    {
-        nearDist = -v4.z;
-        nearVert = v4;
-    }
-    if( -v5.z < nearDist )
-    {
-        nearDist = -v5.z;
-        nearVert = v5;
-    }
-    if( -v6.z < nearDist )
-    {
-        nearDist = -v6.z;
-        nearVert = v6;
-    }
-    if( -v7.z < nearDist )
-    {
-        nearDist = -v7.z;
-        nearVert = v7;
     }
 
     // Compute the distances to the planes defined by the given normal
@@ -261,7 +169,7 @@ void main( void )
     float curQuadDist = farVertDist - spacing * gl_InstanceIDARB;
 
     // Shortcut return: Clip entire quad slice if no more rendering is needed.
-    if( curQuadDist <= nearVertDist )
+    if( curQuadDist <= 0. )
     {
         // Clip the vertex.
         gl_Position = vec4( 1., 1., 1., 0. );
