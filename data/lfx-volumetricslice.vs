@@ -62,9 +62,6 @@ vec4 rotatePointToVector( vec4 point, vec4 vector )
 
 void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3 cubeDims, out float nearVertDist, out float farVertDist )
 {
-    // This could all be done with nested loops and in fact was originally coded that way.
-    // However, unrolling the loops makes it much more efficient.
-
     // Compute the 8 cube verts in eye coords.
     vec3 c = cubeCenter;
     vec3 hd = cubeDims * .5;
@@ -78,53 +75,27 @@ void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3
     v[6] = gl_ModelViewMatrix * vec4( c.x - hd.x, c.y + hd.y, c.z + hd.z, 1. );
     v[7] = gl_ModelViewMatrix * vec4( c.x + hd.x, c.y + hd.y, c.z + hd.z, 1. );
 
-    // The farthest vert distance will be the length of the eye coord vector.
-    // However, length() involves a sqrt. So, for efficiency, use the squared
-    // length (dot product).
-
-    // The nearest vert distance will always be the eye coord z. However, eye coords are
-    // right handed, so -z is in front of the 'eye'. Therefore, negate each z value.
-    // HOWEVER: Bug: if two vertices have the *same* eye coordinate, relying on ec z
-    // alone might cause us to get the wrong closest vertex. This needs to be fixed.
-
-    float farDist = -1000000000.;
-    float nearDist = 1000000000.;
-    vec4 farVert, nearVert;
+    // Compute the distances to the nearest and furthest vertices.
+    farVertDist = -1000000000.;
+    nearVertDist = 1000000000.;
     for( int idx=0; idx<7; ++idx )
     {
-        if( v[idx].z < 0. ) // Don't even consider it if it's not in front of the 'eye'.
-        {
-            float d = dot( v[idx], v[idx] );
-            if( d > farDist )
-            {
-                farDist = d;
-                farVert = v[idx];
-            }
-        }
-        if( -v[idx].z < nearDist )
-        {
-            nearDist = -v[idx].z;
-            nearVert = v[idx];
-        }
+        // Compute the distances to the planes defined by the given normal
+        // ecCenterDir, and containing the vertices farVert and nearVert.
+        //   Distance d = dot( n, p )
+        // n must be normalized.
+        float d = dot( ecCenterDir, v[ idx ].xyz );
+        farVertDist = max( d, farVertDist );
+        nearVertDist = min( d, nearVertDist );
     }
 
-    if( farDist <= 0. )
-    {
+    if( farVertDist <= 0. )
         // The entire volume is behind the 'eye'.
-        farVertDist = farDist;
         nearVertDist = 0.;
-        return;
-    }
-
-    // Compute the distances to the planes defined by the given normal
-    // ecCenterDir, and containing the vertices farVert and nearVert.
-    //   Distance d = dot( n, p )
-    // n must be normalized.
-    farVertDist = dot( ecCenterDir, farVert.xyz );
-
-    // Should never have a near distance less than 0; we would never
-    // render a quad at that distance.
-    nearVertDist = max( dot( ecCenterDir, nearVert.xyz ), 0. );
+    else
+        // Should never have a near distance less than 0; we would never
+        // render a quad at that distance.
+        nearVertDist = max( nearVertDist, 0. );
 }
 
 vec3 getCubeScales(mat4 modelMat)
