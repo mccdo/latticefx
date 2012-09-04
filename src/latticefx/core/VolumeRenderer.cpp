@@ -190,7 +190,12 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         UniformInfo& info( getUniform( "volumeResolution" ) );
         unsigned int x, y, z;
         dataImagePtr->getDimensions( x, y, z);
-        info._prototype->set( osg::Vec3f( x, y, z ) );
+        osg::Vec3 res( x, y, z );
+        if( res.length2() == 0. )
+            // Must be a paged texture and we don't have the data yet.?
+            // Add a bogus resolution, just so we have something.
+            res.set( 100., 100., 100. );
+        info._prototype->set( res );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 

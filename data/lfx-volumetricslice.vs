@@ -4,6 +4,7 @@
 
 
 uniform vec3 volumeDims;
+uniform vec3 volumeResolution;
 uniform vec3 volumeCenter;
 uniform float planeSpacing;
 uniform float volumeNumPlanes;
@@ -287,13 +288,13 @@ void main( void )
     Texcoord = ( ocQuadVertex - ocCenter ) / ocDims + vec3( .5 );
 
     // Surrounding texture coords used for surface normal derivation.
-    const float delta = 0.01;
-    TexcoordUp = Texcoord + vec3( 0., delta, 0. );
-    TexcoordRight = Texcoord + vec3( delta, 0. , 0. );
-    TexcoordBack = Texcoord + vec3( 0., 0., delta );
-    TexcoordDown = Texcoord + vec3( 0., -delta, 0. );
-    TexcoordLeft = Texcoord + vec3( -delta, 0., 0. );
-    TexcoordFront = Texcoord + vec3( 0., 0., -delta );
+    vec3 invRes = 1. / volumeResolution;
+    TexcoordRight = Texcoord + vec3( invRes.x, 0. , 0. );
+    TexcoordUp = Texcoord + vec3( 0., invRes.y, 0. );
+    TexcoordBack = Texcoord + vec3( 0., 0., invRes.z );
+    TexcoordLeft = Texcoord + vec3( -invRes.x, 0., 0. );
+    TexcoordDown = Texcoord + vec3( 0., -invRes.y, 0. );
+    TexcoordFront = Texcoord + vec3( 0., 0., -invRes.z );
 
     // Compute corresponding eye coords for clip plane tests.
     ecUp = ( gl_ModelViewMatrix * vec4( ( TexcoordUp - vec3( .5 ) ) * ocDims - ocCenter, 1. ) ).xyz;
