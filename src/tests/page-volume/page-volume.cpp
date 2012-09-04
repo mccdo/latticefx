@@ -112,7 +112,7 @@ public:
         }
 
         // Create the ChannelData hierarchy.
-        AssembleHierarchy ah( maxDepth, 30000. );
+        AssembleHierarchy ah( maxDepth, 60000. );
         BOOST_FOREACH( const std::string& fName, results )
         {
             // Create this ChannelData.
