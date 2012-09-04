@@ -93,12 +93,6 @@ public:
     scene graphs. */
     virtual osg::StateSet* getRootState();
 
-    /** \brief Set the maximum number of planes used to slice the volume.
-    \details The default is 1024. This must be set prior to calling getSceneGraph. */
-    void setMaxSlices( const unsigned int& maxSlices );
-    /** \brief Get the maximum number of planes used to slice the volume. */
-    unsigned int getMaxSlices() const;
-
     /** \brief Set the number of planes to use to render the volume.
     \details The default is 100.0f planes. */
     void setNumPlanes( const float& numPlanes );
@@ -108,8 +102,6 @@ public:
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
 
-    unsigned int _maxSlices;
-    float _planeSpacing;
     float _numPlanes;
 };
 

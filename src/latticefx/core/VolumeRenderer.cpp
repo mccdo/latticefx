@@ -78,8 +78,6 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 
 VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
-    _maxSlices( 1024 ),
-    _planeSpacing( 1.f ),
     _numPlanes( 100.f )
 {
     // Create and register uniform information, and initial/default values
@@ -98,9 +96,6 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "planeSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
-    registerUniform( info );
-
     info = UniformInfo( "volumeNumPlanes", osg::Uniform::FLOAT, "Number of planes to render the volume." );
     registerUniform( info );
 
@@ -109,8 +104,6 @@ VolumeRenderer::VolumeRenderer()
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
-    _maxSlices( rhs._maxSlices ),
-    _planeSpacing( rhs._planeSpacing ),
     _numPlanes( rhs._numPlanes )
 {
 }
@@ -150,8 +143,8 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     // so specify an initial bound to allow proper culling and near/far computation.
     osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
     geom->setInitialBound( bb );
-    // Add geometric data and the PrimitiveSet. Specify numInstances as _maxSlices.
-    createDAIGeometry( *geom, _maxSlices );
+    // Add geometric data and the PrimitiveSet. Specify numInstances as _numPlanes.
+    createDAIGeometry( *geom, _numPlanes );
     geode->addDrawable( geom );
 
 
@@ -231,12 +224,6 @@ osg::StateSet* VolumeRenderer::getRootState()
     }
 
     {
-        UniformInfo& info( getUniform( "planeSpacing" ) );
-        info._prototype->set( _planeSpacing );
-        stateSet->addUniform( createUniform( info ) );
-    }
-
-    {
         UniformInfo& info( getUniform( "volumeNumPlanes" ) );
         info._prototype->set( _numPlanes );
         stateSet->addUniform( createUniform( info ) );
@@ -265,15 +252,6 @@ osg::StateSet* VolumeRenderer::getRootState()
     program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
 
     return( stateSet.release() );
-}
-
-void VolumeRenderer::setMaxSlices( const unsigned int& maxSlices )
-{
-    _maxSlices = maxSlices;
-}
-unsigned int VolumeRenderer::getMaxSlices() const
-{
-    return( _maxSlices );
 }
 
 void VolumeRenderer::setNumPlanes( const float& numPlanes )
