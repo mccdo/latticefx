@@ -106,7 +106,7 @@ void dumpUniformInfo( const RendererPtr renderOp )
             }
             default:
             {
-                std::cout << "unsupported uniform type." << std::endl;
+                LFX_CRITICAL_STATIC( logstr, "unsupported uniform type." );
                 break;
             }
             }
