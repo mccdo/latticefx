@@ -97,7 +97,10 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "VolumeTexture", osg::Uniform::SAMPLER_3D, "Volume texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "VolumeDims", osg::Uniform::FLOAT_VEC3, "Volume texture dimensions.", UniformInfo::PRIVATE );
+    info = UniformInfo( "volumeDims", osg::Uniform::FLOAT_VEC3, "World coordinate volume texture dimensions.", UniformInfo::PRIVATE );
+    registerUniform( info );
+
+    info = UniformInfo( "volumeResolution", osg::Uniform::FLOAT_VEC3, "Volume texture resolution.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "VolumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location.", UniformInfo::PRIVATE );
@@ -183,6 +186,14 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
 
+    {
+        UniformInfo& info( getUniform( "volumeResolution" ) );
+        unsigned int x, y, z;
+        dataImagePtr->getDimensions( x, y, z);
+        info._prototype->set( osg::Vec3f( x, y, z ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+
 
     return( geode.release() );
 }
@@ -209,9 +220,9 @@ osg::StateSet* VolumeRenderer::getRootState()
         LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
     }
 
-    // Setup uniforms for VolumeDims, VolumeCenter, PlaneSpacing, LightPosition, Diffuse and ambient lights
+    // Set default values for volume shader uniforms.
     {
-        UniformInfo& info( getUniform( "VolumeDims" ) );
+        UniformInfo& info( getUniform( "volumeDims" ) );
         info._prototype->set( osg::Vec3f( _volumeDims ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }

@@ -149,7 +149,7 @@ osg::StateSet* createStateSet(std::string volumeName, std::string transferName)
 	ss->addUniform( transferUniform.get() );
 
 	//world-space size of volume box
-	osg::ref_ptr< osg::Uniform > volumeDimsUniform = new osg::Uniform( "VolumeDims", osg::Vec3(VOLUME_DIMS) );
+	osg::ref_ptr< osg::Uniform > volumeDimsUniform = new osg::Uniform( "volumeDims", osg::Vec3(VOLUME_DIMS) );
 	ss->addUniform( volumeDimsUniform.get() );
 
 	// world-space position of center of volume box

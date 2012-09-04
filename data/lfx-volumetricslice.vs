@@ -3,7 +3,7 @@
 #extension GL_ARB_draw_instanced : require
 
 
-uniform vec3 VolumeDims;
+uniform vec3 volumeDims;
 uniform vec3 VolumeCenter;
 uniform float PlaneSpacing;
 uniform float volumeNumPlanes;
@@ -230,14 +230,14 @@ vec3 getCubeScales(mat4 modelMat)
 
 float getCubeDiagonalLength( in vec3 modelMatScales )
 {
-    vec3 cubeDims = VolumeDims * modelMatScales;
+    vec3 cubeDims = volumeDims * modelMatScales;
     return( length( cubeDims ) );
 }
 
 void main( void )
 {
     // Shortcut names with coordinate system prefix.
-    vec3 ocDims = VolumeDims;
+    vec3 ocDims = volumeDims;
     vec3 ocCenter = VolumeCenter;
 
     // Compute a normalized direction vector to the volume center in eye coordinates.
