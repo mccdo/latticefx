@@ -153,11 +153,11 @@ osg::StateSet* createStateSet(std::string volumeName, std::string transferName)
 	ss->addUniform( volumeDimsUniform.get() );
 
 	// world-space position of center of volume box
-	osg::ref_ptr< osg::Uniform > volumeCenterUniform = new osg::Uniform( "VolumeCenter", osg::Vec3(VOLUME_ORIGIN) );
+	osg::ref_ptr< osg::Uniform > volumeCenterUniform = new osg::Uniform( "volumeCenter", osg::Vec3(VOLUME_ORIGIN) );
 	ss->addUniform( volumeCenterUniform.get() );
 
 	// world-space distance between slice planes
-	osg::ref_ptr< osg::Uniform > planeSpacingUniform = new osg::Uniform( "PlaneSpacing", PLANE_SPACING );
+	osg::ref_ptr< osg::Uniform > planeSpacingUniform = new osg::Uniform( "planeSpacing", PLANE_SPACING );
 	ss->addUniform( planeSpacingUniform.get() );
 
 	// render state

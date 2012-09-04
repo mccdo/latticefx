@@ -4,8 +4,8 @@
 
 
 uniform vec3 volumeDims;
-uniform vec3 VolumeCenter;
-uniform float PlaneSpacing;
+uniform vec3 volumeCenter;
+uniform float planeSpacing;
 uniform float volumeNumPlanes;
 
 uniform mat4 osg_ViewMatrixInverse;
@@ -238,7 +238,7 @@ void main( void )
 {
     // Shortcut names with coordinate system prefix.
     vec3 ocDims = volumeDims;
-    vec3 ocCenter = VolumeCenter;
+    vec3 ocCenter = volumeCenter;
 
     // Compute a normalized direction vector to the volume center in eye coordinates.
     vec4 ecCenter = gl_ModelViewMatrix * vec4( ocCenter, 1.0 );
@@ -249,12 +249,12 @@ void main( void )
     findNearFarCubeVertexDist( ecCenterDir, ocCenter, ocDims, nearVertDist, farVertDist );
 
     // Determine distance to current quad slice, based on plane spacing and the instance ID.
-    float planeSpacing;
+    float spacing;
     if( volumeNumPlanes > 0. )
-        planeSpacing = ( farVertDist - nearVertDist ) / volumeNumPlanes;
+        spacing = ( farVertDist - nearVertDist ) / volumeNumPlanes;
     else
-        planeSpacing = PlaneSpacing;
-    float curQuadDist = farVertDist - planeSpacing * gl_InstanceIDARB;
+        spacing = planeSpacing;
+    float curQuadDist = farVertDist - spacing * gl_InstanceIDARB;
 
     // Shortcut return: Clip entire quad slice if no more rendering is needed.
     if( curQuadDist <= nearVertDist )

@@ -103,10 +103,10 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeResolution", osg::Uniform::FLOAT_VEC3, "Volume texture resolution.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "VolumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location.", UniformInfo::PRIVATE );
+    info = UniformInfo( "volumeCenter", osg::Uniform::FLOAT_VEC3, "Volume center location.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "PlaneSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
+    info = UniformInfo( "planeSpacing", osg::Uniform::FLOAT, "Volume slice spacing." );
     registerUniform( info );
 
     info = UniformInfo( "volumeNumPlanes", osg::Uniform::FLOAT, "Number of planes to render the volume." );
@@ -228,13 +228,13 @@ osg::StateSet* VolumeRenderer::getRootState()
     }
 
     {
-        UniformInfo& info( getUniform( "VolumeCenter" ) );
+        UniformInfo& info( getUniform( "volumeCenter" ) );
         info._prototype->set( osg::Vec3f( _volumeOrigin ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
     {
-        UniformInfo& info( getUniform( "PlaneSpacing" ) );
+        UniformInfo& info( getUniform( "planeSpacing" ) );
         info._prototype->set( _planeSpacing );
         stateSet->addUniform( createUniform( info ) );
     }
