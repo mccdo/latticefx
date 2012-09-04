@@ -99,12 +99,6 @@ public:
     /** \brief Get the maximum number of planes used to slice the volume. */
     unsigned int getMaxSlices() const;
 
-    /** \brief Set spacing (in world units) between each plane used to slice the volume.
-    \details The default is 0.3f. This can be varied on every draw. */
-    void setPlaneSpacing( const float& planeSpacing );
-    /** \brief Get the spacing (in world units) between each plane used to slice the volume. */
-    float getPlaneSpacing() const;
-
     /** \brief Set the number of planes to use to render the volume.
     \details The default is 100.0f planes. */
     void setNumPlanes( const float& numPlanes );

@@ -6,7 +6,6 @@
 uniform vec3 volumeDims;
 uniform vec3 volumeResolution;
 uniform vec3 volumeCenter;
-uniform float planeSpacing;
 uniform float volumeNumPlanes;
 
 uniform mat4 osg_ViewMatrixInverse;
@@ -235,6 +234,7 @@ float getCubeDiagonalLength( in vec3 modelMatScales )
     return( length( cubeDims ) );
 }
 
+varying vec4 color;
 void main( void )
 {
     // Shortcut names with coordinate system prefix.
@@ -249,12 +249,15 @@ void main( void )
     float farVertDist, nearVertDist;
     findNearFarCubeVertexDist( ecCenterDir, ocCenter, ocDims, nearVertDist, farVertDist );
 
-    // Determine distance to current quad slice, based on plane spacing and the instance ID.
-    float spacing;
-    if( volumeNumPlanes > 0. )
-        spacing = ( farVertDist - nearVertDist ) / volumeNumPlanes;
-    else
-        spacing = planeSpacing;
+    // Compute plane spacing.
+            // For a uniform plane spacing ramp, regardless of volume world dimensions.
+            //const float spaceAt10Ratio = .05 / 10.;
+            //const float minSpace = .2;
+    float minSpace = ( farVertDist - nearVertDist ) / volumeNumPlanes;
+    float spaceDistanceRatio = minSpace / 40.; // Get minSpace planes at a distance of 40.
+    float averageDistance = ( farVertDist - nearVertDist ) * .5;
+    float spacing = max( averageDistance * spaceDistanceRatio, minSpace );
+
     float curQuadDist = farVertDist - spacing * gl_InstanceIDARB;
 
     // Shortcut return: Clip entire quad slice if no more rendering is needed.

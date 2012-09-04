@@ -276,17 +276,15 @@ unsigned int VolumeRenderer::getMaxSlices() const
     return( _maxSlices );
 }
 
-void VolumeRenderer::setPlaneSpacing( const float& planeSpacing )
-{
-    _planeSpacing = planeSpacing;
-}
-float VolumeRenderer::getPlaneSpacing() const
-{
-    return( _planeSpacing );
-}
 void VolumeRenderer::setNumPlanes( const float& numPlanes )
 {
-    _numPlanes = numPlanes;
+    if( numPlanes <= 0. )
+    {
+        LFX_WARNING( "setNumPlanes must be > 0.0. Using 100.0." );
+        _numPlanes = 100.;
+    }
+    else
+        _numPlanes = numPlanes;
 }
 float VolumeRenderer::getNumPlanes() const
 {

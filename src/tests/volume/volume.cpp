@@ -62,8 +62,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
-    renderOp->setPlaneSpacing( .3f );
-    renderOp->setNumPlanes( 0.f );
+    renderOp->setNumPlanes( 100.f );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
@@ -138,7 +137,7 @@ int main( int argc, char** argv )
     else
         root->addChild( dsp->getSceneData() );
 
-    if( true )
+    if( false )
     {
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
