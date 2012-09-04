@@ -1,11 +1,10 @@
-/*************** <auto-copyright.rb BEGIN do not edit this line> *************
+/*************** <auto-copyright.rb BEGIN do not edit this line> **************
  *
- * latticeFX is (C) Copyright 2011-2012 by Ames Laboratory
+ * Copyright 2012-2012 by Ames Laboratory
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; 
- * version 2.1 of the License.
+ * License version 2.1 as published by the Free Software Foundation.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,14 +16,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  *
- * -----------------------------------------------------------------
- * Date modified: $Date$
- * Version:       $Rev$
- * Author:        $Author$
- * Id:            $Id$
- * -----------------------------------------------------------------
- *
- *************** <auto-copyright.rb END do not edit this line> **************/
+ *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/VTKVectorFieldRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
