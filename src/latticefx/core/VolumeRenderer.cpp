@@ -167,6 +167,7 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     // Create empty stub texture, to be paged in at run-time.
     osg::Texture3D* volumeTexture( createStubTexture( key ) );
+    volumeTexture->setDataVariance( osg::Object::DYNAMIC ); // for paging.
 
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
