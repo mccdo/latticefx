@@ -200,14 +200,21 @@ void main( void )
         clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r ).a,
         clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r ).a );
 #else
+
     // For performance reasons, do not use transfer function. This means the transfer
     // function alpha is a direct map with volume samples.
     vec3 frontVec = vec3( clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft ).r,
         clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown ).r,
         clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront ).r );
+#define USE_FAST_NORMAL_COMPUTATION
+#ifdef USE_FAST_NORMAL_COMPUTATION
+    vec3 backVec = clipping( ecVertex ) * fvBaseColor.rgb;
+#else
     vec3 backVec = vec3( clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight ).r,
         clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp ).r,
         clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack ).r );
+#endif
+
 #endif
     vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
 
