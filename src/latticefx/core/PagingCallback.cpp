@@ -542,7 +542,7 @@ public:
         osg::Group* grp( node.asGroup() );
         if( grp == NULL )
         {
-            LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
+            LFX_WARNING_STATIC( "lfx.core.page", "ReclaimImagesVisitor: Should not have NULL Group." );
         }
 
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
