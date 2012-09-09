@@ -123,6 +123,9 @@ void main( void )
     // Compute a normalized direction vector to the volume center in eye coordinates.
     vec4 ecCenter = gl_ModelViewMatrix * vec4( ocCenter, 1.0 );
     vec3 ecCenterDir = normalize( ecCenter.xyz );
+    if( ecCenterDir.z > 0. )
+        // If the center is behind the viewer, negate the direction vector.
+        ecCenterDir = -ecCenterDir;
 
     // Compute nearest and furthest distances to the min and max cube extents.
     float farVertDist, nearVertDist;
