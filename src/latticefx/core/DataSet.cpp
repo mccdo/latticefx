@@ -428,7 +428,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         }
 
         SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
-        osg::ref_ptr< OctreeGroup > parent( new OctreeGroup );
+        osg::ref_ptr< OctreeGroup > parent( new OctreeGroup( spatial->getVolumeOrigin() ) );
         parent->setName( "Lfx-ImageSet" );
         unsigned int idx;
         for( idx=0; idx < imageData->getNumChannels(); idx++ )

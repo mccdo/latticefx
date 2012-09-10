@@ -25,6 +25,7 @@
 #include <latticefx/core/Export.h>
 
 #include <osg/Group>
+#include <osg/Array>
 
 
 
@@ -39,7 +40,7 @@ namespace core {
 class LATTICEFX_EXPORT OctreeGroup : public osg::Group
 {
 public:
-    OctreeGroup();
+    OctreeGroup( const osg::Vec3 center=osg::Vec3(0.,0.,0.) );
     OctreeGroup( const OctreeGroup& rhs, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
     virtual ~OctreeGroup();
 
@@ -52,6 +53,7 @@ public:
 
 protected:
     osg::ref_ptr< osg::Vec3Array > _offsets;
+    osg::Vec3 _center;
 };
 
 

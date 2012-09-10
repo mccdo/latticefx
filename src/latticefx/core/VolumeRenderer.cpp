@@ -194,8 +194,6 @@ osg::StateSet* VolumeRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
 
-    stateSet->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
-
     // position, direction, transfer function input, and hardware mask input texture
     // units are the same for all time steps, so set their sampler uniform unit
     // values in the root state.
