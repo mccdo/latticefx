@@ -25,6 +25,7 @@ set( _headerFiles
     Log.h
     LogBase.h
     LogMacros.h
+    OctreeGroup.h
     OperationBase.h
     OperationValue.h
     PageData.h
@@ -56,6 +57,7 @@ set( _sourceFiles
     HierarchyUtils.cpp
     LoadRequest.cpp
     Log.cpp
+    OctreeGroup.cpp
     OperationBase.cpp
     OperationValue.cpp
     PageData.cpp

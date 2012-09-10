@@ -23,6 +23,7 @@
 #include <latticefx/core/ChannelDataLOD.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/VolumeRenderer.h>
+#include <latticefx/core/OctreeGroup.h>
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
@@ -427,7 +428,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         }
 
         SpatialVolumePtr spatial( boost::dynamic_pointer_cast< SpatialVolume >( _renderer ) );
-        osg::ref_ptr< osg::Group > parent( new osg::Group );
+        osg::ref_ptr< OctreeGroup > parent( new OctreeGroup );
         parent->setName( "Lfx-ImageSet" );
         unsigned int idx;
         for( idx=0; idx < imageData->getNumChannels(); idx++ )
@@ -455,7 +456,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
                 osg::MatrixTransform* mt( new osg::MatrixTransform( trans ) );
                 mt->addChild( child );
-                parent->addChild( mt );
+                parent->addChild( mt, imageData->getOffset( idx ) );
             }
         }
         return( parent.release() );
