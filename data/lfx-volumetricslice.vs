@@ -78,7 +78,7 @@ void findNearFarCubeVertexDist( in vec3 ecCenterDir, in vec3 cubeCenter, in vec3
     // Compute the distances to the nearest and furthest vertices.
     farVertDist = -1000000000.;
     nearVertDist = 1000000000.;
-    for( int idx=0; idx<7; ++idx )
+    for( int idx=0; idx<8; ++idx )
     {
         // Compute the distances to the planes defined by the given normal
         // ecCenterDir, and containing the vertices farVert and nearVert.
