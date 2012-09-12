@@ -77,12 +77,6 @@ void OctreeGroup::traverse( osg::NodeVisitor& nv )
         return;
     }
 
-#if 0
-    // TBD sort children and traverse in back-to-front order.
-    // For now, just act like a Group:
-    Group::traverse( nv );
-    return;
-#else
 
     // Convert all offsets into eye coords. This is done by multiplying the
     // offsets by the normal matrix.
@@ -115,8 +109,6 @@ void OctreeGroup::traverse( osg::NodeVisitor& nv )
     {
         getChild( childInfo._index )->accept( nv );
     }
-
-#endif
 }
 
 bool OctreeGroup::addChild( Node *child, const osg::Vec3& offset )
@@ -140,89 +132,3 @@ bool OctreeGroup::addChild( Node *child, const osg::Vec3& offset )
 }
 // lfx
 }
-
-
-
-#include <osgDB/Registry>
-#include <osgDB/Input>
-#include <osgDB/Output>
-#include <osgDB/ParameterOutput>
-#include <osgDB/ParameterOutput>
-#include <osg/io_utils>
-
-
-/** \addtogroup DotOSGSupport */
-/** \{ */
-
-
-bool OctreeGroup_readLocalData( osg::Object& obj, osgDB::Input& fr );
-bool OctreeGroup_writeLocalData( const osg::Object& obj, osgDB::Output& fw );
-
-osgDB::RegisterDotOsgWrapperProxy OctreeGroup_Proxy
-(
-    new lfx::core::OctreeGroup,
-    "OctreeGroup",
-    "Object Node OctreeGroup Group",
-    OctreeGroup_readLocalData,
-    OctreeGroup_writeLocalData
-);
-
-bool OctreeGroup_readLocalData( osg::Object& obj, osgDB::Input& fr )
-{
-    lfx::core::OctreeGroup& og( static_cast< lfx::core::OctreeGroup& >( obj ) );
-    bool advance( false );
-
-    if( fr[ 0 ].getStr() == std::string( "OffsetArray" ) )
-    {
-        const int entry( fr[0].getNoNestedBrackets() );
-
-        unsigned int size;
-        fr[ 1 ].getUInt( size );
-        fr += 3; // Dkip "OffsetArray", size, and opening brace.
-
-        osg::ref_ptr< osg::Vec3Array > offsets( new osg::Vec3Array );
-        offsets->reserve( size );
-        while( !fr.eof() && ( fr[0].getNoNestedBrackets() > entry ) )
-        {
-            osg::Vec3 v;
-            if( fr[0].getFloat( v.x() ) && fr[1].getFloat( v.y() ) && fr[2].getFloat( v.z() ) )
-            {
-                fr += 3;
-                offsets->push_back( v );
-            }
-            else ++fr;
-        }
-        og.setOffsets( offsets.get() );
-        ++fr; // For closing brace.
-
-        advance = true;
-    }
-    if( fr[ 0 ].getStr() == std::string( "Center" ) )
-    {
-        ++fr;
-        osg::Vec3 v;
-        if( fr[0].getFloat( v.x() ) && fr[1].getFloat( v.y() ) && fr[2].getFloat( v.z() ) )
-        {
-            fr += 3;
-            og.setCenter( v );
-            advance = true;
-        }
-    }
-    
-    return( advance );
-}
-
-bool OctreeGroup_writeLocalData( const osg::Object& obj, osgDB::Output& fw )
-{
-    const lfx::core::OctreeGroup& og( static_cast< const lfx::core::OctreeGroup& >( obj ) );
-
-    const osg::Vec3Array* oArray( og.getOffsets() );
-    fw.indent() << "OffsetArray " << oArray->size() << std::endl;
-    osgDB::writeArray( fw, oArray->begin(), oArray->end(), 1 );
-
-    fw.indent() << "Center " << og.getCenter() << std::endl;
-
-    return( true );
-}
-
-/** \} */

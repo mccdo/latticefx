@@ -44,7 +44,7 @@ public:
     OctreeGroup( const OctreeGroup& rhs, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
     virtual ~OctreeGroup();
 
-    META_Node(latticefx-core,OctreeGroup);
+    META_Node( latticefx_core, OctreeGroup );
 
 
     virtual void traverse( osg::NodeVisitor& nv );

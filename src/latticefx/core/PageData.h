@@ -71,7 +71,7 @@ public:
 
     PageData( const RangeMode rangeMode=UNSPECIFIED_RANGE );
     PageData( const PageData& rhs, const osg::CopyOp& copyOp=osg::CopyOp::SHALLOW_COPY );
-    META_Object( lfx, PageData );
+    META_Object( latticefx_core, PageData );
 
     /** \brief set the RangeMode for the owning Group parent.
     \details Default is UNSPECIFIED_RANGE resulting in undefined behavior. Apps should
