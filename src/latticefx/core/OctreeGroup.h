@@ -51,6 +51,15 @@ public:
 
     virtual bool addChild( Node *child, const osg::Vec3& offset );
 
+    /** \brief Convenience accessor for dot OSG support. */
+    void setOffsets( osg::Vec3Array* offsets ) { _offsets = offsets; }
+    /** \brief Convenience accessor for dot OSG support. */
+    const osg::Vec3Array* getOffsets() const { return( _offsets.get() ); }
+    /** \brief Convenience accessor for dot OSG support. */
+    void setCenter( const osg::Vec3& center ) { _center = center; }
+    /** \brief Convenience accessor for dot OSG support. */
+    const osg::Vec3& getCenter() const { return( _center ); }
+
 protected:
     osg::ref_ptr< osg::Vec3Array > _offsets;
     osg::Vec3 _center;
