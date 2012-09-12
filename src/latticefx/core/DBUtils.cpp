@@ -676,6 +676,8 @@ osg::Array* loadArray( const DBKey& dbKey )
     case osg::Array::Vec4ArrayType:
         returnArray = new osg::Vec4Array( array->getNumElements(), (osg::Vec4*)&dataVec[0] );
         break;
+    default:
+        break;
     }
 
     return( returnArray.release() );
