@@ -106,7 +106,7 @@ PluginManager::PluginManager( const int initFlags )
     {
         std::string paths;
         try {
-            Poco::Environment::get( "PATH" );
+            paths = Poco::Environment::get( "PATH" );
         } catch (...) {}
         if( !paths.empty() )
             addPaths( paths, false );
@@ -115,7 +115,7 @@ PluginManager::PluginManager( const int initFlags )
     {
         std::string paths;
         try {
-            Poco::Environment::get( "LD_LIBRARY_PATH" );
+            paths = Poco::Environment::get( "LD_LIBRARY_PATH" );
         } catch (...) {}
         if( !paths.empty() )
             addPaths( paths, false );
