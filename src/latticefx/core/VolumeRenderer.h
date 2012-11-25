@@ -24,7 +24,6 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
-#include <latticefx/core/DBUtils.h>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 

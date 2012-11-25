@@ -24,7 +24,6 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LoadRequest.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogBase.h>
 
 #include <osg/Camera>

@@ -25,7 +25,6 @@
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/OctreeGroup.h>
 #include <latticefx/core/PagingCallback.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <osg/Group>

@@ -45,9 +45,6 @@
 namespace osg {
     class Group;
 }
-namespace lfx {
-    class PagingCallback;
-}
 
 
 namespace lfx {

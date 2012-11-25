@@ -20,7 +20,6 @@
 
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/LoadRequest.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <osgDB/ReadFile>
