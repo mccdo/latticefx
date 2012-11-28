@@ -50,13 +50,7 @@ public:
 
     /** \brief
     \details */
-    virtual void setStorageModeHint( const StorageModeHint& storageMode );
-    /** \brief
-    \details */
     virtual void setDBKey( const DBKey dbKey );
-    /** \brief
-    \details */
-    virtual void flushToDB();
 
     /** \brief Return a pointer to (possibly a copy of) the data.
     \details This function should be overridden in derived classes.

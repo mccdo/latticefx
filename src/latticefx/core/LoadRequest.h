@@ -23,7 +23,8 @@
 
 
 //#include <latticefx/core/Export.h>
-#include <latticefx/core/DBUtils.h>
+#include <latticefx/core/DBBase.h>
+#include <latticefx/core/types.h>
 #include <osg/Image>
 #include <osg/Node>
 
@@ -47,7 +48,7 @@ namespace core {
 files, Node files, or Object files as needed. */
 struct LoadRequest {
     LoadRequest();
-    LoadRequest( const osg::NodePath& path, const DBKeyList& keys );
+    LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db=DBBasePtr( (DBBase*)NULL ) );
     LoadRequest( const LoadRequest& rhs );
     ~LoadRequest();
 
@@ -58,6 +59,8 @@ struct LoadRequest {
 
     osg::NodePath _path;
     DBKeyList _keys;
+
+    DBBasePtr _db;
 
     typedef std::map< DBKey, osg::ref_ptr< osg::Object > > ResultsMap;
     ResultsMap _results;

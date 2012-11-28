@@ -47,6 +47,7 @@ DataSet::DataSet( const DataSet& rhs )
   : LogBase( rhs ),
     _data( rhs._data ),
     _dataNames( rhs._dataNames ),
+    _db( rhs._db ),
     _preprocess( rhs._preprocess ),
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
@@ -234,7 +235,7 @@ bool DataSet::updatePreprocessing()
                 addChannel( newData );
                 break;
             case Preprocess::REPLACE_DATA:
-                LFX_WARNING( "Preprocess op withn REPLACE_DATA action, not currently supported with empty TimeSet." );
+                LFX_WARNING( "Preprocess op with REPLACE_DATA action, not currently supported with empty TimeSet." );
                 break;
             default:
             case Preprocess::IGNORE_DATA:
@@ -367,6 +368,7 @@ bool DataSet::updateRenderer()
 
 
     PagingCallback* rootcb( new PagingCallback() );
+    rootcb->setDB( _db );
     _sceneGraph->setUpdateCallback( rootcb );
 
     PageData* pageData( new PageData );
@@ -474,7 +476,9 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         parent->setUserData( pageData.get() );
         pageData->setParent( parent.get() );
 
-        parent->setUpdateCallback( new PagingCallback() );
+        PagingCallback* cb( new PagingCallback() );
+        cb->setDB( _db );
+        parent->setUpdateCallback( cb );
 
         unsigned int childIndex( 0 );
         unsigned int idx;

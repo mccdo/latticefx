@@ -78,19 +78,6 @@ public:
     /** \name Database Control */
     /** \{ */
 
-    typedef enum {
-        STORE_IN_RAM,
-        STORE_IN_DB
-    } StorageModeHint;
-    /** \brief Specify the storage mode for the ChannelData's actual data.
-    \details If STORE_IN_RAM, the ChannelData does not access the DB and keeps all
-    data resident in memory. If STORE_IN_DB, the ChannelData may decide to store all, some, or
-    none of its data in the DB.
-
-    Default is STORE_IN_RAM. */
-    virtual void setStorageModeHint( const StorageModeHint& storageMode );
-    /** \brief Retrieve the storage mode hint. */
-    StorageModeHint getStorageModeHint() const;
     /** \brief Set the DB key.
     \details If the storage mode hint is STORE_IN_DB, this key is used as a base for
     DB data associated with this ChannelData. The application is responsible for setting
@@ -98,13 +85,6 @@ public:
     virtual void setDBKey( const DBKey dbKey );
     /** \brief Retrieve the DB key. */
     DBKey getDBKey() const;
-    /** \brief Flush memory-based cache to DB.
-    \details If the storage mode hint is STORE_IN_DB, the ChannelData likely maintains
-    a memory-based cache. This cache could be out of sync with the actual DB contents
-    after, for example, a RTPOperation::filter() executaion. Operations that modify
-    the ChannelData (such as RTPOperation::filter()) should call flushToDB() to flush
-    the memory-based cache to DB. */
-    virtual void flushToDB() {}
     /**\}*/
 
     /** \brief
@@ -171,7 +151,6 @@ protected:
 
     std::string _name;
 
-    StorageModeHint _storageMode;
     DBKey _dbKey;
 
     unsigned int _dimensions[ 3 ];

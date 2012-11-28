@@ -159,14 +159,10 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     ChannelDataOSGImage* dataImagePtr( static_cast<
         ChannelDataOSGImage* >( dataPtr.get() ) );
 
-    // Store image in DB.
-    osg::ref_ptr< osg::Image > image( dataImagePtr->getImage() );
-    const DBKey key( generateDBKey() );
-    image->setFileName( key );
-    lfx::core::storeImage( image.get(), key );
 
     // Create empty stub texture, to be paged in at run-time.
-    osg::Texture3D* volumeTexture( createStubTexture( key ) );
+    const std::string imageFileName( dataImagePtr->getDBKey() );
+    osg::Texture3D* volumeTexture( createStubTexture( imageFileName ) );
     volumeTexture->setDataVariance( osg::Object::DYNAMIC ); // for paging.
 
     stateSet->setTextureAttributeAndModes(

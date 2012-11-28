@@ -25,6 +25,7 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/OperationValue.h>
 #include <latticefx/core/ChannelData.h>
+#include <latticefx/core/DBBase.h>
 
 #include <osg/Vec3>
 
@@ -71,6 +72,10 @@ public:
     OperationBase( const OperationType opType=UnspecifiedType );
     OperationBase( const OperationBase& rhs );
     virtual ~OperationBase();
+
+
+    // TBD DB temp hack.
+    DBBasePtr _db;
 
     /** \brief Create and return a new instance.
     \details Called by PluginManager to create an instance of classes

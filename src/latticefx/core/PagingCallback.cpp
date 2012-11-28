@@ -304,7 +304,7 @@ class CollectImagesRecursive
 {
 public:
     CollectImagesRecursive( const osg::Matrix& rootModelMat )
-      : _request( LoadRequestImagePtr( new LoadRequestImage ) ),
+      : _request( LoadRequestImagePtr( new LoadRequestImage() ) ),
         _rootModelMat( rootModelMat )
     {
         // Get transform info for LOD calculations.
@@ -415,6 +415,7 @@ LoadRequestPtr PagingCallback::createLoadRequest( osg::Node* child, const osg::N
     collect.recurse( *child );
 
     LoadRequestImagePtr request( collect._request );
+    request->_db = _db;
     request->_path = childPath;
     return( request );
 }
@@ -446,6 +447,10 @@ public:
                         LFX_WARNING_STATIC( "lfx.core.page", "Got empty key." );
                     }
                     osg::Image* image( _request->findAsImage( key ) );
+                    if( ( image != NULL ) && ( image->getFileName().empty() ) )
+                    {
+                        LFX_WARNING_STATIC( "lfx.core.page", "Loaded image has empty key!!" );
+                    }
                     if( image != NULL )
                         tex->setImage( 0, image );
                 }
@@ -526,6 +531,10 @@ public:
                     DBKey key( tex->getImage( 0 )->getFileName() );
                     osg::Image* image( new osg::Image() );
                     image->setFileName( key );
+                    if( key.empty() )
+                    {
+                        LFX_ERROR_STATIC( "lfx.core.page", "Setting an empty key!" );
+                    }
                     tex->setImage( 0, image );
                 }
             }

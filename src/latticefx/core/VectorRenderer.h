@@ -171,7 +171,7 @@ public:
     std::string getInputTypeAlias( const InputType& inputType ) const;
 
 protected:
-    static osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
+    osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
 
     PointStyle _pointStyle;
     InputTypeMap _inputTypeMap;

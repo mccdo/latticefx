@@ -17,32 +17,42 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
+
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/ChannelDataLOD.h>
 #include <latticefx/core/ChannelDataImageSet.h>
 #include <latticefx/core/Preprocess.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/DataSet.h>
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/PagingThread.h>
 
+#include <latticefx/core/DBDisk.h>
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <latticefx/core/DBCrunchStore.h>
+#  include <crunchstore/DataManager.h>
+#  include <crunchstore/NullCache.h>
+#  include <crunchstore/NullBuffer.h>
+#  include <crunchstore/SQLiteStore.h>
+#endif
+
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
+#include <osg/ArgumentParser>
 #include <osg/Image>
 #include <osg/Texture3D>
 #include <osg/Texture2D>
 #include <osg/io_utils>
-
-#include <osgDB/WriteFile>
-#include <osgDB/ReadFile>
 
 #include <osgViewer/Viewer>
 #include <osgGA/TrackballManipulator>
 
 #include <sstream>
 #include <iostream>
+
+
+const std::string logstr( "lfx.demo" );
 
 #define CONE_HEIGHT 250
 #define CONE_RADIUS 125
@@ -68,7 +78,7 @@ public:
         Preprocess(),
         _depth( depth )
     {
-        setActionType( Preprocess::REPLACE_DATA );
+        setActionType( Preprocess::IGNORE_DATA );
         m_dataBB.set( -TEXTURE_HALF_X, -TEXTURE_HALF_Y,        0.,
                        TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
     }
@@ -138,12 +148,9 @@ protected:
         localImage->setFileName( imageName );
         
         cdip = ChannelDataOSGImagePtr( new ChannelDataOSGImage( dataName, localImage.get() ) );
-        if( DBUsesCrunchStore() )
-        {
-            cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
-            cdip->setDBKey( imageName );
-            cdip->reset();
-        }
+        cdip->setDBKey( imageName );
+        cdip->reset();
+
         return( cdip );
     }
     
@@ -301,8 +308,10 @@ protected:
         image->setImage( SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, 
                          GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                          pixels, osg::Image::USE_NEW_DELETE );
-        
-        osgDB::writeImageFile( *image, filename );
+
+        if( _db != NULL )
+            _db->storeImage( image.get(), filename );
+
         return image.release();
     }
     
@@ -387,36 +396,8 @@ protected:
     }
 };
 
-bool testVoxel( const int x, const int y, const int z )
-{
-    if( z >= CONE_HEIGHT )
-        return false;
 
-    const double radiusTest = double( (x - TEXTURE_HALF_X) * (x - TEXTURE_HALF_X) +
-        (y - TEXTURE_HALF_Y) * (y - TEXTURE_HALF_Y) );
-    
-    const double coneConstant = double( CONE_RADIUS ) / double( CONE_HEIGHT );
-    
-    const double heightRadius = 
-       coneConstant * coneConstant * ( z - CONE_HEIGHT ) * ( z - CONE_HEIGHT );
-    //double heightRadius =
-    //    ( double( CONE_RADIUS ) * double( z ) / double( CONE_HEIGHT ) );
-    //heightRadius *= heightRadius;
-    
-    return( heightRadius >= radiusTest );
-}
-    
-void writeVoxel( const size_t numPixels, unsigned char* pixels )
-{
-    osg::ref_ptr< osg::Image > image = new osg::Image();
-    //We will let osg manage the raw image data
-    image->setImage( TEXTURE_X, TEXTURE_Y, TEXTURE_Z, GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                pixels, osg::Image::USE_NEW_DELETE );
-
-    osgDB::writeImageFile( *image, "cone_texture.ive" );
-}
-
-DataSetPtr createDataSet()
+DataSetPtr createDataSet( const std::string& csFile )
 {
     /*const std::string baseFileName( "pagetex-near0.png" );
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
@@ -434,6 +415,39 @@ DataSetPtr createDataSet()
     //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
+
+    // Configure database to use
+#ifdef LFX_USE_CRUNCHSTORE
+    if( !( csFile.empty() ) )
+    {
+        DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+
+        crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+        crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+        crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+        manager->SetCache( cache );
+        manager->SetBuffer( buffer );
+        crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+        sqstore->SetStorePath( csFile );
+        manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+        try {
+            cs->setDataManager( manager );
+        }
+        catch( std::exception exc ) {
+            LFX_FATAL_STATIC( "lfx.demo", std::string(exc.what()) );
+            LFX_FATAL_STATIC( "lfx.demo", "Unable to set DataManager." );
+            exit( 1 );
+        }
+
+        op->_db = (DBBasePtr)cs;
+    }
+#endif
+    if( csFile.empty() )
+    {
+        DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
+        op->_db = (DBBasePtr)disk;
+    }
+
     //op->addInput( "texture" );
     dsp->addPreprocess( PreprocessPtr( op ) );
     
@@ -443,6 +457,17 @@ DataSetPtr createDataSet()
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    Log::instance()->setPriority( Log::PrioTrace, "lfx.db.cs" );
+
+    LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
+    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+
+    osg::ArgumentParser arguments( &argc, argv );
+
+    std::string csFile;
+#ifdef LFX_USE_CRUNCHSTORE
+    arguments.read( "-cs", csFile );
+#endif
 
 #if 0
     size_t numPixels = TEXTURE_X * TEXTURE_Y * TEXTURE_Z;
@@ -461,7 +486,7 @@ int main( int argc, char** argv )
 
     writeVoxel( numPixels, pixels );
 #else
-    DataSetPtr dsp( createDataSet() );
+    DataSetPtr dsp( createDataSet( csFile ) );
     
     dsp->updateAll();
 #endif

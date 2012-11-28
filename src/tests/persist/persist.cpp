@@ -19,12 +19,23 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <crunchstore/Persistable.h>
-#include <latticefx/core/DBUtils.h>
-//#include <latticefx/core/ChannelDataDB.h>
+#include <crunchstore/DataManager.h>
+#include <crunchstore/NullCache.h>
+#include <crunchstore/NullBuffer.h>
+#include <crunchstore/SQLiteStore.h>
+
+#include <latticefx/core/DBDisk.h>
+#include <latticefx/core/DBCrunchStore.h>
+
 #include <osg/Array>
 #include <osg/Notify>
 #include <osg/io_utils>
 
+#include <Poco/File.h>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <iostream>
 
 
@@ -147,15 +158,13 @@ bool operator!= (const RefPtrAllocator<T1>&,
 }
 
 
-
 int main( int argc, char** argv )
 {
-    crunchstore::PersistablePtr persist( new crunchstore::Persistable );
-
     typedef RefPtrAllocator< char > RefCharAllocator;
     typedef std::vector< char, RefCharAllocator > CharVec;
 
-    OSG_ALWAYS << "--- Custom allocator, no DB ---" << std::endl;
+
+    std::cout << "--- Custom allocator, no DB ---" << std::endl;
 
     {
         osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
@@ -173,84 +182,302 @@ int main( int argc, char** argv )
         osg::ref_ptr< osg::FloatArray > a2( (osg::FloatArray*)&cv[0] );
 
         for( unsigned int idx=0; idx<array->size(); ++idx )
-            OSG_ALWAYS << (*a2)[ idx ] << std::endl;
+            std::cout << (*a2)[ idx ] << std::endl;
     }
 
-    OSG_ALWAYS << "--- Custom allocator, store in DB ---" << std::endl;
+
+    std::cout << "--- Custom allocator, store in DB ---" << std::endl;
 
     {
-        osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
-        array->push_back( 1.f );
-        array->push_back( 3.14f );
-        array->push_back( 9.99999f );
+        namespace csdb = crunchstore;
+        csdb::PersistablePtr persist( csdb::PersistablePtr( new csdb::Persistable() ) );
 
-        const size_t sz( sizeof( *array ) );
-        RefCharAllocator localAllocator(
-            RefCharAllocator::RefPtr( array.get() ), sz );
+        {
+            osg::ref_ptr< osg::FloatArray > array( new osg::FloatArray );
+            array->push_back( 1.f );
+            array->push_back( 3.14f );
+            array->push_back( 9.99999f );
 
-        CharVec cv( localAllocator );
-        cv.resize( sz );
-        persist->AddDatum( "array", cv );
-        // Extra ref now that the data is stored in the DB.
-        array->ref();
-    }
-    {
-        const CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
+            const size_t sz( sizeof( *array ) );
+            RefCharAllocator localAllocator(
+                RefCharAllocator::RefPtr( array.get() ), sz );
 
-        const size_t sz( scv.size() );
-        osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
+            CharVec cv( localAllocator );
+            cv.resize( sz );
+            persist->AddDatum( "array", cv );
+            // Extra ref now that the data is stored in the DB.
+            array->ref();
+        }
+        {
+            const CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
 
-        for( unsigned int idx=0; idx<array->size(); ++idx )
-            OSG_ALWAYS << (*array)[ idx ] << std::endl;
-    }
+            const size_t sz( scv.size() );
+            osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
 
-    OSG_ALWAYS << "--- Vec3Array test ---" << std::endl;
-
-    {
-        osg::ref_ptr< osg::Vec3Array > array( new osg::Vec3Array );
-        array->push_back( osg::Vec3( 1., 2., 3. ) );
-        array->push_back( osg::Vec3( 4., 5., 6. ) );
-        array->push_back( osg::Vec3( 7., 8., 9. ) );
-        array->push_back( osg::Vec3( 10., 11., 12. ) );
-
-        const size_t sz( sizeof( *array ) );
-        RefCharAllocator localAllocator(
-            RefCharAllocator::RefPtr( array.get() ), sz );
-
-        CharVec cv( localAllocator );
-        cv.resize( sz );
-        persist->AddDatum( "v3array", cv );
-        // Extra ref now that the data is stored in the DB.
-        array->ref();
-    }
-    {
-        const CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
-
-        const size_t sz( scv.size() );
-        osg::ref_ptr< osg::Vec3Array > array( (osg::Vec3Array*)&scv[0] );
-
-        for( unsigned int idx=0; idx<array->size(); ++idx )
-            OSG_ALWAYS << (*array)[ idx ] << std::endl;
+            for( unsigned int idx=0; idx<array->size(); ++idx )
+                std::cout << (*array)[ idx ] << std::endl;
+        }
     }
 
-    OSG_ALWAYS << "--- Vec4Array and DBUtils test ---" << std::endl;
+
+    std::cout << "--- Vec3Array test ---" << std::endl;
 
     {
-        osg::ref_ptr< osg::Vec4Array > array( new osg::Vec4Array );
-        array->push_back( osg::Vec4( 1., 2., 3., 1. ) );
-        array->push_back( osg::Vec4( 4., 5., 6., 1. ) );
-        array->push_back( osg::Vec4( 7., 8., 9., 1. ) );
-        array->push_back( osg::Vec4( 10., 11., 12., 1. ) );
+        namespace csdb = crunchstore;
+        csdb::PersistablePtr persist( csdb::PersistablePtr( new csdb::Persistable() ) );
 
-        lfx::core::storeArray( array.get(), "foo" );
+        {
+            osg::ref_ptr< osg::Vec3Array > array( new osg::Vec3Array );
+            array->push_back( osg::Vec3( 1., 2., 3. ) );
+            array->push_back( osg::Vec3( 4., 5., 6. ) );
+            array->push_back( osg::Vec3( 7., 8., 9. ) );
+            array->push_back( osg::Vec3( 10., 11., 12. ) );
+
+            const size_t sz( sizeof( *array ) );
+            RefCharAllocator localAllocator(
+                RefCharAllocator::RefPtr( array.get() ), sz );
+
+            CharVec cv( localAllocator );
+            cv.resize( sz );
+            persist->AddDatum( "v3array", cv );
+            // Extra ref now that the data is stored in the DB.
+            array->ref();
+        }
+        {
+            const CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
+
+            const size_t sz( scv.size() );
+            osg::ref_ptr< osg::Vec3Array > array( (osg::Vec3Array*)&scv[0] );
+
+            for( unsigned int idx=0; idx<array->size(); ++idx )
+                std::cout << (*array)[ idx ] << std::endl;
+        }
     }
+
+
+    std::cout << "--- Save and restore DB test ---" << std::endl;
+
     {
-        osg::ref_ptr< osg::Array > array( lfx::core::loadArray( "foo" ) );
-        osg::Vec4Array* v4a( dynamic_cast< osg::Vec4Array* >( array.get() ) );
+        namespace csdb = crunchstore;
 
-        for( unsigned int idx=0; idx<v4a->size(); ++idx )
-            OSG_ALWAYS << (*v4a)[ idx ] << std::endl;
+        const std::string dbName( "SaveLoadTest.db" );
+        Poco::File pocoFile( dbName );
+        if( pocoFile.exists() )
+            pocoFile.remove();
+
+        csdb::DataManager manager;
+        csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
+        csdb::DataAbstractionLayerPtr buffer( new csdb::NullBuffer );
+        manager.SetCache( cache );
+        manager.SetBuffer( buffer );
+        csdb::SQLiteStorePtr sqstore( new csdb::SQLiteStore );
+        sqstore->SetStorePath( dbName );
+        manager.AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
+
+        typedef std::vector<int> IntVec;
+        typedef std::vector<char> CharVec;
+        boost::uuids::uuid uuID;
+        {
+            // Save a Persistable into the SQLiteStore.
+            csdb::Persistable q;
+            uuID = q.GetUUID();
+            q.SetTypeName( "TestType" );
+
+            IntVec iv;
+            iv.push_back( 13 ); iv.push_back( 42 ); iv.push_back( 77 );
+            const char* start( (char*)&(*iv.begin()) );
+            CharVec cv( start, start + iv.size() * sizeof(int) );
+
+            q.AddDatum( "header", (int)cv.size() );
+            q.AddDatum( "data", cv );
+            manager.Save( q );
+        }
+        {
+            // Create a Persistable with the same UUID and typename.
+            csdb::Persistable q;
+            q.SetUUID( uuID );
+            q.SetTypeName( "TestType" );
+
+            // Add datums to load
+            q.AddDatum( "header", (int)0 );
+            q.AddDatum( "data", (char*)NULL );
+            // Load the Persistable from the SQLiteStore.
+            manager.Load( q );
+            // Prove that we loaded the data.
+            if( q.DatumExists( "header" ) )
+            {
+                int d( q.GetDatumValue<int>( "header" ) );
+                std::cout << "Found header: " << d << std::endl;;
+
+                CharVec cv( q.GetDatumValue<CharVec>( "data" ) );
+                const int* start( (int*)&(*cv.begin()) );
+                IntVec iv( start, start + cv.size() / sizeof(int) );
+                std::cout << "  iv[0]: " << iv[0] << std::endl;;
+                std::cout << "  iv[1]: " << iv[1] << std::endl;;
+                std::cout << "  iv[2]: " << iv[2] << std::endl;;
+            }
+        }
     }
 
-    OSG_ALWAYS << "--- Finished ---" << std::endl;
+
+    std::cout << "--- Query empty DB test ---" << std::endl;
+
+    {
+        namespace csdb = crunchstore;
+
+        const std::string dbName( "NonExisting.db" );
+        Poco::File pocoFile( dbName );
+        if( pocoFile.exists() )
+            pocoFile.remove();
+
+        csdb::DataManager manager;
+        csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
+        csdb::DataAbstractionLayerPtr buffer( new csdb::NullBuffer );
+        manager.SetCache( cache );
+        manager.SetBuffer( buffer );
+        csdb::SQLiteStorePtr sqstore( new csdb::SQLiteStore );
+        sqstore->SetStorePath( dbName );
+        manager.AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
+
+        if( !manager.HasIDForTypename( boost::uuids::random_generator()(), "DummyTypeName" ) )
+            std::cout << "Correct results: Can't find DummyTypeName" << std::endl;
+        else
+            std::cout << "Failed." << std::endl;
+    }
+
+
+    std::cout << "--- Query saved ID/typename test ---" << std::endl;
+
+    {
+        namespace csdb = crunchstore;
+
+        const std::string dbName( "QueryTest.db" );
+        const Poco::File pocoFile( dbName );
+        const bool fileExists( pocoFile.exists() );
+
+        csdb::DataManager manager;
+        csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
+        csdb::DataAbstractionLayerPtr buffer( new csdb::NullBuffer );
+        manager.SetCache( cache );
+        manager.SetBuffer( buffer );
+        csdb::SQLiteStorePtr sqstore( new csdb::SQLiteStore );
+        sqstore->SetStorePath( dbName );
+        manager.AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
+
+        const std::string genericTypeName( "Generic" );
+        const std::string knownID( "00000000-0000-0000-0000-000000000000" );
+
+        if( !fileExists )
+        {
+            // Save a Persistable into the SQLiteStore.
+            csdb::Persistable persist( genericTypeName );
+            persist.SetUUID( knownID );
+            persist.AddDatum( "Number", 0.0 );
+            manager.Save( persist );
+
+            std::cout << "Saved ID/TypeName. Re-run to test query." << std::endl;
+        }
+        else
+        {
+            // Now query to see if it exists
+            boost::uuids::string_generator strGen;
+            boost::uuids::uuid knownUUID( strGen( knownID ) );
+            if( manager.HasIDForTypename( knownUUID, genericTypeName ) )
+                std::cout << "Correct results: Found ID/TypeName." << std::endl;
+            else
+                std::cout << "Failed: HasIDForTypename returned false." << std::endl;
+        }
+    }
+
+
+    std::cout << "--- Image save / restore test ---" << std::endl;
+
+    for( unsigned int testNum=0; testNum<2; ++testNum )
+    {
+        using namespace lfx::core;
+        namespace csdb = crunchstore;
+
+        DBKey key;
+        bool dbExists;
+        DBBasePtr dbBase;
+        if( testNum == 0 )
+        {
+            DBDiskPtr dbDisk( DBDiskPtr( new DBDisk() ) );
+            dbBase = dbDisk;
+
+            key = dbBase->generateDBKey( "ImageTestKey" );
+            Poco::File pocoFile( key );
+            dbExists = pocoFile.exists();
+        }
+        else
+        {
+            const std::string dbName( "ImageTest.db" );
+            Poco::File pocoFile( dbName );
+            dbExists = pocoFile.exists();
+
+            csdb::DataManagerPtr manager( new csdb::DataManager() );
+            csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
+            csdb::DataAbstractionLayerPtr buffer( new csdb::NullBuffer );
+            manager->SetCache( cache );
+            manager->SetBuffer( buffer );
+            csdb::SQLiteStorePtr sqstore( new csdb::SQLiteStore );
+            sqstore->SetStorePath( dbName );
+            manager->AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
+
+            DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+            try {
+                cs->setDataManager( manager );
+            }
+            catch( std::exception exc ) {
+                std::cout << "Test# " << testNum << ": setDataManager() throws exception." << std::endl;
+                break;
+            }
+            dbBase = cs;
+
+            key = dbBase->generateDBKey( "ImageTestKey" );
+        }
+
+        const int width( 6 ), height( 4 );
+        if( !dbExists )
+        {
+            osg::ref_ptr< osg::Image > image( new osg::Image() );
+            float* data = (float*) malloc( width * height * sizeof( float ) * 3 );
+            float* ptr=data;
+            float red[3] = { 1., 0., 0. };
+            for( unsigned int idx=0; idx<width*height; ++idx )
+            {
+                memcpy( ptr, (void*)&red[0], sizeof(float)*3 );
+                ptr += 3;
+            }
+            image->setImage( width, height, 1, GL_RGB, GL_RGB, GL_FLOAT,
+                (unsigned char*)data, osg::Image::USE_MALLOC_FREE );
+
+            dbBase->storeImage( image.get(), key );
+
+            std::cout << "Test# " << testNum << ": Store test PASSED." << std::endl;
+        }
+        else
+        {
+            osg::ref_ptr< osg::Image > loadedImage( dbBase->loadImage( key ) );
+            if( loadedImage == NULL )
+            {
+                std::cout << "Test# " << testNum << ": Failed, NULL loadedImage." << std::endl;
+                continue;
+            }
+            if( ( loadedImage->s() != width ) || ( loadedImage->t() != height ) )
+            {
+                std::cout << "Test# " << testNum << ": Failed, Incorrect width/height." << std::endl;
+                continue;
+            }
+
+            std::cout << "Test# " << testNum << ": Load test PASSED." << std::endl;
+        }
+    }
+
+
+    std::cout << "--- Vec4Array and DBCrunchStore test ---" << std::endl;
+    std::cout << "--- Not yet implemented ---" << std::endl;
+
+
+    std::cout << "--- Finished ---" << std::endl;
 }

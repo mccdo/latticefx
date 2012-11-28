@@ -24,6 +24,7 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/LoadRequest.h>
+#include <latticefx/core/DBBase.h>
 #include <latticefx/core/LogBase.h>
 #include <latticefx/core/types.h>
 
@@ -77,6 +78,14 @@ public:
     PagingCallback();
     PagingCallback( const PagingCallback& rhs );
 
+
+    /** \brief TBD
+    \details TBD */
+    void setDB( DBBasePtr db ) { _db = db; }
+    /** \brief TBD
+    \details TBD */
+    DBBasePtr getDB() const { return( _db ); }
+
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.
     This function does not need to be called if time series data is not being
@@ -118,6 +127,8 @@ protected:
     /** \brief Return \c time, biased into the given time range.
     \details Returns the modulo of \c time and ( \c maxTime / \c minTime ). */
     static TimeValue getWrappedTime( const TimeValue& time, const TimeValue& minTime, const TimeValue& maxTime );
+
+    DBBasePtr _db;
 
     TimeValue _animationTime;
     RangeValues _timeRange;

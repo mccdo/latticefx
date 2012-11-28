@@ -22,7 +22,6 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/BoundUtils.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <osg/Geode>
@@ -507,9 +506,14 @@ std::string VectorRenderer::getInputTypeAlias( const InputType& inputType ) cons
 osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
 {
     osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
-    const DBKey key( generateDBKey() );
-    image->setFileName( key );
-    lfx::core::storeImage( image.get(), key );
+
+    image->setFileName( data->getName() );
+    if( _db != NULL )
+    {
+        const DBKey key( _db->generateDBKey() );
+        image->setFileName( key );
+        _db->storeImage( image.get(), key );
+    }
 
     // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
@@ -517,7 +521,7 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
     osg::Image* dummyImage( new osg::Image );
-    dummyImage->setFileName( key );
+    dummyImage->setFileName( image->getName() );
     tex->setImage( dummyImage );
 
     return( tex.release() );

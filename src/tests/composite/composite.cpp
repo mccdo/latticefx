@@ -112,8 +112,6 @@ int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
-    osg::ArgumentParser arguments( &argc, argv );
-
     DataSetPtr dsp( createDataSet() );
 
     osgViewer::Viewer viewer;

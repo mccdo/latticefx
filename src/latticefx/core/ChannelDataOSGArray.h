@@ -57,16 +57,6 @@ public:
 
     /** \brief
     \details */
-    virtual void setStorageModeHint( const StorageModeHint& storageMode );
-    /** \brief
-    \details */
-    virtual void setDBKey( const DBKey dbKey );
-    /** \brief
-    \details */
-    virtual void flushToDB();
-
-    /** \brief
-    \details */
     void setOSGArray( osg::Array* array );
 
     /** \brief

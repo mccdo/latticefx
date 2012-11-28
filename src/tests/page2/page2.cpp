@@ -20,6 +20,7 @@
 
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
@@ -76,12 +77,8 @@ protected:
         osg::Image* localImage( osgDB::readImageFile( imageName ) );
         localImage->setFileName( imageName );
         ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( dataName, localImage ) );
-        if( DBUsesCrunchStore() )
-        {
-            cdip->setStorageModeHint( ChannelData::STORE_IN_DB );
-            cdip->setDBKey( imageName );
-            cdip->reset();
-        }
+        cdip->setDBKey( imageName );
+        cdip->reset();
         return( cdip );
     }
 
@@ -192,13 +189,11 @@ DataSetPtr createDataSet()
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
-    if( DBUsesCrunchStore() )
-    {
-        imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
-        imageData->setDBKey( baseFileName );
-    }
+    imageData->setDBKey( baseFileName );
 
     DataSetPtr dsp( new DataSet() );
+    dsp->setDB( lfx::core::DBBasePtr( new lfx::core::DBDisk() ) );
+
     dsp->addChannel( imageData );
 
     ImageProcess* op( new ImageProcess );

@@ -25,6 +25,7 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
+#include <latticefx/core/DBBase.h>
 #include <latticefx/core/Preprocess.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
@@ -102,6 +103,18 @@ public:
     osg::Vec2d getTimeRange() const;
     /** \overload */
     void getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const;
+    ///\}
+
+
+    /** \name Database section
+    \details TBD */
+    ///\{
+    /** \brief TBD
+    \details TBD */
+    void setDB( DBBasePtr db ) { _db = db; }
+    /** \brief TBD
+    \details TBD */
+    DBBasePtr getDB() const { return( _db ); }
     ///\}
 
 
@@ -223,6 +236,8 @@ protected:
     typedef std::set< std::string > StringSet;
     /** Set of unique ChannelData names. */
     StringSet _dataNames;
+
+    DBBasePtr _db;
 
     PreprocessList _preprocess;
     RTPOperationList _ops;

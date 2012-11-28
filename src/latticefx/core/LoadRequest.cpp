@@ -19,9 +19,11 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/LoadRequest.h>
-#include <latticefx/core/DBUtils.h>
-#include <boost/foreach.hpp>
+#include <latticefx/core/DBBase.h>
+#include <latticefx/core/types.h>
+#include <latticefx/core/LogMacros.h>
 
+#include <boost/foreach.hpp>
 #include <iostream>
 
 
@@ -34,14 +36,17 @@ LoadRequest::LoadRequest()
     _keys()
 {
 }
-LoadRequest::LoadRequest( const osg::NodePath& path, const DBKeyList& keys )
+LoadRequest::LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db )
   : _path( path ),
-    _keys( keys )
+    _keys( keys ),
+    _db( db )
 {
 }
 LoadRequest::LoadRequest( const LoadRequest& rhs )
   : _path( rhs._path ),
-    _keys( rhs._keys )
+    _keys( rhs._keys ),
+    _db( rhs._db ),
+    _results( rhs._results )
 {
 }
 LoadRequest::~LoadRequest()
@@ -60,10 +65,16 @@ osg::Object* LoadRequest::find( const DBKey& dbKey )
 
 bool LoadRequestImage::load()
 {
+    if( _db == NULL )
+    {
+        LFX_ERROR_STATIC( "lfx.core.page.req", "NULL _db." );
+        return( false );
+    }
+
     bool result( true );
     BOOST_FOREACH( const DBKey key, _keys )
     {
-        osg::Image* image( lfx::core::loadImage( key ) );
+        osg::Image* image( _db->loadImage( key ) );
         if( image == NULL )
             result = false;
         _results[ key ] = image;

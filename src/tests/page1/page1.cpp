@@ -18,9 +18,9 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/PagingThread.h>
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/ChannelDataLOD.h>
@@ -61,12 +61,8 @@ public:
         osg::Image* farImage( osgDB::readImageFile( farFileName ) );
         farImage->setFileName( farFileName );
         ChannelDataOSGImagePtr newImage( new ChannelDataOSGImage( "texture", farImage ) );
-        if( DBUsesCrunchStore() )
-        {
-            newImage->setStorageModeHint( ChannelData::STORE_IN_DB );
-            newImage->setDBKey( farFileName );
-            newImage->reset();
-        }
+        newImage->setDBKey( farFileName );
+        newImage->reset();
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
@@ -110,13 +106,11 @@ DataSetPtr createDataSet()
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
     image->setFileName( baseFileName );
     ChannelDataOSGImagePtr imageData( new ChannelDataOSGImage( "texture", image ) );
-    if( DBUsesCrunchStore() )
-    {
-        imageData->setStorageModeHint( ChannelData::STORE_IN_DB );
-        imageData->setDBKey( baseFileName );
-    }
+    imageData->setDBKey( baseFileName );
 
     DataSetPtr dsp( new DataSet() );
+    dsp->setDB( lfx::core::DBBasePtr( new lfx::core::DBDisk() ) );
+
     dsp->addChannel( imageData );
 
     ImageProcess* op( new ImageProcess );

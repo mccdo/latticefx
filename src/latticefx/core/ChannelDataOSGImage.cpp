@@ -20,7 +20,6 @@
 
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/LogMacros.h>
-#include <latticefx/core/DBUtils.h>
 
 #include <boost/foreach.hpp>
 
@@ -50,34 +49,14 @@ ChannelDataOSGImage::~ChannelDataOSGImage()
 }
 
 
-void ChannelDataOSGImage::setStorageModeHint( const StorageModeHint& storageMode )
-{
-    ChannelData::setStorageModeHint( storageMode );
-
-    if( ( getStorageModeHint() == STORE_IN_DB ) &&
-        ( _image != NULL ) && !( getDBKey().empty() ) )
-        setImage( _image.get() );
-}
 void ChannelDataOSGImage::setDBKey( const DBKey dbKey )
 {
     ChannelData::setDBKey( dbKey );
-
-    if( ( getStorageModeHint() == STORE_IN_DB ) &&
-        ( _image != NULL ) && !( getDBKey().empty() ) )
-        setImage( _image.get() );
-}
-void ChannelDataOSGImage::flushToDB()
-{
-    storeImage( _workingImage.get(), getDBKey() );
-    _workingImage = NULL;
 }
 
 
 char* ChannelDataOSGImage::asCharPtr()
 {
-    if( getStorageModeHint() == STORE_IN_DB )
-        _workingImage = loadImage( getDBKey() );
-
     if( _workingImage != NULL )
         return( const_cast< char* >( (const char*)( _workingImage->data() ) ) );
     else
@@ -91,16 +70,7 @@ const char* ChannelDataOSGImage::asCharPtr() const
 
 void ChannelDataOSGImage::setImage( osg::Image* image )
 {
-    if( ( getStorageModeHint() == STORE_IN_DB ) && !( getDBKey().empty() ) )
-    {
-        storeImage( image, getDBKey() + DBKey( "-base" ) );
-        _image = NULL;
-        _workingImage = NULL;
-    }
-    else // STORE_IN_RAM or there is no DB key yet.
-    {
-        _image = image;
-    }
+    _image = image;
 
     if( image != NULL )
         setDimensions( image->s(), image->t(), image->r() );
@@ -109,8 +79,6 @@ void ChannelDataOSGImage::setImage( osg::Image* image )
 }
 osg::Image* ChannelDataOSGImage::getImage()
 {
-    if( getStorageModeHint() == STORE_IN_DB )
-        _workingImage = loadImage( getDBKey() );
     return( _workingImage.get() );
 }
 const osg::Image* ChannelDataOSGImage::getImage() const
@@ -127,24 +95,16 @@ ChannelDataPtr ChannelDataOSGImage::getMaskedChannel( const ChannelDataPtr maskI
 
 void ChannelDataOSGImage::reset()
 {
-    if( getStorageModeHint() == STORE_IN_DB )
+    if( _workingImage == NULL )
     {
-        osg::Image* image( loadImage( getDBKey() + DBKey( "-base" ) ) );
-        storeImage( image, getDBKey() );
+        _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
     }
-    else // STORE_IN_RAM
+    else if( _workingImage->data() != NULL )
     {
-        if( _workingImage == NULL )
-        {
-            _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
-        }
-        else if( _workingImage->data() != NULL )
-        {
-            // Only do the copy if _workingImage has data. It will not have any data
-            // if the image has not yet been paged in.
-            memcpy( _workingImage->data(), _image->data(),
-                _image->getTotalSizeInBytes() );
-        }
+        // Only do the copy if _workingImage has data. It will not have any data
+        // if the image has not yet been paged in.
+        memcpy( _workingImage->data(), _image->data(),
+            _image->getTotalSizeInBytes() );
     }
 }
 

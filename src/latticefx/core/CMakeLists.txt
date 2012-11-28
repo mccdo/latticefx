@@ -19,7 +19,9 @@ set( _headerFiles
     ChannelDataOSGArray.h
     ChannelDataOSGImage.h
     DataSet.h
-    DBUtils.h
+    DBBase.h
+    DBDisk.h
+#    DBUtils.h
     HierarchyUtils.h
     LoadRequest.h
     Log.h
@@ -53,7 +55,9 @@ set( _sourceFiles
     ChannelDataOSGArray.cpp
     ChannelDataOSGImage.cpp
     DataSet.cpp
-    DBUtils.cpp
+    DBBase.cpp
+    DBDisk.cpp
+#    DBUtils.cpp
     HierarchyUtils.cpp
     LoadRequest.cpp
     Log.cpp
@@ -74,6 +78,11 @@ set( _sourceFiles
     VectorRenderer.cpp
     VolumeRenderer.cpp
 )
+
+if( crunchstore_FOUND )
+    list( APPEND _sourceFiles DBCrunchStore.cpp )
+    list( APPEND _headerFiles DBCrunchStore.h )
+endif()
 
 set(INCLUDE_DIRECTORY_NAME "latticefx/core")
 

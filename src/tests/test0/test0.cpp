@@ -21,7 +21,6 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/Renderer.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -139,12 +138,8 @@ DataSetPtr prepareDataSet()
         }
     }
     ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( "vertices", xyzData.get() ) );
-    if( DBUsesCrunchStore() )
-    {
-        cdp->setStorageModeHint( ChannelData::STORE_IN_DB );
-        const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
-        cdp->setDBKey( DBKey( cdp->getName() + "-" + uuid.toString() ) );
-    }
+    const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
+    cdp->setDBKey( DBKey( cdp->getName() + "-" + uuid.toString() ) );
 
     // Create a data set and add the vertex data.
     DataSetPtr dsp( new DataSet() );

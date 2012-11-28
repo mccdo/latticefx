@@ -19,6 +19,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/HierarchyUtils.h>
@@ -26,6 +27,15 @@
 #include <latticefx/core/TransferFunctionUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
+
+#include <latticefx/core/DBDisk.h>
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <latticefx/core/DBCrunchStore.h>
+#  include <crunchstore/DataManager.h>
+#  include <crunchstore/NullCache.h>
+#  include <crunchstore/NullBuffer.h>
+#  include <crunchstore/SQLiteStore.h>
+#endif
 
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
@@ -50,8 +60,7 @@ using namespace lfx::core;
 class ImageHierarchyLoader : public Preprocess
 {
 public:
-    ImageHierarchyLoader( const std::string fileName )
-      : _fileName( fileName )
+    ImageHierarchyLoader()
     {
         setActionType( Preprocess::ADD_DATA );
     }
@@ -59,45 +68,21 @@ public:
 
     virtual ChannelDataPtr operator()()
     {
-        const std::string fullName( osgDB::findDataFile( _fileName ) );
-        if( fullName.empty() )
-        {
-            LFX_WARNING_STATIC( logstr, "Can't find \"" + _fileName + "\"." );
-            return( ChannelDataPtr( (ChannelData*)NULL ) );
-        }
-        const std::string pathOnly( osgDB::getFilePath( fullName ) );
-
-        // Create a glob pattern from the given _fileName.
-        const std::string nameOnly( osgDB::getSimpleFileName( fullName ) );
-        const size_t firstDash( nameOnly.find_first_of( "-" ) );
-        const size_t lastDash( nameOnly.find_last_of( "-" ) );
-        if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
-            ( lastDash == std::string::npos ) )
-        {
-            LFX_WARNING_STATIC( logstr, "\"" + _fileName + "\" has invalid name pattern." );
-            return( ChannelDataPtr( (ChannelData*)NULL ) );
-        }
-        const std::string globPattern( nameOnly.substr( 0, firstDash+1 ) + "*" +
-            nameOnly.substr( lastDash ) );
-        LFX_DEBUG_STATIC( logstr, pathOnly );
-        LFX_DEBUG_STATIC( logstr, globPattern );
-
-        // Find all files matching pattern.
-        Poco::Path globPath( osgDB::concatPaths( pathOnly, globPattern ) );
-        std::set< std::string > results;
-        Poco::Glob::glob( globPath, results );
+        DBBase::StringSet results( _db->getAllKeys() );
         if( results.empty() )
         {
-            LFX_WARNING_STATIC( logstr, "No files found matching pattern: \"" + globPattern + "\"." );
-            return( ChannelDataPtr( (ChannelData*)NULL ) );
+            LFX_FATAL_STATIC( logstr, "No keys in DB." );
         }
 
         // Determine the hierarchy maxDepth from the longest hierarchy name.
         unsigned int maxDepth( 1 );
         BOOST_FOREACH( const std::string& fName, results )
         {
-            Poco::Path fullName( fName );
-            const std::string& actualName( fullName.getFileName() );
+            if( !valid( fName ) )
+                continue;
+
+            Poco::Path pocoPath( fName );
+            const std::string& actualName( pocoPath.getFileName() );
             size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
             if( depth > maxDepth )
                 maxDepth = depth;
@@ -107,14 +92,16 @@ public:
         AssembleHierarchy ah( maxDepth, 60000. );
         BOOST_FOREACH( const std::string& fName, results )
         {
+            if( !valid( fName ) )
+                continue;
+
             // Create this ChannelData.
             ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
-            cdImage->setStorageModeHint( ChannelData::STORE_IN_DB );
             cdImage->setDBKey( DBKey( fName ) );
 
             // Get the hierarchy name string.
-            Poco::Path fullName( fName );
-            const std::string& actualName( fullName.getFileName() );
+            Poco::Path pocoPath( fName );
+            const std::string& actualName( pocoPath.getFileName() );
             const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
             const size_t lastLoc( actualName.find_last_of( "-" ) );
             const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
@@ -131,15 +118,62 @@ public:
     }
 
 protected:
-    std::string _fileName;
+    bool valid( const std::string& fileName )
+    {
+        const std::string nameOnly( osgDB::getSimpleFileName( fileName ) );
+        const size_t firstDash( nameOnly.find_first_of( "-" ) );
+        const size_t lastDash( nameOnly.find_last_of( "-" ) );
+        if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
+            ( lastDash == std::string::npos ) )
+            return( false );
+        else
+            return( true );
+    }
 };
 
 
-DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
+DataSetPtr prepareVolume( const osg::Vec3& dims,
+    const std::string& csFile, const std::string& diskPath )
 {
     DataSetPtr dsp( new DataSet() );
 
-    ImageHierarchyLoader* ihl = new ImageHierarchyLoader( fileName );
+    DBBasePtr dbBase;
+#ifdef LFX_USE_CRUNCHSTORE
+    if( !( csFile.empty() ) )
+    {
+        DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+
+        crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+        crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+        crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+        manager->SetCache( cache );
+        manager->SetBuffer( buffer );
+        crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+        sqstore->SetStorePath( csFile );
+        manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+        try {
+            cs->setDataManager( manager );
+        }
+        catch( std::exception exc ) {
+            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+            LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
+            exit( 1 );
+        }
+
+        dbBase = (DBBasePtr)cs;
+    }
+#endif
+    if( csFile.empty() )
+    {
+        DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
+        disk->setRootPath( diskPath );
+        dbBase = (DBBasePtr)disk;
+    }
+    dsp->setDB( dbBase );
+
+
+    ImageHierarchyLoader* ihl = new ImageHierarchyLoader();
+    ihl->_db = dbBase;
     dsp->addPreprocess( PreprocessPtr( (Preprocess*)ihl ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
@@ -165,14 +199,21 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
+    LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
+    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+
     osg::ArgumentParser arguments( &argc, argv );
 
-    std::string fileName;
-    arguments.read( "-f", fileName );
-    if( fileName.empty() )
+    std::string csFile;
+#ifdef LFX_USE_CRUNCHSTORE
+    arguments.read( "-cs", csFile );
+#endif
+    std::string diskPath;
+    arguments.read( "-dp", diskPath );
+    if( !diskPath.empty() && !csFile.empty() )
     {
-        LFX_FATAL_STATIC( logstr, "Must specify \"-f <filename>\" on command line." );
-        return( 1 );
+        LFX_WARNING_STATIC( logstr, "Can't use both CrunchStore and DBDisk. Using CrunchStore..." );
+        diskPath.clear();
     }
 
     osg::Vec3 dims( 50., 50., 50. );
@@ -181,7 +222,7 @@ int main( int argc, char** argv )
     // Create the lfx data set.
     osg::Group* root (new osg::Group);
 
-    DataSetPtr dsp( prepareVolume( fileName, dims ) );
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
     root->addChild( dsp->getSceneData() );
 
     osgViewer::Viewer viewer;

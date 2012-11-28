@@ -19,7 +19,6 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/ChannelData.h>
-#include <latticefx/core/DBUtils.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <boost/foreach.hpp>
@@ -34,7 +33,6 @@ namespace core {
 ChannelData::ChannelData( const std::string& name )
   : LogBase( "lfx.core.channel" ),
     _name( name ),
-    _storageMode( STORE_IN_RAM ),
     _dbKey( "" )
 {
     memset( _dimensions, 0, sizeof( _dimensions ) );
@@ -42,7 +40,6 @@ ChannelData::ChannelData( const std::string& name )
 ChannelData::ChannelData( const ChannelData& rhs )
   : LogBase( rhs ),
     _name( rhs._name ),
-    _storageMode( rhs._storageMode ),
     _dbKey( rhs._dbKey )
 {
     memcpy( _dimensions, rhs._dimensions, sizeof( _dimensions ) );
@@ -61,14 +58,6 @@ const std::string& ChannelData::getName() const
     return( _name );
 }
 
-void ChannelData::setStorageModeHint( const StorageModeHint& storageMode )
-{
-    _storageMode = storageMode;
-}
-ChannelData::StorageModeHint ChannelData::getStorageModeHint() const
-{
-    return( _storageMode );
-}
 
 void ChannelData::setDBKey( const DBKey dbKey )
 {
