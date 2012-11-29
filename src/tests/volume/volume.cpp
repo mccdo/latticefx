@@ -44,20 +44,11 @@ using namespace lfx::core;
 
 DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 {
-    osg::Image* image( osgDB::readImageFile( fileName ) );
-    if( image == NULL )
-    {
-        LFX_ERROR_STATIC( "lfx.demo", "Can't read image from file \"" + fileName + "\"." );
-        return( DataSetPtr( ( DataSet* )NULL ) );
-    }
-    if( image->getFileName().empty() )
-    {
-        // Images in ChannelDataOSGImage must have valid file name.
-        image->setFileName( fileName );
-    }
+    osg::ref_ptr< osg::Image > image( new osg::Image() );
+    image->setFileName( fileName );
 
-    ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image ) );
-    volumeData->setDBKey( image->getFileName() );
+    ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image.get() ) );
+    volumeData->setDBKey( fileName );
 
     DataSetPtr dsp( new DataSet() );
     DBDiskPtr dbDisk( DBDiskPtr( new DBDisk() ) );
