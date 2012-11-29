@@ -510,6 +510,9 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
     image->setFileName( data->getName() );
     if( _db != NULL )
     {
+        // TBD DB temp hack.
+        // Do we really want the VectorRenderer to store data in the DB,
+        // or should that be the responsibility of an upstream OperationBase?
         const DBKey key( _db->generateDBKey() );
         image->setFileName( key );
         _db->storeImage( image.get(), key );
@@ -521,7 +524,7 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
     osg::Image* dummyImage( new osg::Image );
-    dummyImage->setFileName( image->getName() );
+    dummyImage->setFileName( image->getFileName() );
     tex->setImage( dummyImage );
 
     return( tex.release() );

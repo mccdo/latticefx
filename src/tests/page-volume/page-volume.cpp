@@ -132,7 +132,7 @@ protected:
 
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
-    const std::string& csFile, const std::string& diskPath )
+        const std::string& csFile, const std::string& diskPath )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -198,10 +198,11 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
-    LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
-    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
-
     osg::ArgumentParser arguments( &argc, argv );
+
+    LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
+    LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies directory to use for DBDisk. Default: cwd." );
+    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE

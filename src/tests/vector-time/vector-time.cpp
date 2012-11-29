@@ -28,6 +28,15 @@
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
+#include <latticefx/core/DBDisk.h>
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <latticefx/core/DBCrunchStore.h>
+#  include <crunchstore/DataManager.h>
+#  include <crunchstore/NullCache.h>
+#  include <crunchstore/NullBuffer.h>
+#  include <crunchstore/SQLiteStore.h>
+#endif
+
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
@@ -94,7 +103,7 @@ unsigned int computeDynamicPositions( osg::Vec3Array* a,
     return( index );
 }
 
-DataSetPtr prepareSimplePoints()
+DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
@@ -145,8 +154,11 @@ DataSetPtr prepareSimplePoints()
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
-    dsp->setRenderer( renderOp );
+    // TBD DB temp hack.
+    renderOp->_db = dbBase;
 
+    dsp->setRenderer( renderOp );
+    dsp->setDB( dbBase );
 
     return( dsp );
 }
@@ -155,7 +167,7 @@ DataSetPtr preparePointSprites()
     DataSetPtr dsp( (DataSet*) NULL );
     return( dsp );
 }
-DataSetPtr prepareSpheres()
+DataSetPtr prepareSpheres( DBBasePtr dbBase )
 {
     const unsigned int w( 15 ), h( 12 ), d( 9 );
     const unsigned int samplesPerTime( w*h*d );
@@ -233,11 +245,15 @@ DataSetPtr prepareSpheres()
     renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
     renderOp->setHardwareMaskReference( 0.f );
 
+    // TBD DB temp hack.
+    renderOp->_db = dbBase;
+
     dsp->setRenderer( renderOp );
+    dsp->setDB( dbBase );
 
     return( dsp );
 }
-DataSetPtr prepareDirectionVectors()
+DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
 {
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     const unsigned int w( 73 ), h( 41 ), d( 11 );
@@ -323,30 +339,69 @@ DataSetPtr prepareDirectionVectors()
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
+    // TBD DB temp hack.
+    renderOp->_db = dbBase;
+
     dsp->setRenderer( renderOp );
+    dsp->setDB( dbBase );
 
     return( dsp );
 }
 
-DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style )
+DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
+        const std::string& csFile, const std::string& diskPath )
 {
     DataSetPtr dataSet;
+
+    DBBasePtr dbBase;
+#ifdef LFX_USE_CRUNCHSTORE
+    if( !( csFile.empty() ) )
+    {
+        DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+
+        crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+        crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+        crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+        manager->SetCache( cache );
+        manager->SetBuffer( buffer );
+        crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+        sqstore->SetStorePath( csFile );
+        manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+        try {
+            cs->setDataManager( manager );
+        }
+        catch( std::exception exc ) {
+            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+            LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
+            exit( 1 );
+        }
+
+        dbBase = (DBBasePtr)cs;
+    }
+#endif
+    if( csFile.empty() )
+    {
+        DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
+        disk->setRootPath( diskPath );
+        dbBase = (DBBasePtr)disk;
+    }
+
     switch( style )
     {
     case VectorRenderer::POINT_SPRITES:
         LFX_NOTICE_STATIC( logstr, "point sprites not yet implemented." );
     default:
     case VectorRenderer::SIMPLE_POINTS:
-        dataSet = prepareSimplePoints();
+        dataSet = prepareSimplePoints( dbBase );
         break;
 //    case VectorRenderer::POINT_SPRITES:
 //        dataSet = preparePointSprites();
 //        break;
     case VectorRenderer::SPHERES:
-        dataSet = prepareSpheres();
+        dataSet = prepareSpheres( dbBase );
         break;
     case VectorRenderer::DIRECTION_VECTORS:
-        dataSet = prepareDirectionVectors();
+        dataSet = prepareDirectionVectors( dbBase );
         break;
     }
 
@@ -365,6 +420,9 @@ int main( int argc, char** argv )
     LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors." );
     LFX_INFO_STATIC( logstr, "\t-l <n>\tLight config: 0, 1, or 2 (default: 0).\n" );
 
+    LFX_INFO_STATIC( logstr, "-dp <path> Specifies directory to use for DBDisk. Default: cwd." );
+    LFX_INFO_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+
     osg::ArgumentParser arguments( &argc, argv );
     VectorRenderer::PointStyle style( VectorRenderer::SIMPLE_POINTS );
     if( arguments.find( "-ps" ) > 0 ) style = VectorRenderer::POINT_SPRITES;
@@ -374,9 +432,22 @@ int main( int argc, char** argv )
     int lightConfig( 0 );
     arguments.read( "-l", lightConfig );
 
+    std::string csFile;
+#ifdef LFX_USE_CRUNCHSTORE
+    arguments.read( "-cs", csFile );
+#endif
+    std::string diskPath;
+    arguments.read( "-dp", diskPath );
+    if( !diskPath.empty() && !csFile.empty() )
+    {
+        LFX_WARNING_STATIC( logstr, "Can't use both CrunchStore and DBDisk. Using CrunchStore..." );
+        diskPath.clear();
+    }
+
+
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    DataSetPtr dsp( prepareDataSet( style ) );
+    DataSetPtr dsp( prepareDataSet( style, csFile, diskPath ) );
     root->addChild( dsp->getSceneData() );
 
     // Adjust root state.
