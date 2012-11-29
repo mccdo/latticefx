@@ -19,7 +19,6 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/DataSet.h>
-#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/HierarchyUtils.h>

@@ -19,6 +19,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/VolumeRenderer.h>
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/TransferFunctionUtils.h>
@@ -56,8 +57,12 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     }
 
     ChannelDataOSGImagePtr volumeData( new ChannelDataOSGImage( "volumedata", image ) );
+    volumeData->setDBKey( image->getFileName() );
 
     DataSetPtr dsp( new DataSet() );
+    DBDiskPtr dbDisk( DBDiskPtr( new DBDisk() ) );
+    dsp->setDB( dbDisk );
+
     dsp->addChannel( volumeData );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
