@@ -107,6 +107,25 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
 
     return( true );
 }
+
+struct CharVecUserData : public CharVec, public osg::Object
+{
+    CharVecUserData()
+      : CharVec(),
+        osg::Object()
+    {}
+    CharVecUserData( CharVec& charVec )
+      : CharVec( charVec ),
+        osg::Object()
+    {}
+    CharVecUserData( const CharVecUserData& rhs, const osg::CopyOp copyOp=osg::CopyOp::SHALLOW_COPY )
+      : CharVec( rhs ),
+        osg::Object( rhs )
+    {}
+
+    META_Object(lfx,CharVecUserData);
+};
+
 osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
 {
     if( _dm == NULL )
@@ -139,26 +158,24 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
     CharVec metadata( persist.GetDatumValue<CharVec>( "Metadata" ) );
     osg::Image* image( (osg::Image*)&metadata[0] );
 
-    CharVec data( persist.GetDatumValue<CharVec>( "Data" ) );
-    unsigned char* dataPtr( (unsigned char*)&data[0] );
+    // Copy image data from DB into a ref-counted struct, which we can
+    // attach as UserData. This avoids a second data copy.
+    osg::ref_ptr< CharVecUserData > imageData( new CharVecUserData(
+        persist.GetDatumValue<CharVec>( "Data" ) ) );
+    unsigned char* dataPtr( (unsigned char*)&(*imageData)[0] );
 
     osg::ref_ptr< osg::Image > tempImage( new osg::Image() );
     tempImage->setImage( image->s(), image->t(), image->r(),
         image->getInternalTextureFormat(), image->getPixelFormat(),
         image->getDataType(), dataPtr,
         osg::Image::NO_DELETE, image->getPacking() );
+    tempImage->setUserData( imageData.get() );
 
-    // TBD DB temp hack. Copy for now, but in the future possible store the PersistablePtr
-    // as a UserData and attach it to the Image. Then we won't need a copy
-    // and the image stays resident until the Image and its UserData are deleted.
-    osg::ref_ptr< osg::Image > newImage( new osg::Image( *tempImage, osg::CopyOp::DEEP_COPY_ALL ) );
-    newImage->setAllocationMode( osg::Image::USE_NEW_DELETE );
-
-    if( newImage->getFileName().empty() )
+    if( tempImage->getFileName().empty() )
         // Required for paging, in case the image load doesn't set it.
-        newImage->setFileName( dbKey );
+        tempImage->setFileName( dbKey );
 
-    return( newImage.release() );
+    return( tempImage.release() );
 }
 
 bool DBCrunchStore::storeArray( const osg::Array* array, const DBKey& dbKey )
