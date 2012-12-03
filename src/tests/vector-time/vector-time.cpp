@@ -37,6 +37,8 @@
 #  include <crunchstore/SQLiteStore.h>
 #endif
 
+#include <Poco/File.h>
+
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
@@ -349,7 +351,7 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
 }
 
 DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
-        const std::string& csFile, const std::string& diskPath )
+        const std::string& csFile, const std::string& diskPath, const bool createDB )
 {
     DataSetPtr dataSet;
 
@@ -444,10 +446,21 @@ int main( int argc, char** argv )
         diskPath.clear();
     }
 
+    bool createDB;
+    if( !csFile.empty() )
+    {
+        Poco::File dbPocoFile( csFile );
+        createDB = !( dbPocoFile.exists() );
+    }
+    else
+    {
+        Poco::File dbPocoFile( diskPath.empty() ? std::string( "." ) : diskPath );
+        createDB = !( dbPocoFile.exists() );
+    }
 
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    DataSetPtr dsp( prepareDataSet( style, csFile, diskPath ) );
+    DataSetPtr dsp( prepareDataSet( style, csFile, diskPath, createDB ) );
     root->addChild( dsp->getSceneData() );
 
     // Adjust root state.
