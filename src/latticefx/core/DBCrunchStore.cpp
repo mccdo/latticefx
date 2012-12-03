@@ -99,8 +99,10 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
 
     // GetUUIDAsString() automatically generates a random boost uuis.
     // Must do this before saving to the DataManager.
-    _uuidMap[ keyString ] = persist.GetUUIDAsString();
+    const std::string& uuidString( persist.GetUUIDAsString() );
+    _uuidMap[ keyString ] = uuidString;
 
+    LFX_TRACE( "storeImage(): Saving key \"" + keyString + "\", uuid: " + uuidString );
     _dm->Save( persist );
 
     return( true );
@@ -120,6 +122,7 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
         LFX_WARNING( "loadImage(): Can't find key \"" + keyString + "\"." );
         return( false );
     }
+    LFX_TRACE( "loadImage(): Loading key \"" + dbKey + "\", uuid: " + it->second );
 
     csdb::Persistable persist( "OSGImage" );
     boost::uuids::string_generator strGen;
@@ -145,7 +148,7 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
         image->getDataType(), dataPtr,
         osg::Image::NO_DELETE, image->getPacking() );
 
-    // TBD copy for now, but in the future possible store the PersistablePtr
+    // TBD DB temp hack. Copy for now, but in the future possible store the PersistablePtr
     // as a UserData and attach it to the Image. Then we won't need a copy
     // and the image stays resident until the Image and its UserData are deleted.
     osg::ref_ptr< osg::Image > newImage( new osg::Image( *tempImage, osg::CopyOp::DEEP_COPY_ALL ) );
