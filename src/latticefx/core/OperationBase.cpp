@@ -37,7 +37,8 @@ OperationBase::OperationBase( const OperationBase& rhs )
     _inputNames( rhs._inputNames ),
     _opType( rhs._opType ),
     _enable( rhs._enable ),
-    _nameValueMap( rhs._nameValueMap )
+    _nameValueMap( rhs._nameValueMap ),
+    _db( rhs._db )
 {
 }
 OperationBase::~OperationBase()

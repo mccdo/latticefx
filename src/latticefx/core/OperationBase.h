@@ -74,9 +74,6 @@ public:
     virtual ~OperationBase();
 
 
-    // TBD DB temp hack.
-    DBBasePtr _db;
-
     /** \brief Create and return a new instance.
     \details Called by PluginManager to create an instance of classes
     defined in plugin libraries. All classes loaded by plugins must
@@ -128,6 +125,19 @@ public:
 
     /**@}*/
 
+
+    /** \name DB Access
+    \details For derived classes that access a database, the application must specify
+    the database using setDB(). */
+    /**@{*/
+
+    /** \brief Set the DB */
+    void setDB( DBBasePtr db ) { _db = db; }
+    /** \brief Get the DB */
+    DBBasePtr getDB() const { return( _db ); }
+
+    /**@}*/
+
 protected:
     friend class DataSet;
     virtual void addInput( ChannelDataPtr input );
@@ -143,6 +153,8 @@ protected:
     OperationType _opType;
     bool _enable;
     NameValueMap _nameValueMap;
+
+    DBBasePtr _db;
 };
 
 typedef boost::shared_ptr< OperationBase > OperationBasePtr;

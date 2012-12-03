@@ -156,8 +156,7 @@ DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
-    // TBD DB temp hack.
-    renderOp->_db = dbBase;
+    renderOp->setDB( dbBase );
 
     dsp->setRenderer( renderOp );
     dsp->setDB( dbBase );
@@ -247,8 +246,7 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
     renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
     renderOp->setHardwareMaskReference( 0.f );
 
-    // TBD DB temp hack.
-    renderOp->_db = dbBase;
+    renderOp->setDB( dbBase );
 
     dsp->setRenderer( renderOp );
     dsp->setDB( dbBase );
@@ -341,8 +339,7 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
-    // TBD DB temp hack.
-    renderOp->_db = dbBase;
+    renderOp->setDB( dbBase );
 
     dsp->setRenderer( renderOp );
     dsp->setDB( dbBase );

@@ -172,7 +172,7 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
 
 
     ImageHierarchyLoader* ihl = new ImageHierarchyLoader();
-    ihl->_db = dbBase;
+    ihl->setDB( dbBase );
     dsp->addPreprocess( PreprocessPtr( (Preprocess*)ihl ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );

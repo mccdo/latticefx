@@ -439,13 +439,13 @@ DataSetPtr createDataSet( const std::string& csFile )
             exit( 1 );
         }
 
-        op->_db = (DBBasePtr)cs;
+        op->setDB( (DBBasePtr)cs );
     }
 #endif
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
-        op->_db = (DBBasePtr)disk;
+        op->setDB( (DBBasePtr)disk );
     }
 
     //op->addInput( "texture" );

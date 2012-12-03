@@ -94,6 +94,7 @@ private:
     // TBD DB temp hack.
     // Should DBBase substitute as RAM storage? Or would we require
     // use of CrunchStore for this? Can CrunchStore do this?
+    // DBBase as RAM storage is currently untested.
 
     typedef std::map< DBKey, osg::ref_ptr< osg::Image > > ImageVec;
     ImageVec _images;
