@@ -240,12 +240,12 @@ osg::StateSet* VolumeRenderer::getRootState()
     {
         {
             UniformInfo& info( getUniform( "volumeRaysPerPixel" ) );
-            info._prototype->set( _raysPerPixel );
+            info._prototype->set( (int)_raysPerPixel );
             stateSet->addUniform( createUniform( info ) );
         }
         {
             UniformInfo& info( getUniform( "volumeSampleDepth" ) );
-            info._prototype->set( (int)_sampleDepth );
+            info._prototype->set( _sampleDepth );
             stateSet->addUniform( createUniform( info ) );
         }
     }

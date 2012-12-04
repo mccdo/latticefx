@@ -58,7 +58,14 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims, co
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
-    renderOp->setNumPlanes( 400.f );
+    if( rayTrace )
+    {
+        renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
+        renderOp->setSampleDepth( 0.1f );
+        renderOp->setRaysPerPixel( 1 );
+    }
+    else
+        renderOp->setNumPlanes( 400.f );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
