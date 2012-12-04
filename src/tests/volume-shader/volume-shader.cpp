@@ -95,10 +95,10 @@ osg::StateSet* createStateSet(std::string volumeName, std::string transferName)
 	osg::ref_ptr< osg::Program > program = new osg::Program();
 	ss->setAttribute( program.get() );
 	osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-	vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-volumetricslice.vs" ) );
+	vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-volumetricslice.vert" ) );
 	program->addShader( vertexShader );
 	osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-	fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-volumetricslice.fs" ) );
+	fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-volumetricslice.frag" ) );
 	program->addShader( fragmentShader );
 
 	ss->setAttribute( program.get(),

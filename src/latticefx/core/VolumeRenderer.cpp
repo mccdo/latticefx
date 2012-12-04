@@ -271,13 +271,13 @@ osg::StateSet* VolumeRenderer::getRootState()
     stateSet->setAttribute( program );
     if( _renderMode == SLICES )
     {
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vs" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vert" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.frag" ) );
     }
     else
     {
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumeraytrace.vs" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumeraytrace.fs" ) );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumeraytrace.vert" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumeraytrace.frag" ) );
     }
 
     return( stateSet.release() );

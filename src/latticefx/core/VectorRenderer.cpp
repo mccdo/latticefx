@@ -375,8 +375,8 @@ osg::StateSet* VectorRenderer::getRootState()
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
         stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-simplepoints.vs" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-simplepoints.fs" ) );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-simplepoints.vert" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-simplepoints.frag" ) );
         break;
     }
     case POINT_SPRITES:
@@ -424,8 +424,8 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-pointspheres.vs" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-pointspheres.fs" ) );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-pointspheres.vert" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-pointspheres.frag" ) );
         break;
     }
     case DIRECTION_VECTORS:
@@ -468,8 +468,8 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-vectorfield.vs" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-vectorfield.fs" ) );
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-vectorfield.vert" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-vectorfield.frag" ) );
         break;
     }
     }

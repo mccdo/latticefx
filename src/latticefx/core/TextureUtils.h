@@ -62,7 +62,7 @@ using the \c flags parameter.
 
 It is assumed that shader code will convert the gl_InstanceIDARB into a texture
 coordinate that will index into a texture with these dimensions. See
-data/lfx-pointsphere.vs for code that does this. */
+data/lfx-pointsphere.vert for code that does this. */
 LATTICEFX_EXPORT osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags=0 );
 
 /** \brief Create a Texture3D from ChannelData for instanced rendering.

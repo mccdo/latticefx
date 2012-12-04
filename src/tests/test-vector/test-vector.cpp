@@ -87,10 +87,10 @@ public:
         osg::Program* program = new osg::Program();
         stateSet->setAttribute( program );
         osg::Shader* vertexShader = new osg::Shader( osg::Shader::VERTEX );
-        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.vs" ) );
+        vertexShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.vert" ) );
         program->addShader( vertexShader );
         osg::Shader* fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.fs" ) );
+        fragmentShader->loadShaderSourceFromFile( osgDB::findDataFile( "lfx-vectorfield.frag" ) );
         program->addShader( fragmentShader );
 
         return( geode.release() );

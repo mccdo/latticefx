@@ -1,4 +1,3 @@
-add_subdirectory( composite )
 add_subdirectory( multiop-plugin )
 add_subdirectory( page-volume )
 add_subdirectory( page0 )
@@ -7,10 +6,8 @@ add_subdirectory( page2 )
 add_subdirectory( preprocess )
 add_subdirectory( surface )
 add_subdirectory( test0 )
-add_subdirectory( test-vector )
 add_subdirectory( vector-time )
 add_subdirectory( volume )
-add_subdirectory( volume-shader )
 
 if( crunchstore_FOUND )
     add_subdirectory( persist )
@@ -21,3 +18,9 @@ if( VTK_FOUND )
     add_subdirectory( test-time-vtk-points )
     add_subdirectory( vtk-surface )
 endif()
+
+
+# Retired, early turn-on tests
+#add_subdirectory( composite )
+#add_subdirectory( test-vector )
+#add_subdirectory( volume-shader )

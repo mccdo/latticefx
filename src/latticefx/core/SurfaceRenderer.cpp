@@ -178,8 +178,8 @@ osg::StateSet* SurfaceRenderer::getRootState()
     program->addBindAttribLocation( "warpNormal", WARP_NORMAL_ATTRIB );
     program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
 
-    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-surface.vs" ) );
-    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-surface.fs" ) );
+    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-surface.vert" ) );
+    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-surface.frag" ) );
     stateSet->setAttribute( program );
 
     if( warpEnabled )
