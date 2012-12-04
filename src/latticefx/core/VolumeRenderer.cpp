@@ -78,7 +78,10 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 
 VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
-    _numPlanes( 100.f )
+    _renderMode( SLICES ),
+    _numPlanes( 100.f ),
+    _sampleDepth( 0.1f ),
+    _raysPerPixel( 1 )
 {
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -99,12 +102,21 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeNumPlanes", osg::Uniform::FLOAT, "Number of planes to render the volume." );
     registerUniform( info );
 
+    info = UniformInfo( "volumeSampleDepth", osg::Uniform::FLOAT, "Sample distance for ray traced rendering." );
+    registerUniform( info );
+
+    info = UniformInfo( "volumeRaysPerPixel", osg::Uniform::INT, "Rays per pixel for multisampled ray traced rendering." );
+    registerUniform( info );
+
     info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
     registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
-    _numPlanes( rhs._numPlanes )
+    _renderMode( rhs._renderMode ),
+    _numPlanes( rhs._numPlanes ),
+    _sampleDepth( rhs._sampleDepth ),
+    _raysPerPixel( rhs._raysPerPixel )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -143,8 +155,8 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     // so specify an initial bound to allow proper culling and near/far computation.
     osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
     geom->setInitialBound( bb );
-    // Add geometric data and the PrimitiveSet. Specify numInstances as _numPlanes.
-    createDAIGeometry( *geom, _numPlanes );
+    // Add geometric data and the PrimitiveSet. For SLICES, specify numInstances as _numPlanes.
+    createDAIGeometry( *geom, ( _renderMode == SLICES ) ? _numPlanes : 1 );
     geode->addDrawable( geom );
 
 
@@ -218,10 +230,24 @@ osg::StateSet* VolumeRenderer::getRootState()
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
 
+    if( _renderMode == SLICES )
     {
         UniformInfo& info( getUniform( "volumeNumPlanes" ) );
         info._prototype->set( _numPlanes );
         stateSet->addUniform( createUniform( info ) );
+    }
+    else
+    {
+        {
+            UniformInfo& info( getUniform( "volumeRaysPerPixel" ) );
+            info._prototype->set( _raysPerPixel );
+            stateSet->addUniform( createUniform( info ) );
+        }
+        {
+            UniformInfo& info( getUniform( "volumeSampleDepth" ) );
+            info._prototype->set( (int)_sampleDepth );
+            stateSet->addUniform( createUniform( info ) );
+        }
     }
 
     {
@@ -243,8 +269,16 @@ osg::StateSet* VolumeRenderer::getRootState()
 
     osg::Program* program = new osg::Program();
     stateSet->setAttribute( program );
-    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vs" ) );
-    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
+    if( _renderMode == SLICES )
+    {
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumetricslice.vs" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumetricslice.fs" ) );
+    }
+    else
+    {
+        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-volumeraytrace.vs" ) );
+        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-volumeraytrace.fs" ) );
+    }
 
     return( stateSet.release() );
 }

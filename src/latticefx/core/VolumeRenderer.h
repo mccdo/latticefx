@@ -92,16 +92,50 @@ public:
     scene graphs. */
     virtual osg::StateSet* getRootState();
 
-    /** \brief Set the number of planes to use to render the volume.
-    \details The default is 100.0f planes. */
+
+    /** \brief Volume rendering algorithm
+    \details Enum for supported rendering algorithms. */
+    typedef enum {
+        SLICES,
+        RAY_TRACED,
+    } RenderMode;
+
+    /** \brief Set the rendering style.
+    \details The default is SLICES. */
+    void setRenderMode( const RenderMode& renderMode ) { _renderMode = renderMode; }
+    /** \brief Get the rendering algorithm. */
+    RenderMode getRenderMode() const { return( _renderMode ); }
+
+
+    /** \brief Specify the number of slices for RenderMode SLICES.
+    \details Ignored if RenderMode != SLICES. The default is 100.0f planes. */
     void setNumPlanes( const float& numPlanes );
-    /** \brief Get the number of planes to use to render the volume. */
+    /** \brief Get the number of slices for RenderMode SLICES. */
     float getNumPlanes() const;
+
+    /** \brief Specify the sample depth, used when RenderMode is RAY_TRACED.
+    \detauls. Ignored if RenderMode != RAY_TRACED.
+    The default is 0.1 world unit. Larger values produce better results,
+    but slow rendering. */
+    void setSampleDepth( const float sampleDepth ) { _sampleDepth = sampleDepth; }
+    /** \brief Get the sample depth for RenderMode RAY_TRACED. */
+    float getSampleDepth() const { return( _sampleDepth ); }
+
+    /** \brief Specify the number of rays per pixel, used when RenderMode is RAY_TRACED.
+    \detauls. Ignored if RenderMode != RAY_TRACED.
+    The default is 1 ray per pixel. Larger values produce a multisampled result. */
+    void setRaysPerPixel( const unsigned int raysPerPixel ) { _raysPerPixel = raysPerPixel; }
+    /** \brief Get the number of rays per pixel for RenderMode RAY_TRACED. */
+    unsigned int getRaysPerPixel() const { return( _raysPerPixel ); }
 
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
 
+    RenderMode _renderMode;
+
     float _numPlanes;
+    float _sampleDepth;
+    unsigned int _raysPerPixel;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;
