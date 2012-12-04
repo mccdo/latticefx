@@ -42,7 +42,7 @@
 using namespace lfx::core;
 
 
-DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
+DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims, const bool rayTrace )
 {
     osg::ref_ptr< osg::Image > image( new osg::Image() );
     image->setFileName( fileName );
@@ -82,16 +82,26 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
 
+    std::cout << "-f <file>\tDefault is HeadVolume.dds." << std::endl;
     std::string fileName( "HeadVolume.dds" );
     arguments.read( "-f", fileName );
 
+    std::cout << "-d <x> <y> <z>\tDefault is 1 1 1." << std::endl;
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
+
+    std::cout << "-rt\tEnables ray trace mode. Default is slice mode." << std::endl;
+    const bool rayTrace( arguments.find( "-rt" ) > 0 );
+
+    std::cout << "-clip\tTest clip plane." << std::endl;
+
+    std::cout << "-mt\tTest with parent MatrixTransforms." << std::endl;
+    std::cout << std::endl;
 
     // Create an example data set.
     osg::Group* root (new osg::Group);
 
-    DataSetPtr dsp( prepareVolume( fileName, dims ) );
+    DataSetPtr dsp( prepareVolume( fileName, dims, rayTrace ) );
 
     if( arguments.find( "-mt" ) > 0 )
     {
@@ -133,7 +143,7 @@ int main( int argc, char** argv )
     else
         root->addChild( dsp->getSceneData() );
 
-    if( true )
+    if( arguments.find( "-clip" ) > 0 )
     {
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
