@@ -76,7 +76,7 @@ public:
 
 
     /** \name Database Control */
-    /** \{ */
+    /**@{*/
 
     /** \brief Set the DB key.
     \details If the storage mode hint is STORE_IN_DB, this key is used as a base for
@@ -85,7 +85,7 @@ public:
     virtual void setDBKey( const DBKey dbKey );
     /** \brief Retrieve the DB key. */
     DBKey getDBKey() const;
-    /**\}*/
+    /**@}*/
 
     /** \brief
     \details */

@@ -124,11 +124,11 @@ void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
     // Geometry for a single quad.
     (*v)[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
     (*v)[ 1 ] = osg::Vec3( halfDimX, -halfDimZ, 0. );
-    (*v)[ 2 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
-    (*v)[ 3 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
+    (*v)[ 2 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
+    (*v)[ 3 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
 
     // Use the DrawArraysInstanced PrimitiveSet and tell it to draw nInstances instances.
-    geom.addPrimitiveSet( new osg::DrawArrays( GL_QUADS, 0, 4, nInstances ) );
+    geom.addPrimitiveSet( new osg::DrawArrays( GL_TRIANGLE_STRIP, 0, 4, nInstances ) );
 }
 
 
