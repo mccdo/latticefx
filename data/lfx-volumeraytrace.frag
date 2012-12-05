@@ -171,15 +171,15 @@ float clipping( in vec3 ec )
 #endif
 }
 
-varying vec4 color;
 void main( void )
 {
+    gl_FragData[0] = vec4( gl_TexCoord[0].rgb, 1. );
+    return;
+
     // Vectex shader always sends (eye oriented) quads. Much of the quad
     // might be outside the volume. Immediately discard if this is the case.
     if( !( TestInBounds( Texcoord ) ) )
         discard;
-    gl_FragData[0] = color;
-    return;
 
     // Get volume sample. Format is GL_KUMINANCE, so the same volume value
     // will be stored in fvBaseColor.r, g, and b. fvBaseColor.a will be 1.0.

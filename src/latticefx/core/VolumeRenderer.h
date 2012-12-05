@@ -30,6 +30,7 @@
 
 // Forward
 namespace osg {
+    class Geometry;
     class Texture3D;
 }
 
@@ -121,21 +122,17 @@ public:
     /** \brief Get the sample depth for RenderMode RAY_TRACED. */
     float getSampleDepth() const { return( _sampleDepth ); }
 
-    /** \brief Specify the number of rays per pixel, used when RenderMode is RAY_TRACED.
-    \detauls. Ignored if RenderMode != RAY_TRACED.
-    The default is 1 ray per pixel. Larger values produce a multisampled result. */
-    void setRaysPerPixel( const unsigned int raysPerPixel ) { _raysPerPixel = raysPerPixel; }
-    /** \brief Get the number of rays per pixel for RenderMode RAY_TRACED. */
-    unsigned int getRaysPerPixel() const { return( _raysPerPixel ); }
-
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
+
+    osg::Geometry* createDAIGeometry( int nInstances );
+    osg::Geometry* createCubeGeometry();
+
 
     RenderMode _renderMode;
 
     float _numPlanes;
     float _sampleDepth;
-    unsigned int _raysPerPixel;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

@@ -34,6 +34,7 @@
 #include <osg/Program>
 #include <osg/Uniform>
 #include <osg/Depth>
+#include <osg/CullFace>
 #include <osgDB/FileUtils>
 
 
@@ -80,8 +81,7 @@ VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
     _renderMode( SLICES ),
     _numPlanes( 100.f ),
-    _sampleDepth( 0.1f ),
-    _raysPerPixel( 1 )
+    _sampleDepth( 0.1f )
 {
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -105,9 +105,6 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeSampleDepth", osg::Uniform::FLOAT, "Sample distance for ray traced rendering." );
     registerUniform( info );
 
-    info = UniformInfo( "volumeRaysPerPixel", osg::Uniform::INT, "Rays per pixel for multisampled ray traced rendering." );
-    registerUniform( info );
-
     info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
     registerUniform( info );
 }
@@ -115,23 +112,26 @@ VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
     _renderMode( rhs._renderMode ),
     _numPlanes( rhs._numPlanes ),
-    _sampleDepth( rhs._sampleDepth ),
-    _raysPerPixel( rhs._raysPerPixel )
+    _sampleDepth( rhs._sampleDepth )
 {
 }
 VolumeRenderer::~VolumeRenderer()
 {
 }
 
-// <<<>>> temporarily here until integration is complete
-void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
+// Used for SLICES mode.
+osg::Geometry* VolumeRenderer::createDAIGeometry( int nInstances )
 {
+    osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
+    geom->setUseDisplayList( false );
+    geom->setUseVertexBufferObjects( true );
+
     const float halfDimX( .5 );
     const float halfDimZ( .5 );
 
     osg::Vec3Array* v = new osg::Vec3Array;
     v->resize( 4 );
-    geom.setVertexArray( v );
+    geom->setVertexArray( v );
 
     // Geometry for a single quad.
     (*v)[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
@@ -140,7 +140,60 @@ void createDAIGeometry( osg::Geometry& geom, int nInstances=1 )
     (*v)[ 3 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
 
     // Use the DrawArraysInstanced PrimitiveSet and tell it to draw nInstances instances.
-    geom.addPrimitiveSet( new osg::DrawArrays( GL_TRIANGLE_STRIP, 0, 4, nInstances ) );
+    geom->addPrimitiveSet( new osg::DrawArrays( GL_TRIANGLE_STRIP, 0, 4, nInstances ) );
+
+    return( geom.release() );
+}
+
+// Used for RAY_TRACED mode.
+osg::Geometry* VolumeRenderer::createCubeGeometry()
+{
+    osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
+    geom->setUseDisplayList( false );
+    geom->setUseVertexBufferObjects( true );
+
+    const osg::Vec3 hd( _volumeDims * .5 );
+    const osg::Vec3& c( _volumeOrigin );
+
+    osg::Vec3Array* v( new osg::Vec3Array );
+    v->resize( 8 );
+    geom->setVertexArray( v );
+
+    (*v)[0].set( -hd.x()+c.x(), -hd.y()+c.y(), -hd.z()+c.z() );
+    (*v)[1].set( hd.x()+c.x(), -hd.y()+c.y(), -hd.z()+c.z() );
+    (*v)[2].set( -hd.x()+c.x(), hd.y()+c.y(), -hd.z()+c.z() );
+    (*v)[3].set( hd.x()+c.x(), hd.y()+c.y(), -hd.z()+c.z() );
+    (*v)[4].set( -hd.x()+c.x(), -hd.y()+c.y(), hd.z()+c.z() );
+    (*v)[5].set( hd.x()+c.x(), -hd.y()+c.y(), hd.z()+c.z() );
+    (*v)[6].set( -hd.x()+c.x(), hd.y()+c.y(), hd.z()+c.z() );
+    (*v)[7].set( hd.x()+c.x(), hd.y()+c.y(), hd.z()+c.z() );
+
+    osg::Vec3Array* tc( new osg::Vec3Array );
+    tc->resize( 8 );
+    geom->setTexCoordArray( 0, tc );
+
+    (*tc)[0].set( -1., -1., -1. );
+    (*tc)[1].set( 1., -1., -1. );
+    (*tc)[2].set( -1., 1., -1. );
+    (*tc)[3].set( 1., 1., -1. );
+    (*tc)[4].set( -1., -1., 1. );
+    (*tc)[5].set( 1., -1., 1. );
+    (*tc)[6].set( -1., 1., 1. );
+    (*tc)[7].set( 1., 1., 1. );
+
+    GLushort indices[] = {
+        2, 0, 6, 6, 0, 4, // -x face
+        1, 3, 5, 5, 3, 7,   // +x face
+        0, 1, 4, 4, 1, 5, // -y face
+        3, 2, 7, 7, 2, 6,   // +y face
+        1, 0, 3, 3, 0, 2, // -z face
+        4, 5, 6, 6, 5, 7    // +z face
+    };
+
+    osg::DrawElementsUShort* deus( new osg::DrawElementsUShort( GL_TRIANGLES, 36, indices ) );
+    geom->addPrimitiveSet( deus );
+
+    return( geom.release() );
 }
 
 
@@ -148,16 +201,17 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    osg::Geometry* geom( new osg::Geometry );
-    geom->setUseDisplayList( false );
-    geom->setUseVertexBufferObjects( true );
+    osg::Geometry* geom;
+    if( _renderMode == SLICES )
+        geom = createDAIGeometry( _numPlanes );
+    else
+        geom = createCubeGeometry();
+    geode->addDrawable( geom );
+
     // OSG has no clue where our vertex shader will place the geometric data,
     // so specify an initial bound to allow proper culling and near/far computation.
     osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
     geom->setInitialBound( bb );
-    // Add geometric data and the PrimitiveSet. For SLICES, specify numInstances as _numPlanes.
-    createDAIGeometry( *geom, ( _renderMode == SLICES ) ? _numPlanes : 1 );
-    geode->addDrawable( geom );
 
 
     osg::StateSet* stateSet( geode->getOrCreateStateSet() );
@@ -223,26 +277,21 @@ osg::StateSet* VolumeRenderer::getRootState()
         info._prototype->set( osg::Vec3f( _volumeDims ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
-
     {
         UniformInfo& info( getUniform( "volumeCenter" ) );
         info._prototype->set( osg::Vec3f( _volumeOrigin ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
-
     if( _renderMode == SLICES )
     {
-        UniformInfo& info( getUniform( "volumeNumPlanes" ) );
-        info._prototype->set( _numPlanes );
-        stateSet->addUniform( createUniform( info ) );
+        {
+            UniformInfo& info( getUniform( "volumeNumPlanes" ) );
+            info._prototype->set( _numPlanes );
+            stateSet->addUniform( createUniform( info ) );
+        }
     }
     else
     {
-        {
-            UniformInfo& info( getUniform( "volumeRaysPerPixel" ) );
-            info._prototype->set( (int)_raysPerPixel );
-            stateSet->addUniform( createUniform( info ) );
-        }
         {
             UniformInfo& info( getUniform( "volumeSampleDepth" ) );
             info._prototype->set( _sampleDepth );
@@ -263,6 +312,12 @@ osg::StateSet* VolumeRenderer::getRootState()
     // Do not need to write the depth buffer.
     osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
     stateSet->setAttributeAndModes( depth );
+
+    if( _renderMode == RAY_TRACED )
+    {
+        osg::CullFace* cf( new osg::CullFace( osg::CullFace::FRONT ) );
+        stateSet->setAttributeAndModes( cf );
+    }
 
     // Set base class transfer function and volume texture uniforms.
     addHardwareFeatureUniforms( stateSet.get() );
