@@ -172,13 +172,13 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     tc->resize( 8 );
     geom->setTexCoordArray( 0, tc );
 
-    (*tc)[0].set( -1., -1., -1. );
-    (*tc)[1].set( 1., -1., -1. );
-    (*tc)[2].set( -1., 1., -1. );
-    (*tc)[3].set( 1., 1., -1. );
-    (*tc)[4].set( -1., -1., 1. );
-    (*tc)[5].set( 1., -1., 1. );
-    (*tc)[6].set( -1., 1., 1. );
+    (*tc)[0].set( 0., 0., 0. );
+    (*tc)[1].set( 1., 0., 0. );
+    (*tc)[2].set( 0., 1., 0. );
+    (*tc)[3].set( 1., 1., 0. );
+    (*tc)[4].set( 0., 0., 1. );
+    (*tc)[5].set( 1., 0., 1. );
+    (*tc)[6].set( 0., 1., 1. );
     (*tc)[7].set( 1., 1., 1. );
 
     GLushort indices[] = {

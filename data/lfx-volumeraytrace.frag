@@ -171,22 +171,83 @@ float clipping( in vec3 ec )
 #endif
 }
 
+varying vec3 tcEye;
+varying float volumeSize;
+
 void main( void )
 {
-    gl_FragData[0] = vec4( gl_TexCoord[0].rgb, 1. );
-    return;
+    vec3 tc = gl_TexCoord[0].xyz;
 
+    vec3 rayStart = tcEye;
+    if( ( rayStart.x >= 0. ) && ( rayStart.x <= 1. ) &&
+        ( rayStart.y >= 0. ) && ( rayStart.y <= 1. ) &&
+        ( rayStart.z >= 0. ) && ( rayStart.z <= 1. ) )
+    {
+        // rayStart is inside volume
+    }
+    else
+    {
+        // Compute the ray start position such that it lies on a
+        // volume face. The code below is using algebraic shorthand
+        // to compute the ray/plane intersection point.
+        if( rayStart.x < 0. )
+        {
+            float t = -rayStart.x / ( tc.x - rayStart.x );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+        if( rayStart.x > 1. )
+        {
+            float t = ( 1. - rayStart.x ) / ( tc.x - rayStart.x );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+        if( rayStart.y < 0. )
+        {
+            float t = -rayStart.y / ( tc.y - rayStart.y );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+        if( rayStart.y > 1. )
+        {
+            float t = ( 1. - rayStart.y ) / ( tc.y - rayStart.y );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+        if( rayStart.z < 0. )
+        {
+            float t = -rayStart.z / ( tc.z - rayStart.z );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+        if( rayStart.z > 1. )
+        {
+            float t = ( 1. - rayStart.z ) / ( tc.z - rayStart.z );
+            rayStart = rayStart + t * ( tc - rayStart );
+        }
+    }
+
+    float numSamples = ceil( volumeSize * length( tc - rayStart ) / volumeSampleDepth );
+    const float maxSamples = 1000.0;
+    numSamples = clamp( numSamples, 2., maxSamples );
+
+    vec3 deltaTexCoord = ( tc - rayStart ) / numSamples;
+
+
+
+    gl_FragData[0] = vec4( gl_TexCoord[0].rgb, 1. );
+
+
+    // Support for second/glow render target.
+    gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
+
+#if 0
     // Vectex shader always sends (eye oriented) quads. Much of the quad
     // might be outside the volume. Immediately discard if this is the case.
     if( !( TestInBounds( Texcoord ) ) )
         discard;
 
     // Get volume sample. Format is GL_KUMINANCE, so the same volume value
-    // will be stored in fvBaseColor.r, g, and b. fvBaseColor.a will be 1.0.
+    // will be stored in fvBaseColor.rayLen, g, and b. fvBaseColor.a will be 1.0.
     vec4 fvBaseColor = texture3D( VolumeTexture, Texcoord );
 
 
-    vec4 color = transferFunction( fvBaseColor.r );
+    vec4 color = transferFunction( fvBaseColor.rayLen );
     if( !hardwareMask( Texcoord, color ) )
         discard;
 
@@ -196,26 +257,26 @@ void main( void )
     // be used in turn as an index into the transfer function. Only then can we
     // compute a correct normal for the resulting surface.
     // Note: Expensive.
-    vec3 frontVec = vec3( clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).r ).a,
-        clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).r ).a,
-        clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).r ).a );
-    vec3 backVec = vec3( clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).r ).a,
-        clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).r ).a,
-        clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).r ).a );
+    vec3 frontVec = vec3( clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).rayLen ).a,
+        clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).rayLen ).a,
+        clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).rayLen ).a );
+    vec3 backVec = vec3( clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).rayLen ).a,
+        clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).rayLen ).a,
+        clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).rayLen ).a );
 #else
 
     // For performance reasons, do not use transfer function. This means the transfer
     // function alpha is a direct map with volume samples.
-    vec3 frontVec = vec3( clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft ).r,
-        clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown ).r,
-        clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront ).r );
+    vec3 frontVec = vec3( clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft ).rayLen,
+        clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown ).rayLen,
+        clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront ).rayLen );
 #define USE_FAST_NORMAL_COMPUTATION
 #ifdef USE_FAST_NORMAL_COMPUTATION
     vec3 backVec = clipping( ecVertex ) * fvBaseColor.rgb;
 #else
-    vec3 backVec = vec3( clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight ).r,
-        clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp ).r,
-        clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack ).r );
+    vec3 backVec = vec3( clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight ).rayLen,
+        clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp ).rayLen,
+        clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack ).rayLen );
 #endif
 
 #endif
@@ -228,4 +289,5 @@ void main( void )
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
+#endif
 }
