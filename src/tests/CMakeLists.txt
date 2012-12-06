@@ -8,6 +8,7 @@ add_subdirectory( surface )
 add_subdirectory( test0 )
 add_subdirectory( vector-time )
 add_subdirectory( volume )
+add_subdirectory( volume-rt )
 
 if( crunchstore_FOUND )
     add_subdirectory( persist )
