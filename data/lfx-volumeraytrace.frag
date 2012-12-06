@@ -113,7 +113,7 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 
 
 
-uniform float volumeSampleDepth;
+uniform float volumeMaxSamples;
 
 uniform sampler3D VolumeTexture;
 
@@ -222,8 +222,9 @@ void main( void )
     }
 
     vec3 sampleVec = tc - rayStart;
-    float totalSamples = ceil( volumeSize * length( sampleVec ) / volumeSampleDepth );
-    totalSamples = clamp( totalSamples, 2.f, 2000.f );
+    float sampleStepSize = volumeSize / volumeMaxSamples;
+    float totalSamples = ceil( volumeSize * length( sampleVec ) / sampleStepSize );
+    totalSamples = max( totalSamples, 2.f );
 
     vec3 finalColor = vec3( 0. );
     float sample = totalSamples;

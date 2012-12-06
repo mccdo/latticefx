@@ -114,13 +114,14 @@ public:
     /** \brief Get the number of slices for RenderMode SLICES. */
     float getNumPlanes() const;
 
-    /** \brief Specify the sample depth, used when RenderMode is RAY_TRACED.
-    \detauls. Ignored if RenderMode != RAY_TRACED.
-    The default is 0.1 world unit. Larger values produce better results,
-    but slow rendering. */
-    void setSampleDepth( const float sampleDepth ) { _sampleDepth = sampleDepth; }
-    /** \brief Get the sample depth for RenderMode RAY_TRACED. */
-    float getSampleDepth() const { return( _sampleDepth ); }
+    /** \brief Specify the max ray samples, used when RenderMode is RAY_TRACED.
+    \detauls Ignored if RenderMode != RAY_TRACED.
+    Analogous to setNumPlanes (for RenderMode SLICES). This is the number of
+    volume sample points per pixel for a worst-case rendering (view vector
+    aligned with volume diagonal). The default is 100.f samples. */
+    void setMaxSamples( const float maxSamples ) { _maxSamples = maxSamples; }
+    /** \brief Get the max ray samples for RenderMode RAY_TRACED. */
+    float getMaxSamples() const { return( _maxSamples ); }
 
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
@@ -132,7 +133,7 @@ protected:
     RenderMode _renderMode;
 
     float _numPlanes;
-    float _sampleDepth;
+    float _maxSamples;
 };
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;

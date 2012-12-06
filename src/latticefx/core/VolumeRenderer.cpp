@@ -81,7 +81,7 @@ VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
     _renderMode( SLICES ),
     _numPlanes( 100.f ),
-    _sampleDepth( 0.1f )
+    _maxSamples( 100.f )
 {
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -102,7 +102,7 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeNumPlanes", osg::Uniform::FLOAT, "Number of planes to render the volume." );
     registerUniform( info );
 
-    info = UniformInfo( "volumeSampleDepth", osg::Uniform::FLOAT, "Sample distance for ray traced rendering." );
+    info = UniformInfo( "volumeMaxSamples", osg::Uniform::FLOAT, "Max ray Samples for ray traced rendering." );
     registerUniform( info );
 
     info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
@@ -112,7 +112,7 @@ VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
     _renderMode( rhs._renderMode ),
     _numPlanes( rhs._numPlanes ),
-    _sampleDepth( rhs._sampleDepth )
+    _maxSamples( rhs._maxSamples )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -293,8 +293,8 @@ osg::StateSet* VolumeRenderer::getRootState()
     else
     {
         {
-            UniformInfo& info( getUniform( "volumeSampleDepth" ) );
-            info._prototype->set( _sampleDepth );
+            UniformInfo& info( getUniform( "volumeMaxSamples" ) );
+            info._prototype->set( _maxSamples );
             stateSet->addUniform( createUniform( info ) );
         }
     }
