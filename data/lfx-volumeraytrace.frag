@@ -233,16 +233,12 @@ void main( void )
         vec4 baseColor = texture3D( VolumeTexture, coord );
 
         vec4 color = transferFunction( baseColor.r );
-        //if( !hardwareMask( coord, color ) )
-        //    continue;
-
-        finalColor = color.rgb * baseColor.r + finalColor * ( 1. - baseColor.r );
+        if( hardwareMask( coord, color ) )
+            finalColor = color.rgb * baseColor.r + finalColor * ( 1. - baseColor.r );
     }
     if( dot( finalColor, finalColor ) == 0. )
-        //discard;
-        gl_FragData[0] = vec4( .2, .2, .2, 1. );
-    else
-        gl_FragData[0] = vec4( finalColor, 1. );
+        discard;
+    gl_FragData[0] = vec4( finalColor, 1. );
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
