@@ -235,7 +235,7 @@ void main( void )
 
         vec4 color = transferFunction( baseColor.r );
         if( hardwareMask( coord, color ) )
-            finalColor = color.rgb * baseColor.r + finalColor * ( 1. - baseColor.r );
+            finalColor = color.rgb * color.a + finalColor * ( 1. - color.a );
     }
     if( dot( finalColor, finalColor ) == 0. )
         discard;
