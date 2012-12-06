@@ -223,7 +223,7 @@ void main( void )
 
     vec3 sampleVec = tc - rayStart;
     float sampleStepSize = volumeSize / volumeMaxSamples;
-    float totalSamples = ceil( volumeSize * length( sampleVec ) / sampleStepSize );
+    float totalSamples = volumeSize * length( sampleVec ) / sampleStepSize;
     totalSamples = max( totalSamples, 2.f );
 
     vec3 finalColor = vec3( 0. );
