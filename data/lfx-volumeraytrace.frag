@@ -114,7 +114,6 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 
 
 uniform float volumeSampleDepth;
-uniform int volumeRaysPerPixel;
 
 uniform sampler3D VolumeTexture;
 
@@ -224,31 +223,26 @@ void main( void )
 
     vec3 sampleVec = tc - rayStart;
     float totalSamples = ceil( volumeSize * length( sampleVec ) / volumeSampleDepth );
-    const float maxSamples = 1000.0;
-    totalSamples = clamp( totalSamples, 2., maxSamples );
-    totalSamples = 100.;
+    totalSamples = clamp( totalSamples, 2.f, 2000.f );
 
-    vec3 finalColor = vec3( 0., 0., 0. );
+    vec3 finalColor = vec3( 0. );
     float sample = totalSamples;
-    while( --sample > 0. )
+    while( --sample > 0.f )
     {
         vec3 coord = rayStart + sampleVec * ( sample / totalSamples );
         vec4 baseColor = texture3D( VolumeTexture, coord );
 
         vec4 color = transferFunction( baseColor.r );
-        if( !hardwareMask( Texcoord, color ) )
-            continue;
+        //if( !hardwareMask( coord, color ) )
+        //    continue;
 
         finalColor = color.rgb * baseColor.r + finalColor * ( 1. - baseColor.r );
-        //finalColor = color.rgb;
-        break;
     }
     if( dot( finalColor, finalColor ) == 0. )
         //discard;
         gl_FragData[0] = vec4( .2, .2, .2, 1. );
     else
-
-    gl_FragData[0] = vec4( finalColor, 1. );
+        gl_FragData[0] = vec4( finalColor, 1. );
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
