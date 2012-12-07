@@ -117,6 +117,11 @@ uniform float volumeMaxSamples;
 
 uniform sampler3D VolumeTexture;
 
+// These uniforms must be specified by the application. Lfx does not have access to them.
+uniform vec2 windowSize;
+uniform sampler2D sceneColor;
+uniform sampler2D sceneDepth;
+
 varying vec3 Texcoord;
 varying vec3 TexcoordUp;
 varying vec3 TexcoordRight;
@@ -226,19 +231,24 @@ void main( void )
     float totalSamples = volumeSize * length( sampleVec ) / sampleStepSize;
     totalSamples = max( totalSamples, 2.f );
 
-    vec3 finalColor = vec3( 0. );
+    // Compute window tex coords to sample the scene color and depth textures.
+    vec2 winTC = gl_FragCoord.xy / windowSize;
+    // Get the initial color from the rendered scene.
+    vec3 finalColor = texture2D( sceneColor, winTC ).rgb;
+
     float sample = totalSamples;
     while( --sample > 0.f )
     {
-        vec3 coord = rayStart + sampleVec * ( sample / totalSamples );
-        vec4 baseColor = texture3D( VolumeTexture, coord );
+        if( gl_FragCoord.z <= texture2D( sceneDepth, winTC ).r )
+        {
+            vec3 coord = rayStart + sampleVec * ( sample / totalSamples );
+            vec4 baseColor = texture3D( VolumeTexture, coord );
 
-        vec4 color = transferFunction( baseColor.r );
-        if( hardwareMask( coord, color ) )
-            finalColor = color.rgb * color.a + finalColor * ( 1. - color.a );
+            vec4 color = transferFunction( baseColor.r );
+            if( hardwareMask( coord, color ) )
+                finalColor = color.rgb * color.a + finalColor * ( 1. - color.a );
+        }
     }
-    if( dot( finalColor, finalColor ) == 0. )
-        discard;
     gl_FragData[0] = vec4( finalColor, 1. );
 
     // Support for second/glow render target.

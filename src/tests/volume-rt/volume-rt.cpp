@@ -47,7 +47,8 @@ using namespace lfx::core;
 
 
 
-static float winWidth( 1200 ), winHeight( 690 );
+static osg::Vec2f winSize( 1200, 690 );
+static osg::ref_ptr< osg::Uniform > windowSize;
 
 static osg::ref_ptr< osg::Texture2D > colorTexA;
 static osg::ref_ptr< osg::Texture2D > depthTexA;
@@ -127,15 +128,16 @@ public:
         if( ea.getEventType() != osgGA::GUIEventAdapter::RESIZE )
             return( false );
 
-        winWidth = ea.getWindowWidth();
-        winHeight = ea.getWindowHeight();
-        colorTexA->setTextureSize( winWidth, winHeight );
-        depthTexA->setTextureSize( winWidth, winHeight );
+        winSize.x() = ea.getWindowWidth();
+        winSize.y() = ea.getWindowHeight();
+        windowSize->set( winSize );
+        colorTexA->setTextureSize( winSize.x(), winSize.y() );
+        depthTexA->setTextureSize( winSize.x(), winSize.y() );
         // TBD disable for now
         //colorTexA->dirtyTextureObject();
         //depthTexA->dirtyTextureObject();
-        splatCam->setViewport( 0, 0, (int)winWidth, (int)winHeight );
-        rootCam->setProjectionMatrixAsPerspective( 30., winWidth/winHeight, 1., 199. );
+        splatCam->setViewport( 0, 0, (int)winSize.x(), (int)winSize.y() );
+        rootCam->setProjectionMatrixAsPerspective( 30., winSize.x()/winSize.y(), 1., 199. );
 
         resetCamera( _node.get() );
         return( false );
@@ -156,16 +158,16 @@ void prepareSceneCamera( osgViewer::Viewer& viewer )
 
     // Viewer's Camera will render into there color and depth texture buffers:
     colorTexA = new osg::Texture2D;
-    colorTexA->setTextureWidth( winWidth );
-    colorTexA->setTextureHeight( winHeight );
+    colorTexA->setTextureWidth( winSize.x() );
+    colorTexA->setTextureHeight( winSize.y() );
     colorTexA->setInternalFormat( GL_RGBA );
     colorTexA->setBorderWidth( 0 );
     colorTexA->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     colorTexA->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
 
     depthTexA = new osg::Texture2D;
-    depthTexA->setTextureWidth( winWidth );
-    depthTexA->setTextureHeight( winHeight );
+    depthTexA->setTextureWidth( winSize.x() );
+    depthTexA->setTextureHeight( winSize.y() );
     depthTexA->setInternalFormat( GL_DEPTH_COMPONENT );
     depthTexA->setBorderWidth( 0 );
     depthTexA->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
@@ -211,6 +213,25 @@ osg::Camera* createLfxCamera( osg::Node* node )
 
     lfxCam->addChild( node );
 
+    // Add uniforms required by Lfx ray traced volume rendering shaders,
+    // which Lfx itself is unable to set. The application MUST specify
+    // this uniforms.
+    {
+        osg::StateSet* stateSet( lfxCam->getOrCreateStateSet() );
+
+        windowSize = new osg::Uniform( "windowSize", winSize );
+        windowSize->setDataVariance( osg::Object::DYNAMIC );
+        stateSet->addUniform( windowSize.get() );
+
+        stateSet->setTextureAttributeAndModes( 0, colorTexA.get() );
+        osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneColor" ); uniform->set( 0 );
+        stateSet->addUniform( uniform );
+
+        stateSet->setTextureAttributeAndModes( 1, depthTexA.get() );
+        uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+        stateSet->addUniform( uniform );
+    }
+
     return( lfxCam.release() );
 }
 
@@ -250,7 +271,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 osg::Node* createScene()
 {
     osg::Geometry* geom( osgwTools::makeClosedCylinder(
-        osg::Matrix::translate( 0., 0., -20. ), 40., 8., 8. ) );
+        osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8. ) );
     osg::Geode* geode( new osg::Geode() );
     geode->addDrawable( geom );
     return( geode );
@@ -339,22 +360,30 @@ int main( int argc, char** argv )
     }
     
     osgViewer::Viewer viewer;
-    prepareSceneCamera( viewer );
-
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
-    viewer.setUpViewInWindow( 10, 30, winWidth, winHeight );
+    viewer.setUpViewInWindow( 10, 30, winSize.x(), winSize.y() );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
-#if 0
-    viewer.setSceneData( root );
-#else
+
+
+    // Assemble camera RTT and scene heirarchy.
+    // viewerCamera (renders to both color and depth textures)
+    //   |-> scene (consisting of a cylinder)
+    //   |-> splatCam (to display the color texture to the window)
+    //    \> lfxCam (to render the lfx volume into the window)
+    // viewerCamera renders to colorTexA and depthTexA.
+    // splatCam uses colorTexA as input.
+    // lfxCam uses colorTexA and depthTexA as input. Lfx volume shaders
+    //   use colorTexA for blending, and depthTexA for correct depth
+    //   testing while stepping along the ray.
+    prepareSceneCamera( viewer );
     osg::Group* scene( new osg::Group );
     scene->addChild( createScene() );
     scene->addChild( createDisplaySceneCamera() );
     scene->addChild( createLfxCamera( root ) );
     viewer.setSceneData( scene );
     viewer.addEventHandler( new ResizeHandler( scene ) );
-#endif
+
 
     while( !( viewer.done() ) )
     {
