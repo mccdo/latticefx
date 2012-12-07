@@ -236,10 +236,15 @@ void main( void )
     // Get the initial color from the rendered scene.
     vec3 finalColor = texture2D( sceneColor, winTC ).rgb;
 
+    // TBD need to figure out how to decrement currentDepth as we
+    // step along the ray.
+    float sceneDepthValue = texture2D( sceneDepth, winTC ).r;
+    float currentDepth = gl_FragCoord.z;
+
     float sample = totalSamples;
     while( --sample > 0.f )
     {
-        if( gl_FragCoord.z <= texture2D( sceneDepth, winTC ).r )
+        if( currentDepth <= sceneDepthValue )
         {
             vec3 coord = rayStart + sampleVec * ( sample / totalSamples );
             vec4 baseColor = texture3D( VolumeTexture, coord );
