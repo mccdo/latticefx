@@ -181,13 +181,10 @@ osg::Camera* createDisplaySceneCamera()
     splatCam = new osg::Camera;
     
     splatCam->setClearMask( 0 );
-    splatCam->setClearColor( osg::Vec4( 1., 0., 0., 1. ) );
     splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
 
     splatCam->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
     splatCam->setRenderOrder( osg::Camera::POST_RENDER );
-    splatCam->setViewMatrix( osg::Matrixd::identity() );
-    splatCam->setProjectionMatrix( osg::Matrixd::identity() );
 
     osg::Geode* geode( new osg::Geode );
     geode->addDrawable( osgwTools::makePlane(
@@ -202,7 +199,7 @@ osg::Camera* createDisplaySceneCamera()
     return( splatCam.get() );
 }
 
-osg::Camera* createLfxCamera()
+osg::Camera* createLfxCamera( osg::Node* node )
 {
     osg::ref_ptr< osg::Camera > lfxCam( new osg::Camera );
 
@@ -211,8 +208,8 @@ osg::Camera* createLfxCamera()
 
     lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
     lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
-    lfxCam->setViewMatrix( osg::Matrixd::identity() );
-    lfxCam->setProjectionMatrix( osg::Matrixd::identity() );
+
+    lfxCam->addChild( node );
 
     return( lfxCam.release() );
 }
@@ -252,7 +249,11 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 
 osg::Node* createScene()
 {
-    return( osgDB::readNodeFile( "teapot.osg" ) );
+    osg::Geometry* geom( osgwTools::makeClosedCylinder(
+        osg::Matrix::translate( 0., 0., -20. ), 40., 8., 8. ) );
+    osg::Geode* geode( new osg::Geode() );
+    geode->addDrawable( geom );
+    return( geode );
 }
 
 
@@ -350,6 +351,7 @@ int main( int argc, char** argv )
     osg::Group* scene( new osg::Group );
     scene->addChild( createScene() );
     scene->addChild( createDisplaySceneCamera() );
+    scene->addChild( createLfxCamera( root ) );
     viewer.setSceneData( scene );
     viewer.addEventHandler( new ResizeHandler( scene ) );
 #endif

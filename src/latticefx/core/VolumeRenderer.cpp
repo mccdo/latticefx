@@ -309,12 +309,18 @@ osg::StateSet* VolumeRenderer::getRootState()
     fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
     stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
-    // Do not need to write the depth buffer.
-    osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
-    stateSet->setAttributeAndModes( depth );
-
-    if( _renderMode == RAY_TRACED )
+    if( _renderMode == SLICES )
     {
+        // Do not need to write the depth buffer.
+        osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
+        stateSet->setAttributeAndModes( depth );
+    }
+    else // RAY_TRACED
+    {
+        // For ray traced, disable depth test (the shader will take care
+        // of that). and render back faces only (back half of volume).
+        stateSet->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+
         osg::CullFace* cf( new osg::CullFace( osg::CullFace::FRONT ) );
         stateSet->setAttributeAndModes( cf );
     }
