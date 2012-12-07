@@ -33,14 +33,189 @@
 #include <osg/ClipNode>
 #include <osg/MatrixTransform>
 #include <osg/PolygonMode>
+#include <osg/NodeCallback>
+#include <osgUtil/CullVisitor>
+#include <osgUtil/RenderStage>
 
 #include <osgwTools/Shapes.h>
 
+#include <boost/foreach.hpp>
 #include <iostream>
 
 
 using namespace lfx::core;
 
+
+
+static float winWidth( 1200 ), winHeight( 690 );
+
+static osg::ref_ptr< osg::Texture2D > colorTexA;
+static osg::ref_ptr< osg::Texture2D > depthTexA;
+static osg::ref_ptr< osg::Camera > splatCam;
+static osg::ref_ptr< osg::Camera > rootCam;
+
+
+
+/*
+    The following code is an attempt to work around the known OSG
+    issue with RenderStage::setCameraRequiresSetUp(). The code currently
+    doesn't work, and should be investigated further. For now this
+    code is disabled. See this commend:
+       // TBD disable for now
+    But the ResizeHandler remains in place to show to send window
+    width and height to the ray traced volume shaders.
+*/
+class ResetCameraCallback : public osg::NodeCallback
+{
+public:
+    ResetCameraCallback()
+    {}
+
+    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv )
+    {
+        osgUtil::CullVisitor* cv( static_cast< osgUtil::CullVisitor* >( nv ) );
+        DirtyMap::iterator it( _dirty.find( cv ) );
+        if( it == _dirty.end() )
+        {
+            // TBD need to add thread safety mechanism.
+            _dirty[ cv ] = true;
+            it = _dirty.find( cv );
+        }
+
+        if( it->second )
+        {
+            cv->getRenderStage()->setCameraRequiresSetUp( true );
+            it->second = false;
+        }
+
+        traverse( node, nv );
+    }
+
+    void setDirty( const bool dirty=true )
+    {
+        BOOST_FOREACH( DirtyMap::value_type& val, _dirty )
+        {
+            val.second = dirty;
+        }
+    }
+
+protected:
+    typedef std::map< osgUtil::CullVisitor*, bool > DirtyMap;
+    DirtyMap _dirty;
+};
+
+void resetCamera( osg::Node* node )
+{
+    ResetCameraCallback* rcc( dynamic_cast< ResetCameraCallback* >( node->getCullCallback() ) );
+    if( rcc == NULL )
+    {
+        rcc = new ResetCameraCallback();
+        node->setCullCallback( rcc );
+    }
+    rcc->setDirty();
+}
+
+class ResizeHandler : public osgGA::GUIEventHandler
+{
+public:
+    ResizeHandler( osg::Node* node )
+      : _node( node )
+    {
+    }
+    virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* )
+    {
+        if( ea.getEventType() != osgGA::GUIEventAdapter::RESIZE )
+            return( false );
+
+        winWidth = ea.getWindowWidth();
+        winHeight = ea.getWindowHeight();
+        colorTexA->setTextureSize( winWidth, winHeight );
+        depthTexA->setTextureSize( winWidth, winHeight );
+        // TBD disable for now
+        //colorTexA->dirtyTextureObject();
+        //depthTexA->dirtyTextureObject();
+        splatCam->setViewport( 0, 0, (int)winWidth, (int)winHeight );
+        rootCam->setProjectionMatrixAsPerspective( 30., winWidth/winHeight, 1., 199. );
+
+        resetCamera( _node.get() );
+        return( false );
+    }
+
+protected:
+    osg::ref_ptr< osg::Node > _node;
+};
+/*
+    End of code for working around RenderStage::setCameraRequiresSetUp().
+*/
+
+
+
+void prepareSceneCamera( osgViewer::Viewer& viewer )
+{
+    rootCam = viewer.getCamera();
+
+    // Viewer's Camera will render into there color and depth texture buffers:
+    colorTexA = new osg::Texture2D;
+    colorTexA->setTextureWidth( winWidth );
+    colorTexA->setTextureHeight( winHeight );
+    colorTexA->setInternalFormat( GL_RGBA );
+    colorTexA->setBorderWidth( 0 );
+    colorTexA->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    colorTexA->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+
+    depthTexA = new osg::Texture2D;
+    depthTexA->setTextureWidth( winWidth );
+    depthTexA->setTextureHeight( winHeight );
+    depthTexA->setInternalFormat( GL_DEPTH_COMPONENT );
+    depthTexA->setBorderWidth( 0 );
+    depthTexA->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    depthTexA->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+
+    rootCam->attach( osg::Camera::COLOR_BUFFER0, colorTexA.get(), 0, 0 );
+    rootCam->attach( osg::Camera::DEPTH_BUFFER, depthTexA.get(), 0, 0 );
+    rootCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT, osg::Camera::FRAME_BUFFER );
+}
+
+osg::Camera* createDisplaySceneCamera()
+{
+    splatCam = new osg::Camera;
+    
+    splatCam->setClearMask( 0 );
+    splatCam->setClearColor( osg::Vec4( 1., 0., 0., 1. ) );
+    splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
+
+    splatCam->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+    splatCam->setRenderOrder( osg::Camera::POST_RENDER );
+    splatCam->setViewMatrix( osg::Matrixd::identity() );
+    splatCam->setProjectionMatrix( osg::Matrixd::identity() );
+
+    osg::Geode* geode( new osg::Geode );
+    geode->addDrawable( osgwTools::makePlane(
+        osg::Vec3( -1,-1,0 ), osg::Vec3( 2,0,0 ), osg::Vec3( 0,2,0 ) ) );
+    geode->getOrCreateStateSet()->setTextureAttributeAndModes(
+        0, colorTexA.get(), osg::StateAttribute::ON );
+    geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+    geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+
+    splatCam->addChild( geode );
+
+    return( splatCam.get() );
+}
+
+osg::Camera* createLfxCamera()
+{
+    osg::ref_ptr< osg::Camera > lfxCam( new osg::Camera );
+
+    lfxCam->setClearMask( 0 );
+    lfxCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
+
+    lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
+    lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
+    lfxCam->setViewMatrix( osg::Matrixd::identity() );
+    lfxCam->setProjectionMatrix( osg::Matrixd::identity() );
+
+    return( lfxCam.release() );
+}
 
 DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 {
@@ -73,6 +248,11 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     renderOp->setHardwareMaskReference( .15f );
 
     return( dsp );
+}
+
+osg::Node* createScene()
+{
+    return( osgDB::readNodeFile( "teapot.osg" ) );
 }
 
 
@@ -158,11 +338,21 @@ int main( int argc, char** argv )
     }
     
     osgViewer::Viewer viewer;
+    prepareSceneCamera( viewer );
+
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
-    viewer.setUpViewInWindow( 10, 30, 1200, 690 );
+    viewer.setUpViewInWindow( 10, 30, winWidth, winHeight );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
+#if 0
     viewer.setSceneData( root );
+#else
+    osg::Group* scene( new osg::Group );
+    scene->addChild( createScene() );
+    scene->addChild( createDisplaySceneCamera() );
+    viewer.setSceneData( scene );
+    viewer.addEventHandler( new ResizeHandler( scene ) );
+#endif
 
     while( !( viewer.done() ) )
     {
