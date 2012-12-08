@@ -41,6 +41,7 @@
 
 #include <boost/foreach.hpp>
 #include <iostream>
+#include <osg/io_utils>
 
 
 using namespace lfx::core;
@@ -204,6 +205,7 @@ osg::Camera* createDisplaySceneCamera()
 osg::Camera* createLfxCamera( osg::Node* node )
 {
     osg::ref_ptr< osg::Camera > lfxCam( new osg::Camera );
+    lfxCam->setName( "latticeFX-VolumeCamera" );
 
     lfxCam->setClearMask( 0 );
     lfxCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
@@ -272,9 +274,43 @@ osg::Node* createScene()
 {
     osg::Geometry* geom( osgwTools::makeClosedCylinder(
         osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8. ) );
+    osg::Vec4Array* c( new osg::Vec4Array() );
+    c->push_back( osg::Vec4( 1., .5, 0., 1. ) );
+    geom->setColorArray( c );
+    geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
     osg::Geode* geode( new osg::Geode() );
     geode->addDrawable( geom );
+
     return( geode );
+}
+
+osg::Node* createStubGeometry( osg::Node* subgraph )
+{
+    // This function adds the subgraph, but with a shader
+    // set to discard all vertices so that nothing is rendered.
+    // The net effect is that OSG's Camera near & far computation
+    // accounts for the subgraph as if it were part of the scene,
+    // but doesn't actually render anything.
+
+    osg::Group* root( new osg::Group );
+    root->addChild( subgraph );
+
+    osg::Shader* shader( new osg::Shader( osg::Shader::VERTEX ) );
+    shader->setShaderSource(
+        "void main( void ) \n"
+        "{ \n"
+        //   Clip all vertices.
+        "    gl_Position = vec4( 0., 0., 0., 1. ); \n"
+        "} \n" );
+
+    osg::Program* program( new osg::Program );
+    program->addShader( shader );
+
+    osg::StateSet* stateSet( root->getOrCreateStateSet() );
+    stateSet->setAttributeAndModes( program, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON );
+
+    return( root );
 }
 
 
@@ -369,6 +405,7 @@ int main( int argc, char** argv )
     // Assemble camera RTT and scene heirarchy.
     // viewerCamera (renders to both color and depth textures)
     //   |-> scene (consisting of a cylinder)
+    //   |-> stub geometry (renders nothing, but ensures correct near & far computation)
     //   |-> splatCam (to display the color texture to the window)
     //    \> lfxCam (to render the lfx volume into the window)
     // viewerCamera renders to colorTexA and depthTexA.
@@ -379,6 +416,7 @@ int main( int argc, char** argv )
     prepareSceneCamera( viewer );
     osg::Group* scene( new osg::Group );
     scene->addChild( createScene() );
+    scene->addChild( createStubGeometry( root ) );
     scene->addChild( createDisplaySceneCamera() );
     scene->addChild( createLfxCamera( root ) );
     viewer.setSceneData( scene );

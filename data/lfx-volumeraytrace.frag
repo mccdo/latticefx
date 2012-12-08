@@ -177,12 +177,19 @@ float clipping( in vec3 ec )
 
 varying vec3 tcEye;
 varying float volumeSize;
+varying vec4 clipCoord;
+varying vec4 clipEye;
 
 void main( void )
 {
-    vec3 tc = gl_TexCoord[0].xyz;
+    // Must interpolate tex coords along the ray.
+    // But, also clip coordinate z and w to use for depth comparison.
+    vec2 cc = clipCoord.zw;
+    vec2 ccStart = clipEye.zw;
 
+    vec3 tc = gl_TexCoord[0].xyz;
     vec3 rayStart = tcEye;
+
     if( ( rayStart.x >= 0. ) && ( rayStart.x <= 1. ) &&
         ( rayStart.y >= 0. ) && ( rayStart.y <= 1. ) &&
         ( rayStart.z >= 0. ) && ( rayStart.z <= 1. ) )
@@ -198,31 +205,37 @@ void main( void )
         {
             float t = -rayStart.x / ( tc.x - rayStart.x );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.x > 1. )
         {
             float t = ( 1. - rayStart.x ) / ( tc.x - rayStart.x );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.y < 0. )
         {
             float t = -rayStart.y / ( tc.y - rayStart.y );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.y > 1. )
         {
             float t = ( 1. - rayStart.y ) / ( tc.y - rayStart.y );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.z < 0. )
         {
             float t = -rayStart.z / ( tc.z - rayStart.z );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.z > 1. )
         {
             float t = ( 1. - rayStart.z ) / ( tc.z - rayStart.z );
             rayStart = rayStart + t * ( tc - rayStart );
+            ccStart = ccStart + t * ( cc - ccStart );
         }
     }
 
@@ -236,17 +249,20 @@ void main( void )
     // Get the initial color from the rendered scene.
     vec3 finalColor = texture2D( sceneColor, winTC ).rgb;
 
-    // TBD need to figure out how to decrement currentDepth as we
-    // step along the ray.
     float sceneDepthValue = texture2D( sceneDepth, winTC ).r;
-    float currentDepth = gl_FragCoord.z;
+    vec2 ccVec = cc - ccStart;
 
     float sample = totalSamples;
     while( --sample > 0.f )
     {
-        if( currentDepth <= sceneDepthValue )
+        float sampleLen = sample / totalSamples;
+
+        // Compute window z value winZ.
+        vec2 depth = ccStart + ccVec * sampleLen;
+        float winZ = depth.x / depth.y * .5f + .5f;
+        if( winZ <= sceneDepthValue )
         {
-            vec3 coord = rayStart + sampleVec * ( sample / totalSamples );
+            vec3 coord = rayStart + sampleVec * sampleLen;
             vec4 baseColor = texture3D( VolumeTexture, coord );
 
             vec4 color = transferFunction( baseColor.r );
