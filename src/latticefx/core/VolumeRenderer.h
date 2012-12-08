@@ -102,7 +102,25 @@ public:
     } RenderMode;
 
     /** \brief Set the rendering style.
-    \details The default is SLICES. */
+    \details The default is SLICES.
+    
+    RAY_TRACED mode requies special configuration steps on the part of the
+    application. See the test volume-rt for an example.
+
+    - The volume ray tracer needs the following inputs:
+      - The opaque scene color buffer as a 2D texture, and the associated uniform named "sceneColor".
+      - Same for the opaque scene depth buffer ("sceneDepth" ).
+      .
+      This means you'll render the opaque scene to an FBO with two texture attached, one for color and one for depth.
+      - The width and height of the above two textures, as a uniform vec2 named "windowSize".
+    - You'll need to configure your scene graph in a special way:
+      - A top-level Camera to render your opaque scene to FBO.
+        - 1st child: the opaque scene subgraph.
+        - 2nd child: a special "stub lfx scene" (described below).
+        - 3rd child: a post-render Camera and full-screen quad to splat your color buffer into the window.
+        - 4th child: the actual Lfx scene graph, to render the ray traced volume data into the window.
+      - "Stub lfx scene": The ray tracing shader compares computed depth values against the depth buffer from your opaque scene. This means the 1st child and 4th child need to use the same projection matrix so that the depth values are compatible. But this can be problematic when using auto-compute near & far. To make a long story short, the "stub lfx scene" ensures that the auto-compute takes the lfx scene into account when computing the near & far planes for your opaque scene.
+    */
     void setRenderMode( const RenderMode& renderMode ) { _renderMode = renderMode; }
     /** \brief Get the rendering algorithm. */
     RenderMode getRenderMode() const { return( _renderMode ); }
