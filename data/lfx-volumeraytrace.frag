@@ -247,30 +247,47 @@ void main( void )
     // Compute window tex coords to sample the scene color and depth textures.
     vec2 winTC = gl_FragCoord.xy / windowSize;
     // Get the initial color from the rendered scene.
-    vec3 finalColor = texture2D( sceneColor, winTC ).rgb;
+    vec4 finalColor = vec4( 0., 0., 0., 0. );
 
     float sceneDepthValue = texture2D( sceneDepth, winTC ).r;
     vec2 ccVec = cc - ccStart;
 
-    float sample = totalSamples;
-    while( --sample > 0.f )
+    float sample = 0.f;
+    while( sample++ < totalSamples )
     {
         float sampleLen = sample / totalSamples;
 
         // Compute window z value winZ.
         vec2 depth = ccStart + ccVec * sampleLen;
         float winZ = depth.x / depth.y * .5f + .5f;
-        if( winZ <= sceneDepthValue )
+
+        if( winZ > sceneDepthValue )
+            break;
+        else
         {
             vec3 coord = rayStart + sampleVec * sampleLen;
             vec4 baseColor = texture3D( VolumeTexture, coord );
 
             vec4 color = transferFunction( baseColor.r );
             if( hardwareMask( coord, color ) )
-                finalColor = color.rgb * color.a + finalColor * ( 1. - color.a );
+            {
+                // Front to back blending:
+                //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
+                //    dst.a   = dst.a   + (1 - dst.a) * src.a
+                color.rgb *= color.a;
+                finalColor = ( 1.f - finalColor.a ) * color + finalColor;
+
+                if( finalColor.a > .95f )
+                    // It's opaque enough
+                    break;
+            }
         }
     }
-    gl_FragData[0] = vec4( finalColor, 1. );
+    vec4 color = texture2D( sceneColor, winTC );
+    color.rgb *= color.a;
+    finalColor = ( 1.f - finalColor.a ) * color + finalColor;
+
+    gl_FragData[0] = vec4( finalColor.rgb, 1. );
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
