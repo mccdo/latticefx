@@ -112,7 +112,8 @@ public:
       - Same for the opaque scene depth buffer ("sceneDepth" ).
       .
       This means you'll render the opaque scene to an FBO with two texture attached, one for color and one for depth.
-      - The width and height of the above two textures, as a uniform vec2 named "windowSize".
+      Furthermore, the textures must be the same width and height as the final window.
+      - The width and height of the above two textures / window, as a uniform vec2 named "windowSize".
     - You'll need to configure your scene graph in a special way:
       - A top-level Camera to render your opaque scene to FBO.
         - 1st child: the opaque scene subgraph.

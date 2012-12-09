@@ -36,6 +36,7 @@
 #include <osg/NodeCallback>
 #include <osgUtil/CullVisitor>
 #include <osgUtil/RenderStage>
+#include <osg/ComputeBoundsVisitor>
 
 #include <osgwTools/Shapes.h>
 
@@ -287,28 +288,24 @@ osg::Node* createScene()
 
 osg::Node* createStubGeometry( osg::Node* subgraph )
 {
-    // This function adds the subgraph, but with a shader
-    // set to discard all vertices so that nothing is rendered.
-    // The net effect is that OSG's Camera near & far computation
-    // accounts for the subgraph as if it were part of the scene,
-    // but doesn't actually render anything.
+    // This function creates and returns a geode containing a stub
+    // Drawable that renders nothing. But the stub Drawable has the
+    // same bounding box as the subgraph parameter. The returned
+    // value can be used to ensure that scene rendering computes
+    // near & far planes that account for the presence of the
+    // subgraph parameter, without actually rendering that subgraph.
 
-    osg::Group* root( new osg::Group );
-    root->addChild( subgraph );
+    osg::ComputeBoundsVisitor cbv;
+    cbv.setNodeMaskOverride( ~0u );
+    subgraph->accept( cbv );
 
-    osg::Shader* shader( new osg::Shader( osg::Shader::VERTEX ) );
-    shader->setShaderSource(
-        "void main( void ) \n"
-        "{ \n"
-        //   Clip all vertices.
-        "    gl_Position = vec4( 0., 0., 0., 1. ); \n"
-        "} \n" );
+    osg::Geometry* stubGeom( new osg::Geometry );
+    stubGeom->setInitialBound( cbv.getBoundingBox() );
+    // The stock DrawCallback is a no-op and draws nothing.
+    stubGeom->setDrawCallback( new osg::Drawable::DrawCallback() );
 
-    osg::Program* program( new osg::Program );
-    program->addShader( shader );
-
-    osg::StateSet* stateSet( root->getOrCreateStateSet() );
-    stateSet->setAttributeAndModes( program, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON );
+    osg::Geode* root( new osg::Geode );
+    root->addDrawable( stubGeom );
 
     return( root );
 }
