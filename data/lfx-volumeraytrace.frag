@@ -175,6 +175,9 @@ float clipping( in vec3 ec )
 #endif
 }
 
+uniform vec3 volumeDims;
+uniform vec3 volumeCenter;
+
 varying vec3 tcEye;
 varying float volumeSize;
 varying vec4 clipCoord;
@@ -182,11 +185,21 @@ varying vec4 clipEye;
 
 void main( void )
 {
-    // Must interpolate tex coords along the ray.
-    // But, also clip coordinate z and w to use for depth comparison.
-    vec2 cc = clipCoord.zw;
-    vec2 ccStart = clipEye.zw;
+    // Compute window tex coords to sample the scene color and depth textures.
+    vec2 winTC = gl_FragCoord.xy / windowSize;
 
+    // Transform the scene depth value into tex coord space. We don't want
+    // to shoot a ray past this point.
+    float winZScene = texture2D( sceneDepth, winTC ).r;
+    vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
+    vec4 ccScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
+    ccScene /= ccScene.w;
+    vec4 ocScene = gl_ModelViewMatrixInverse * ccScene;
+    vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
+    // Compute the tex coord vector from the eye to tcScene.
+    vec3 scenePlaneNormal = tcEye - tcScene;
+
+    // Must interpolate tex coords along the ray.
     vec3 tc = gl_TexCoord[0].xyz;
     vec3 rayStart = tcEye;
 
@@ -205,38 +218,44 @@ void main( void )
         {
             float t = -rayStart.x / ( tc.x - rayStart.x );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.x > 1. )
         {
             float t = ( 1. - rayStart.x ) / ( tc.x - rayStart.x );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.y < 0. )
         {
             float t = -rayStart.y / ( tc.y - rayStart.y );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.y > 1. )
         {
             float t = ( 1. - rayStart.y ) / ( tc.y - rayStart.y );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.z < 0. )
         {
             float t = -rayStart.z / ( tc.z - rayStart.z );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
         if( rayStart.z > 1. )
         {
             float t = ( 1. - rayStart.z ) / ( tc.z - rayStart.z );
             rayStart = rayStart + t * ( tc - rayStart );
-            ccStart = ccStart + t * ( cc - ccStart );
         }
+    }
+
+    // Clip against the scene depth value
+    if( dot( rayStart - tcScene, scenePlaneNormal ) < 0.f )
+    {
+        // Volume is behind the scene depth value. Do nothing.
+        discard;
+    }
+    if( dot( tc - tcScene, scenePlaneNormal ) < 0.f )
+    {
+        // Make the ray end when it hits the scene depth value.
+        tc = tcScene;
     }
 
     vec3 sampleVec = tc - rayStart;
@@ -244,43 +263,29 @@ void main( void )
     float totalSamples = volumeSize * length( sampleVec ) / sampleStepSize;
     totalSamples = max( totalSamples, 2.f );
 
-    // Compute window tex coords to sample the scene color and depth textures.
-    vec2 winTC = gl_FragCoord.xy / windowSize;
     // Get the initial color from the rendered scene.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
 
-    float sceneDepthValue = texture2D( sceneDepth, winTC ).r;
-    vec2 ccVec = cc - ccStart;
-
     float sample = 0.f;
-    while( sample++ < totalSamples )
+    while( ++sample < totalSamples )
     {
         float sampleLen = sample / totalSamples;
 
-        // Compute window z value winZ.
-        vec2 depth = ccStart + ccVec * sampleLen;
-        float winZ = depth.x / depth.y * .5f + .5f;
+        vec3 coord = rayStart + sampleVec * sampleLen;
+        vec4 baseColor = texture3D( VolumeTexture, coord );
 
-        if( winZ > sceneDepthValue )
-            break;
-        else
+        vec4 color = transferFunction( baseColor.r );
+        if( hardwareMask( coord, color ) )
         {
-            vec3 coord = rayStart + sampleVec * sampleLen;
-            vec4 baseColor = texture3D( VolumeTexture, coord );
+            // Front to back blending:
+            //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
+            //    dst.a   = dst.a   + (1 - dst.a) * src.a
+            color.rgb *= color.a;
+            finalColor = ( 1.f - finalColor.a ) * color + finalColor;
 
-            vec4 color = transferFunction( baseColor.r );
-            if( hardwareMask( coord, color ) )
-            {
-                // Front to back blending:
-                //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
-                //    dst.a   = dst.a   + (1 - dst.a) * src.a
-                color.rgb *= color.a;
-                finalColor = ( 1.f - finalColor.a ) * color + finalColor;
-
-                if( finalColor.a > .95f )
-                    // It's opaque enough
-                    break;
-            }
+            if( finalColor.a > .95f )
+                // It's opaque enough
+                break;
         }
     }
     vec4 color = texture2D( sceneColor, winTC );
