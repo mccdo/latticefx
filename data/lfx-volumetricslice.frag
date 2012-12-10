@@ -144,7 +144,7 @@ uniform vec4 volumeClipPlaneEnables;
 float clipping( in vec3 ec )
 {
     // Determine if inside the view. We really only care about the
-    // front plant, so set inView=true if not clipped by front plane.
+    // front plane, so set inView=true if not clipped by front plane.
     vec4 cc = gl_ProjectionMatrix * vec4( ec, 1. );
     // step(a,b) = 1.0 if b>=a, 0.0 otherwise.
     bool inView = cc.z >= -cc.w;
