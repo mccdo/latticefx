@@ -298,6 +298,12 @@ void main( void )
     // Clip ray endpoints against enabled clip planes.
     if( volumeClipPlaneEnables.x > 0.f )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 0 ] );
+    if( volumeClipPlaneEnables.y > 0.f )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 1 ] );
+    if( volumeClipPlaneEnables.z > 0.f )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 2 ] );
+    if( volumeClipPlaneEnables.w > 0.f )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 3 ] );
 
     vec3 sampleVec = tcEnd - tcStart;
     float sampleStepSize = ecVolumeSize / volumeMaxSamples;
