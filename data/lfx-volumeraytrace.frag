@@ -144,6 +144,40 @@ bool TestInBounds(vec3 sample)
 }
 
 
+uniform vec3 volumeDims;
+uniform vec3 volumeCenter;
+
+vec4 texToEyeCoords( in vec3 tc )
+{
+    vec4 oc = vec4( ( tc - .5f ) * volumeDims + volumeCenter, 1.f );
+    return( gl_ModelViewMatrix * oc );
+}
+
+void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
+{
+    vec4 start4 = texToEyeCoords( start );
+    vec4 end4 = texToEyeCoords( end );
+
+    float dotStart = dot( start4, clipPlane );
+    float dotEnd = dot( end4, clipPlane );
+    if( dotStart < 0.f )
+    {
+        if( dotEnd < 0.f )
+            discard;
+        // else, clip the start point.
+        float pct = dotEnd / ( dotEnd - dotStart );
+        start = ( start - end ) * pct + end;
+    }
+    else if( dotStart >= 0.f )
+    {
+        if( dotEnd >= 0.f )
+            return;
+        // else, clip the end point.
+        float pct = dotStart / ( dotStart - dotEnd );
+        end = ( end - start ) * pct + start;
+    }
+}
+
 uniform vec4 volumeClipPlaneEnables;
 
 // Return 0.0 if clipped.
@@ -175,8 +209,6 @@ float clipping( in vec3 ec )
 #endif
 }
 
-uniform vec3 volumeDims;
-uniform vec3 volumeCenter;
 
 varying vec3 tcEye;
 varying float ecVolumeSize;
@@ -198,65 +230,69 @@ void main( void )
     vec3 scenePlaneNormal = tcEye - tcScene;
 
     // Must interpolate tex coords along the ray.
-    vec3 tc = gl_TexCoord[0].xyz;
-    vec3 rayStart = tcEye;
+    vec3 tcEnd = gl_TexCoord[0].xyz;
+    vec3 tcStart = tcEye;
 
-    if( ( rayStart.x >= 0. ) && ( rayStart.x <= 1. ) &&
-        ( rayStart.y >= 0. ) && ( rayStart.y <= 1. ) &&
-        ( rayStart.z >= 0. ) && ( rayStart.z <= 1. ) )
+    if( ( tcStart.x >= 0. ) && ( tcStart.x <= 1. ) &&
+        ( tcStart.y >= 0. ) && ( tcStart.y <= 1. ) &&
+        ( tcStart.z >= 0. ) && ( tcStart.z <= 1. ) )
     {
-        // rayStart is inside volume
+        // tcStart is inside volume
     }
     else
     {
         // Compute the ray start position such that it lies on a
         // volume face. The code below is using algebraic shorthand
         // to compute the ray/plane intersection point.
-        if( rayStart.x < 0. )
+        if( tcStart.x < 0. )
         {
-            float t = -rayStart.x / ( tc.x - rayStart.x );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = -tcStart.x / ( tcEnd.x - tcStart.x );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
-        if( rayStart.x > 1. )
+        if( tcStart.x > 1. )
         {
-            float t = ( 1. - rayStart.x ) / ( tc.x - rayStart.x );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = ( 1. - tcStart.x ) / ( tcEnd.x - tcStart.x );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
-        if( rayStart.y < 0. )
+        if( tcStart.y < 0. )
         {
-            float t = -rayStart.y / ( tc.y - rayStart.y );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = -tcStart.y / ( tcEnd.y - tcStart.y );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
-        if( rayStart.y > 1. )
+        if( tcStart.y > 1. )
         {
-            float t = ( 1. - rayStart.y ) / ( tc.y - rayStart.y );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = ( 1. - tcStart.y ) / ( tcEnd.y - tcStart.y );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
-        if( rayStart.z < 0. )
+        if( tcStart.z < 0. )
         {
-            float t = -rayStart.z / ( tc.z - rayStart.z );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = -tcStart.z / ( tcEnd.z - tcStart.z );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
-        if( rayStart.z > 1. )
+        if( tcStart.z > 1. )
         {
-            float t = ( 1. - rayStart.z ) / ( tc.z - rayStart.z );
-            rayStart = rayStart + t * ( tc - rayStart );
+            float t = ( 1. - tcStart.z ) / ( tcEnd.z - tcStart.z );
+            tcStart = tcStart + t * ( tcEnd - tcStart );
         }
     }
 
     // Clip against the scene depth value
-    if( dot( rayStart - tcScene, scenePlaneNormal ) < 0.f )
+    if( dot( tcStart - tcScene, scenePlaneNormal ) < 0.f )
     {
         // Volume is behind the scene depth value. Do nothing.
         discard;
     }
-    if( dot( tc - tcScene, scenePlaneNormal ) < 0.f )
+    if( dot( tcEnd - tcScene, scenePlaneNormal ) < 0.f )
     {
         // Make the ray end when it hits the scene depth value.
-        tc = tcScene;
+        tcEnd = tcScene;
     }
 
-    vec3 sampleVec = tc - rayStart;
+    // Clip ray endpoints against enabled clip planes.
+    if( volumeClipPlaneEnables.x > 0.f )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 0 ] );
+
+    vec3 sampleVec = tcEnd - tcStart;
     float sampleStepSize = ecVolumeSize / volumeMaxSamples;
     float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
 
@@ -273,7 +309,7 @@ void main( void )
     {
         float sampleLen = sample / totalSamples;
 
-        vec3 coord = rayStart + sampleVec * sampleLen;
+        vec3 coord = tcStart + sampleVec * sampleLen;
         vec4 baseColor = texture3D( VolumeTexture, coord );
 
         vec4 color = transferFunction( baseColor.r );
