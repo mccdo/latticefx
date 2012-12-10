@@ -203,7 +203,17 @@ osg::Camera* createDisplaySceneCamera()
     return( splatCam.get() );
 }
 
-osg::Camera* createLfxCamera( osg::Node* node )
+osg::Node* createClipSubgraph()
+{
+    // Test hardware clip planes
+    osg::ClipNode* cn( new osg::ClipNode() );
+    osg::Vec3 n( .9, .8, 0. ); n.normalize();
+    cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
+
+    return( cn );
+}
+
+osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
 {
     osg::ref_ptr< osg::Camera > lfxCam( new osg::Camera );
     lfxCam->setName( "latticeFX-VolumeCamera" );
@@ -233,6 +243,16 @@ osg::Camera* createLfxCamera( osg::Node* node )
         stateSet->setTextureAttributeAndModes( 1, depthTexA.get() );
         uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
         stateSet->addUniform( uniform );
+
+        if( clip )
+        {
+            lfxCam->addChild( createClipSubgraph() );
+
+            // No built-in uniform to tell shaders that clip planes are enabled,
+            // so send that info down as uniforms.
+            osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnables", osg::Vec4f( 1., 0., 0., 0. ) ) );
+            stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
+        }
     }
 
     return( lfxCam.release() );
@@ -271,10 +291,10 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     return( dsp );
 }
 
-osg::Node* createScene()
+osg::Node* createScene( const bool clip )
 {
     osg::Geometry* geom( osgwTools::makeClosedCylinder(
-        osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8. ) );
+        osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s(1,16) ) );
     osg::Vec4Array* c( new osg::Vec4Array() );
     c->push_back( osg::Vec4( 1., .5, 0., 1. ) );
     geom->setColorArray( c );
@@ -283,7 +303,17 @@ osg::Node* createScene()
     osg::Geode* geode( new osg::Geode() );
     geode->addDrawable( geom );
 
-    return( geode );
+    osg::Group* root( new osg::Group );
+    root->addChild( geode );
+    if( clip )
+    {
+        root->addChild( createClipSubgraph() );
+
+        osg::StateSet* stateSet( root->getOrCreateStateSet() );
+        stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+    }
+
+    return( root );
 }
 
 osg::Node* createStubGeometry( osg::Node* subgraph )
@@ -327,6 +357,7 @@ int main( int argc, char** argv )
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
     std::cout << "-clip\tTest clip plane." << std::endl;
+    const bool clip( arguments.find( "-clip" ) > 0 );
 
     std::cout << "-mt\tTest with parent MatrixTransforms." << std::endl;
     std::cout << std::endl;
@@ -376,21 +407,6 @@ int main( int argc, char** argv )
     else
         root->addChild( dsp->getSceneData() );
 
-    if( arguments.find( "-clip" ) > 0 )
-    {
-        // Test hardware clip planes
-        osg::ClipNode* cn( new osg::ClipNode() );
-        osg::Vec3 n( .9, .8, 0. ); n.normalize();
-        cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 10. ) );
-        root->addChild( cn );
-
-        osg::StateSet* stateSet( root->getOrCreateStateSet() );
-        stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
-
-        // Also need to send array of bool uniforms so shader can do correct lighting.
-        osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnables", osg::Vec4f( 1., 0., 0., 0. ) ) );
-        stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
-    }
     
     osgViewer::Viewer viewer;
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
@@ -412,10 +428,10 @@ int main( int argc, char** argv )
     //   testing while stepping along the ray.
     prepareSceneCamera( viewer );
     osg::Group* scene( new osg::Group );
-    scene->addChild( createScene() );
+    scene->addChild( createScene( clip ) );
     scene->addChild( createStubGeometry( root ) );
     scene->addChild( createDisplaySceneCamera() );
-    scene->addChild( createLfxCamera( root ) );
+    scene->addChild( createLfxCamera( root, clip ) );
     viewer.setSceneData( scene );
     viewer.addEventHandler( new ResizeHandler( scene ) );
 
