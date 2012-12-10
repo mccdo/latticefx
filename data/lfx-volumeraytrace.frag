@@ -114,6 +114,7 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 
 
 uniform float volumeMaxSamples;
+uniform vec3 volumeResolution;
 
 uniform sampler3D VolumeTexture;
 
@@ -189,29 +190,30 @@ uniform vec4 volumeClipPlaneEnables;
 
 // Return 0.0 if clipped.
 // Return 1.0 if not clipped.
-float clipping( in vec3 ec )
+float clipping( in vec3 tc )
 {
+    vec4 ec = texToEyeCoords( tc );
+
     // Determine if inside the view. We really only care about the
     // front plane, so set inView=true if not clipped by front plane.
-    vec4 cc = gl_ProjectionMatrix * vec4( ec, 1. );
+    vec4 cc = gl_ProjectionMatrix * ec;
     // step(a,b) = 1.0 if b>=a, 0.0 otherwise.
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
-    vec4 ec4 = vec4( ec, 1. );
-#if 1
+#if 0
     // Only support one plane for now for performance reasons.
-    bool inClipPlane = (volumeClipPlaneEnables.x > 0.) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true;
+    bool inClipPlane = (volumeClipPlaneEnables.x > 0.) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true;
 
     // Return 1.0 if not plassed all the above clip tests.
     // Return 0.0 if one or more of the about tests failed.
     return( float( inView && inClipPlane ) );
 #else
     bvec4 clipResult0 = bvec4(
-        ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
+        ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
     return( float( inView && all( clipResult0 ) ) );
 #endif
 }
@@ -224,17 +226,6 @@ void main( void )
 {
     // Compute window tex coords to sample the scene color and depth textures.
     vec2 winTC = gl_FragCoord.xy / windowSize;
-
-    // Transform the scene depth value into tex coord space. We don't want
-    // to shoot a ray past this point.
-    float winZScene = texture2D( sceneDepth, winTC ).r;
-    vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
-    vec4 ccScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
-    ccScene /= ccScene.w;
-    vec4 ocScene = gl_ModelViewMatrixInverse * ccScene;
-    vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
-    // Compute the tex coord vector from the eye to tcScene.
-    vec3 scenePlaneNormal = tcEye - tcScene;
 
     // Must interpolate tex coords along the ray.
     vec3 tcEnd = gl_TexCoord[0].xyz;
@@ -283,6 +274,17 @@ void main( void )
         }
     }
 
+    // Transform the scene depth value into tex coord space. We don't want
+    // to shoot a ray past this point.
+    float winZScene = texture2D( sceneDepth, winTC ).r;
+    vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
+    vec4 ccScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
+    ccScene /= ccScene.w;
+    vec4 ocScene = gl_ModelViewMatrixInverse * ccScene;
+    vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
+    // Compute the tex coord vector from the eye to tcScene.
+    vec3 scenePlaneNormal = tcEye - tcScene;
+
     // Clip against the scene depth value
     if( dot( tcStart - tcScene, scenePlaneNormal ) < 0.f )
     {
@@ -305,6 +307,8 @@ void main( void )
     if( volumeClipPlaneEnables.w > 0.f )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 3 ] );
 
+
+    // Compute number of samples. sampleVec is the ray in tex coord space.
     vec3 sampleVec = tcEnd - tcStart;
     float sampleStepSize = ecVolumeSize / volumeMaxSamples;
     float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
@@ -317,6 +321,11 @@ void main( void )
     // Get the initial color from the rendered scene.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
 
+    // Track the last volume sample value and last computed normal. We can avoid
+    // recomputing the normal if the new sample value matches the old.
+    float lastSample = -1.f;
+    vec3 lastNormal = vec3( 0., 0., 1. );
+
     float sample = 0.f;
     while( ++sample < totalSamples )
     {
@@ -328,6 +337,33 @@ void main( void )
         vec4 color = transferFunction( baseColor.r );
         if( hardwareMask( coord, color ) )
         {
+            if( ( baseColor.r != lastSample ) || ( lastSample == -1.f ) )
+            {
+                lastSample = baseColor.r;
+
+                // Compute texture coord offsets for normal gradient computation.
+                vec3 delta = 1. / volumeResolution;
+                vec3 tcNegX = coord + vec3( -delta.x, 0., 0. );
+                vec3 tcPosX = coord + vec3( delta.x, 0., 0. );
+                vec3 tcNegY = coord + vec3( 0., -delta.y, 0. );
+                vec3 tcPosY = coord + vec3( 0., delta.y, 0. );
+                vec3 tcNegZ = coord + vec3( 0., 0., -delta.z );
+                vec3 tcPosZ = coord + vec3( 0., 0., delta.z );
+
+                // Support for non-linear transfer function requires that each volume sample
+                // be used in turn as an index into the transfer function. Only then can we
+                // compute a correct normal for the resulting surface.
+                // Note: Expensive.
+                vec3 negVec = vec3( clipping( tcNegX ) * transferFunction( texture3D( VolumeTexture, tcNegX ).r ).a,
+                    clipping( tcNegY ) * transferFunction( texture3D( VolumeTexture, tcNegY ).r ).a,
+                    clipping( tcNegZ ) * transferFunction( texture3D( VolumeTexture, tcNegZ ).r ).a );
+                vec3 posVec = vec3( clipping( tcPosX ) * transferFunction( texture3D( VolumeTexture, tcPosX ).r ).a,
+                    clipping( tcPosY ) * transferFunction( texture3D( VolumeTexture, tcPosY ).r ).a,
+                    clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
+                lastNormal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
+            }
+            vec4 color = fragmentLighting( color, lastNormal );
+
             // Front to back blending:
             //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
             //    dst.a   = dst.a   + (1 - dst.a) * src.a
@@ -347,60 +383,4 @@ void main( void )
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
-    return;
-
-#if 0
-    // Vectex shader always sends (eye oriented) quads. Much of the quad
-    // might be outside the volume. Immediately discard if this is the case.
-    if( !( TestInBounds( Texcoord ) ) )
-        discard;
-
-    // Get volume sample. Format is GL_KUMINANCE, so the same volume value
-    // will be stored in fvBaseColor.rayLen, g, and b. fvBaseColor.a will be 1.0.
-    vec4 fvBaseColor = texture3D( VolumeTexture, Texcoord );
-
-
-    vec4 color = transferFunction( fvBaseColor.rayLen );
-    if( !hardwareMask( Texcoord, color ) )
-        discard;
-
-
-#if 0
-    // Support for non-linear transfer function requires that each volume sample
-    // be used in turn as an index into the transfer function. Only then can we
-    // compute a correct normal for the resulting surface.
-    // Note: Expensive.
-    vec3 frontVec = vec3( clipping( ecLeft ) * transferFunction( texture3D( VolumeTexture, TexcoordLeft ).rayLen ).a,
-        clipping( ecDown ) * transferFunction( texture3D( VolumeTexture, TexcoordDown ).rayLen ).a,
-        clipping( ecFront ) * transferFunction( texture3D( VolumeTexture, TexcoordFront ).rayLen ).a );
-    vec3 backVec = vec3( clipping( ecRight ) * transferFunction( texture3D( VolumeTexture, TexcoordRight ).rayLen ).a,
-        clipping( ecUp ) * transferFunction( texture3D( VolumeTexture, TexcoordUp ).rayLen ).a,
-        clipping( ecBack ) * transferFunction( texture3D( VolumeTexture, TexcoordBack ).rayLen ).a );
-#else
-
-    // For performance reasons, do not use transfer function. This means the transfer
-    // function alpha is a direct map with volume samples.
-    vec3 frontVec = vec3( clipping( ecLeft ) * texture3D( VolumeTexture, TexcoordLeft ).rayLen,
-        clipping( ecDown ) * texture3D( VolumeTexture, TexcoordDown ).rayLen,
-        clipping( ecFront ) * texture3D( VolumeTexture, TexcoordFront ).rayLen );
-#define USE_FAST_NORMAL_COMPUTATION
-#ifdef USE_FAST_NORMAL_COMPUTATION
-    vec3 backVec = clipping( ecVertex ) * fvBaseColor.rgb;
-#else
-    vec3 backVec = vec3( clipping( ecRight ) * texture3D( VolumeTexture, TexcoordRight ).rayLen,
-        clipping( ecUp ) * texture3D( VolumeTexture, TexcoordUp ).rayLen,
-        clipping( ecBack ) * texture3D( VolumeTexture, TexcoordBack ).rayLen );
-#endif
-
-#endif
-    vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
-
-    vec4 finalColor = fragmentLighting( color, ecNormal );
-
-
-    gl_FragData[ 0 ] = finalColor;
-
-    // Support for second/glow render target.
-    gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
-#endif
 }
