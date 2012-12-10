@@ -179,9 +179,7 @@ uniform vec3 volumeDims;
 uniform vec3 volumeCenter;
 
 varying vec3 tcEye;
-varying float volumeSize;
-varying vec4 clipCoord;
-varying vec4 clipEye;
+varying float ecVolumeSize;
 
 void main( void )
 {
@@ -259,8 +257,8 @@ void main( void )
     }
 
     vec3 sampleVec = tc - rayStart;
-    float sampleStepSize = volumeSize / volumeMaxSamples;
-    float totalSamples = volumeSize * length( sampleVec ) / sampleStepSize;
+    float sampleStepSize = ecVolumeSize / volumeMaxSamples;
+    float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
 
     // Ensure a minimum totalSamples to reduce banding artifacts in thin areas.
     // I am seeing some TDR timeout errors on Win7 unless we clamp totalSamples
