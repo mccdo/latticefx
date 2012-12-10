@@ -151,7 +151,7 @@ float clipping( in vec3 ec )
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
     vec4 ec4 = vec4( ec, 1. );
-#if 1
+#if 0
     // Only support one plane for now for performance reasons.
     bool inClipPlane = (volumeClipPlaneEnables.x > 0.) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true;
 
@@ -188,7 +188,7 @@ void main( void )
         discard;
 
 
-#if 0
+#if 1
     // Support for non-linear transfer function requires that each volume sample
     // be used in turn as an index into the transfer function. Only then can we
     // compute a correct normal for the resulting surface.

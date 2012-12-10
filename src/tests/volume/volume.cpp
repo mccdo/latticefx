@@ -145,7 +145,7 @@ int main( int argc, char** argv )
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
         osg::Vec3 n( .9, .8, 0. ); n.normalize();
-        cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 10. ) );
+        cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
         root->addChild( cn );
 
         osg::StateSet* stateSet( root->getOrCreateStateSet() );
