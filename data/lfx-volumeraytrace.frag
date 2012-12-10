@@ -155,15 +155,20 @@ vec4 texToEyeCoords( in vec3 tc )
 
 void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
 {
-    vec4 start4 = texToEyeCoords( start );
-    vec4 end4 = texToEyeCoords( end );
+    // Must clip in eye coord space. There is no practical way to clip in tex coord
+    // space, which would be more desireable. The reason is that we'd have to back-
+    // transform the eye coord clip plane into object coords as an interim step, and
+    // that would require the inverse of the model matrix used to transform the clip
+    // planes, which we don't have access to.
 
-    float dotStart = dot( start4, clipPlane );
-    float dotEnd = dot( end4, clipPlane );
+    float dotStart = dot( texToEyeCoords( start ), clipPlane );
+    float dotEnd = dot( texToEyeCoords( end ), clipPlane );
     if( dotStart < 0.f )
     {
         if( dotEnd < 0.f )
+            // both start and end were clipped.
             discard;
+
         // else, clip the start point.
         float pct = dotEnd / ( dotEnd - dotStart );
         start = ( start - end ) * pct + end;
@@ -171,7 +176,9 @@ void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
     else if( dotStart >= 0.f )
     {
         if( dotEnd >= 0.f )
+            // both start and end are not clipped.
             return;
+
         // else, clip the end point.
         float pct = dotStart / ( dotStart - dotEnd );
         end = ( end - start ) * pct + start;
