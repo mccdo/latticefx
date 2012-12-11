@@ -112,38 +112,7 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 /** end hardware mask **/
 
 
-
-uniform float volumeMaxSamples;
-uniform vec3 volumeResolution;
-
-uniform sampler3D VolumeTexture;
-
-// These uniforms must be specified by the application. Lfx does not have access to them.
-uniform vec2 windowSize;
-uniform sampler2D sceneColor;
-uniform sampler2D sceneDepth;
-
-varying vec3 Texcoord;
-varying vec3 TexcoordUp;
-varying vec3 TexcoordRight;
-varying vec3 TexcoordBack;
-varying vec3 TexcoordDown;
-varying vec3 TexcoordLeft;
-varying vec3 TexcoordFront;
-
-varying vec3 ecUp;
-varying vec3 ecRight;
-varying vec3 ecBack;
-varying vec3 ecDown;
-varying vec3 ecLeft;
-varying vec3 ecFront;
-
-
-bool TestInBounds(vec3 sample)
-{
-   return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
-}
-
+/** start clipping */
 
 uniform vec3 volumeDims;
 uniform vec3 volumeCenter;
@@ -154,6 +123,10 @@ vec4 texToEyeCoords( in vec3 tc )
     return( gl_ModelViewMatrix * oc );
 }
 
+// Clip a ray (ok, a line segment, actually) with given endpoints.
+// If both endpoints clipped, discard.
+// If both endpoints unclipped, return unmodified values.
+// If clipped, modify start or end accordingly.
 void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
 {
     // Must clip in eye coord space. There is no practical way to clip in tex coord
@@ -201,22 +174,27 @@ float clipping( in vec3 tc )
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
-#if 0
-    // Only support one plane for now for performance reasons.
-    bool inClipPlane = (volumeClipPlaneEnables.x > 0.) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true;
-
-    // Return 1.0 if not plassed all the above clip tests.
-    // Return 0.0 if one or more of the about tests failed.
-    return( float( inView && inClipPlane ) );
-#else
     bvec4 clipResult0 = bvec4(
         ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
         ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
         ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
         ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
     return( float( inView && all( clipResult0 ) ) );
-#endif
 }
+
+/** end clipping */
+
+
+
+uniform sampler3D VolumeTexture;
+
+uniform float volumeMaxSamples;
+uniform vec3 volumeResolution;
+
+// These uniforms must be specified by the application. Lfx does not have access to them.
+uniform vec2 windowSize;
+uniform sampler2D sceneColor;
+uniform sampler2D sceneDepth;
 
 
 varying vec3 tcEye;
@@ -231,13 +209,18 @@ void main( void )
     vec3 tcEnd = gl_TexCoord[0].xyz;
     vec3 tcStart = tcEye;
 
-    if( ( tcStart.x >= 0. ) && ( tcStart.x <= 1. ) &&
-        ( tcStart.y >= 0. ) && ( tcStart.y <= 1. ) &&
-        ( tcStart.z >= 0. ) && ( tcStart.z <= 1. ) )
-    {
-        // tcStart is inside volume
-    }
-    else
+
+    // Tighten tcStart and tcEnd.
+    // 
+    // This shader will walk along the ray from tcStart to tcEnd.
+    // For best performance, the code makes tcStart and tcEnd as
+    // close to each other as possible...
+
+    // If the ray start (tcStart) is outside the volume, clip
+    // it to the volume boundaries.
+    if( ( tcStart.x < 0. ) || ( tcStart.x > 1. ) ||
+        ( tcStart.y < 0. ) || ( tcStart.y > 1. ) ||
+        ( tcStart.z < 0. ) || ( tcStart.z > 1. ) )
     {
         // Compute the ray start position such that it lies on a
         // volume face. The code below is using algebraic shorthand
@@ -274,6 +257,9 @@ void main( void )
         }
     }
 
+    // Tighten tcStart and tcEnd further by comparing against the
+    // existing scene's depth value for this pixel.
+
     // Transform the scene depth value into tex coord space. We don't want
     // to shoot a ray past this point.
     float winZScene = texture2D( sceneDepth, winTC ).r;
@@ -287,17 +273,15 @@ void main( void )
 
     // Clip against the scene depth value
     if( dot( tcStart - tcScene, scenePlaneNormal ) < 0.f )
-    {
         // Volume is behind the scene depth value. Do nothing.
         discard;
-    }
     if( dot( tcEnd - tcScene, scenePlaneNormal ) < 0.f )
-    {
-        // Make the ray end when it hits the scene depth value.
+        // Stop the ray when it hits the scene depth value.
         tcEnd = tcScene;
-    }
 
-    // Clip ray endpoints against enabled clip planes.
+    // Yet more tightening of tcStart and tcEnd, this time by
+    // any enabled model space clip planes.
+
     if( volumeClipPlaneEnables.x > 0.f )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 0 ] );
     if( volumeClipPlaneEnables.y > 0.f )
@@ -308,17 +292,22 @@ void main( void )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 3 ] );
 
 
+    // Prepare to step along the ray.
+
     // Compute number of samples. sampleVec is the ray in tex coord space.
     vec3 sampleVec = tcEnd - tcStart;
     float sampleStepSize = ecVolumeSize / volumeMaxSamples;
     float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
 
     // Ensure a minimum totalSamples to reduce banding artifacts in thin areas.
+    //totalSamples = max( totalSamples, 3.f );
+    // TBD Hack alert.
     // I am seeing some TDR timeout errors on Win7 unless we clamp totalSamples
-    // to some maximum value. This should not be necessary.
-    totalSamples = clamp( totalSamples, 3.f, 1024.f );
+    // to the maximum value. This should not be necessary, as the math to compute
+    // totalSamples should never result in a value greater than volumeMaxSamples. Hm.
+    totalSamples = clamp( totalSamples, 3.f, volumeMaxSamples );
 
-    // Get the initial color from the rendered scene.
+    // Accumulate color samples into finalColor, initially contains no color.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
 
     // Track the last volume sample value and last computed normal. We can avoid
@@ -331,13 +320,19 @@ void main( void )
     {
         float sampleLen = sample / totalSamples;
 
+        // Obtain volume sample.
         vec3 coord = tcStart + sampleVec * sampleLen;
         vec4 baseColor = texture3D( VolumeTexture, coord );
 
+        // Obtain transfer function color and alpha values.
         vec4 color = transferFunction( baseColor.r );
+
         if( hardwareMask( coord, color ) )
         {
-            if( ( baseColor.r != lastSample ) || ( lastSample == -1.f ) )
+            // We have passed the hardware mask. Compute a normal
+            // and light the fragment.
+
+            if( baseColor.r != lastSample )
             {
                 lastSample = baseColor.r;
 
@@ -362,22 +357,29 @@ void main( void )
                     clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
                 lastNormal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
             }
-            vec4 color = fragmentLighting( color, lastNormal );
+            vec4 srcColor = fragmentLighting( color, lastNormal );
 
             // Front to back blending:
             //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
             //    dst.a   = dst.a   + (1 - dst.a) * src.a
-            color.rgb *= color.a;
-            finalColor = ( 1.f - finalColor.a ) * color + finalColor;
+            srcColor.rgb *= srcColor.a;
+            finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
 
             if( finalColor.a > .95f )
                 // It's opaque enough
                 break;
         }
     }
-    vec4 color = texture2D( sceneColor, winTC );
-    color.rgb *= color.a;
-    finalColor = ( 1.f - finalColor.a ) * color + finalColor;
+
+    // Accumulate one last color value, the color from the rendered scene.
+    // Often, this is obscured by the volume, but it can be visible in
+    // transluscent areas.
+    vec4 srcColor = texture2D( sceneColor, winTC );
+    srcColor.rgb *= srcColor.a;
+    finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+
+
+    // Wrap up.
 
     gl_FragData[0] = vec4( finalColor.rgb, 1. );
 
