@@ -205,7 +205,9 @@ void main( void )
     // Compute window tex coords to sample the scene color and depth textures.
     vec2 winTC = gl_FragCoord.xy / windowSize;
 
-    // Must interpolate tex coords along the ray.
+    // Must interpolate tex coords along the ray, in theory, from the
+    // eye (tcStart) to the current tex coord for this fragment (because
+    // we are rendering the back faces of the volume cube).
     vec3 tcEnd = gl_TexCoord[0].xyz;
     vec3 tcStart = tcEye;
 
@@ -214,8 +216,16 @@ void main( void )
     // 
     // This shader will walk along the ray from tcStart to tcEnd.
     // For best performance, the code makes tcStart and tcEnd as
-    // close to each other as possible...
+    // close to each other as possible, so we "tighten" tcStart and
+    // tcEnd with the following three steps:
+    // 1. Ensure tcStart is either in the volume, or clip it so that
+    //    it liews on the volume boundary.
+    // 2. Compare against the already rendered scene depth value.
+    //    Discard this fargment if tcStart is behind it, or clip the
+    //    ray if scene depth is within the endpoints.
+    // 3. Clip the ray by any enabled model space clip planes.
 
+    // Step 1:
     // If the ray start (tcStart) is outside the volume, clip
     // it to the volume boundaries.
     if( ( tcStart.x < 0. ) || ( tcStart.x > 1. ) ||
@@ -257,6 +267,7 @@ void main( void )
         }
     }
 
+    // Step 2:
     // Tighten tcStart and tcEnd further by comparing against the
     // existing scene's depth value for this pixel.
 
@@ -279,6 +290,7 @@ void main( void )
         // Stop the ray when it hits the scene depth value.
         tcEnd = tcScene;
 
+    // Step 3:
     // Yet more tightening of tcStart and tcEnd, this time by
     // any enabled model space clip planes.
 
