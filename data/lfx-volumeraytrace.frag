@@ -175,7 +175,6 @@ float clipping( in vec3 tc )
     // Determine if inside the view. We really only care about the
     // front plane, so set inView=true if not clipped by front plane.
     vec4 cc = gl_ProjectionMatrix * ec;
-    // step(a,b) = 1.0 if b>=a, 0.0 otherwise.
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
