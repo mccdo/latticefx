@@ -151,8 +151,9 @@ int main( int argc, char** argv )
         osg::StateSet* stateSet( root->getOrCreateStateSet() );
         stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
 
-        // Also need to send array of bool uniforms so shader can do correct lighting.
-        osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnables", osg::Vec4f( 1., 0., 0., 0. ) ) );
+        // No built-in uniform to tell shaders that clip planes are enabled,
+        // so send that info down as uniforms, one int uniform for each plane.
+        osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnable0", 1 ) );
         stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
     }
     

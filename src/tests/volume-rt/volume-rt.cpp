@@ -249,8 +249,8 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
             lfxCam->addChild( createClipSubgraph() );
 
             // No built-in uniform to tell shaders that clip planes are enabled,
-            // so send that info down as uniforms.
-            osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnables", osg::Vec4f( 1., 0., 0., 0. ) ) );
+            // so send that info down as uniforms, one int uniform for each plane.
+            osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnable0", 1 ) );
             stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
         }
     }

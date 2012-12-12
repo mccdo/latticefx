@@ -192,7 +192,7 @@ public:
         UniformInfo() {}
         /** \brief Constructor
         \details Creates an instance of an osg::Uniform with \c name and \c type and stored it in _prototype. */
-        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description=std::string(""), const AccessType access=PUBLIC );
+        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description=std::string(""), const AccessType access=PUBLIC, const int numElements=1 );
         UniformInfo( const UniformInfo& rhs );
         ~UniformInfo();
 

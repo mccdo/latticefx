@@ -97,11 +97,12 @@ Renderer::~Renderer()
 
 
 
-Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description, const AccessType access )
+Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description,
+        const AccessType access, const int numElements )
   : _description( description ),
     _access( access )
 {
-    _prototype = new osg::Uniform( type, name );
+    _prototype = new osg::Uniform( type, name, numElements );
 }
 Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
   : _description( rhs._description ),

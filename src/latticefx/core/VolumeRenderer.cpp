@@ -105,7 +105,17 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeMaxSamples", osg::Uniform::FLOAT, "Max ray Samples for ray traced rendering." );
     registerUniform( info );
 
-    info = UniformInfo( "volumeClipPlaneEnables", osg::Uniform::FLOAT_VEC4, "Clip plane enables, 1.=enabled, 0.=disables." );
+    info = UniformInfo( "volumeClipPlaneEnable0", osg::Uniform::INT, "Clip plane 0: 1=enabled, 0=disabled." );
+    registerUniform( info );
+    info = UniformInfo( "volumeClipPlaneEnable1", osg::Uniform::INT, "Clip plane 1: 1=enabled, 0=disabled." );
+    registerUniform( info );
+    info = UniformInfo( "volumeClipPlaneEnable2", osg::Uniform::INT, "Clip plane 2: 1=enabled, 0=disabled." );
+    registerUniform( info );
+    info = UniformInfo( "volumeClipPlaneEnable3", osg::Uniform::INT, "Clip plane 3: 1=enabled, 0=disabled." );
+    registerUniform( info );
+    info = UniformInfo( "volumeClipPlaneEnable4", osg::Uniform::INT, "Clip plane 4: 1=enabled, 0=disabled." );
+    registerUniform( info );
+    info = UniformInfo( "volumeClipPlaneEnable5", osg::Uniform::INT, "Clip plane 5: 1=enabled, 0=disabled." );
     registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
@@ -301,7 +311,8 @@ osg::StateSet* VolumeRenderer::getRootState()
 
     {
         UniformInfo& info( getUniform( "volumeClipPlaneEnables" ) );
-        info._prototype->set( osg::Vec4( 0., 0., 0., 0. ) );
+        for( int i=0; i<6; i++ )
+            info._prototype->setElement( i, 0.f );
         stateSet->addUniform( createUniform( info ) );
     }
 

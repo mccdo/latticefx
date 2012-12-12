@@ -159,7 +159,12 @@ void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
     }
 }
 
-uniform vec4 volumeClipPlaneEnables;
+uniform int volumeClipPlaneEnable0;
+uniform int volumeClipPlaneEnable1;
+uniform int volumeClipPlaneEnable2;
+uniform int volumeClipPlaneEnable3;
+uniform int volumeClipPlaneEnable4;
+uniform int volumeClipPlaneEnable5;
 
 // Return 0.0 if clipped.
 // Return 1.0 if not clipped.
@@ -174,12 +179,15 @@ float clipping( in vec3 tc )
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
-    bvec4 clipResult0 = bvec4(
-        ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
-    return( float( inView && all( clipResult0 ) ) );
+    bvec4 clipResultA = bvec4(
+        ( volumeClipPlaneEnable0 > 0 ) ? ( dot( ec, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable1 > 0 ) ? ( dot( ec, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable2 > 0 ) ? ( dot( ec, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable3 > 0 ) ? ( dot( ec, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
+    bvec2 clipResultB = bvec2(
+        ( volumeClipPlaneEnable4 > 0 ) ? ( dot( ec, gl_ClipPlane[ 4 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable5 > 0 ) ? ( dot( ec, gl_ClipPlane[ 5 ] ) >= 0. ) : true );
+    return( float( inView && all( clipResultA )&& all( clipResultB ) ) );
 }
 
 /** end clipping */
@@ -294,14 +302,18 @@ void main( void )
     // Yet more tightening of tcStart and tcEnd, this time by
     // any enabled model space clip planes.
 
-    if( volumeClipPlaneEnables.x > 0.f )
+    if( volumeClipPlaneEnable0 > 0 )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 0 ] );
-    if( volumeClipPlaneEnables.y > 0.f )
+    if( volumeClipPlaneEnable1 > 0 )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 1 ] );
-    if( volumeClipPlaneEnables.z > 0.f )
+    if( volumeClipPlaneEnable2 > 0 )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 2 ] );
-    if( volumeClipPlaneEnables.w > 0.f )
+    if( volumeClipPlaneEnable3 > 0 )
         clipRay( tcStart, tcEnd, gl_ClipPlane[ 3 ] );
+    if( volumeClipPlaneEnable4 > 0 )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 4 ] );
+    if( volumeClipPlaneEnable5 > 0 )
+        clipRay( tcStart, tcEnd, gl_ClipPlane[ 5 ] );
 
 
     // Prepare to step along the ray.

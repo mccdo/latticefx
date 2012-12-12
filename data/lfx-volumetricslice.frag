@@ -137,7 +137,12 @@ bool TestInBounds(vec3 sample)
 }
 
 
-uniform vec4 volumeClipPlaneEnables;
+uniform int volumeClipPlaneEnable0;
+uniform int volumeClipPlaneEnable1;
+uniform int volumeClipPlaneEnable2;
+uniform int volumeClipPlaneEnable3;
+uniform int volumeClipPlaneEnable4;
+uniform int volumeClipPlaneEnable5;
 
 // Return 0.0 if clipped.
 // Return 1.0 if not clipped.
@@ -159,12 +164,15 @@ float clipping( in vec3 ec )
     // Return 0.0 if one or more of the about tests failed.
     return( float( inView && inClipPlane ) );
 #else
-    bvec4 clipResult0 = bvec4(
-        ( volumeClipPlaneEnables.x > 0. ) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.y > 0. ) ? ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.z > 0. ) ? ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
-        ( volumeClipPlaneEnables.w > 0. ) ? ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
-    return( float( inView && all( clipResult0 ) ) );
+    bvec4 clipResultA = bvec4(
+        ( volumeClipPlaneEnable0 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 0 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable1 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 1 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable2 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 2 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable3 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 3 ] ) >= 0. ) : true );
+    bvec2 clipResultB = bvec2(
+        ( volumeClipPlaneEnable4 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 4 ] ) >= 0. ) : true,
+        ( volumeClipPlaneEnable5 > 0 ) ? ( dot( ec4, gl_ClipPlane[ 5 ] ) >= 0. ) : true );
+    return( float( inView && all( clipResultA ) && all( clipResultB ) ) );
 #endif
 }
 
