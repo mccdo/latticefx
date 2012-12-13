@@ -282,9 +282,9 @@ void main( void )
     // to shoot a ray past this point.
     float winZScene = texture2D( sceneDepth, winTC ).r;
     vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
-    vec4 ccScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
-    ccScene /= ccScene.w;
-    vec4 ocScene = gl_ModelViewMatrixInverse * ccScene;
+    vec4 ecScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
+    ecScene /= ecScene.w;
+    vec4 ocScene = gl_ModelViewMatrixInverse * ecScene;
     vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
     // Compute the tex coord vector from the eye to tcScene.
     vec3 scenePlaneNormal = tcEye - tcScene;

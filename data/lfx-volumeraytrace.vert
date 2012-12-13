@@ -13,8 +13,8 @@ varying float ecVolumeSize;
 
 vec4 eyeToTexCoords( in vec4 ec, in vec4 ocCenter, in vec4 ocDims )
 {
-    vec4 ocEye = gl_ModelViewMatrixInverse * ec;
-    return( ( ocEye - ocCenter ) / ocDims + vec4( .5 ) );
+    vec4 oc = gl_ModelViewMatrixInverse * ec;
+    return( ( oc - ocCenter ) / ocDims + vec4( .5 ) );
 }
 
 
