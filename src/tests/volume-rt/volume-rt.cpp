@@ -224,13 +224,6 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
     lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
     lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
 
-    // lfxCam renders after the main scene Camera, and inherits the projection matrix
-    // from the main scene Camera (because the reference frame is relative). For this
-    // reason we don't need to auto-compute near & far, we just take near & far from the
-    // cull of the main scene. In fact, if we were to enable it here, it would cause
-    // incorrect rendering due to incompatible z values in the fragment shader.
-    lfxCam->setComputeNearFarMode( osg::Camera::DO_NOT_COMPUTE_NEAR_FAR );
-
     lfxCam->addChild( node );
 
     // Add uniforms required by Lfx ray traced volume rendering shaders,
@@ -370,7 +363,7 @@ int main( int argc, char** argv )
     std::cout << std::endl;
 
     // Create an example data set.
-    osg::Group* root (new osg::Group);
+    osg::Group* volume (new osg::Group);
 
     DataSetPtr dsp( prepareVolume( fileName, dims ) );
 
@@ -382,14 +375,14 @@ int main( int argc, char** argv )
                 osg::Matrixd::translate(-75.0, -75.0, -75.0);
         osg::MatrixTransform* mtA( new osg::MatrixTransform( transformA ) );
         mtA->addChild( dsp->getSceneData() );
-        root->addChild( mtA );
+        volume->addChild( mtA );
 
         // B: scale and rotate but no translate
         const osg::Matrix transformB = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 0.0, 1.0, 0.0 ) *
                 osg::Matrixd::scale( 2.0, 2.0, 2.0 );
         osg::MatrixTransform* mtB( new osg::MatrixTransform( transformB ) );
         mtB->addChild( dsp->getSceneData() );
-        root->addChild( mtB );
+        volume->addChild( mtB );
 
         // C: translate, scale AND rotate
         // Note this is a non-uniform scale, performed after the rotation,
@@ -399,7 +392,7 @@ int main( int argc, char** argv )
                 osg::Matrixd::translate( 100.0, 0.0, 0.0 );
         osg::MatrixTransform* mtC( new osg::MatrixTransform( transformC ) );
         mtC->addChild( dsp->getSceneData() );
-        root->addChild( mtC );
+        volume->addChild( mtC );
         // Put wireframe boxes around volumes to test rotation and scaling of texture versus osg object
         // This requires a pre-built cube object of unit size.
         if( true )
@@ -412,7 +405,7 @@ int main( int argc, char** argv )
         }
     }
     else
-        root->addChild( dsp->getSceneData() );
+        volume->addChild( dsp->getSceneData() );
 
     
     osgViewer::Viewer viewer;
@@ -422,24 +415,31 @@ int main( int argc, char** argv )
     viewer.addEventHandler( new osgViewer::StatsHandler() );
 
 
+    osg::Group* sceneRoot( new osg::Group );
+    osg::Node* scene( createScene( clip ) );
+    sceneRoot->addChild( scene );
+    sceneRoot->addChild( createStubGeometry( volume ) );
+
+    osg::Group* volumeRoot( new osg::Group );
+    volumeRoot->addChild( volume );
+    volumeRoot->addChild( createStubGeometry( scene ) );
+
     // Assemble camera RTT and scene heirarchy.
     // viewerCamera (renders to both color and depth textures)
-    //   |-> scene (consisting of a cylinder)
-    //   |-> stub geometry (renders nothing, but ensures correct near & far computation)
+    //   |-> sceneRoot, consisting of a cylinder and stub geomtry for the volume
     //   |-> splatCam (to display the color texture to the window)
-    //    \> lfxCam (to render the lfx volume into the window)
-    // viewerCamera renders to colorTexA and depthTexA.
+    //    \> volumeRoot, consisting of an lfxCam parent, the volume data, and stub geometry for the main scene.
+    // viewerCamera renders sceneRoot to colorTexA and depthTexA.
     // splatCam uses colorTexA as input.
     // lfxCam uses colorTexA and depthTexA as input. Lfx volume shaders
     //   use colorTexA for blending, and depthTexA for correct depth
     //   testing while stepping along the ray.
     prepareSceneCamera( viewer );
-    osg::Group* scene( new osg::Group );
-    scene->addChild( createScene( clip ) );
-    scene->addChild( createStubGeometry( root ) );
-    scene->addChild( createDisplaySceneCamera() );
-    scene->addChild( createLfxCamera( root, clip ) );
-    viewer.setSceneData( scene );
+    osg::Group* rootGroup( new osg::Group );
+    rootGroup->addChild( sceneRoot );
+    rootGroup->addChild( createDisplaySceneCamera() );
+    rootGroup->addChild( createLfxCamera( volumeRoot, clip ) );
+    viewer.setSceneData( rootGroup );
     viewer.addEventHandler( new ResizeHandler( scene ) );
 
 
