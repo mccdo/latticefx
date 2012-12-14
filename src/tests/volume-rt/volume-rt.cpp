@@ -224,6 +224,13 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
     lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
     lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
 
+    // lfxCam renders after the main scene Camera, and inherits the projection matrix
+    // from the main scene Camera (because the reference frame is relative). For this
+    // reason we don't need to auto-compute near & far, we just take near & far from the
+    // cull of the main scene. In fact, if we were to enable it here, it would cause
+    // incorrect rendering due to incompatible z values in the fragment shader.
+    lfxCam->setComputeNearFarMode( osg::Camera::DO_NOT_COMPUTE_NEAR_FAR );
+
     lfxCam->addChild( node );
 
     // Add uniforms required by Lfx ray traced volume rendering shaders,
