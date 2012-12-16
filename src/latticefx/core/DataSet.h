@@ -121,9 +121,37 @@ public:
     /** \name Preprocessing & Caching section
     \details TBD */
     ///\{
-    /** \brief TBD
-    \details TBD */
+    /** \brief Add a preprocessing operation to the end of the preprocess list.
+    \details All preprocessing operations are executed sequentially. Note that
+    the app is responsible for maintaining preprocessing list order.*/
     void addPreprocess( const PreprocessPtr pre );
+
+    /** \brief Insert a preprocessing operation at the specified index.
+    \details Preprocess objects already at location >= \c index will have their
+    location indices incremented. */
+    void insertPreprocess( const unsigned int index, const PreprocessPtr pre );
+
+    /** \brief Insert \c pre before \c location.
+    \details \c location and other downstream Preprocess objects will follow
+    \c pre during processing. */
+    void insertPreprocess( const PreprocessPtr location, const PreprocessPtr pre );
+
+    /** \brief Return the total number of preprocessing operations. */
+    unsigned int getNumPreprocess() const;
+
+    /** \brief Get the preprocess operation at the specific index.
+    \returns NULL if \c index >= getNumPreprocess(). */
+    PreprocessPtr getPreprocess( const unsigned int index );
+
+    /** \overload PreprocessPtr DataSet::getPreprocess( const unsigned int index ); */
+    const PreprocessPtr getPreprocess( const unsigned int index ) const;
+
+    /** \brief Get all preprocess operations.
+    \returns An empty list if no preprocess operations exist for this DataSet. */
+    PreprocessList& getPreprocesses();
+
+    /** \overload RTPOperationList& DataSet::getOprtations(); */
+    const PreprocessList& getPreprocesses() const;
     ///\}
 
 

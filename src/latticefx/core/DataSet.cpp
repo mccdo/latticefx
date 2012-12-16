@@ -139,6 +139,59 @@ void DataSet::addPreprocess( const PreprocessPtr pre )
     _preprocess.push_back( pre );
     setDirty( PREPROCESS_DIRTY );
 }
+void DataSet::insertPreprocess( const unsigned int index, const PreprocessPtr pre )
+{
+    unsigned int idx( 0 );
+    PreprocessList::iterator it;
+    for( it = _preprocess.begin(); it != _preprocess.end(); ++it )
+    {
+        if( ++idx == index )
+        {
+            _preprocess.insert( it, pre );
+            break;
+        }
+    }
+}
+void DataSet::insertPreprocess( const PreprocessPtr location, const PreprocessPtr pre )
+{
+    PreprocessList::iterator it;
+    for( it = _preprocess.begin(); it != _preprocess.end(); ++it )
+    {
+        if( *it == location )
+        {
+            _preprocess.insert( it, pre );
+            break;
+        }
+    }
+}
+unsigned int DataSet::getNumPreprocess() const
+{
+    return( _preprocess.size() );
+}
+PreprocessPtr DataSet::getPreprocess( const unsigned int index )
+{
+    unsigned int idx( 0 );
+    BOOST_FOREACH( PreprocessPtr pre, _preprocess )
+    {
+        if( ++idx == index )
+            return( pre );
+    }
+
+    return( PreprocessPtr( (Preprocess*) NULL ) );
+}
+const PreprocessPtr DataSet::getPreprocess( const unsigned int index ) const
+{
+    DataSet* nonConstThis( const_cast< DataSet* >( this ) );
+    return( nonConstThis->getPreprocess( index ) );
+}
+PreprocessList& DataSet::getPreprocesses()
+{
+    return( _preprocess );
+}
+const PreprocessList& DataSet::getPreprocesses() const
+{
+    return( _preprocess );
+}
 
 
 
@@ -146,6 +199,59 @@ void DataSet::addOperation( const RTPOperationPtr op )
 {
     _ops.push_back( op );
     setDirty( RTP_DIRTY );
+}
+void DataSet::insertOperation( const unsigned int index, const RTPOperationPtr op )
+{
+    unsigned int idx( 0 );
+    RTPOperationList::iterator it;
+    for( it = _ops.begin(); it != _ops.end(); ++it )
+    {
+        if( ++idx == index )
+        {
+            _ops.insert( it, op );
+            break;
+        }
+    }
+}
+void DataSet::insertOperation( const RTPOperationPtr location, const RTPOperationPtr op )
+{
+    RTPOperationList::iterator it;
+    for( it = _ops.begin(); it != _ops.end(); ++it )
+    {
+        if( *it == location )
+        {
+            _ops.insert( it, op );
+            break;
+        }
+    }
+}
+unsigned int DataSet::getNumOperations() const
+{
+    return( _ops.size() );
+}
+RTPOperationPtr DataSet::getOperation( const unsigned int index )
+{
+    unsigned int idx( 0 );
+    BOOST_FOREACH( RTPOperationPtr op, _ops )
+    {
+        if( ++idx == index )
+            return( op );
+    }
+
+    return( RTPOperationPtr( (RTPOperation*) NULL ) );
+}
+const RTPOperationPtr DataSet::getOperation( const unsigned int index ) const
+{
+    DataSet* nonConstThis( const_cast< DataSet* >( this ) );
+    return( nonConstThis->getOperation( index ) );
+}
+RTPOperationList& DataSet::getOperations()
+{
+    return( _ops );
+}
+const RTPOperationList& DataSet::getOperations() const
+{
+    return( _ops );
 }
 
 
