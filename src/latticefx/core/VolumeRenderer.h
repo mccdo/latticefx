@@ -83,6 +83,14 @@ public:
     VolumeRenderer( const VolumeRenderer& rhs );
     virtual ~VolumeRenderer();
 
+
+    /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
+    attaching input ChannelData with arbitrary names. */
+    typedef enum {
+        VOLUME_DATA,  /**< "volumedata" */
+    } InputType;
+
+
     /** \brief Override base class Renderer
     \details Invoked by DataSet once per time step to obtain a scene graph for
     rendering volumetric data. */

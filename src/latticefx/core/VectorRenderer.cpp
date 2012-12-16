@@ -83,8 +83,7 @@ VectorRenderer::VectorRenderer()
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
   : Renderer( rhs ),
-    _pointStyle( rhs._pointStyle ),
-    _inputTypeMap( rhs._inputTypeMap )
+    _pointStyle( rhs._pointStyle )
 {
 }
 VectorRenderer::~VectorRenderer()
@@ -98,7 +97,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     // Get the input position data as an osg::Vec3Array. Position data is required
     // for all rendering styles.
     // Get the position data using the input type alias for the POSITION input type.
-    ChannelDataPtr posAlias( getInput( getInputTypeAlias( POSITION ) ) );
+    ChannelDataPtr posAlias( getInput( getInputNameAlias( POSITION ) ) );
     if( posAlias == NULL )
     {
         LFX_WARNING( "getSceneGraph(): Unable to find required POSITION ChannelData." );
@@ -211,7 +210,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
 
         // Get the radius data using the input type alias for the RADIUS input type.
-        ChannelDataPtr radAlias( getInput( getInputTypeAlias( RADIUS ) ) );
+        ChannelDataPtr radAlias( getInput( getInputNameAlias( RADIUS ) ) );
         if( radAlias == NULL )
         {
             LFX_WARNING( "getSceneGraph(): Unable to find required RADIUS ChannelData." );
@@ -305,7 +304,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
 
         // Get the direction data using the input type alias for the DIRECTION input type.
-        ChannelDataPtr dirAlias( getInput( getInputTypeAlias( DIRECTION ) ) );
+        ChannelDataPtr dirAlias( getInput( getInputNameAlias( DIRECTION ) ) );
         if( dirAlias == NULL )
         {
             LFX_WARNING( "getSceneGraph(): Unable to find required DIRECTION ChannelData." );
@@ -485,21 +484,6 @@ void VectorRenderer::setPointStyle( const PointStyle& pointStyle )
 VectorRenderer::PointStyle VectorRenderer::getPointStyle() const
 {
     return( _pointStyle );
-}
-
-void VectorRenderer::setInputNameAlias( const InputType& inputType, const std::string& alias )
-{
-    _inputTypeMap[ inputType ] = alias;
-}
-std::string VectorRenderer::getInputTypeAlias( const InputType& inputType ) const
-{
-    InputTypeMap::const_iterator it( _inputTypeMap.find( inputType ) );
-    if( it != _inputTypeMap.end() )
-        // Found it.
-        return( it->second );
-    else
-        // Should never happen, as the constructor assigns defaults.
-        return( "" );
 }
 
 

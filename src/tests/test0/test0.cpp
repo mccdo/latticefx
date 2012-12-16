@@ -44,13 +44,19 @@ class MyMask : public RTPOperation
 public:
     MyMask()
       : RTPOperation( RTPOperation::Mask )
-    {}
+    {
+        setInputNameAlias( POSITIONS, "vertices" );
+    }
     virtual ~MyMask()
     {}
 
+    typedef enum {
+        POSITIONS
+    } InputType;
+
     virtual ChannelDataPtr mask( const ChannelDataPtr maskIn )
     {
-        ChannelDataPtr input = getInput( "vertices" );
+        ChannelDataPtr input = getInput( getInputNameAlias( POSITIONS ) );
         if( ( input == NULL ) )
         {
             LFX_WARNING_STATIC( "lfx.demo", "MyMask::mask(): Invalid input." );
@@ -93,9 +99,15 @@ class MyRenderer : public Renderer
 {
 public:
     MyRenderer() : Renderer()
-    {}
+    {
+        setInputNameAlias( POSITIONS, "vertices" );
+    }
     virtual ~MyRenderer()
     {}
+
+    typedef enum {
+        POSITIONS
+    } InputType;
 
     virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn )
     {
@@ -103,7 +115,7 @@ public:
         geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 
         osg::Geometry* geom = new osg::Geometry;
-        ChannelDataPtr input( getInput( "vertices" )->getMaskedChannel( maskIn ) );
+        ChannelDataPtr input( getInput( getInputNameAlias( POSITIONS ) )->getMaskedChannel( maskIn ) );
         geom->setVertexArray( input->asOSGArray() );
 
         unsigned int idx, size = geom->getVertexArray()->getNumElements();

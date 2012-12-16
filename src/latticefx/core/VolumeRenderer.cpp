@@ -83,6 +83,9 @@ VolumeRenderer::VolumeRenderer()
     _numPlanes( 100.f ),
     _maxSamples( 100.f )
 {
+    // Specify default ChannelData name aliases for the required inputs.
+    setInputNameAlias( VOLUME_DATA, "volumedata" );
+
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
     // values until scene graph creation).
@@ -226,10 +229,10 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
-    ChannelDataPtr dataPtr( getInput( "volumedata" ) );
+    ChannelDataPtr dataPtr( getInput( getInputNameAlias( VOLUME_DATA ) ) );
     if( dataPtr == NULL )
     {
-        LFX_WARNING( "getSceneGraph(): Unable to find required volumedata ChannelData." );
+        LFX_WARNING( "getSceneGraph(): Unable to find required VOLUME_DATA ChannelData." );
         return( NULL );
     }
     ChannelDataOSGImage* dataImagePtr( static_cast<

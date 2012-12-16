@@ -61,8 +61,7 @@ SurfaceRenderer::SurfaceRenderer()
     registerUniform( info );
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
-  : Renderer( rhs ),
-    _inputTypeMap( rhs._inputTypeMap )
+  : Renderer( rhs )
 {
 }
 SurfaceRenderer::~SurfaceRenderer()
@@ -74,7 +73,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    ChannelDataPtr posAlias( getInput( getInputTypeAlias( VERTEX ) ) );
+    ChannelDataPtr posAlias( getInput( getInputNameAlias( VERTEX ) ) );
     if( posAlias == NULL )
     {
         LFX_WARNING( "getSceneGraph(): Unable to find required POSITION ChannelData." );
@@ -84,7 +83,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     osg::Array* sourceArray( posChannel->asOSGArray() );
     osg::Vec3Array* verts( static_cast< osg::Vec3Array* >( sourceArray ) );
 
-    ChannelDataPtr normAlias( getInput( getInputTypeAlias( NORMAL ) ) );
+    ChannelDataPtr normAlias( getInput( getInputNameAlias( NORMAL ) ) );
     if( normAlias == NULL )
     {
         LFX_WARNING( "getSceneGraph(): Unable to find required NORMAL ChannelData." );
@@ -96,8 +95,8 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     osg::Vec3Array* warpV( NULL );
     osg::Vec3Array* warpN( NULL );
-    ChannelDataPtr warpVAlias( getInput( getInputTypeAlias( WARP_VERTEX ) ) );
-    ChannelDataPtr warpNAlias( getInput( getInputTypeAlias( WARP_NORMAL ) ) );
+    ChannelDataPtr warpVAlias( getInput( getInputNameAlias( WARP_VERTEX ) ) );
+    ChannelDataPtr warpNAlias( getInput( getInputNameAlias( WARP_NORMAL ) ) );
     if( ( warpVAlias != NULL ) && ( warpNAlias != NULL ) )
     {
         ChannelDataPtr warpChannel( warpVAlias->getMaskedChannel( maskIn ) );
@@ -165,8 +164,8 @@ osg::StateSet* SurfaceRenderer::getRootState()
 
     addHardwareFeatureUniforms( stateSet.get() );
 
-    ChannelDataPtr warpVAlias( getInput( getInputTypeAlias( WARP_VERTEX ) ) );
-    ChannelDataPtr warpNAlias( getInput( getInputTypeAlias( WARP_NORMAL ) ) );
+    ChannelDataPtr warpVAlias( getInput( getInputNameAlias( WARP_VERTEX ) ) );
+    ChannelDataPtr warpNAlias( getInput( getInputNameAlias( WARP_NORMAL ) ) );
 
     const bool warpEnabled( ( warpVAlias != NULL ) && ( warpNAlias != NULL ) );
     UniformInfo& info( getUniform( "warpEnabled" ) );
@@ -196,22 +195,6 @@ void SurfaceRenderer::setPrimitiveSetGenerator( PrimitiveSetGeneratorPtr primiti
 PrimitiveSetGeneratorPtr SurfaceRenderer::getPrimitiveSetGenerator()
 {
     return( _primitiveSetGenerator );
-}
-
-
-void SurfaceRenderer::setInputNameAlias( const InputType& inputType, const std::string& alias )
-{
-    _inputTypeMap[ inputType ] = alias;
-}
-std::string SurfaceRenderer::getInputTypeAlias( const InputType& inputType ) const
-{
-    InputTypeMap::const_iterator it( _inputTypeMap.find( inputType ) );
-    if( it != _inputTypeMap.end() )
-        // Found it.
-        return( it->second );
-    else
-        // Should never happen, as the constructor assigns defaults.
-        return( "" );
 }
 
 

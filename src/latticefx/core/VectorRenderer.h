@@ -89,37 +89,6 @@ Required ChannelData inputs:
 </table>
 
 Required name-value pair inputs (see OperationBase): None.
-
-VectorRenderer supports arbitrarily named ChannelData inputs using an alias system.
-For example, if your position ChannelData is names "MyXYZPositionData", specify an
-aloas as follows:
-
-\code
-    // 'renderop' is a VectorRendererPtr
-    renderop->setInputNameAlias( VectorRenderer::POSITION, "MyXYZPositionData" );
-\endcode
-
-If no alias is specified, VectorRenderer looks for ChannelData with the following default names:
-
-<table border="0">
-  <tr>
-    <td><b>InputType enum</b></td>
-    <td><b>Default name</b></td>
-  </tr>
-  <tr>
-    <td>POSITION</td>
-    <td>"positions"</td>
-  </tr>
-  <tr>
-    <td>DIRECTION</td>
-    <td>"directions"</td>
-  </tr>
-  <tr>
-    <td>RADIUS</td>
-    <td>"radii"</td>
-  </tr>
-</table>
-
 */
 class LATTICEFX_EXPORT VectorRenderer : public Renderer
 {
@@ -127,6 +96,16 @@ public:
     VectorRenderer();
     VectorRenderer( const VectorRenderer& rhs );
     virtual ~VectorRenderer();
+
+
+    /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
+    attaching input ChannelData with arbitrary names. */
+    typedef enum {
+        POSITION,    /**< "positions" */
+        DIRECTION,   /**< "directions" */
+        RADIUS       /**< "radii" */
+    } InputType;
+
 
     /** \brief Override base class Renderer.
     \details Invoked by DataSet to obtain a scene graph for rendering points at a
@@ -155,26 +134,10 @@ public:
     /** \brief Get the rendering style. */
     PointStyle getPointStyle() const;
 
-    /** \brief Enum for input data type. */
-    typedef enum {
-        POSITION,
-        DIRECTION,
-        RADIUS
-    } InputType;
-    typedef std::map< InputType, std::string > InputTypeMap;
-
-    /** \brief Associate a ChannelData name with an InputType.
-    \details This method allows the application to use arbitrarily named ChannelData
-    with the VectorRenderer. */
-    void setInputNameAlias( const InputType& inputType, const std::string& alias );
-    /** \brief Get the ChannelData name alias for the specified \c inputType. */
-    std::string getInputTypeAlias( const InputType& inputType ) const;
-
 protected:
     osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
 
     PointStyle _pointStyle;
-    InputTypeMap _inputTypeMap;
 };
 
 typedef boost::shared_ptr< VectorRenderer > VectorRendererPtr;

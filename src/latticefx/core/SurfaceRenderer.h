@@ -109,6 +109,15 @@ public:
     SurfaceRenderer( const SurfaceRenderer& rhs );
     virtual ~SurfaceRenderer();
 
+    /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
+    attaching input ChannelData with arbitrary names. */
+    typedef enum {
+        VERTEX,        /**< "positions" */
+        NORMAL,        /**< "normals" */
+        WARP_VERTEX,   /**< "warp_vertex" */
+        WARP_NORMAL,   /**< "warp_normal" */
+    } InputType;
+
     virtual osg::Node* getSceneGraph( const ChannelDataPtr maskIn );
     virtual osg::StateSet* getRootState();
 
@@ -118,22 +127,6 @@ public:
     void setPrimitiveSetGenerator( PrimitiveSetGeneratorPtr primitiveSetGenerator );
     /** \brief Get the attached PrimitiveSetGenerator. */
     PrimitiveSetGeneratorPtr getPrimitiveSetGenerator();
-
-    /** \brief Enum for input data type. */
-    typedef enum {
-        VERTEX,
-        NORMAL,
-        WARP_VERTEX,
-        WARP_NORMAL,
-    } InputType;
-    typedef std::map< InputType, std::string > InputTypeMap;
-
-    /** \brief Associate a ChannelData name with an InputType.
-    \details This method allows the application to use arbitrarily named ChannelData
-    with the VectorRenderer. */
-    void setInputNameAlias( const InputType& inputType, const std::string& alias );
-    /** \brief Get the ChannelData name alias for the specified \c inputType. */
-    std::string getInputTypeAlias( const InputType& inputType ) const;
 
 protected:
     PrimitiveSetGeneratorPtr _primitiveSetGenerator;

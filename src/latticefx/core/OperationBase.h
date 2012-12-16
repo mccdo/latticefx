@@ -53,9 +53,27 @@ OperationBase contains the following features:
 Processing, or Rendering Framework.
 \li A generic creation mechanism for use by plugin-loaded classes.
 \li A set of ChannelData inputs used by the OperationBase-derived class, and methods for
-accessing those inputs.
+accessing those inputs. OperationBase also supports an input ChannelData
+name alias mechanism; see below.
 \li An enable/disable flag.
 \li A generic name-value pair API for run-time configuration.
+
+It would be impractical to require applications to set the name of input
+ChannelData according to the demands of classes derived from OperationBase.
+For this reason, OperationBase exposes an interface that allows applications
+to specify arbitrarily name aliases for input ChannelData. The supported
+(int or enum) names and their default name string values are defined by
+each derived class.
+
+For example, VectorRenderer supports input from a ChannelData named
+POSITION. if your position ChannelData is named "MyXYZPositionData",
+specify an aloas as follows:
+
+\code
+    // 'renderop' is a VectorRendererPtr
+    renderop->setInputNameAlias( VectorRenderer::POSITION, "MyXYZPositionData" );
+\endcode
+
 */
 class LATTICEFX_EXPORT OperationBase
 {
@@ -80,6 +98,11 @@ public:
     override and implement this method. */
     virtual OperationBase* create() { return( NULL ); }
 
+
+    /**\name ChannelData input support.
+    */
+    /**@{*/
+
     typedef std::vector< std::string > StringList;
     /** \brief Add an input by name.
     \details \c name must match the name of a ChannelData added to the DataSet. */
@@ -95,6 +118,17 @@ public:
     virtual StringList getInputNames();
     /** \overload StringList OperationBase::getInputNames() */
     virtual const StringList& getInputNames() const;
+
+    /** \brief Associate a ChannelData name with an integer value.
+    \details This method allows the application to use arbitrarily named ChannelData
+    with the VectorRenderer. Classes deriving from OperationBase should
+    define an integer-valued enum, so that application developers can pass
+    the enum name for \c inputType rather than a const int literal. */
+    void setInputNameAlias( const int inputType, const std::string& alias );
+    /** \brief Get the ChannelData name alias for the specified \c inputType. */
+    std::string getInputNameAlias( const int inputType ) const;
+
+    /**@}*/
 
 
     /** \brief Enable or disable the operation.
@@ -149,6 +183,11 @@ protected:
     ChannelDataList _inputs;
     /** List of input names assigned by the application. */
     StringList _inputNames;
+
+    /** Map of integer aliases to input ChannelData names. */
+    typedef std::map< int, std::string > InputTypeMap;
+    /** Map of integer aliases to input ChannelData names. */
+    InputTypeMap _inputTypeMap;
 
     OperationType _opType;
     bool _enable;

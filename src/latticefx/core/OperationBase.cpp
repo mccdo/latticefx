@@ -35,6 +35,7 @@ OperationBase::OperationBase( const OperationType opType )
 OperationBase::OperationBase( const OperationBase& rhs )
   : _inputs( rhs._inputs ),
     _inputNames( rhs._inputNames ),
+    _inputTypeMap( rhs._inputTypeMap ),
     _opType( rhs._opType ),
     _enable( rhs._enable ),
     _nameValueMap( rhs._nameValueMap ),
@@ -86,6 +87,21 @@ OperationBase::StringList OperationBase::getInputNames()
 const OperationBase::StringList& OperationBase::getInputNames() const
 {
     return( _inputNames );
+}
+
+void OperationBase::setInputNameAlias( const int inputType, const std::string& alias )
+{
+    _inputTypeMap[ inputType ] = alias;
+}
+std::string OperationBase::getInputNameAlias( const int inputType ) const
+{
+    InputTypeMap::const_iterator it( _inputTypeMap.find( inputType ) );
+    if( it != _inputTypeMap.end() )
+        // Found it.
+        return( it->second );
+    else
+        // Should never happen, as the derived-classes'constructors assigns defaults.
+        return( "" );
 }
 
 
