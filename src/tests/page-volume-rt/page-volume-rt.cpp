@@ -38,11 +38,14 @@
 
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
+#include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
 #include <osgDB/FileNameUtils>
 #include <osg/Group>
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
+
+#include <osgwTools/Shapes.h>
 
 #include <Poco/Path.h>
 #include <Poco/Glob.h>
@@ -199,6 +202,114 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     return( dsp );
 }
 
+
+osg::Node* createScene( const std::string fileName=std::string("") )
+{
+    osg::Group* root( new osg::Group );
+    if( fileName.empty() )
+    {
+        osg::Geometry* geom( osgwTools::makeClosedCylinder(
+            osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s(1,16) ) );
+        osg::Vec4Array* c( new osg::Vec4Array() );
+        c->push_back( osg::Vec4( 1., .5, 0., 1. ) );
+        geom->setColorArray( c );
+        geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+        osg::Geode* geode( new osg::Geode() );
+        geode->addDrawable( geom );
+        root->addChild( geode );
+    }
+    else
+        root->addChild( osgDB::readNodeFile( fileName ) );
+
+    return( root );
+}
+
+
+struct RTTInfo {
+    RTTInfo( const float w, const float h )
+      : winSize( osg::Vec2f( w, h ) )
+    {
+        windowSize = new osg::Uniform( "windowSize", winSize );
+    }
+
+    osg::Vec2f winSize;
+    osg::ref_ptr< osg::Uniform > windowSize;
+
+    osg::ref_ptr< osg::Texture2D > colorTex;
+    osg::ref_ptr< osg::Texture2D > depthTex;
+    osg::ref_ptr< osg::Camera > splatCam;
+    osg::ref_ptr< osg::Camera > rootCam;
+};
+
+RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
+{
+    RTTInfo rttInfo( 1200, 690 );
+
+
+    //
+    // Step 1: Configure root camera to render to texture.
+    //
+
+    rttInfo.rootCam = viewer.getCamera();
+
+    // Viewer's Camera will render into there color and depth texture buffers:
+    rttInfo.colorTex = new osg::Texture2D;
+    rttInfo.colorTex->setTextureWidth( rttInfo.winSize.x() );
+    rttInfo.colorTex->setTextureHeight( rttInfo.winSize.y() );
+    rttInfo.colorTex->setInternalFormat( GL_RGBA );
+    rttInfo.colorTex->setBorderWidth( 0 );
+    rttInfo.colorTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    rttInfo.colorTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+
+    rttInfo.depthTex = new osg::Texture2D;
+    rttInfo.depthTex->setTextureWidth( rttInfo.winSize.x() );
+    rttInfo.depthTex->setTextureHeight( rttInfo.winSize.y() );
+    rttInfo.depthTex->setInternalFormat( GL_DEPTH_COMPONENT );
+    rttInfo.depthTex->setBorderWidth( 0 );
+    rttInfo.depthTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    rttInfo.depthTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+
+    rttInfo.rootCam->attach( osg::Camera::COLOR_BUFFER0, rttInfo.colorTex.get(), 0, 0 );
+    rttInfo.rootCam->attach( osg::Camera::DEPTH_BUFFER, rttInfo.depthTex.get(), 0, 0 );
+    rttInfo.rootCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT, osg::Camera::FRAME_BUFFER );
+
+
+    //
+    // Step 2: Create splat cam to display color texture to window
+    //
+    rttInfo.splatCam = new osg::Camera;
+    
+    rttInfo.splatCam->setClearMask( 0 );
+    rttInfo.splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
+
+    rttInfo.splatCam->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+    rttInfo.splatCam->setRenderOrder( osg::Camera::POST_RENDER );
+
+    osg::Geode* geode( new osg::Geode );
+    geode->addDrawable( osgwTools::makePlane(
+        osg::Vec3( -1,-1,0 ), osg::Vec3( 2,0,0 ), osg::Vec3( 0,2,0 ) ) );
+    geode->getOrCreateStateSet()->setTextureAttributeAndModes(
+        0, rttInfo.colorTex.get(), osg::StateAttribute::ON );
+    geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+    geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
+
+    rttInfo.splatCam->addChild( geode );
+
+
+    //
+    // Step 3: Arrange and attach the scene graph.
+    //
+    osg::Group* rootGroup( new osg::Group );
+    rootGroup->addChild( scene );
+    rootGroup->addChild( rttInfo.splatCam.get() );
+    viewer.setSceneData( rootGroup );
+
+
+    return( rttInfo );
+}
+
+
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
@@ -225,20 +336,27 @@ int main( int argc, char** argv )
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
-    // Create the lfx data set.
-    osg::Group* root (new osg::Group);
 
-    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
-    root->addChild( dsp->getSceneData() );
 
     osgViewer::Viewer viewer;
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
-    viewer.setUpViewInWindow( 20, 30, 800, 460 );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm );
-    viewer.setSceneData( root );
 
+#if 1
+    osg::Node* scene( createScene() );
+
+    RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
+    viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
+
+    return( viewer.run() );
+#else
+    // Create the lfx data set.
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
+    osg::Group* root (new osg::Group);
+    root->addChild( dsp->getSceneData() );
+    viewer.setSceneData( root );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
@@ -254,4 +372,5 @@ int main( int argc, char** argv )
         viewer.frame();
     }
     return( 0 );
+#endif
 }
