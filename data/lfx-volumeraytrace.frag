@@ -401,6 +401,13 @@ void main( void )
     srcColor.rgb *= srcColor.a;
     finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
 
+    // Do not bother writing a color value if we have computed the same color
+    // as what already exists. In fact, when rendering scene with more than one
+    // volume (volume hierarchies, e.g.), we would actually get some ugly
+    // visual artifacts without this code.
+    if( finalColor.rgb == srcColor.rgb )
+        discard;
+
 
     // Wrap up.
 
