@@ -92,7 +92,9 @@ AssembleHierarchy::AssembleHierarchy( RangeVec ranges )
 {
     if( _ranges.size() < 1 )
     {
-        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: RangeVec must have at least 1 element." );
+        const std::string errorText( "AssembleHierarchy: RangeVec must have at least 1 element." );
+        LFX_ERROR_STATIC( "lfx.core.hier", errorText );
+        throw( std::exception( errorText.c_str() ) );
     }
 
     _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
@@ -102,11 +104,15 @@ AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
 {
     if( maxDepth < 2 )
     {
-        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: maxDepth must be >= 2." );
+        const std::string errorText( "AssembleHierarchy: maxDepth must be >= 2." );
+        LFX_ERROR_STATIC( "lfx.core.hier", errorText );
+        throw( std::exception( errorText.c_str() ) );
     }
     if( baseRange <= 0. )
     {
-        LFX_ERROR_STATIC( "lfx.core.hier", "AssembleHierarchy: baseRange must be > 0." );
+        const std::string errorText( "AssembleHierarchy: baseRange must be > 0." );
+        LFX_ERROR_STATIC( "lfx.core.hier", errorText );
+        throw( std::exception( errorText.c_str() ) );
     }
 
     double range( baseRange );
