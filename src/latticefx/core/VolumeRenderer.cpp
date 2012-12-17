@@ -37,6 +37,8 @@
 #include <osg/CullFace>
 #include <osgDB/FileUtils>
 
+#include <sstream>
+
 
 namespace lfx {
 namespace core {
@@ -312,10 +314,12 @@ osg::StateSet* VolumeRenderer::getRootState()
         }
     }
 
+    for( unsigned int idx=0; idx<6; idx++ )
     {
-        UniformInfo& info( getUniform( "volumeClipPlaneEnables" ) );
-        for( int i=0; i<6; i++ )
-            info._prototype->setElement( i, 0.f );
+        std::ostringstream ostr;
+        ostr << "volumeClipPlaneEnable" << idx;
+        UniformInfo& info( getUniform( ostr.str() ) );
+        info._prototype->set( 0 );
         stateSet->addUniform( createUniform( info ) );
     }
 
