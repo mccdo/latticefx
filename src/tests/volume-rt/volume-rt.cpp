@@ -403,6 +403,8 @@ int main( int argc, char** argv )
             mtB->addChild( cubeNode );
             mtC->addChild( cubeNode );
         }
+
+        volume->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
     }
     else
         volume->addChild( dsp->getSceneData() );
