@@ -443,14 +443,6 @@ int main( int argc, char** argv )
     DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
     setupLfxVolumeRTRendering( rttInfo, viewer, scene, dsp->getSceneData() );
 
-    return( viewer.run() );
-#if 0
-    // Create the lfx data set.
-    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
-    osg::Group* root (new osg::Group);
-    root->addChild( dsp->getSceneData() );
-    viewer.setSceneData( root );
-#endif
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
