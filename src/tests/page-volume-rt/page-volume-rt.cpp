@@ -41,6 +41,7 @@
 #include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
 #include <osgDB/FileNameUtils>
+#include <osg/ComputeBoundsVisitor>
 #include <osg/Group>
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
@@ -186,7 +187,8 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
-    renderOp->setNumPlanes( 100.f );
+    renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
+    renderOp->setMaxSamples( 100.f );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
@@ -309,6 +311,93 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     return( rttInfo );
 }
 
+osg::Node* createStubGeometry( osg::Node* subgraph )
+{
+    // This function creates and returns a geode containing a stub
+    // Drawable that renders nothing. But the stub Drawable has the
+    // same bounding box as the subgraph parameter. The returned
+    // value can be used to ensure that scene rendering computes
+    // near & far planes that account for the presence of the
+    // subgraph parameter, without actually rendering that subgraph.
+
+    osg::ComputeBoundsVisitor cbv;
+    cbv.setNodeMaskOverride( ~0u );
+    subgraph->accept( cbv );
+
+    osg::Geometry* stubGeom( new osg::Geometry );
+    stubGeom->setInitialBound( cbv.getBoundingBox() );
+    // The stock DrawCallback is a no-op and draws nothing.
+    stubGeom->setDrawCallback( new osg::Drawable::DrawCallback() );
+
+    osg::Geode* root( new osg::Geode );
+    root->addDrawable( stubGeom );
+
+    return( root );
+}
+void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
+    osgViewer::Viewer& viewer, osg::Node* scene, osg::Node* volume )
+{
+    // Get the root Group node attached to the osgViewer::Viewer.
+    osg::Node* sceneRootNode( viewer.getSceneData() );
+    osg::Group* sceneRoot( dynamic_cast< osg::Group* >( sceneRootNode ) );
+    if( sceneRoot == NULL )
+    {
+        LFX_ERROR_STATIC( logstr, "Viewer scene data must be a Group." );
+        exit( 1 );
+    }
+
+    // Get the volume subgraph as a Group
+    osg::Group* volumeGroup( dynamic_cast< osg::Group* >( volume ) );
+    if( volumeGroup == NULL )
+    {
+        LFX_ERROR_STATIC( logstr, "Volume subgraph must be a Group." );
+        exit( 1 );
+    }
+
+
+    //
+    // Step 1: Add sub geomtry. Stub the volume subgraph into the
+    // main scene, and stub the main scene subgraph into the volume.
+    //
+    sceneRoot->addChild( createStubGeometry( volume ) );
+    volumeGroup->addChild( createStubGeometry( scene ) );
+
+
+    //
+    // Step 2: Create a Camera for rendering the LatticeFX volume.
+    //
+    osg::Camera* lfxCam( new osg::Camera );
+    lfxCam->setName( "latticeFX-VolumeCamera" );
+
+    lfxCam->setClearMask( 0 );
+    lfxCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
+
+    lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
+    lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
+
+    lfxCam->addChild( volume );
+    sceneRoot->addChild( lfxCam );
+
+
+    //
+    // Step 3:
+    // Add uniforms required by Lfx ray traced volume rendering shaders,
+    // which Lfx itself is unable to set. The application MUST specify
+    // this uniforms.
+    //
+    osg::StateSet* stateSet( lfxCam->getOrCreateStateSet() );
+
+    stateSet->addUniform( rttInfo.windowSize.get() );
+
+    stateSet->setTextureAttributeAndModes( 0, rttInfo.colorTex.get() );
+    osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneColor" ); uniform->set( 0 );
+    stateSet->addUniform( uniform );
+
+    stateSet->setTextureAttributeAndModes( 1, rttInfo.depthTex.get() );
+    uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+    stateSet->addUniform( uniform );
+}
+
 
 int main( int argc, char** argv )
 {
@@ -344,19 +433,24 @@ int main( int argc, char** argv )
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm );
 
-#if 1
+
+
     osg::Node* scene( createScene() );
 
     RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
+    setupLfxVolumeRTRendering( rttInfo, viewer, scene, dsp->getSceneData() );
+
     return( viewer.run() );
-#else
+#if 0
     // Create the lfx data set.
     DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
     osg::Group* root (new osg::Group);
     root->addChild( dsp->getSceneData() );
     viewer.setSceneData( root );
+#endif
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.
@@ -372,5 +466,4 @@ int main( int argc, char** argv )
         viewer.frame();
     }
     return( 0 );
-#endif
 }
