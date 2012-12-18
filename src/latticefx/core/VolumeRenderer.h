@@ -116,8 +116,7 @@ public:
     application. See the test volume-rt for an example.
 
     - The volume ray tracer needs the following inputs:
-      - The opaque scene color buffer as a 2D texture, and the associated uniform named "sceneColor".
-      - Same for the opaque scene depth buffer ("sceneDepth" ).
+      - The opaque scene depth buffer as a 2D texture, and the associated uniform named "sceneDepth".
       .
       This means you'll render the opaque scene to an FBO with two texture attached, one for color and one for depth.
       Furthermore, the textures must be the same width and height as the final window.

@@ -323,14 +323,12 @@ osg::StateSet* VolumeRenderer::getRootState()
         stateSet->addUniform( createUniform( info ) );
     }
 
+    osg::BlendFunc *fn = new osg::BlendFunc();
+    fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
+
     if( _renderMode == SLICES )
     {
-        // RAY_TRACED does blending internally with the frag shader.
-        // SLICES must turn it on explicitly.
-        osg::BlendFunc *fn = new osg::BlendFunc();
-        fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
-        stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
-
         // Do not need to write the depth buffer.
         osg::Depth* depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
         stateSet->setAttributeAndModes( depth );

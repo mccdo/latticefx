@@ -236,12 +236,8 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
         windowSize->setDataVariance( osg::Object::DYNAMIC );
         stateSet->addUniform( windowSize.get() );
 
-        stateSet->setTextureAttributeAndModes( 0, colorTexA.get() );
-        osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneColor" ); uniform->set( 0 );
-        stateSet->addUniform( uniform );
-
         stateSet->setTextureAttributeAndModes( 1, depthTexA.get() );
-        uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+        osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
         stateSet->addUniform( uniform );
 
         if( clip )

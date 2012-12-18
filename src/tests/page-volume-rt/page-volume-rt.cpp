@@ -238,10 +238,7 @@ struct RTTInfo {
     osg::Vec2f winSize;
     osg::ref_ptr< osg::Uniform > windowSize;
 
-    osg::ref_ptr< osg::Texture2D > colorTex;
     osg::ref_ptr< osg::Texture2D > depthTex;
-    osg::ref_ptr< osg::Camera > splatCam;
-    osg::ref_ptr< osg::Camera > rootCam;
 };
 
 RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
@@ -253,16 +250,16 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     // Step 1: Configure root camera to render to texture.
     //
 
-    rttInfo.rootCam = viewer.getCamera();
+    osg::Camera* rootCam = viewer.getCamera();
 
     // Viewer's Camera will render into there color and depth texture buffers:
-    rttInfo.colorTex = new osg::Texture2D;
-    rttInfo.colorTex->setTextureWidth( rttInfo.winSize.x() );
-    rttInfo.colorTex->setTextureHeight( rttInfo.winSize.y() );
-    rttInfo.colorTex->setInternalFormat( GL_RGBA );
-    rttInfo.colorTex->setBorderWidth( 0 );
-    rttInfo.colorTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-    rttInfo.colorTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
+    osg::Texture2D* colorTex = new osg::Texture2D;
+    colorTex->setTextureWidth( rttInfo.winSize.x() );
+    colorTex->setTextureHeight( rttInfo.winSize.y() );
+    colorTex->setInternalFormat( GL_RGBA );
+    colorTex->setBorderWidth( 0 );
+    colorTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
+    colorTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
 
     rttInfo.depthTex = new osg::Texture2D;
     rttInfo.depthTex->setTextureWidth( rttInfo.winSize.x() );
@@ -272,31 +269,31 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     rttInfo.depthTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     rttInfo.depthTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
 
-    rttInfo.rootCam->attach( osg::Camera::COLOR_BUFFER0, rttInfo.colorTex.get(), 0, 0 );
-    rttInfo.rootCam->attach( osg::Camera::DEPTH_BUFFER, rttInfo.depthTex.get(), 0, 0 );
-    rttInfo.rootCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT, osg::Camera::FRAME_BUFFER );
+    rootCam->attach( osg::Camera::COLOR_BUFFER0, colorTex, 0, 0 );
+    rootCam->attach( osg::Camera::DEPTH_BUFFER, rttInfo.depthTex.get(), 0, 0 );
+    rootCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER_OBJECT, osg::Camera::FRAME_BUFFER );
 
 
     //
     // Step 2: Create splat cam to display color texture to window
     //
-    rttInfo.splatCam = new osg::Camera;
+    osg::Camera* splatCam = new osg::Camera;
     
-    rttInfo.splatCam->setClearMask( 0 );
-    rttInfo.splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
+    splatCam->setClearMask( 0 );
+    splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
 
-    rttInfo.splatCam->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
-    rttInfo.splatCam->setRenderOrder( osg::Camera::POST_RENDER );
+    splatCam->setReferenceFrame( osg::Camera::ABSOLUTE_RF );
+    splatCam->setRenderOrder( osg::Camera::POST_RENDER );
 
     osg::Geode* geode( new osg::Geode );
     geode->addDrawable( osgwTools::makePlane(
         osg::Vec3( -1,-1,0 ), osg::Vec3( 2,0,0 ), osg::Vec3( 0,2,0 ) ) );
     geode->getOrCreateStateSet()->setTextureAttributeAndModes(
-        0, rttInfo.colorTex.get(), osg::StateAttribute::ON );
+        0, colorTex, osg::StateAttribute::ON );
     geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
     geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
 
-    rttInfo.splatCam->addChild( geode );
+    splatCam->addChild( geode );
 
 
     //
@@ -304,7 +301,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     //
     osg::Group* rootGroup( new osg::Group );
     rootGroup->addChild( scene );
-    rootGroup->addChild( rttInfo.splatCam.get() );
+    rootGroup->addChild( splatCam );
     viewer.setSceneData( rootGroup );
 
 
@@ -389,12 +386,8 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
 
     stateSet->addUniform( rttInfo.windowSize.get() );
 
-    stateSet->setTextureAttributeAndModes( 0, rttInfo.colorTex.get() );
-    osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneColor" ); uniform->set( 0 );
-    stateSet->addUniform( uniform );
-
     stateSet->setTextureAttributeAndModes( 1, rttInfo.depthTex.get() );
-    uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+    osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
     stateSet->addUniform( uniform );
 }
 

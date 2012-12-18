@@ -200,7 +200,6 @@ uniform vec3 volumeResolution;
 
 // These uniforms must be specified by the application. Lfx does not have access to them.
 uniform vec2 windowSize;
-uniform sampler2D sceneColor;
 uniform sampler2D sceneDepth;
 
 
@@ -394,24 +393,10 @@ void main( void )
         }
     }
 
-    // Accumulate one last color value, the color from the rendered scene.
-    // Often, this is obscured by the volume, but it can be visible in
-    // transluscent areas.
-    vec4 srcColor = texture2D( sceneColor, winTC );
-    srcColor.rgb *= srcColor.a;
-    finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
-
-    // Do not bother writing a color value if we have computed the same color
-    // as what already exists. In fact, when rendering scene with more than one
-    // volume (volume hierarchies, e.g.), we would actually get some ugly
-    // visual artifacts without this code.
-    if( finalColor.rgb == srcColor.rgb )
-        discard;
-
 
     // Wrap up.
 
-    gl_FragData[0] = vec4( finalColor.rgb, 1. );
+    gl_FragData[0] = finalColor;
 
     // Support for second/glow render target.
     gl_FragData[ 1 ] = vec4( 0., 0., 0., 0. );
