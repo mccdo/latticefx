@@ -74,14 +74,16 @@ class ImageProcess : public Preprocess
 {
 public:
     ImageProcess( unsigned int depth=3 )
-        : 
-        Preprocess(),
-        _depth( depth )
+      : Preprocess(),
+        _depth( depth ),
+        _prune( false )
     {
         setActionType( Preprocess::IGNORE_DATA );
         m_dataBB.set( -TEXTURE_HALF_X, -TEXTURE_HALF_Y,        0.,
                        TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
     }
+
+    void setSparse( const bool prune ) { _prune = prune; }
     
     virtual ChannelDataPtr operator()()
     {
@@ -99,6 +101,28 @@ protected:
         ostr << fileName << "-" << brickNum << "-" << ".ive";
         
         LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "Processing " + ostr.str() );
+
+        if( _prune )
+        {
+            // Check for a NULL volume.
+            const osg::Vec3d p0( m_brickBB._min );
+            const osg::Vec3d p1( m_brickBB._max );
+            const osg::Vec3d p2( p0.x(), p0.y(), p1.z() );
+            const osg::Vec3d p3( p0.x(), p1.y(), p0.z() );
+            const osg::Vec3d p4( p0.x(), p1.y(), p1.z() );
+            const osg::Vec3d p5( p1.x(), p0.y(), p0.z() );
+            const osg::Vec3d p6( p1.x(), p0.y(), p1.z() );
+            const osg::Vec3d p7( p1.x(), p1.y(), p0.z() );
+            if( !testVoxel( p0 ) && !testVoxel( p1 ) && !testVoxel( p2 ) && !testVoxel( p3 ) &&
+                !testVoxel( p4 ) && !testVoxel( p5 ) && !testVoxel( p6 ) && !testVoxel( p7 ) &&
+                !testVoxel( m_brickBB.center() ) )
+            {
+                // All corners are outside the cone. NULL volume.
+                LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "\tNULL, skipping." );
+                return( ChannelDataOSGImagePtr( (ChannelDataOSGImage*)NULL ) );
+            }
+        }
+
 
         //std::cout << " Depth " << depth << " " << m_brickBB.radius() << std::endl 
         //    << m_brickBB._min << std::endl
@@ -172,8 +196,13 @@ protected:
             return( generateImageData( baseName, depth, channelName, brickNum ) );
         
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( channelName ) );
-        unsigned int channelIdx( cdLOD->addChannel( generateImageData( baseName, depth, channelName, brickNum ) ) );
-        cdLOD->setRange( channelIdx, RangeValues( minRange, maxRange ) );
+        ChannelDataPtr brick = generateImageData( baseName, depth, channelName, brickNum );
+        unsigned int channelIdx;
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdLOD->addChannel( brick );
+            cdLOD->setRange( channelIdx, RangeValues( minRange, maxRange ) );
+        }
         
         const unsigned int nextDepth( depth + 1 );
         // If nextDepth == _depth, then we're at the end, so set nextMax to FLT_MAX.
@@ -203,10 +232,12 @@ protected:
         subOrigin.set( brickOrigin.x(), 
                        brickOrigin.y(), 
                        brickOrigin.z() );
-        ChannelDataPtr brick;
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "1" );
@@ -214,8 +245,11 @@ protected:
                        brickOrigin.y(), 
                        brickOrigin.z() );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., -1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., -1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "2" );
@@ -223,8 +257,11 @@ protected:
                        brickOrigin.y() + y, 
                        brickOrigin.z() );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., -1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., -1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "3" );
@@ -232,8 +269,11 @@ protected:
                        brickOrigin.y() + y, 
                        brickOrigin.z() );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., -1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., -1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "4" );
@@ -241,8 +281,11 @@ protected:
                        brickOrigin.y(), 
                        brickOrigin.z() + z );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., 1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., 1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "5" );
@@ -250,8 +293,11 @@ protected:
                        brickOrigin.y(), 
                        brickOrigin.z() + z );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., 1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( 1., -1., 1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "6" );
@@ -259,8 +305,11 @@ protected:
                        brickOrigin.y() + y, 
                        brickOrigin.z() + z );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., 1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( -1., 1., 1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
         brickNum.append( "7" );
@@ -268,19 +317,34 @@ protected:
                        brickOrigin.y() + y, 
                        brickOrigin.z() + z );
         brick = recurseBuildTree( nextDepth, 0., nextMax, subOrigin, brickNum );
-        channelIdx = cdImageSet->addChannel( brick );
-        cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., 1. ) );
+        if( brick.get() != NULL )
+        {
+            channelIdx = cdImageSet->addChannel( brick );
+            cdImageSet->setOffset( channelIdx, osg::Vec3( 1., 1., 1. ) );
+        }
         brickNum.erase( brickNum.end() - 1 );
 
-        // Regardless of the depth level, there are two LODs. The first is displayed
-        // for range (0., maxRange), and the second is displayed for range
-        // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
-        // LODs that are displayed at subranges of (maxRange, FLT_MAX).
-        channelIdx = cdLOD->addChannel( cdImageSet );
-        cdLOD->setRange( channelIdx, RangeValues( maxRange, FLT_MAX ) );
-        return( cdLOD );
+        if( cdLOD->getNumChannels() > 0 )
+        {
+            if( cdImageSet->getNumChannels() > 0 )
+            {
+                channelIdx = cdLOD->addChannel( cdImageSet );
+                // Regardless of the depth level, there are two LODs. The first is displayed
+                // for range (0., maxRange), and the second is displayed for range
+                // (maxRange, FLT_MAX). In this case, the second LOD is a hierarchy of
+                // LODs that are displayed at subranges of (maxRange, FLT_MAX).
+                cdLOD->setRange( channelIdx, RangeValues( maxRange, FLT_MAX ) );
+            }
+            return( cdLOD );
+        }
+        else
+            return( ChannelDataPtr( (ChannelData*)NULL ) );
     }
     
+    virtual bool testVoxel( const osg::Vec3d& p )
+    {
+        return( testVoxel( p.x(), p.y(), p.z() ) );
+    }
     virtual bool testVoxel( const double x, const double y, const double z )
     {
         if( z >= CONE_HEIGHT )
@@ -316,6 +380,7 @@ protected:
     }
     
     unsigned int _depth;
+    bool _prune;
     osg::BoundingBoxd m_dataBB;
     osg::BoundingBoxd m_brickBB;
 };
@@ -397,7 +462,7 @@ protected:
 };
 
 
-DataSetPtr createDataSet( const std::string& csFile )
+DataSetPtr createDataSet( const std::string& csFile, const bool prune )
 {
     /*const std::string baseFileName( "pagetex-near0.png" );
     osg::Image* image( osgDB::readImageFile( baseFileName ) );
@@ -415,6 +480,7 @@ DataSetPtr createDataSet( const std::string& csFile )
     //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
+    op->setSparse( prune );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
@@ -464,6 +530,8 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
 
+    const bool prune( arguments.find( "-prune" ) > 0 );
+
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
     arguments.read( "-cs", csFile );
@@ -486,7 +554,7 @@ int main( int argc, char** argv )
 
     writeVoxel( numPixels, pixels );
 #else
-    DataSetPtr dsp( createDataSet( csFile ) );
+    DataSetPtr dsp( createDataSet( csFile, prune ) );
     
     dsp->updateAll();
 #endif
