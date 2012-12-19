@@ -422,7 +422,7 @@ int main( int argc, char** argv )
     volumeRoot->addChild( volume );
     volumeRoot->addChild( createStubGeometry( scene ) );
 
-    // Assemble camera RTT and scene heirarchy.
+    // Assemble camera RTT and scene hierarchy.
     // viewerCamera (renders to both color and depth textures)
     //   |-> sceneRoot, consisting of a cylinder and stub geomtry for the volume
     //   |-> splatCam (to display the color texture to the window)

@@ -32,8 +32,8 @@
 and is modeled after
 <a href="http://www.vesuite.org/" target=null>VE-Suite's</a> message logging system.
 
-Lfx's modules and classes are arranged in a heirarchy to allow message destination (console
-or log file) and verbosity on a per-module and per-class basis. The heirarchy is arranged
+Lfx's modules and classes are arranged in a hierarchy to allow message destination (console
+or log file) and verbosity on a per-module and per-class basis. The hierarchy is arranged
 as follows:
 <ul>
   <li>lfx
@@ -57,7 +57,7 @@ as follows:
   </ul>
 </ul>
 
-Heirachy levels are separated by a period, so the name for the Lfx core ChannelData Poco::Logger is
+Hierachy levels are separated by a period, so the name for the Lfx core ChannelData Poco::Logger is
 \c lfx.core.channel.
 
 Priority level match those used by Poco and are defined as follows:
@@ -81,7 +81,7 @@ Set a Poco::Logger's priority and destination (console or log file) using the lf
     lfx::core::Log::instance()->setPriority( 4, "lfx.core" );
 \endcode
 
-Poco Logger priority and destination inherit down the heirarchy. Your application should
+Poco Logger priority and destination inherit down the hierarchy. Your application should
 set specific priority and destinations (as in the code above) at init time, before
 Lfx class constructors obtain references to subordinate Loggers.
 

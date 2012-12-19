@@ -210,7 +210,7 @@ DataSetPtr createDataSet()
 }
 
 
-class MyHierarchyDB : public HierarchyCallback
+class MyHierarchyDB : public TraverseHierarchy::HierarchyCallback
 {
 public:
     virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString )
@@ -266,7 +266,7 @@ void assemble()
     }
 
     MyHierarchyDB myDB;
-    traverseHeirarchy( ah.getRoot(), myDB );
+    TraverseHierarchy th( ah.getRoot(), myDB );
     LFX_CRITICAL_STATIC( "lfx.demo", "---------------------------" );
 }
 
@@ -295,8 +295,7 @@ int main( int argc, char** argv )
     tbm->home( 0. );
 
     // Test hierarchy utils
-    MyHierarchyDB myDB;
-    traverseHeirarchy( dsp->getChannel( "texture" ), myDB );
+    TraverseHierarchy( dsp->getChannel( "texture" ), MyHierarchyDB() );
 
     // Really we would need to change the projection matrix and viewport
     // in an event handler that catches window size changes. We're cheating.

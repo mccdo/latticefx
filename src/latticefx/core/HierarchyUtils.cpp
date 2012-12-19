@@ -28,7 +28,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
-#include <deque>
 #include <sstream>
 
 #include <string>
@@ -38,20 +37,13 @@ namespace lfx {
 namespace core {
 
 
-typedef std::deque< int > NameDeque;
-static NameDeque s_name;
-
-std::string dequeToString( const NameDeque& nameDeque )
+TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb )
+  : _cb( cb )
 {
-    std::ostringstream ostr;
-    BOOST_FOREACH( int idx, nameDeque )
-    {
-        ostr << idx;
-    }
-    return( ostr.str() );
+    traverse( root );
 }
 
-void traverseHeirarchy( ChannelDataPtr cdp, HierarchyCallback& cb )
+void TraverseHierarchy::traverse( ChannelDataPtr cdp )
 {
     ChannelDataImageSet* imageData( NULL );
     ChannelDataLOD* lodData( NULL );
@@ -66,24 +58,33 @@ void traverseHeirarchy( ChannelDataPtr cdp, HierarchyCallback& cb )
     {
         for( unsigned int idx=0; idx<lodData->getNumChannels(); ++idx )
         {
-            traverseHeirarchy( lodData->getChannel( idx ), cb );
+            traverse( lodData->getChannel( idx ) );
         }
     }
     else if( imageData != NULL )
     {
         for( unsigned int idx=0; idx<imageData->getNumChannels(); ++idx )
         {
-            s_name.push_back( idx );
-            traverseHeirarchy( imageData->getChannel( idx ), cb );
-            s_name.pop_back();
+            _name.push_back( idx );
+            traverse( imageData->getChannel( idx ) );
+            _name.pop_back();
         }
     }
     else
     {
-        cb( cdp, dequeToString( s_name ) );
+        _cb( cdp, toString( _name ) );
     }
 }
 
+std::string TraverseHierarchy::toString( const NameList& nameList )
+{
+    std::ostringstream ostr;
+    BOOST_FOREACH( int idx, nameList )
+    {
+        ostr << idx;
+    }
+    return( ostr.str() );
+}
 
 
 

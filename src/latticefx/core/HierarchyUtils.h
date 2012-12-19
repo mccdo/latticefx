@@ -18,8 +18,8 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#ifndef __LFX_CORE_HEIRARCHY_UTILS_H__
-#define __LFX_CORE_HEIRARCHY_UTILS_H__ 1
+#ifndef __LFX_CORE_HIERARCHY_UTILS_H__
+#define __LFX_CORE_HIERARCHY_UTILS_H__ 1
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/ChannelData.h>
@@ -34,19 +34,42 @@ namespace lfx {
 namespace core {
 
 
-class HierarchyCallback
+/** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief A utility class for traversing hierarchies of ChannelData.
+\details
+Pass the root of the ChannelData hierarchy to the constructor, along
+with an instance of a HierarchyCallback. The constructor traverses
+the hierarchy and call into the callback for each ChannelData in the
+hierarchy. */
+class LATTICEFX_EXPORT TraverseHierarchy
 {
 public:
-    HierarchyCallback() {}
-    HierarchyCallback( const HierarchyCallback& rhs ) {}
-    virtual ~HierarchyCallback() {}
+    class HierarchyCallback
+    {
+    public:
+        HierarchyCallback() {}
+        HierarchyCallback( const HierarchyCallback& rhs ) {}
+        virtual ~HierarchyCallback() {}
 
-    virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString ) {}
+        virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString ) {}
+
+    protected:
+    };
+
+    /** Constructor */
+    TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
 protected:
+    void traverse( ChannelDataPtr cdp );
+
+    typedef std::list< int > NameList;
+
+    static std::string toString( const NameList& nameList );
+
+    NameList _name;
+    HierarchyCallback _cb;
 };
 
-LATTICEFX_EXPORT void traverseHeirarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
 
 /** \class AssembleHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
@@ -85,10 +108,18 @@ class LATTICEFX_EXPORT AssembleHierarchy
 public:
     typedef std::vector< double > RangeVec;
 
-    ///Constructor
+    /** \brief Constructor
+    \details Creates a ChannelData hierarchy.
+    Uses the explicit list of LOD ranges as switch points.
+    */
     AssembleHierarchy( RangeVec ranges );
-    ///Constructor
-    ///\param maxDepth The maximum depth achieved by the bricked textures
+    /** \brief Constructor
+    \details Creates a ChannelData hierarchy.
+    Creates an implicit list of LOD range switch points based
+    on the given parameters.
+    \param maxDepth The maximum depth achieved by the bricked textures
+    \param baseRange The switch distance between the lowest LOD and one detail level higher.
+    */
     AssembleHierarchy( unsigned int maxDepth, double baseRange=25000. );
     ///Copy constructor
     AssembleHierarchy( const AssembleHierarchy& rhs );
@@ -135,5 +166,5 @@ protected:
 }
 
 
-// __LFX_CORE_HEIRARCHY_UTILS_H__
+// __LFX_CORE_HIERARCHY_UTILS_H__
 #endif
