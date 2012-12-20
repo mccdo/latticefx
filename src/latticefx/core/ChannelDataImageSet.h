@@ -56,6 +56,9 @@ public:
 
     /** \brief Override base class, to support resizing of the offsets vector.
     \details TBD */
+    virtual void removeChannel( const unsigned int index );
+    /** \brief Override base class, to support resizing of the offsets vector.
+    \details TBD */
     virtual void reserveChannels( const unsigned int count );
 
     /** \brief TBD

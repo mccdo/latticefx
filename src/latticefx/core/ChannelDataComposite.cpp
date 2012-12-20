@@ -57,6 +57,18 @@ unsigned int ChannelDataComposite::addChannel( const ChannelDataPtr channel )
     return( index );
 }
 
+void ChannelDataComposite::removeChannel( const unsigned int index )
+{
+    if( index > _data.size() )
+    {
+        LFX_WARNING( "removeChannel: 'index' out of renag." );
+        return;
+    }
+    for( unsigned int idx=index; idx<_data.size()-1; ++idx )
+        _data[ idx ] = _data[ idx+1 ];
+    _data.resize( _data.size()-1 );
+}
+
 void ChannelDataComposite::setChannel( const unsigned int index, const ChannelDataPtr channel )
 {
     _data[ index ] = channel;

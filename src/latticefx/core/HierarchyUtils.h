@@ -57,19 +57,41 @@ public:
     };
 
     /** Constructor */
+    TraverseHierarchy( ChannelDataPtr root=ChannelDataPtr((ChannelData*)NULL) );
     TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
+    void setRoot( ChannelDataPtr root ) { _root = root; }
+    void setCallback( HierarchyCallback& cb ) { _cb = cb; }
+    void execute();
+
 protected:
-    void traverse( ChannelDataPtr cdp );
+    virtual void traverse( ChannelDataPtr cdp );
 
     typedef std::list< int > NameList;
 
     static std::string toString( const NameList& nameList );
 
+    ChannelDataPtr _root;
     NameList _name;
     HierarchyCallback _cb;
 };
 
+
+
+/** \class PruneHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief Prune empty branches from a ChannelData hierarchy.
+\details Removes all ChannelData objects that are ChannelDataComposite
+and contain no subordinate ChannelData.
+
+See AssembleHierarchy::prune(). */
+class LATTICEFX_EXPORT PruneHierarchy
+{
+public:
+    PruneHierarchy( ChannelDataPtr root );
+
+protected:
+    virtual int traverse( ChannelDataPtr cdp );
+};
 
 
 /** \class AssembleHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
@@ -161,8 +183,6 @@ public:
 
 protected:
     void recurseInit( ChannelDataPtr cdp, unsigned int depth );
-
-    void recursePrune( ChannelDataPtr cdp );
 
     ChannelDataPtr _root;
     RangeVec _ranges;

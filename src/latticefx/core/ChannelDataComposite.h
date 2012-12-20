@@ -80,6 +80,13 @@ public:
     \details Returns the index of \channel. */
     unsigned int addChannel( const ChannelDataPtr channel );
 
+    /** \brief Removes the specified ChannelData.
+    \details Higher-numbered ChannelData objects will have their
+    index decremented accordingly, as their location in the ChannelDataList
+    will go down by 1. This function decrements the size of the
+    ChannelDataList. */
+    virtual void removeChannel( const unsigned int index );
+
     /** \brief Sets the ChannelData at the specified index. */
     void setChannel( const unsigned int index, const ChannelDataPtr channel );
 

@@ -38,11 +38,20 @@ namespace core {
 
 
 TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb )
-  : _cb( cb )
+  : _root( root ),
+    _cb( cb )
 {
-    traverse( root );
+    execute();
+}
+TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root )
+  : _root( root )
+{
 }
 
+void TraverseHierarchy::execute()
+{
+    traverse( _root );
+}
 void TraverseHierarchy::traverse( ChannelDataPtr cdp )
 {
     ChannelDataImageSet* imageData( NULL );
@@ -85,6 +94,36 @@ std::string TraverseHierarchy::toString( const NameList& nameList )
     }
     return( ostr.str() );
 }
+
+
+
+
+PruneHierarchy::PruneHierarchy( ChannelDataPtr root )
+{
+    traverse( root );
+}
+
+int PruneHierarchy::traverse( ChannelDataPtr cdp )
+{
+    if( cdp == NULL )
+        return( 0 );
+
+    ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
+    if( comp != NULL )
+    {
+        for( unsigned int idx=comp->getNumChannels(); idx>0; --idx )
+        {
+            if( traverse( comp->getChannel( idx-1 ) ) == 0 )
+                comp->removeChannel( idx-1 );
+        }
+        return( comp->getNumChannels() );
+    }
+    else
+    {
+        return( 1 );
+    }
+}
+
 
 
 
@@ -243,11 +282,9 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
 
 void AssembleHierarchy::prune()
 {
+    PruneHierarchy ph( _root );
 }
 
-void AssembleHierarchy::recursePrune( ChannelDataPtr cdp )
-{
-}
 
 
 void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )

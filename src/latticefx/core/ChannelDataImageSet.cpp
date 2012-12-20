@@ -19,6 +19,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/ChannelDataImageSet.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/math>
 
@@ -44,6 +45,19 @@ ChannelDataImageSet::~ChannelDataImageSet()
 }
 
 
+void ChannelDataImageSet::removeChannel( const unsigned int index )
+{
+    if( index > _offsets->size() )
+    {
+        LFX_WARNING( "removeChannel: 'index' out of renag." );
+        return;
+    }
+    for( unsigned int idx=index; idx<_offsets->size()-1; ++idx )
+        (*_offsets)[ idx ] = (*_offsets)[ idx+1 ];
+    _offsets->resize( _offsets->size()-1 );
+
+    ChannelDataComposite::removeChannel( index );
+}
 void ChannelDataImageSet::reserveChannels( const unsigned int count )
 {
     ChannelDataComposite::reserveChannels( count );
