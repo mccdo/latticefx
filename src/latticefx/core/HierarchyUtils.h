@@ -100,8 +100,9 @@ addChannelData() recurses / calls itself as it traverses down the skeleton creat
 by the constructor, until it finds the appropriate insertion point for the data as
 determined by the name string.
 
-After you have added all of your ChannelData bricks, call getRoot() to obtain the
-top-level ChannelData of the hierarchy. 
+After you have added all of your ChannelData bricks, you can optionally call
+prune() to remove empty branches from the octree data structure. Finally, call
+getRoot() to obtain the top-level ChannelData of the hierarchy.
 */
 class LATTICEFX_EXPORT AssembleHierarchy
 {
@@ -148,10 +149,20 @@ public:
     void addChannelData( ChannelDataPtr cdp, const std::string nameString,
             const osg::Vec3& offset=osg::Vec3( 0., 0., 0. ), const unsigned int depth=0 );
 
-    ChannelDataPtr getRoot() const;
+    /** \brief Prune empty branches from the hierarchy.
+    \detauls Call this function after adding all ChannelData objects, and just
+    before calling getRoot(). This function will remove any empty branches from
+    the octree, resulting in a minimal data structure. */
+    void prune();
+
+    /** \brief Retrieve the created hierarchy.
+    \details Call this function after adding all ChannelDraw objects. */
+    ChannelDataPtr getRoot() const { return( _root ); }
 
 protected:
     void recurseInit( ChannelDataPtr cdp, unsigned int depth );
+
+    void recursePrune( ChannelDataPtr cdp );
 
     ChannelDataPtr _root;
     RangeVec _ranges;

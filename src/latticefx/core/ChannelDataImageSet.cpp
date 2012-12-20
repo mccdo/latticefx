@@ -44,10 +44,12 @@ ChannelDataImageSet::~ChannelDataImageSet()
 }
 
 
-void ChannelDataImageSet::resizeOffsets( const unsigned int size )
+void ChannelDataImageSet::reserveChannels( const unsigned int count )
 {
-    _offsets->resize( size );
+    ChannelDataComposite::reserveChannels( count );
+    _offsets->resize( count );
 }
+
 void ChannelDataImageSet::setOffset( const unsigned int index, const osg::Vec3& value )
 {
     if( index >= _offsets->size() )

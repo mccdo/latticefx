@@ -54,9 +54,10 @@ public:
     virtual ChannelDataImageSet* getAsSet() { return( this ); }
 
 
-    /** \brief TBD
+    /** \brief Override base class, to support resizing of the offsets vector.
     \details TBD */
-    void resizeOffsets( const unsigned int size );
+    virtual void reserveChannels( const unsigned int count );
+
     /** \brief TBD
     \details TBD */
     void setOffset( const unsigned int index, const osg::Vec3& offset );

@@ -83,7 +83,7 @@ public:
                        TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
     }
 
-    void setPrune( const bool prune ) { _prune = prune; }
+    void enablePrune( const bool prune=true ) { _prune = prune; }
     
     virtual ChannelDataPtr operator()()
     {
@@ -480,7 +480,7 @@ DataSetPtr createDataSet( const std::string& csFile, const bool prune )
     //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
-    op->setPrune( prune );
+    op->enablePrune( prune );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE

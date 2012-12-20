@@ -115,6 +115,7 @@ public:
                 cdImage->setName( "volumedata" );
                 ah.addChannelData( cdImage, hierarchyName );
             }
+            ah.prune();
             cdp = ah.getRoot();
         } catch( std::exception& /*exc*/ ) {
             LFX_ERROR_STATIC( logstr, "Unable to assemble hierarchy." );
@@ -243,7 +244,7 @@ struct RTTInfo {
 
 RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 {
-    RTTInfo rttInfo( 1200, 690 );
+    RTTInfo rttInfo( 800, 460 );
 
 
     //

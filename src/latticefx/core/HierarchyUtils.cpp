@@ -214,7 +214,6 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-ImageSet." );
         return;
     }
-    imageData->resizeOffsets( 8 );
 
     std::string::const_iterator iter = nameString.begin();
     const unsigned int childIndex( (unsigned int)( *iter - '0' ) );
@@ -242,10 +241,14 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
     }
 } 
 
-ChannelDataPtr AssembleHierarchy::getRoot() const
+void AssembleHierarchy::prune()
 {
-    return( _root );
 }
+
+void AssembleHierarchy::recursePrune( ChannelDataPtr cdp )
+{
+}
+
 
 void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
 {
@@ -270,7 +273,10 @@ void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
     ChannelDataImageSetPtr cdImage( new ChannelDataImageSet() );
     cdLOD->setChannel( 1, cdImage );
 
+    // For ChannelDataImageSet, reserveChannels resizes both the
+    // ChannelData vector, and also the offset vector.
     cdImage->reserveChannels( 8 );
+
     if( depth+1 < _ranges.size() )
     {
         // We haven't hit max depth yet, so we'll add LOD children and recurse.

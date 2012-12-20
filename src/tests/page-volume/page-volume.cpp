@@ -111,6 +111,7 @@ public:
                 cdImage->setName( "volumedata" );
                 ah.addChannelData( cdImage, hierarchyName );
             }
+            ah.prune();
             cdp = ah.getRoot();
         } catch( std::exception& /*exc*/ ) {
             LFX_ERROR_STATIC( logstr, "Unable to assemble hierarchy." );
