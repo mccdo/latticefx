@@ -98,7 +98,7 @@ ChannelDataPtr ChannelDataList::findData( const std::string& name )
 {
     BOOST_FOREACH( ChannelDataPtr cdp, *this )
     {
-        if( cdp->getName() == name )
+        if( ( cdp != NULL ) && ( cdp->getName() == name ) )
             return( cdp );
     }
     return( ChannelDataPtr( ( ChannelData* )NULL ) );

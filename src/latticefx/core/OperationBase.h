@@ -111,6 +111,8 @@ public:
     \details Before invoking the OperationBase, DataSet uses the input names to
     assign actual ChannelData inputs. Use this method to retrieve such an input. */
     virtual ChannelDataPtr getInput( const std::string& name );
+    /** \overload ChannelDataPtr OperationBase::getInput( const std::string& ); */
+    virtual const ChannelDataPtr getInput( const std::string& name ) const;
     /** \brief Add all inputs by name.
     \details All names in \c inputList must match the names of ChannelData objects added to the DataSet. */
     virtual void setInputs( StringList& inputList );
@@ -176,6 +178,7 @@ protected:
     friend class DataSet;
     virtual void addInput( ChannelDataPtr input );
     virtual void setInputs( ChannelDataList inputList );
+    virtual bool validInputs() const { return( true ); }
     virtual ChannelDataList getInputs();
 
     /** List of actual inputs. During data processing, DataSet assigns ChannelData

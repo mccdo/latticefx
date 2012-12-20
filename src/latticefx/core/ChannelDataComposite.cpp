@@ -97,6 +97,9 @@ void ChannelDataComposite::getDimensions( unsigned int& x, unsigned int& y, unsi
     x = y = z = 0;
     BOOST_FOREACH( ChannelDataPtr cdp, _data )
     {
+        if( cdp == NULL )
+            continue;
+
         unsigned int lx, ly, lz;
         cdp->getDimensions( lx, ly, lz );
         x = osg::maximum( x, lx );

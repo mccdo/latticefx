@@ -70,11 +70,16 @@ ChannelDataPtr OperationBase::getInput( const std::string& name )
     // and return it.
     BOOST_FOREACH( ChannelDataPtr cdp, _inputs )
     {
-        if( cdp->getName() == name )
+        if( ( cdp != NULL ) && ( cdp->getName() == name ) )
             return( cdp );
     }
     // Didn't find a match. Return a pointer to NULL.
     return( ChannelDataPtr( (ChannelData*)NULL ) );
+}
+const ChannelDataPtr OperationBase::getInput( const std::string& name ) const
+{
+    OperationBase* nonConstThis( const_cast< OperationBase* >( this ) );
+    return( nonConstThis->getInput( name ) );
 }
 void OperationBase::setInputs( StringList& inputList )
 {

@@ -56,6 +56,9 @@ public:
 
     /** \brief TBD
     \details TBD */
+    void resizeOffsets( const unsigned int size );
+    /** \brief TBD
+    \details TBD */
     void setOffset( const unsigned int index, const osg::Vec3& offset );
     /** \brief TBD
     \details TBD */

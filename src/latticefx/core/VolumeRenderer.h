@@ -151,6 +151,7 @@ public:
 
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
+    virtual bool validInputs() const;
 
     osg::Geometry* createDAIGeometry( int nInstances );
     osg::Geometry* createCubeGeometry();

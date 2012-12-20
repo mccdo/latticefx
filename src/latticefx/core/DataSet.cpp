@@ -366,6 +366,8 @@ bool DataSet::updatePreprocessing()
 
             // Assign actual / current data to the prePtr OperationBase.
             setInputs( prePtr, currentData );
+            if( !prePtr->validInputs() )
+                continue;
 
             ChannelDataPtr newData( (*prePtr)() );
             if( newData == NULL )
@@ -427,6 +429,8 @@ bool DataSet::updateRunTimeProcessing()
 
             // Assign actual / current data to the opPtr OperationBase.
             setInputs( opPtr, currentData );
+            if( !opPtr->validInputs() )
+                continue;
 
             switch( opPtr->getRTPOpType() )
             {
@@ -608,7 +612,8 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     else
     {
         setInputs( _renderer, data );
-        return( _renderer->getSceneGraph( mask ) );
+        if( _renderer->validInputs() )
+            return( _renderer->getSceneGraph( mask ) );
     }
 
     return( NULL );
@@ -668,11 +673,8 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
     BOOST_FOREACH( const std::string& inputName, inputs )
     {
         ChannelDataPtr cdp( currentData.findData( inputName ) );
-        if( cdp == NULL )
-        {
-            LFX_WARNING_STATIC( "lfx.core.dataset", "setInputs(): Could not find data named \"" + inputName + "\"." );
-        }
-        newList.push_back( cdp );
+        if( cdp != NULL )
+            newList.push_back( cdp );
     }
     opPtr->setInputs( newList );
 }

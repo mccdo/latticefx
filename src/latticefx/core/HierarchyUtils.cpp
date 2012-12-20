@@ -214,6 +214,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Unexpected non-ImageSet." );
         return;
     }
+    imageData->resizeOffsets( 8 );
 
     std::string::const_iterator iter = nameString.begin();
     const unsigned int childIndex( (unsigned int)( *iter - '0' ) );

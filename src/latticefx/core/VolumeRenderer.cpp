@@ -37,6 +37,8 @@
 #include <osg/CullFace>
 #include <osgDB/FileUtils>
 
+#include <boost/foreach.hpp>
+
 #include <sstream>
 
 
@@ -377,6 +379,7 @@ float VolumeRenderer::getNumPlanes() const
     return( _numPlanes );
 }
 
+
 osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
 {
     // Create dummy Texture / Image as placeholder until real image data is paged in.
@@ -393,6 +396,12 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     tex->setImage( dummyImage );
 
     return( tex.release() );
+}
+
+
+bool VolumeRenderer::validInputs() const
+{
+    return( getInput( getInputNameAlias( VOLUME_DATA ) ) != NULL );
 }
 
 

@@ -83,7 +83,7 @@ public:
                        TEXTURE_HALF_X,  TEXTURE_HALF_Y, TEXTURE_Z );
     }
 
-    void setSparse( const bool prune ) { _prune = prune; }
+    void setPrune( const bool prune ) { _prune = prune; }
     
     virtual ChannelDataPtr operator()()
     {
@@ -118,7 +118,7 @@ protected:
                 !testVoxel( m_brickBB.center() ) )
             {
                 // All corners are outside the cone. NULL volume.
-                LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "\tNULL, skipping." );
+                LFX_CRITICAL_STATIC( "lfx.coneTextureCreator", "\tNULL, pruning..." );
                 return( ChannelDataOSGImagePtr( (ChannelDataOSGImage*)NULL ) );
             }
         }
@@ -480,7 +480,7 @@ DataSetPtr createDataSet( const std::string& csFile, const bool prune )
     //dsp->addChannel( imageData );
     
     ImageProcess* op( new ImageProcess );
-    op->setSparse( prune );
+    op->setPrune( prune );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
