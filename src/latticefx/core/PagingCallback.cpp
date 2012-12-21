@@ -125,8 +125,8 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         //
         // The current animation time could be anything, but we want a time range around it with
         // min and max values between the PageData's min and max time values. Note that when the
-        // animation reaches the end, it's possible that the min validRange value could be greater than
-        // the max validRange value to support smooth playback as time wraps around.
+        // animation reaches the end, it's possible that the min validRange value could be greater
+        // than the max validRange value to support smooth playback as time wraps around.
         TimeValue minTime, maxTime;
         pageData->getMinMaxTime( minTime, maxTime );
 
@@ -229,6 +229,12 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     if( removeExpired )
     {
+        // After successfully loading one or more LoadRequests, this code segment
+        // pages out any out-of-range data. Children recently paged in are marked
+        // as LOADED so that we don't accidentally page them out -- they must display
+        // for at least one frame, even if they're no longer in range. The children
+        // marked as ACTIVE are the ones that are candidates for paging out.
+
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
@@ -261,6 +267,11 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     if( pageData->getRangeMode() == PageData::TIME_RANGE )
     {
+        // This code branch determines the one (of possibly many loaded)
+        // children to enable, the one child that is most closely representative
+        // of the current animation time. If no children are marked as
+        // ACTIVE, then child 0 will display.
+
         osg::Node* bestChild( grp->getChild( 0 ) );
         TimeValue minTimeDifference( FLT_MAX );
 
@@ -294,7 +305,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
     if( continueUpdateTraversal )
     {
         // Only ACTIVE children have non-zero node masks, so all other
-        // children will be ckipped by this traversal.
+        // children will be skipped by this traversal.
         traverse( node, nv );
     }
 }
@@ -447,12 +458,14 @@ public:
                         LFX_WARNING_STATIC( "lfx.core.page", "Got empty key." );
                     }
                     osg::Image* image( _request->findAsImage( key ) );
-                    if( ( image != NULL ) && ( image->getFileName().empty() ) )
-                    {
-                        LFX_WARNING_STATIC( "lfx.core.page", "Loaded image has empty key!!" );
-                    }
                     if( image != NULL )
+                    {
+                        if( image->getFileName().empty() )
+                        {
+                            LFX_WARNING_STATIC( "lfx.core.page", "Loaded image has empty key!!" );
+                        }
                         tex->setImage( 0, image );
+                    }
                 }
             }
         }
@@ -574,6 +587,7 @@ void PagingCallback::reclaimImages( osg::Node* child )
     child->accept( reclaim );
 }
 
+
 TimeValue PagingCallback::getWrappedTime( const TimeValue& time, const TimeValue& minTime, const TimeValue& maxTime )
 {
     const TimeValue span( maxTime - minTime );
@@ -591,6 +605,7 @@ TimeValue PagingCallback::getWrappedTime( const TimeValue& time, const TimeValue
 }
 
 
+
 double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
         const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp )
 {
@@ -602,18 +617,21 @@ double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& 
         return( FLT_MAX );
     }
 
-    // Compute pixelRadius, the sphere radius in pixels.
+    // Compute pixelRadius, the sphere radius in pixels. This is done by subtracting
+    // the window coord center from the window coord right edge.
 
-    // Get clip coord center, then get NDX x value (div by w), then get window x value.
-#if 1
-    // Optimized computation for bounding sphere at view center.
-    const double winCenter( .5 * vp->width() + vp->x() );
-#else
-    // This is the unoptimized general case for the above "if 1" code path.
+#if 0
+    // This is standard transform to window coordinate, but we cheat by assuming
+    // that the sphere is centered in the view. This should not make a significant
+    // difference to the final pixel size computation.
     const osg::Vec4 ecCenter( 0., 0., ecDistance, 1. );
     osg::Vec4 ccCenter( ecCenter * proj );
     ccCenter.x() /= ccCenter.w();
-    const double cx( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+    const double winCenter( ( ( ccCenter.x() + 1. ) * .5 ) * vp->width() + vp->x() );
+#else
+    // Optimized computation for bounding sphere at view center. The above
+    // code simply computes the pixel located at the center of the viewport.
+    const double winCenter( .5 * vp->width() + vp->x() );
 #endif
 
     // Repeast, but start with an eye coord point that is 'radius' units to the right of center.

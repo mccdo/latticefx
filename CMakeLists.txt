@@ -73,6 +73,9 @@ endif()
 option( LFX_BUILD_APPS "Build applications." ON )
 option( LFX_BUILD_EXAMPLES "Build examples." ON )
 option( LFX_BUILD_TESTS "Build tests." ON )
+if( LFX_BUILD_TESTS )
+    enable_testing()
+endif()
 
 
 #

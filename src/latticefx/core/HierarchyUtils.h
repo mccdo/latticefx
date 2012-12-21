@@ -25,6 +25,7 @@
 #include <latticefx/core/ChannelData.h>
 
 #include <osg/Vec3>
+#include <osg/Vec3s>
 
 #include <vector>
 
@@ -188,6 +189,32 @@ protected:
     RangeVec _ranges;
 
     ChannelDataPtr _iterator;
+};
+
+
+/** \class NameStringGenerator HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief Generate hierarchy name strings for a subvolume.
+\details Given the full texel extents of a volume, this class provides
+name strings and octant offsets for a subvolume of specified extents at
+a given location within that volume.
+*/
+class LATTICEFX_EXPORT NameStringGenerator
+{
+public:
+    /** Constructor. Returned name strings and offsets are valid for
+    a volume with the specified dimensions. */
+    NameStringGenerator( const osg::Vec3s& dimensions );
+
+    /** \brief Get a name string.
+    \details */
+    std::string getNameString( const osg::Vec3s& subDims, const osg::Vec3s& subMinCorner );
+
+    /** \brief Get a name string and an octant offset.
+    \details */
+    std::string getNameString( osg::Vec3s& offset, const osg::Vec3s& subDims, const osg::Vec3s& subMinCorner );
+
+protected:
+    osg::Vec3s _dims;
 };
 
 

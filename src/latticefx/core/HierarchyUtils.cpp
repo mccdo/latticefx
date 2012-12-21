@@ -329,6 +329,87 @@ void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
 }
 
 
+
+NameStringGenerator::NameStringGenerator( const osg::Vec3s& dimensions )
+  : _dims( dimensions )
+{
+}
+
+std::string NameStringGenerator::getNameString( const osg::Vec3s& subDims, const osg::Vec3s& subMinCorner )
+{
+    // First, find the depth.
+    int ratio( _dims.x() / subDims.x() );
+    if( ratio & ratio-1 )
+    {
+        LFX_WARNING_STATIC( "lfx.core.hier", "getNameString: _dims.x()/subDims.x() must be a power of 2." );
+    }
+    int depth( 1 );
+    while( ( ratio >>= 1 ) > 0 )
+        depth++;
+
+    // If depth is 1, we have the root of the hierarchy, so the
+    // name string is the empty string.
+    if( depth == 1 )
+        return( std::string( "" ) );
+
+    // Accumulate the name string.
+    const osg::Vec3s subCenter( subDims / 2 + subMinCorner );
+    osg::Vec3s octant( _dims / 2 );
+    std::string nameString;
+    for( int idx=1; idx<depth; idx++ )
+    {
+        int octantValue( 0 );
+        if( subCenter.x() > octant.x() )
+            octantValue += ( 1 << 0 );
+        if( subCenter.y() > octant.y() )
+            octantValue += ( 1 << 1 );
+        if( subCenter.z() > octant.z() )
+            octantValue += ( 1 << 2 );
+
+        switch( octantValue ) {
+        case 0: nameString += "0"; break;
+        case 1: nameString += "1"; break;
+        case 2: nameString += "2"; break;
+        case 3: nameString += "3"; break;
+        case 4: nameString += "4"; break;
+        case 5: nameString += "5"; break;
+        case 6: nameString += "6"; break;
+        case 7: nameString += "7"; break;
+        }
+
+        octant = octant / 2;
+    }
+
+    return( nameString );
+}
+
+std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::Vec3s& subDims, const osg::Vec3s& subMinCorner )
+{
+    const std::string nameString( getNameString( subDims, subMinCorner ) );
+
+    if( !( nameString.empty() ) )
+    {
+        std::string::const_iterator iter = nameString.end() - 1;
+        
+        switch( *iter ) {
+        case '0': offset.set( -1., -1., -1. ); break;
+        case '1': offset.set( 1., -1., -1. ); break;
+        case '2': offset.set( -1., 1., -1. ); break;
+        case '3': offset.set( 1., 1., -1. ); break;
+        case '4': offset.set( -1., -1., 1. ); break;
+        case '5': offset.set( 1., -1., 1. ); break;
+        case '6': offset.set( -1., 1., 1. ); break;
+        case '7': offset.set( 1., 1., 1. ); break;
+        default:
+            LFX_ERROR_STATIC( "lfx.core.hier", "getNameString: Invalid nameString digit: " + *iter );
+            break;
+        }
+    }
+
+    return( nameString );
+}
+
+
 // core
 }
 // lfx
