@@ -395,6 +395,22 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
 
 int main( int argc, char** argv )
 {
+    // To enable OSG's texture object cache, call this static function with a
+    // non-zero param. The parameter is the number of texture objects that OSG
+    // never deletes out of the cache, and therefore are always available for
+    // instant re-use (for paging, or any activity that deletes and creates new
+    // OSG Textures).
+    //
+    // Larger values consume more OpenGL resources, but speed the texture
+    // creation and deletion process.
+    //
+    // OSG sets this value to 100 if you use the DatabasePager.
+    //
+    // This test uses 585 textures that are 32kb in size; if all are kept in
+    // memory, that's 18mb, pretty small. May as well keep all of them around.
+    osg::Texture::setMinimumNumberOfTextureObjectsToRetainInCache( 600 );
+
+
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
