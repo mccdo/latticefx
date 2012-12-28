@@ -320,29 +320,6 @@ osg::Node* createScene( const bool clip )
     return( root );
 }
 
-osg::Node* createStubGeometry( osg::Node* subgraph )
-{
-    // This function creates and returns a geode containing a stub
-    // Drawable that renders nothing. But the stub Drawable has the
-    // same bounding box as the subgraph parameter. The returned
-    // value can be used to ensure that scene rendering computes
-    // near & far planes that account for the presence of the
-    // subgraph parameter, without actually rendering that subgraph.
-
-    osg::ComputeBoundsVisitor cbv;
-    cbv.setNodeMaskOverride( ~0u );
-    subgraph->accept( cbv );
-
-    osg::Geometry* stubGeom( new osg::Geometry );
-    stubGeom->setInitialBound( cbv.getBoundingBox() );
-    // The stock DrawCallback is a no-op and draws nothing.
-    stubGeom->setDrawCallback( new osg::Drawable::DrawCallback() );
-
-    osg::Geode* root( new osg::Geode );
-    root->addDrawable( stubGeom );
-
-    return( root );
-}
 
 
 int main( int argc, char** argv )
@@ -422,30 +399,23 @@ int main( int argc, char** argv )
     viewer.addEventHandler( new osgViewer::StatsHandler() );
 
 
-    osg::Group* sceneRoot( new osg::Group );
     osg::Node* scene( createScene( clip ) );
-    sceneRoot->addChild( scene );
-    sceneRoot->addChild( createStubGeometry( volume ) );
-
-    osg::Group* volumeRoot( new osg::Group );
-    volumeRoot->addChild( volume );
-    volumeRoot->addChild( createStubGeometry( scene ) );
 
     // Assemble camera RTT and scene hierarchy.
     // viewerCamera (renders to both color and depth textures)
-    //   |-> sceneRoot, consisting of a cylinder and stub geomtry for the volume
+    //   |-> sceneRoot, consisting of a cylinder
     //   |-> splatCam (to display the color texture to the window)
-    //    \> volumeRoot, consisting of an lfxCam parent, the volume data, and stub geometry for the main scene.
-    // viewerCamera renders sceneRoot to colorTexA and depthTexA.
+    //    \> volume, consisting of an lfxCam parent and the volume data
+    // viewerCamera renders 'scene' to colorTexA and depthTexA.
     // splatCam uses colorTexA as input.
     // lfxCam uses colorTexA and depthTexA as input. Lfx volume shaders
     //   use colorTexA for blending, and depthTexA for correct depth
     //   testing while stepping along the ray.
     prepareSceneCamera( viewer );
     osg::Group* rootGroup( new osg::Group );
-    rootGroup->addChild( sceneRoot );
+    rootGroup->addChild( scene );
     rootGroup->addChild( createDisplaySceneCamera() );
-    rootGroup->addChild( createLfxCamera( volumeRoot, clip ) );
+    rootGroup->addChild( createLfxCamera( volume, clip ) );
     viewer.setSceneData( rootGroup );
     viewer.addEventHandler( new ResizeHandler( scene ) );
 
