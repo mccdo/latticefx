@@ -7,6 +7,11 @@ uniform vec3 volumeCenter;
 
 uniform mat3 osg_NormalMatrixInverse;
 
+// This variable comes from osgWorks, osgwTools library,
+//   MultiCameraProjectionMatrix class, which allows the
+//   OSG near & far computation to span two Cameras.
+uniform mat4 osgw_ProjectionMatrix;
+
 varying vec3 tcEye;
 varying float ecVolumeSize;
 
@@ -33,5 +38,7 @@ void main( void )
     // Pass through texture coordinate.
     gl_TexCoord[0] = gl_MultiTexCoord0;
 
-    gl_Position = ftransform();
+    // Do NOT use ftransform() -- Must use the osgWorks
+    // MultiCameraProjectionMatrix for correct z testing.
+    gl_Position = osgw_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 }

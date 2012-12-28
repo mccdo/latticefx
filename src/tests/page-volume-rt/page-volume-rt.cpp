@@ -46,6 +46,7 @@
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
 
+#include <osgwTools/MultiCameraProjectionMatrix.h>
 #include <osgwTools/Shapes.h>
 
 #include <Poco/Path.h>
@@ -309,29 +310,6 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     return( rttInfo );
 }
 
-osg::Node* createStubGeometry( osg::Node* subgraph )
-{
-    // This function creates and returns a geode containing a stub
-    // Drawable that renders nothing. But the stub Drawable has the
-    // same bounding box as the subgraph parameter. The returned
-    // value can be used to ensure that scene rendering computes
-    // near & far planes that account for the presence of the
-    // subgraph parameter, without actually rendering that subgraph.
-
-    osg::ComputeBoundsVisitor cbv;
-    cbv.setNodeMaskOverride( ~0u );
-    subgraph->accept( cbv );
-
-    osg::Geometry* stubGeom( new osg::Geometry );
-    stubGeom->setInitialBound( cbv.getBoundingBox() );
-    // The stock DrawCallback is a no-op and draws nothing.
-    stubGeom->setDrawCallback( new osg::Drawable::DrawCallback() );
-
-    osg::Geode* root( new osg::Geode );
-    root->addDrawable( stubGeom );
-
-    return( root );
-}
 void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
     osgViewer::Viewer& viewer, osg::Node* scene, osg::Node* volume )
 {
@@ -344,25 +322,9 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
         exit( 1 );
     }
 
-    // Get the volume subgraph as a Group
-    osg::Group* volumeGroup( dynamic_cast< osg::Group* >( volume ) );
-    if( volumeGroup == NULL )
-    {
-        LFX_ERROR_STATIC( logstr, "Volume subgraph must be a Group." );
-        exit( 1 );
-    }
-
 
     //
-    // Step 1: Add sub geomtry. Stub the volume subgraph into the
-    // main scene, and stub the main scene subgraph into the volume.
-    //
-    sceneRoot->addChild( createStubGeometry( volume ) );
-    volumeGroup->addChild( createStubGeometry( scene ) );
-
-
-    //
-    // Step 2: Create a Camera for rendering the LatticeFX volume.
+    // Step 1: Create a Camera for rendering the LatticeFX volume.
     //
     osg::Camera* lfxCam( new osg::Camera );
     lfxCam->setName( "latticeFX-VolumeCamera" );
@@ -375,6 +337,15 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
 
     lfxCam->addChild( volume );
     sceneRoot->addChild( lfxCam );
+
+
+    //
+    // Step 2:
+    // Create a cull callback on the lfx Camera that will create a projection
+    // matrix uniform with near & far planes that encompass both the lfx Camera
+    // and the root Camera.
+    osgwTools::MultiCameraProjectionMatrix* subCullCB( new osgwTools::MultiCameraProjectionMatrix() );
+    lfxCam->setCullCallback( subCullCB );
 
 
     //
@@ -438,8 +409,10 @@ int main( int argc, char** argv )
 
 
     osgViewer::Viewer viewer;
+    viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
+    viewer.addEventHandler( new osgViewer::ThreadingHandler() );
     osgGA::TrackballManipulator* tbm( new osgGA::TrackballManipulator() );
     viewer.setCameraManipulator( tbm );
 

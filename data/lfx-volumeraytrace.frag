@@ -112,6 +112,12 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 /** end hardware mask **/
 
 
+// These two variables come from osgWorks, osgwTools library,
+//   MultiCameraProjectionMatrix class, which allows the
+//   OSG near & far computation to span two Cameras.
+uniform mat4 osgw_ProjectionMatrix;
+uniform mat4 osgw_ProjectionMatrixInverse;
+
 /** start clipping */
 
 uniform vec3 volumeDims;
@@ -174,7 +180,7 @@ float clipping( in vec3 tc )
 
     // Determine if inside the view. We really only care about the
     // front plane, so set inView=true if not clipped by front plane.
-    vec4 cc = gl_ProjectionMatrix * ec;
+    vec4 cc = osgw_ProjectionMatrix * ec;
     bool inView = cc.z >= -cc.w;
 
     // Inside clip planes? Set inClipPlane=true if not clipped by any planes.
@@ -281,7 +287,7 @@ void main( void )
     // to shoot a ray past this point.
     float winZScene = texture2D( sceneDepth, winTC ).r;
     vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
-    vec4 ecScene = gl_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
+    vec4 ecScene = osgw_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
     ecScene /= ecScene.w;
     vec4 ocScene = gl_ModelViewMatrixInverse * ecScene;
     vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );

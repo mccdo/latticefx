@@ -38,6 +38,7 @@
 #include <osgUtil/RenderStage>
 #include <osg/ComputeBoundsVisitor>
 
+#include <osgwTools/MultiCameraProjectionMatrix.h>
 #include <osgwTools/Shapes.h>
 
 #include <boost/foreach.hpp>
@@ -226,6 +227,13 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
 
     lfxCam->addChild( node );
 
+    // Create a cull callback on the lfx Camera that will create a projection
+    // matrix uniform with near & far planes that encompass both the lfx Camera
+    // and the root Camera.
+    osgwTools::MultiCameraProjectionMatrix* subCullCB( new osgwTools::MultiCameraProjectionMatrix() );
+    lfxCam->setCullCallback( subCullCB );
+
+
     // Add uniforms required by Lfx ray traced volume rendering shaders,
     // which Lfx itself is unable to set. The application MUST specify
     // this uniforms.
@@ -407,6 +415,7 @@ int main( int argc, char** argv )
 
     
     osgViewer::Viewer viewer;
+    viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
     viewer.setUpViewInWindow( 10, 30, winSize.x(), winSize.y() );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
