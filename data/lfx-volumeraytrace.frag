@@ -352,17 +352,17 @@ void main( void )
         vec3 coord = tcStart + sampleVec * sampleLen;
         vec4 baseColor = texture3D( VolumeTexture, coord );
 
-        // Obtain transfer function color and alpha values.
-        vec4 color = transferFunction( baseColor.r );
-
-        if( hardwareMask( coord, color ) )
+        if( baseColor.r != lastSample )
         {
-            // We have passed the hardware mask. Compute a normal
-            // and light the fragment.
+            lastSample = baseColor.r;
 
-            if( baseColor.r != lastSample )
+            // Obtain transfer function color and alpha values.
+            vec4 color = transferFunction( baseColor.r );
+
+            if( hardwareMask( coord, color ) )
             {
-                lastSample = baseColor.r;
+                // We have passed the hardware mask. Compute a normal
+                // and light the fragment.
 
                 // Compute texture coord offsets for normal gradient computation.
                 vec3 delta = 1. / volumeResolution;
@@ -377,7 +377,6 @@ void main( void )
                 // be used in turn as an index into the transfer function. Only then can we
                 // compute a correct normal for the resulting surface.
                 // Note: Expensive.
-#if 1
                 vec3 negVec = vec3( clipping( tcNegX ) * transferFunction( texture3D( VolumeTexture, tcNegX ).r ).a,
                     clipping( tcNegY ) * transferFunction( texture3D( VolumeTexture, tcNegY ).r ).a,
                     clipping( tcNegZ ) * transferFunction( texture3D( VolumeTexture, tcNegZ ).r ).a );
@@ -385,19 +384,18 @@ void main( void )
                     clipping( tcPosY ) * transferFunction( texture3D( VolumeTexture, tcPosY ).r ).a,
                     clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
                 lastNormal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
-#endif
+                vec4 srcColor = fragmentLighting( color, lastNormal );
+
+                // Front to back blending:
+                //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
+                //    dst.a   = dst.a   + (1 - dst.a) * src.a
+                srcColor.rgb *= srcColor.a;
+                finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+
+                if( finalColor.a > .5f )
+                    // It's opaque enough
+                    break;
             }
-            vec4 srcColor = fragmentLighting( color, lastNormal );
-
-            // Front to back blending:
-            //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
-            //    dst.a   = dst.a   + (1 - dst.a) * src.a
-            srcColor.rgb *= srcColor.a;
-            finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
-
-            if( finalColor.a > .95f )
-                // It's opaque enough
-                break;
         }
     }
 
