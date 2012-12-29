@@ -377,6 +377,7 @@ void main( void )
                 // be used in turn as an index into the transfer function. Only then can we
                 // compute a correct normal for the resulting surface.
                 // Note: Expensive.
+#if 1
                 vec3 negVec = vec3( clipping( tcNegX ) * transferFunction( texture3D( VolumeTexture, tcNegX ).r ).a,
                     clipping( tcNegY ) * transferFunction( texture3D( VolumeTexture, tcNegY ).r ).a,
                     clipping( tcNegZ ) * transferFunction( texture3D( VolumeTexture, tcNegZ ).r ).a );
@@ -384,6 +385,7 @@ void main( void )
                     clipping( tcPosY ) * transferFunction( texture3D( VolumeTexture, tcPosY ).r ).a,
                     clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
                 lastNormal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
+#endif
             }
             vec4 srcColor = fragmentLighting( color, lastNormal );
 
