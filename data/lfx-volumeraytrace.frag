@@ -337,11 +337,11 @@ void main( void )
 
     // Accumulate color samples into finalColor, initially contains no color.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
+    vec4 litColor = vec4( 0., 0., 0., 0. );
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.
     float lastSample = -1.f;
-    vec3 lastNormal = vec3( 0., 0., 1. );
 
     float sample = 0.f;
     while( ++sample < totalSamples )
@@ -383,19 +383,24 @@ void main( void )
                 vec3 posVec = vec3( clipping( tcPosX ) * transferFunction( texture3D( VolumeTexture, tcPosX ).r ).a,
                     clipping( tcPosY ) * transferFunction( texture3D( VolumeTexture, tcPosY ).r ).a,
                     clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
-                lastNormal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
-                vec4 srcColor = fragmentLighting( color, lastNormal );
-
-                // Front to back blending:
-                //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
-                //    dst.a   = dst.a   + (1 - dst.a) * src.a
-                srcColor.rgb *= srcColor.a;
-                finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
-
-                if( finalColor.a > .5f )
-                    // It's opaque enough
-                    break;
+                vec3 normal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
+                litColor = fragmentLighting( color, normal );
             }
+            else
+                litColor = vec4( 0., 0., 0., 0. );
+        }
+
+        if( litColor.a > 0. )
+        {
+            // Front to back blending:
+            //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
+            //    dst.a   = dst.a   + (1 - dst.a) * src.a
+            vec4 srcColor = vec4( litColor.rgb * litColor.a, litColor.a );
+            finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+
+            if( finalColor.a > .95f )
+                // It's opaque enough
+                break;
         }
     }
 
