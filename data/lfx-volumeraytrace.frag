@@ -15,17 +15,11 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
     vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
-    // TBD we should not need to clamp, and this should be removed from
-    // all shader lighting code and then tested.
-    //diff = clamp( diff, 0., 1. );
    
     // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
     float specExp = 10.; // gl_FrontMaterial.shininess
     vec4 spec = gl_FrontLightProduct[0].specular *
         pow( max( dot( reflectVec, eyeVec ), 0. ), specExp );
-    // TBD we should not need to clamp, and this should be removed from
-    // all shader lighting code and then tested.
-    //spec = clamp( spec, 0., 1. );
 
     vec4 outColor = gl_FrontLightModelProduct.sceneColor + amb + diff + spec;
     outColor.a = baseColor.a;
@@ -339,6 +333,9 @@ void main( void )
     vec4 finalColor = vec4( 0., 0., 0., 0. );
     vec4 litColor = vec4( 0., 0., 0., 0. );
 
+    // Tex coord delta used for normal computation.
+    vec3 tcDelta = 1. / volumeResolution;
+
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.
     float lastSample = -1.f;
@@ -365,13 +362,12 @@ void main( void )
                 // and light the fragment.
 
                 // Compute texture coord offsets for normal gradient computation.
-                vec3 delta = 1. / volumeResolution;
-                vec3 tcNegX = coord + vec3( -delta.x, 0., 0. );
-                vec3 tcPosX = coord + vec3( delta.x, 0., 0. );
-                vec3 tcNegY = coord + vec3( 0., -delta.y, 0. );
-                vec3 tcPosY = coord + vec3( 0., delta.y, 0. );
-                vec3 tcNegZ = coord + vec3( 0., 0., -delta.z );
-                vec3 tcPosZ = coord + vec3( 0., 0., delta.z );
+                vec3 tcNegX = coord + vec3( -tcDelta.x, 0., 0. );
+                vec3 tcPosX = coord + vec3( tcDelta.x, 0., 0. );
+                vec3 tcNegY = coord + vec3( 0., -tcDelta.y, 0. );
+                vec3 tcPosY = coord + vec3( 0., tcDelta.y, 0. );
+                vec3 tcNegZ = coord + vec3( 0., 0., -tcDelta.z );
+                vec3 tcPosZ = coord + vec3( 0., 0., tcDelta.z );
 
                 // Support for non-linear transfer function requires that each volume sample
                 // be used in turn as an index into the transfer function. Only then can we
