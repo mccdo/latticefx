@@ -64,7 +64,7 @@ bool operator<( const OperationInfo& lhs, const OperationInfo& rhs );
 
 /** \def REGISTER_OPERATION
 \brief Convenience CPP macro for plugin class registration.
-\details Plugins use this macro once for every exporter class they contain.
+\details Plugins use this macro once for every exported class they contain.
 The macro declares a static instance of type OperationInfo. Static instances
 are initialized immediately following plugin (shared libraries) load, which
 causes each exported class to immediately register itself with the PluginManager.

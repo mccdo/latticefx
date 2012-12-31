@@ -144,7 +144,7 @@ macro( POCOFinder )
         ${POCOBuildRoot} )
 
 
-    find_package( POCO 1.4.0 REQUIRED Util )
+    find_package( POCO 1.4.0 REQUIRED Util XML )
 
 
     # Restore internal variables

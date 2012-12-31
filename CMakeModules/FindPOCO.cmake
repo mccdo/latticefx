@@ -142,7 +142,7 @@ foreach( lib ${_requestedComponents} )
             Poco${lib}${_crtSuffix}
         PATHS ${POCO_ROOT}
             ENV POCO_ROOT
-        PATH_SUFFIXES lib
+        PATH_SUFFIXES lib lib64
     )
     if( NOT POCO_${lib}_LIBRARY )
         message( WARNING "Could not find Poco component library ${lib}" )
