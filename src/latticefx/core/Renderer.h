@@ -319,10 +319,10 @@ public:
     /** \brief Specify the valid range of transfer function input values.
     \details Transfer function is a texture lookup. Values outside the
     specified range will clamp. The default range is (0., 1.). */
-    void setTransferFunctionInputRange( const osg::Vec2& range );
+    void setTransferFunctionInputRange( const osg::Vec2f& range );
     /** \brief TBD
     \details TBD */
-    const osg::Vec2& getTransferFunctionInputRange() const;
+    const osg::Vec2f& getTransferFunctionInputRange() const;
 
     typedef enum {
         TF_RGB = 0,
@@ -486,9 +486,9 @@ protected:
 
     osg::ref_ptr< osg::Image > _tfImage;
     std::string _tfInputName;
-    osg::Vec2 _tfRange;
+    osg::Vec2f _tfRange;
     TransferFunctionDestination _tfDest;
-    osg::Vec4 _tfDestMask;
+    osg::Vec4f _tfDestMask;
 
     HardwareMaskInputSource _hmSource;
     std::string _hmInputName;

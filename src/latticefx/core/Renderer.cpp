@@ -40,7 +40,7 @@ Renderer::Renderer( const std::string logNameSuffix )
     LogBase( "lfx.core." + logNameSuffix ),
     _baseUnit( 4 ),
     _unitAssignmentCounter( 8 ),
-    _tfRange( 0., 1. ),
+    _tfRange( 0.f, 1.f ),
     _tfDest( TF_ALPHA ),
     _tfDestMask( 0., 0., 0., 1. ),
     _hmSource( HM_SOURCE_ALPHA ),
@@ -240,11 +240,11 @@ const std::string& Renderer::getTransferFunctionInput() const
     return( _tfInputName );
 }
 
-void Renderer::setTransferFunctionInputRange( const osg::Vec2& range )
+void Renderer::setTransferFunctionInputRange( const osg::Vec2f& range )
 {
     _tfRange = range;
 }
-const osg::Vec2& Renderer::getTransferFunctionInputRange() const
+const osg::Vec2f& Renderer::getTransferFunctionInputRange() const
 {
     return( _tfRange );
 }

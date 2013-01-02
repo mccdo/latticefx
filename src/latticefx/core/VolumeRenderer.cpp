@@ -47,8 +47,8 @@ namespace core {
 
 
 SpatialVolume::SpatialVolume()
-  : _volumeDims( osg::Vec3( 1., 1., 1. ) ),
-    _volumeOrigin( osg::Vec3( 0., 0., 0. ) )
+  : _volumeDims( osg::Vec3f( 1., 1., 1. ) ),
+    _volumeOrigin( osg::Vec3f( 0., 0., 0. ) )
 {
 }
 SpatialVolume::SpatialVolume( const SpatialVolume& rhs )
