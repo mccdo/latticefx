@@ -33,6 +33,11 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <osgwTools/SerializerSupport.h>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization//base_object.hpp>
+
 #include <list>
 #include <map>
 #include <string>
@@ -489,7 +494,27 @@ protected:
     std::string _hmInputName;
     float _hmReference;
     unsigned int _hmOperator;
+
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< OperationBase >( *this );
+        ar & _baseUnit;
+        ar & _tfInputName;
+        ar & _tfRange;
+        ar & _tfDest;
+        ar & _tfDestMask;
+        ar & _hmSource;
+        ar & _hmInputName;
+        ar & _hmReference;
+        ar & _hmOperator;
+    }
 };
+
 
 typedef boost::shared_ptr< Renderer > RendererPtr;
 typedef std::list< RendererPtr > RendererList;
@@ -499,6 +524,9 @@ typedef std::list< RendererPtr > RendererList;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::Renderer, 0 );
 
 
 // __LFX_CORE_RENDERER_H__

@@ -28,6 +28,10 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization//base_object.hpp>
+
 #include <list>
 
 
@@ -80,6 +84,17 @@ public:
 
 protected:
     ActionType _action;
+
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< OperationBase >( *this );
+        ar & _action;
+    }
 };
 
 typedef boost::shared_ptr< Preprocess > PreprocessPtr;
@@ -90,6 +105,9 @@ typedef std::list< PreprocessPtr > PreprocessList;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::Preprocess, 0 );
 
 
 // __LFX_CORE_PREPROCESS_H__

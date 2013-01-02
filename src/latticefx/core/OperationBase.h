@@ -31,6 +31,9 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+
 #include <list>
 #include <map>
 
@@ -197,6 +200,17 @@ protected:
     NameValueMap _nameValueMap;
 
     DBBasePtr _db;
+
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & _opType;
+        ar & _enable;
+    }
 };
 
 typedef boost::shared_ptr< OperationBase > OperationBasePtr;
@@ -206,6 +220,9 @@ typedef boost::shared_ptr< OperationBase > OperationBasePtr;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::OperationBase, 0 );
 
 
 // __LFX_CORE_OPERATION_BASE_H__

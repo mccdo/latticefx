@@ -28,6 +28,10 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization//base_object.hpp>
+
 #include <list>
 
 
@@ -77,7 +81,19 @@ public:
 
 protected:
     RTPOpType _rtpOpType;
+
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< OperationBase >( *this );
+        ar & _rtpOpType;
+    }
 };
+
 
 typedef boost::shared_ptr< RTPOperation > RTPOperationPtr;
 typedef std::list< RTPOperationPtr > RTPOperationList;
@@ -87,6 +103,9 @@ typedef std::list< RTPOperationPtr > RTPOperationList;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::RTPOperation, 0 );
 
 
 // __LFX_CORE_RTP_OPERATION_H__

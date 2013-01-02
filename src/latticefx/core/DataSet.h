@@ -35,6 +35,11 @@
 #include <osg/ref_ptr>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/version.hpp>
+
 #include <string>
 #include <list>
 #include <map>
@@ -276,6 +281,18 @@ protected:
 
     osg::ref_ptr< osg::Group > _sceneGraph;
     DirtyFlags _dirtyFlags;
+
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & _preprocess;
+        ar & _ops;
+        ar & _renderer;
+    }
 };
 
 typedef boost::shared_ptr< DataSet > DataSetPtr;
@@ -286,6 +303,9 @@ typedef std::list< DataSetPtr > DataSetList;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::DataSet, 0 );
 
 
 // __LFX_CORE_DATA_SET_H__
