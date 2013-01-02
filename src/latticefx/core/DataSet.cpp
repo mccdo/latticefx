@@ -173,7 +173,7 @@ PreprocessPtr DataSet::getPreprocess( const unsigned int index )
     unsigned int idx( 0 );
     BOOST_FOREACH( PreprocessPtr pre, _preprocess )
     {
-        if( ++idx == index )
+        if( idx++ == index )
             return( pre );
     }
 
@@ -234,7 +234,7 @@ RTPOperationPtr DataSet::getOperation( const unsigned int index )
     unsigned int idx( 0 );
     BOOST_FOREACH( RTPOperationPtr op, _ops )
     {
-        if( ++idx == index )
+        if( idx++ == index )
             return( op );
     }
 
