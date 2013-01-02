@@ -25,6 +25,11 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <osgwTools/SerializerSupport.h>
+
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 
@@ -69,7 +74,16 @@ public:
     \param numElements is the number of vertecies in the \c geom vertex array.
     */
     virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom ) = 0;
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+    }
 };
+
 
 typedef boost::shared_ptr< PrimitiveSetGenerator > PrimitiveSetGeneratorPtr;
 
@@ -131,8 +145,17 @@ public:
 protected:
     PrimitiveSetGeneratorPtr _primitiveSetGenerator;
 
-    InputTypeMap _inputTypeMap;
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< Renderer >( *this );
+        ar & _primitiveSetGenerator;
+    }
 };
+
 
 typedef boost::shared_ptr< SurfaceRenderer > SurfaceRendererPtr;
 
@@ -158,13 +181,28 @@ public:
     virtual ~SimpleTrianglePrimitiveSetGenerator();
 
     virtual void operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom );
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< PrimitiveSetGenerator >( *this );
+    }
 };
+
 
 
 // core
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::PrimitiveSetGenerator, 0 );
+BOOST_CLASS_VERSION( lfx::core::SimpleTrianglePrimitiveSetGenerator, 0 );
+BOOST_CLASS_VERSION( lfx::core::SurfaceRenderer, 0 );
 
 
 // __LFX_CORE_SURFACE_RENDERER_H__

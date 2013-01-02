@@ -27,6 +27,11 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <osgwTools/SerializerSupport.h>
+
 
 // Forward
 namespace osg {
@@ -66,6 +71,16 @@ public:
 
 protected:
     osg::Vec3f _volumeDims, _volumeOrigin;
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & _volumeDims;
+        ar & _volumeOrigin;
+    }
 };
 
 typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
@@ -161,7 +176,21 @@ protected:
 
     float _numPlanes;
     float _maxSamples;
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< Renderer >( *this );
+        ar & boost::serialization::base_object< SpatialVolume >( *this );
+        ar & _renderMode;
+        ar & _numPlanes;
+        ar & _maxSamples;
+    }
 };
+
 
 typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;
 
@@ -170,6 +199,10 @@ typedef boost::shared_ptr< VolumeRenderer > VolumeRendererPtr;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::SpatialVolume, 0 );
+BOOST_CLASS_VERSION( lfx::core::VolumeRenderer, 0 );
 
 
 // __LFX_CORE_VOLUME_RENDERER_H__

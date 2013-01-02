@@ -25,6 +25,10 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/base_object.hpp>
+
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <string>
 #include <map>
@@ -138,7 +142,18 @@ protected:
     osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
 
     PointStyle _pointStyle;
+
+private:
+    friend class boost::serialization::access;
+
+    template< class Archive >
+    void serialize( Archive& ar, const unsigned int version )
+    {
+        ar & boost::serialization::base_object< Renderer >( *this );
+        ar & _pointStyle;
+    }
 };
+
 
 typedef boost::shared_ptr< VectorRenderer > VectorRendererPtr;
 
@@ -147,6 +162,9 @@ typedef boost::shared_ptr< VectorRenderer > VectorRendererPtr;
 }
 // lfx
 }
+
+
+BOOST_CLASS_VERSION( lfx::core::VectorRenderer, 0 );
 
 
 // __LFX_CORE_VECTOR_RENDERER_H__
