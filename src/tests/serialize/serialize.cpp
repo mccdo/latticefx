@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
+
 #include <latticefx/core/DataSet.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/RTPOperation.h>
@@ -35,9 +36,12 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+//#include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include <fstream>
+#include <sstream>
 
 
 using namespace lfx::core;
@@ -115,7 +119,8 @@ BOOST_CLASS_EXPORT( MyMask );
 class MyRenderer : public Renderer
 {
 public:
-    MyRenderer() : Renderer()
+    MyRenderer()
+      : Renderer()
     {
         setInputNameAlias( POSITIONS, "vertices" );
     }
@@ -158,7 +163,23 @@ BOOST_CLASS_VERSION( MyRenderer, 0 );
 BOOST_CLASS_EXPORT( MyRenderer );
 
 
-DataSetPtr prepareDataSet()
+DataSetPtr createDataSet()
+{
+    // Create a data set
+    DataSetPtr dsp( new DataSet() );
+
+    // Create a mask operation and add it to the data set.
+    RTPOperationPtr maskOp( new MyMask() );
+    maskOp->setValue( "threshold", OperationValue( -0.1f ) );
+    //maskOp->setEnable( false ); // Optionally disable the mask operation.
+    dsp->addOperation( maskOp );
+
+    RendererPtr renderOp( new MyRenderer() );
+    dsp->setRenderer( renderOp );
+
+    return( dsp );
+}
+void addData( DataSetPtr dsp )
 {
     // Create a vertex array for the graph - (x*x + y*y), with the plot
     // space ranging from -1 to 1 in both x and y.
@@ -176,26 +197,14 @@ DataSetPtr prepareDataSet()
                 x, y, -( x*x + y*y ) );
         }
     }
+
     ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( "vertices", xyzData.get() ) );
     const Poco::UUID uuid( Poco::UUIDGenerator::defaultGenerator().create() );
     cdp->setDBKey( DBKey( cdp->getName() + "-" + uuid.toString() ) );
 
-    // Create a data set and add the vertex data.
-    DataSetPtr dsp( new DataSet() );
     dsp->addChannel( cdp );
-
-    // Create a mask operation and add it to the data set.
-    RTPOperationPtr maskOp( new MyMask() );
-    maskOp->setValue( "threshold", OperationValue( -0.1f ) );
-    maskOp->addInput( cdp->getName() );
-    //maskOp->setEnable( false ); // Optionally disable the mask operation.
-    dsp->addOperation( maskOp );
-
-    RendererPtr renderOp( new MyRenderer() );
-    renderOp->addInput( cdp->getName() );
-    dsp->setRenderer( renderOp );
-
-    return( dsp );
+    dsp->getOperation( 0 )->addInput( cdp->getName() );
+    dsp->getRenderer()->addInput( cdp->getName() );
 }
 
 
@@ -204,14 +213,24 @@ int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
-    // Create an example data set.
-    DataSetPtr dsp( prepareDataSet() );
-
+    std::ostringstream ostr;
     {
-        std::ofstream ofs( "out.txt" );
-        boost::archive::text_oarchive oa( ofs );
+        // Create an example data set.
+        DataSetPtr dsp( createDataSet() );
+        // Serialize it.
+        boost::archive::text_oarchive oa( ostr );
         oa << *dsp;
     }
+    std::cout << ostr.str() << std::endl;
+
+    DataSetPtr dsp( DataSetPtr( new DataSet() ) );
+    {
+        std::istringstream istr( ostr.str() );
+        // Deserialize the data set.
+        boost::archive::text_iarchive ia( istr );
+        ia >> *dsp;
+    }
+    addData( dsp );
 
     osgViewer::Viewer viewer;
     // Obtain the data set's scene graph and add it to the viewer.
