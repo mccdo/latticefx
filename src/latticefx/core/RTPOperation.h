@@ -53,6 +53,7 @@ class LATTICEFX_EXPORT RTPOperation : public OperationBase
 {
 public:
     typedef enum {
+        Undefined,
         Mask,
         Filter,
         Channel
@@ -60,6 +61,10 @@ public:
     /** \brief */
     RTPOpType getRTPOpType() const { return( _rtpOpType ); }
 
+
+    // This is to remove compile errors caused by boost serializers requiring
+    // either a default constructor or special code for constructing.
+    RTPOperation() : _rtpOpType( Undefined ) {}
 
     RTPOperation( const RTPOpType rtpOpType );
     RTPOperation( const RTPOperation& rhs );
@@ -75,7 +80,7 @@ public:
     virtual ChannelDataPtr channel( const ChannelDataPtr maskIn ) { return( ChannelDataPtr( ( ChannelData* )( NULL ) ) ); }
 
 
-    // 'public' required for plugin accedd?? TBD.
+    // 'public' required for plugin access?? TBD.
 //protected:
     virtual ~RTPOperation();
 

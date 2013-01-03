@@ -451,6 +451,11 @@ bool DataSet::updateRunTimeProcessing()
                 addChannel( cdp, time );
                 break;
             }
+            default:
+            case RTPOperation::Undefined:
+            {
+                LFX_ERROR( "Bad RTPOperation operation type." );
+            }
             }
         }
     }
