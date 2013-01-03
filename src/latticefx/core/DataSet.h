@@ -39,6 +39,7 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <string>
 #include <list>
@@ -289,9 +290,9 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & _preprocess;
-        ar & _ops;
-        ar & _renderer;
+        ar & BOOST_SERIALIZATION_NVP( _preprocess );
+        ar & BOOST_SERIALIZATION_NVP( _ops );
+        ar & BOOST_SERIALIZATION_NVP( _renderer );
     }
 };
 

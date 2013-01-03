@@ -36,7 +36,6 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
-//#include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -110,7 +109,7 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< RTPOperation >( *this );
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( RTPOperation );
     }
 };
 BOOST_CLASS_VERSION( MyMask, 0 );
@@ -156,7 +155,7 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< Renderer >( *this );
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
     }
 };
 BOOST_CLASS_VERSION( MyRenderer, 0 );
@@ -219,7 +218,7 @@ int main( int argc, char** argv )
         DataSetPtr dsp( createDataSet() );
         // Serialize it.
         boost::archive::text_oarchive oa( ostr );
-        oa << *dsp;
+        oa << boost::serialization::make_nvp( "DataSet", *dsp );
     }
     std::cout << ostr.str() << std::endl;
 
@@ -228,7 +227,7 @@ int main( int argc, char** argv )
         std::istringstream istr( ostr.str() );
         // Deserialize the data set.
         boost::archive::text_iarchive ia( istr );
-        ia >> *dsp;
+        ia >> boost::serialization::make_nvp( "DataSet", *dsp );
     }
     addData( dsp );
 

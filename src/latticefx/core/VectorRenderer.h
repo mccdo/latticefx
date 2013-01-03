@@ -28,6 +28,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <string>
@@ -149,8 +150,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< Renderer >( *this );
-        ar & _pointStyle;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar & BOOST_SERIALIZATION_NVP( _pointStyle );
     }
 };
 

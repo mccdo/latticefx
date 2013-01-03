@@ -31,6 +31,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization//base_object.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <list>
 
@@ -94,8 +95,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< OperationBase >( *this );
-        ar & _rtpOpType;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
+        ar & BOOST_SERIALIZATION_NVP( _rtpOpType );
     }
 };
 

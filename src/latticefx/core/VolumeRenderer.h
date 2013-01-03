@@ -25,12 +25,13 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/Renderer.h>
 
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <osgwTools/SerializerSupport.h>
+#include <boost/serialization/nvp.hpp>
+
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 
 // Forward
@@ -78,8 +79,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & _volumeDims;
-        ar & _volumeOrigin;
+        ar & BOOST_SERIALIZATION_NVP( _volumeDims );
+        ar & BOOST_SERIALIZATION_NVP( _volumeOrigin );
     }
 };
 
@@ -183,11 +184,11 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< Renderer >( *this );
-        ar & boost::serialization::base_object< SpatialVolume >( *this );
-        ar & _renderMode;
-        ar & _numPlanes;
-        ar & _maxSamples;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( SpatialVolume );
+        ar & BOOST_SERIALIZATION_NVP( _renderMode );
+        ar & BOOST_SERIALIZATION_NVP( _numPlanes );
+        ar & BOOST_SERIALIZATION_NVP( _maxSamples );
     }
 };
 

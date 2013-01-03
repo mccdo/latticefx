@@ -29,6 +29,7 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <osgwTools/SerializerSupport.h>
+#include <boost/serialization/nvp.hpp>
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
@@ -74,14 +75,6 @@ public:
     \param numElements is the number of vertecies in the \c geom vertex array.
     */
     virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom ) = 0;
-
-private:
-    friend class boost::serialization::access;
-
-    template< class Archive >
-    void serialize( Archive& ar, const unsigned int version )
-    {
-    }
 };
 
 
@@ -151,8 +144,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< Renderer >( *this );
-        ar & _primitiveSetGenerator;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar & BOOST_SERIALIZATION_NVP( _primitiveSetGenerator );
     }
 };
 
@@ -188,7 +181,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< PrimitiveSetGenerator >( *this );
+        // Nothing to serialize
+        //ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( PrimitiveSetGenerator );
     }
 };
 

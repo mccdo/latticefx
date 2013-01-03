@@ -33,6 +33,7 @@
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/serialization/map.hpp>
 
 #include <list>
 #include <map>
@@ -208,8 +209,10 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & _opType;
-        ar & _enable;
+        ar & BOOST_SERIALIZATION_NVP( _opType );
+        ar & BOOST_SERIALIZATION_NVP( _enable );
+        // TBD serialize - need to serialize OperationValue first.
+        //ar & BOOST_SERIALIZATION_NVP( _nameValueMap );
     }
 };
 

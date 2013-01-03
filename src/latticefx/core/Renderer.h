@@ -37,6 +37,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization//base_object.hpp>
+#include <boost/serialization/nvp.hpp>
 
 #include <list>
 #include <map>
@@ -502,16 +503,16 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object< OperationBase >( *this );
-        ar & _baseUnit;
-        ar & _tfInputName;
-        ar & _tfRange;
-        ar & _tfDest;
-        ar & _tfDestMask;
-        ar & _hmSource;
-        ar & _hmInputName;
-        ar & _hmReference;
-        ar & _hmOperator;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
+        ar & BOOST_SERIALIZATION_NVP( _baseUnit );
+        ar & BOOST_SERIALIZATION_NVP( _tfInputName );
+        ar & BOOST_SERIALIZATION_NVP( _tfRange );
+        ar & BOOST_SERIALIZATION_NVP( _tfDest );
+        ar & BOOST_SERIALIZATION_NVP( _tfDestMask );
+        ar & BOOST_SERIALIZATION_NVP( _hmSource );
+        ar & BOOST_SERIALIZATION_NVP( _hmInputName );
+        ar & BOOST_SERIALIZATION_NVP( _hmReference );
+        ar & BOOST_SERIALIZATION_NVP( _hmOperator );
     }
 };
 
