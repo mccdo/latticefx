@@ -234,7 +234,10 @@ void main( void )
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
 
-    finalColor.a *= volumeTransparency;
+    if( volumeTransparencyEnable )
+        finalColor.a *= volumeTransparency;
+    else
+        finalColor.a = 1.f;
 
 
     gl_FragData[ 0 ] = finalColor;
