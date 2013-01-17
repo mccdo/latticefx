@@ -343,10 +343,11 @@ void main( void )
     // recomputing the normal if the new sample value matches the old.
     float lastSample = -1.f;
 
-    float sample = 0.f;
-    while( ++sample < totalSamples )
+    float sampleCount = 0.f;
+    while( sampleCount < totalSamples )
     {
-        float sampleLen = sample / totalSamples;
+        float sampleLen = sampleCount / totalSamples;
+        sampleCount += 1.f;
 
         // Obtain volume sample.
         vec3 coord = tcStart + sampleVec * sampleLen;
@@ -391,16 +392,27 @@ void main( void )
 
         if( litColor.a > 0. )
         {
-            litColor.a *= volumeTransparency;
+            if( !volumeTransparencyEnable )
+            {
+                // Transparency is off, so max the alpha.
+                finalColor = vec4( litColor.rgb, 1.f );
+            }
+            else
+            {
+                // Scale alpha as requested for varying degrees of transparency.
+                litColor.a *= volumeTransparency;
 
-            // Front to back blending:
-            //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
-            //    dst.a   = dst.a   + (1 - dst.a) * src.a
-            vec4 srcColor = vec4( litColor.rgb * litColor.a, litColor.a );
-            finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+                // Front to back blending:
+                //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
+                //    dst.a   = dst.a   + (1 - dst.a) * src.a
+                vec4 srcColor = vec4( litColor.rgb * litColor.a, litColor.a );
+                finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+            }
 
             if( finalColor.a > .95f )
-                // It's opaque enough
+                // It's opaque enough. Break out of the loop.
+                // And, we take this branch if transparency is disabled because
+                // we forced the alpha to 1.0.
                 break;
         }
     }
