@@ -113,29 +113,7 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
 
 
 
-uniform sampler3D VolumeTexture;
-
-varying vec3 Texcoord;
-varying vec3 TexcoordUp;
-varying vec3 TexcoordRight;
-varying vec3 TexcoordBack;
-varying vec3 TexcoordDown;
-varying vec3 TexcoordLeft;
-varying vec3 TexcoordFront;
-
-varying vec3 ecUp;
-varying vec3 ecRight;
-varying vec3 ecBack;
-varying vec3 ecDown;
-varying vec3 ecLeft;
-varying vec3 ecFront;
-
-
-bool TestInBounds(vec3 sample)
-{
-   return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
-}
-
+/** begin clipping */
 
 uniform int volumeClipPlaneEnable0;
 uniform int volumeClipPlaneEnable1;
@@ -176,15 +154,43 @@ float clipping( in vec3 ec )
 #endif
 }
 
-varying vec4 color;
+/** end clipping */
+
+
+
+uniform sampler3D VolumeTexture;
+
+uniform float volumeTransparency;
+uniform bool volumeTransparencyEnable;
+
+varying vec3 Texcoord;
+varying vec3 TexcoordUp;
+varying vec3 TexcoordRight;
+varying vec3 TexcoordBack;
+varying vec3 TexcoordDown;
+varying vec3 TexcoordLeft;
+varying vec3 TexcoordFront;
+
+varying vec3 ecUp;
+varying vec3 ecRight;
+varying vec3 ecBack;
+varying vec3 ecDown;
+varying vec3 ecLeft;
+varying vec3 ecFront;
+
+
+bool TestInBounds(vec3 sample)
+{
+   return (sample.x > 0.0 && sample.x < 1.0 && sample.y > 0.0 && sample.y < 1.0 && sample.z > 0.0 && sample.z < 1.0);
+}
+
+
 void main( void )
 {
     // Vectex shader always sends (eye oriented) quads. Much of the quad
     // might be outside the volume. Immediately discard if this is the case.
     if( !( TestInBounds( Texcoord ) ) )
         discard;
-    //gl_FragData[0] = color;
-    //return;
 
     // Get volume sample. Format is GL_KUMINANCE, so the same volume value
     // will be stored in fvBaseColor.r, g, and b. fvBaseColor.a will be 1.0.
@@ -227,6 +233,8 @@ void main( void )
     vec3 ecNormal = normalize( gl_NormalMatrix * ( frontVec - backVec ) );
 
     vec4 finalColor = fragmentLighting( color, ecNormal );
+
+    finalColor.a *= volumeTransparency;
 
 
     gl_FragData[ 0 ] = finalColor;

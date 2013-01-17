@@ -195,6 +195,9 @@ float clipping( in vec3 tc )
 
 uniform sampler3D VolumeTexture;
 
+uniform float volumeTransparency;
+uniform bool volumeTransparencyEnable;
+
 uniform float volumeMaxSamples;
 uniform vec3 volumeResolution;
 
@@ -388,6 +391,8 @@ void main( void )
 
         if( litColor.a > 0. )
         {
+            litColor.a *= volumeTransparency;
+
             // Front to back blending:
             //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
             //    dst.a   = dst.a   + (1 - dst.a) * src.a

@@ -85,7 +85,9 @@ VolumeRenderer::VolumeRenderer()
   : Renderer( "vol" ),
     _renderMode( SLICES ),
     _numPlanes( 100.f ),
-    _maxSamples( 100.f )
+    _maxSamples( 100.f ),
+    _transparencyScalar( 1.f ),
+    _transparencyEnable( true )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VOLUME_DATA, "volumedata" );
@@ -112,6 +114,12 @@ VolumeRenderer::VolumeRenderer()
     info = UniformInfo( "volumeMaxSamples", osg::Uniform::FLOAT, "Max ray Samples for ray traced rendering." );
     registerUniform( info );
 
+    info = UniformInfo( "volumeTransparency", osg::Uniform::FLOAT, "Alpha coefficient, default: 1.0." );
+    registerUniform( info );
+
+    info = UniformInfo( "volumeTransparencyEnable", osg::Uniform::BOOL, "Blending enable, default: true." );
+    registerUniform( info );
+
     info = UniformInfo( "volumeClipPlaneEnable0", osg::Uniform::INT, "Clip plane 0: 1=enabled, 0=disabled." );
     registerUniform( info );
     info = UniformInfo( "volumeClipPlaneEnable1", osg::Uniform::INT, "Clip plane 1: 1=enabled, 0=disabled." );
@@ -129,7 +137,9 @@ VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
   : Renderer( rhs ),
     _renderMode( rhs._renderMode ),
     _numPlanes( rhs._numPlanes ),
-    _maxSamples( rhs._maxSamples )
+    _maxSamples( rhs._maxSamples ),
+    _transparencyScalar( rhs._transparencyScalar ),
+    _transparencyEnable( rhs._transparencyEnable )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -314,6 +324,16 @@ osg::StateSet* VolumeRenderer::getRootState()
             info._prototype->set( _maxSamples );
             stateSet->addUniform( createUniform( info ) );
         }
+    }
+    {
+        UniformInfo& info( getUniform( "volumeTransparency" ) );
+        info._prototype->set( _transparencyScalar );
+        stateSet->addUniform( createUniform( info ) );
+    }
+    {
+        UniformInfo& info( getUniform( "volumeTransparencyEnable" ) );
+        info._prototype->set( _transparencyEnable );
+        stateSet->addUniform( createUniform( info ) );
     }
 
     for( unsigned int idx=0; idx<6; idx++ )

@@ -113,7 +113,7 @@ float getCubeDiagonalLength( in vec3 modelMatScales )
     return( length( cubeDims ) );
 }
 
-varying vec4 color;
+
 void main( void )
 {
     // Shortcut names with coordinate system prefix.

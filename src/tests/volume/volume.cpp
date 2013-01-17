@@ -59,6 +59,8 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
     renderOp->setNumPlanes( 400.f );
+    renderOp->setTransparency( .25f );
+    renderOp->setTransparencyEnable( true );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );

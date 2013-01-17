@@ -165,6 +165,28 @@ public:
     /** \brief Get the max ray samples for RenderMode RAY_TRACED. */
     float getMaxSamples() const { return( _maxSamples ); }
 
+    /** \brief Transparancy scale value.
+    \details After the shader computes an alpha value for the RGBA color,
+    it multiplies the alpha by this value. Smaller values reduce the alpha
+    resulting in greater transparency. Larger values cause the volume to
+    appear more opaque.
+
+    For correct transparency, blending should be enabled. The VolumeRenderer
+    scene graph root state enables blending by default.
+
+    The default transparency scalar is 1.0. */
+    void setTransparency( const float trans ) { _transparencyScalar = trans; }
+    /** \brief Get the transparency scalar. */
+    float getTransparency() const { return( _transparencyScalar ); }
+
+    /** \brief Enable or disable transparency.
+    \detauls Transparency is enabled by default. To disable it, set this
+    value to false. For maximum performance, the app should also disable GL_BLENDING
+    above the latticefx scene graph using the OVERRIDE bit. */
+    void setTransparencyEnable( const bool enable=true ) { _transparencyEnable = enable; }
+    /** \brief Get the transparency enable flag. */
+    bool getTransparencyEnable() const { return( _transparencyEnable ); }
+
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
     virtual bool validInputs() const;
@@ -178,6 +200,9 @@ protected:
     float _numPlanes;
     float _maxSamples;
 
+    float _transparencyScalar;
+    bool _transparencyEnable;
+
 private:
     friend class boost::serialization::access;
 
@@ -189,6 +214,8 @@ private:
         ar & BOOST_SERIALIZATION_NVP( _renderMode );
         ar & BOOST_SERIALIZATION_NVP( _numPlanes );
         ar & BOOST_SERIALIZATION_NVP( _maxSamples );
+        ar & BOOST_SERIALIZATION_NVP( _transparencyScalar );
+        ar & BOOST_SERIALIZATION_NVP( _transparencyEnable );
     }
 };
 
