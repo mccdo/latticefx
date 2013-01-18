@@ -132,16 +132,17 @@ protected:
         double deltaY = (m_brickBB.yMax() - m_brickBB.yMin()) * factor; 
         double deltaZ = (m_brickBB.zMax() - m_brickBB.zMin()) * factor;
         //std::cout << deltaX << " " << deltaY << " " << deltaZ << std::endl;
-        size_t numPixels = SUBSAMPLE_SIZE * SUBSAMPLE_SIZE * SUBSAMPLE_SIZE;
+        const size_t overSample = SUBSAMPLE_SIZE + 1;
+        size_t numPixels = overSample * overSample * overSample;
         unsigned char* pixels( new unsigned char[ numPixels ] );
         unsigned char* pixelPtr( pixels );
         double x, y, z;
         bool pixelsPresent = false;
-        for( size_t k = 0; k < SUBSAMPLE_SIZE; ++k )
+        for( size_t k = 0; k < overSample; ++k )
         {
-            for( size_t j = 0; j < SUBSAMPLE_SIZE; ++j )
+            for( size_t j = 0; j < overSample; ++j )
             {
-                for( size_t i = 0; i < SUBSAMPLE_SIZE; ++i )
+                for( size_t i = 0; i < overSample; ++i )
                 {
                     x = m_brickBB.xMin() + i * deltaX;
                     y = m_brickBB.yMin() + j * deltaY;
@@ -369,7 +370,8 @@ protected:
     {
         osg::ref_ptr< osg::Image > image = new osg::Image();
         //We will let osg manage the raw image data
-        image->setImage( SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, SUBSAMPLE_SIZE, 
+        const size_t overSample = SUBSAMPLE_SIZE + 1;
+        image->setImage( overSample, overSample, overSample, 
                          GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                          pixels, osg::Image::USE_NEW_DELETE );
 

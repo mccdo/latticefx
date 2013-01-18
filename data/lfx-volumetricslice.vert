@@ -172,8 +172,11 @@ void main( void )
     vec3 ocQuadVertex = ( gl_ModelViewMatrixInverse * ecQuadVertex ).xyz;
     Texcoord = ( ocQuadVertex - ocCenter ) / ocDims + vec3( .5 );
 
+    // Scale down to account for overlapping texels between tiles.
+    vec3 invRes = 1.f / volumeResolution;
+    Texcoord *= ( 1.f - invRes );
+
     // Surrounding texture coords used for surface normal derivation.
-    vec3 invRes = 1. / volumeResolution;
     TexcoordRight = Texcoord + vec3( invRes.x, 0. , 0. );
     TexcoordUp = Texcoord + vec3( 0., invRes.y, 0. );
     TexcoordBack = Texcoord + vec3( 0., 0., invRes.z );

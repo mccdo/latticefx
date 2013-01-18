@@ -199,14 +199,15 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     tc->resize( 8 );
     geom->setTexCoordArray( 0, tc );
 
-    (*tc)[0].set( 0., 0., 0. );
-    (*tc)[1].set( 1., 0., 0. );
-    (*tc)[2].set( 0., 1., 0. );
-    (*tc)[3].set( 1., 1., 0. );
-    (*tc)[4].set( 0., 0., 1. );
-    (*tc)[5].set( 1., 0., 1. );
-    (*tc)[6].set( 0., 1., 1. );
-    (*tc)[7].set( 1., 1., 1. );
+    const osg::Vec3f eps( .5f / _volumeDims.x(), .5f / _volumeDims.y(), .5f / _volumeDims.z() );
+    (*tc)[0].set( eps );
+    (*tc)[1].set( 1.f - eps.x(), eps.y(), eps.z() );
+    (*tc)[2].set( eps.x(), 1.f - eps.y(), eps.z() );
+    (*tc)[3].set( 1.f - eps.x(), 1.f - eps.y(), eps.z() );
+    (*tc)[4].set( eps.x(), eps.y(), 1.f - eps.z() );
+    (*tc)[5].set( 1.f - eps.x(), eps.y(), 1.f - eps.z() );
+    (*tc)[6].set( eps.x(), 1.f - eps.y(), 1.f - eps.z() );
+    (*tc)[7].set( 1.f - eps.x(), 1.f - eps.y(), 1.f - eps.z() );
 
     GLushort indices[] = {
         2, 0, 6, 6, 0, 4, // -x face
@@ -407,10 +408,10 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     tex->setResizeNonPowerOfTwoHint( false );
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
-    tex->setWrap(osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP);
-    tex->setWrap(osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP);
-    tex->setWrap(osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP);
-    tex->setBorderColor( osg::Vec4d( 0., 0., 0., 0. ) );
+    tex->setWrap( osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE );
+    tex->setWrap( osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE );
+    tex->setWrap( osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE );
+    tex->setBorderWidth( 0 );
     osg::Image* dummyImage( new osg::Image );
     dummyImage->setFileName( key );
     tex->setImage( dummyImage );
