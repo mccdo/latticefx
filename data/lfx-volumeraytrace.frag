@@ -186,7 +186,7 @@ float clipping( in vec3 tc )
     bvec2 clipResultB = bvec2(
         ( volumeClipPlaneEnable4 > 0 ) ? ( dot( ec, gl_ClipPlane[ 4 ] ) >= 0. ) : true,
         ( volumeClipPlaneEnable5 > 0 ) ? ( dot( ec, gl_ClipPlane[ 5 ] ) >= 0. ) : true );
-    return( float( inView && all( clipResultA )&& all( clipResultB ) ) );
+    return( float( inView && all( clipResultA ) && all( clipResultB ) ) );
 }
 
 /** end clipping */
@@ -337,7 +337,7 @@ void main( void )
     vec4 litColor = vec4( 0., 0., 0., 0. );
 
     // Tex coord delta used for normal computation.
-    vec3 tcDelta = 1. / volumeResolution;
+    vec3 tcDelta = .5 / volumeResolution;
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.

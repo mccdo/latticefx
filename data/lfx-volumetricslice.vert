@@ -173,8 +173,8 @@ void main( void )
     Texcoord = ( ocQuadVertex - ocCenter ) / ocDims + vec3( .5 );
 
     // Scale down to account for overlapping texels between tiles.
-    vec3 invRes = 1.f / volumeResolution;
-    Texcoord *= ( 1.f - invRes );
+    vec3 invRes = .5f / volumeResolution;
+    Texcoord *= ( 1.f - 2.f * invRes );
 
     // Surrounding texture coords used for surface normal derivation.
     TexcoordRight = Texcoord + vec3( invRes.x, 0. , 0. );
