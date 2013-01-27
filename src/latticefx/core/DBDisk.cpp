@@ -79,6 +79,10 @@ osg::Image* DBDisk::loadImage( const DBKey& dbKey )
 {
     std::string fileName( fileNameFromDBKey( dbKey ) );
     osg::Image* image( osgDB::readImageFile( fileName ) );
+    if( image == NULL )
+    {
+        LFX_ERROR_STATIC( "lfx.db.disk", "Can't load file " + fileName );
+    }
 
     if( image->getFileName().empty() )
         // Required for paging, in case the image load doesn't set it.
