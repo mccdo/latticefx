@@ -22,10 +22,16 @@
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/ChannelDataImageSet.h>
 #include <latticefx/core/ChannelDataLOD.h>
+#include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/PageData.h>
 #include <latticefx/core/DBUtils.h>
 
+#include <osgDB/FileUtils>
+#include <osgDB/FileNameUtils>
+
+#include <Poco/Path.h>
+#include <Poco/Glob.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
 
@@ -649,6 +655,87 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, std::string& brickName )
         recurseSaveBricks( db, brickName + std::string( "6" ) );
         recurseSaveBricks( db, brickName + std::string( "7" ) );
     }
+}
+
+
+
+
+LoadHierarchy::LoadHierarchy()
+{
+    setActionType( Preprocess::ADD_DATA );
+}
+LoadHierarchy::~LoadHierarchy()
+{
+}
+
+ChannelDataPtr LoadHierarchy::operator()()
+{
+    DBBase::StringSet results( _db->getAllKeys() );
+    if( results.empty() )
+    {
+        LFX_FATAL_STATIC( "lfx.core.hier", "No keys in DB." );
+    }
+
+    // Determine the hierarchy maxDepth from the longest hierarchy name.
+    unsigned int maxDepth( 1 );
+    BOOST_FOREACH( const std::string& fName, results )
+    {
+        if( !valid( fName ) )
+            continue;
+
+        Poco::Path pocoPath( fName );
+        const std::string& actualName( pocoPath.getFileName() );
+        size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
+        if( depth > maxDepth )
+            maxDepth = depth;
+    }
+
+    // Create the ChannelData hierarchy.
+    ChannelDataPtr cdp( (ChannelData*)NULL );
+    try {
+        AssembleHierarchy ah( maxDepth, 60000. );
+        BOOST_FOREACH( const std::string& fName, results )
+        {
+            if( !valid( fName ) )
+                continue;
+
+            // Create this ChannelData.
+            ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
+            cdImage->setDBKey( DBKey( fName ) );
+
+            // Get the hierarchy name string.
+            Poco::Path pocoPath( fName );
+            const std::string& actualName( pocoPath.getFileName() );
+            const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
+            const size_t lastLoc( actualName.find_last_of( "-" ) );
+            const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
+
+            LFX_DEBUG_STATIC( "lfx.core.hier", "Adding " + fName + ": " + hierarchyName );
+            cdImage->setName( "volumedata" );
+            ah.addChannelData( cdImage, hierarchyName );
+        }
+        ah.prune();
+        cdp = ah.getRoot();
+    } catch( std::exception& /*exc*/ ) {
+        LFX_ERROR_STATIC( "lfx.core.hier", "Unable to assemble hierarchy." );
+        return( cdp );
+    }
+
+    // Return the hierarchy root.
+    cdp->setName( "volumedata" );
+    return( cdp );
+}
+
+bool LoadHierarchy::valid( const std::string& fileName )
+{
+    const std::string nameOnly( osgDB::getSimpleFileName( fileName ) );
+    const size_t firstDash( nameOnly.find_first_of( "-" ) );
+    const size_t lastDash( nameOnly.find_last_of( "-" ) );
+    if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
+        ( lastDash == std::string::npos ) )
+        return( false );
+    else
+        return( true );
 }
 
 

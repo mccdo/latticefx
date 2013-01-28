@@ -24,6 +24,7 @@
 #include <latticefx/core/Export.h>
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/DBBase.h>
+#include <latticefx/core/Preprocess.h>
 
 #include <osg/Vec3>
 #include <osg/Vec3s>
@@ -297,6 +298,24 @@ protected:
     LODVector _lodVec;
 
     std::string _baseName;
+};
+
+
+
+/** \class LoadHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief TBD
+\details TBD
+*/
+class LATTICEFX_EXPORT LoadHierarchy : public Preprocess
+{
+public:
+    LoadHierarchy();
+    ~LoadHierarchy();
+
+    virtual ChannelDataPtr operator()();
+
+protected:
+    static bool valid( const std::string& fileName );
 };
 
 

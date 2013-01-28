@@ -38,14 +38,10 @@
 
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
-#include <osgDB/FileUtils>
-#include <osgDB/FileNameUtils>
 #include <osg/Group>
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
 
-#include <Poco/Path.h>
-#include <Poco/Glob.h>
 #include <boost/foreach.hpp>
 
 #include <string>
@@ -55,87 +51,6 @@ static std::string logstr( "lfx.demo" );
 
 using namespace lfx::core;
 
-
-class ImageHierarchyLoader : public Preprocess
-{
-public:
-    ImageHierarchyLoader()
-    {
-        setActionType( Preprocess::ADD_DATA );
-    }
-    ~ImageHierarchyLoader() {}
-
-    virtual ChannelDataPtr operator()()
-    {
-        DBBase::StringSet results( _db->getAllKeys() );
-        if( results.empty() )
-        {
-            LFX_FATAL_STATIC( logstr, "No keys in DB." );
-        }
-
-        // Determine the hierarchy maxDepth from the longest hierarchy name.
-        unsigned int maxDepth( 1 );
-        BOOST_FOREACH( const std::string& fName, results )
-        {
-            if( !valid( fName ) )
-                continue;
-
-            Poco::Path pocoPath( fName );
-            const std::string& actualName( pocoPath.getFileName() );
-            size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
-            if( depth > maxDepth )
-                maxDepth = depth;
-        }
-
-        // Create the ChannelData hierarchy.
-        ChannelDataPtr cdp( (ChannelData*)NULL );
-        try {
-            AssembleHierarchy ah( maxDepth, 60000. );
-            BOOST_FOREACH( const std::string& fName, results )
-            {
-                if( !valid( fName ) )
-                    continue;
-
-                // Create this ChannelData.
-                ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
-                cdImage->setDBKey( DBKey( fName ) );
-
-                // Get the hierarchy name string.
-                Poco::Path pocoPath( fName );
-                const std::string& actualName( pocoPath.getFileName() );
-                const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
-                const size_t lastLoc( actualName.find_last_of( "-" ) );
-                const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
-
-                LFX_DEBUG_STATIC( logstr, "Adding " + fName + ": " + hierarchyName );
-                cdImage->setName( "volumedata" );
-                ah.addChannelData( cdImage, hierarchyName );
-            }
-            ah.prune();
-            cdp = ah.getRoot();
-        } catch( std::exception& /*exc*/ ) {
-            LFX_ERROR_STATIC( logstr, "Unable to assemble hierarchy." );
-            return( cdp );
-        }
-
-        // Return the hierarchy root.
-        cdp->setName( "volumedata" );
-        return( cdp );
-    }
-
-protected:
-    bool valid( const std::string& fileName )
-    {
-        const std::string nameOnly( osgDB::getSimpleFileName( fileName ) );
-        const size_t firstDash( nameOnly.find_first_of( "-" ) );
-        const size_t lastDash( nameOnly.find_last_of( "-" ) );
-        if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
-            ( lastDash == std::string::npos ) )
-            return( false );
-        else
-            return( true );
-    }
-};
 
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
@@ -178,9 +93,9 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     dsp->setDB( dbBase );
 
 
-    ImageHierarchyLoader* ihl = new ImageHierarchyLoader();
-    ihl->setDB( dbBase );
-    dsp->addPreprocess( PreprocessPtr( (Preprocess*)ihl ) );
+    LoadHierarchy* loader( new LoadHierarchy() );
+    loader->setDB( dbBase );
+    dsp->addPreprocess( PreprocessPtr( (Preprocess*)loader ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
