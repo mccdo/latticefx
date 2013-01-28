@@ -23,9 +23,12 @@
 
 #include <latticefx/core/Export.h>
 #include <latticefx/core/ChannelData.h>
+#include <latticefx/core/DBBase.h>
 
 #include <osg/Vec3>
 #include <osg/Vec3s>
+#include <osg/ref_ptr>
+#include <osg/Image>
 
 #include <vector>
 
@@ -215,6 +218,85 @@ public:
 
 protected:
     osg::Vec3s _dims;
+};
+
+
+
+/** \class VolumeBrickData HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief TBD
+\details TBD
+*/
+class LATTICEFX_EXPORT VolumeBrickData
+{
+public:
+    VolumeBrickData();
+    ~VolumeBrickData();
+
+    void setNumBricks( const osg::Vec3s& numBricks );
+    osg::Vec3s getNumBricks() const;
+
+    void addBrick( const osg::Vec3s& brickNum, osg::Image* image );
+    virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+    osg::Image* getBrick( const std::string& brickName ) const;
+
+protected:
+    int brickIndex( const osg::Vec3s& brickNum ) const;
+
+    osg::Vec3s _numBricks;
+
+    typedef std::vector< osg::ref_ptr< osg::Image > > ImageVector;
+    ImageVector _images;
+};
+
+
+
+/** \class Downsampler HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief TBD
+\details TBD
+*/
+class LATTICEFX_EXPORT Downsampler
+{
+public:
+    Downsampler( const VolumeBrickData* hiRes );
+    ~Downsampler();
+
+    /** \brief TBD
+    \details
+    Note that calling code is responsible for calling delete
+    on the return value. */
+    VolumeBrickData* getLow() const;
+
+protected:
+    osg::Image* sample( const osg::Image* i0, const osg::Image* i1, const osg::Image* i2, const osg::Image* i3,
+        const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const;
+
+    const VolumeBrickData* _hi;
+    mutable VolumeBrickData* _low;
+};
+
+
+
+/** \class SaveHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
+\brief TBD
+\details TBD
+*/
+class LATTICEFX_EXPORT SaveHierarchy
+{
+public:
+    SaveHierarchy( VolumeBrickData* base, const std::string baseName );
+    ~SaveHierarchy();
+
+    void save( DBBasePtr db );
+
+protected:
+    void recurseSaveBricks( DBBasePtr db, std::string& brickName );
+
+    unsigned int _depth;
+
+    typedef std::vector< VolumeBrickData* > LODVector;
+    LODVector _lodVec;
+
+    std::string _baseName;
 };
 
 

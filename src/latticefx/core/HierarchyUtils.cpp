@@ -24,6 +24,7 @@
 #include <latticefx/core/ChannelDataLOD.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/PageData.h>
+#include <latticefx/core/DBUtils.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
@@ -407,6 +408,247 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
     }
 
     return( nameString );
+}
+
+
+
+
+VolumeBrickData::VolumeBrickData()
+  : _numBricks( 0, 0, 0 )
+{
+}
+VolumeBrickData::~VolumeBrickData()
+{
+}
+
+void VolumeBrickData::setNumBricks( const osg::Vec3s& numBricks )
+{
+    _numBricks = numBricks;
+    _images.resize( numBricks[0] * numBricks[1] * numBricks[2] );
+}
+osg::Vec3s VolumeBrickData::getNumBricks() const
+{
+    return( _numBricks );
+}
+
+void VolumeBrickData::addBrick( const osg::Vec3s& brickNum, osg::Image* image )
+{
+    const int idx( brickIndex( brickNum ) );
+    if( ( idx < 0 ) || ( idx >= _images.size() ) )
+        return;
+    else
+        _images[ idx ] = image;
+}
+osg::Image* VolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
+{
+    const int idx( brickIndex( brickNum ) );
+    if( ( idx < 0 ) || ( idx >= _images.size() ) )
+        return( NULL );
+    else
+        return( _images[ idx ].get() );
+}
+osg::Image* VolumeBrickData::getBrick( const std::string& brickName ) const
+{
+    // Depth check
+    short dim( 1 << brickName.length() );
+    if( ( dim != _numBricks[0] ) || ( dim != _numBricks[1] ) || ( dim != _numBricks[2] ) )
+        return( NULL );
+
+    osg::Vec3s brickNum;
+    if( brickName.empty() )
+        return( getBrick( brickNum ) );
+
+    osg::Vec3s half( _numBricks[0]/2, _numBricks[1]/2, _numBricks[2]/2 );
+    for( int idx=0; idx < brickName.length(); ++idx )
+    {
+        int pos( (char)( brickName[ idx ] ) - 0 );
+        brickNum[0] += ( pos & 0x1 ) ? half[0] : 0;
+        brickNum[1] += ( pos & 0x2 ) ? half[1] : 0;
+        brickNum[2] += ( pos & 0x4 ) ? half[2] : 0;
+        half.set( half[0]/2, half[1]/2, half[2]/2 );
+    }
+
+    return( getBrick( brickNum ) );
+}
+
+int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
+{
+    if( ( brickNum[0] >= _numBricks[0] ) || ( brickNum[0] < 0 ) ||
+        ( brickNum[1] >= _numBricks[1] ) || ( brickNum[1] < 0 ) ||
+        ( brickNum[2] >= _numBricks[2] ) || ( brickNum[2] < 0 ) )
+            return( -1 );
+
+    return( brickNum[0] * _numBricks[1] * _numBricks[2] +
+        brickNum[1] * _numBricks[2] +
+        brickNum[2] );
+}
+
+
+
+Downsampler::Downsampler( const VolumeBrickData* hiRes )
+  : _hi( hiRes ),
+    _low( NULL )
+{}
+Downsampler::~Downsampler()
+{
+}
+
+VolumeBrickData* Downsampler::getLow() const
+{
+    if( _low )
+        return( _low );
+    _low = new VolumeBrickData();
+
+    osg::Vec3s numBricks( _hi->getNumBricks() );
+    numBricks[0] >>= 1;   if( numBricks[0] <= 1 ) numBricks[0] = 1;
+    numBricks[1] >>= 1;   if( numBricks[1] <= 1 ) numBricks[1] = 1;
+    numBricks[2] >>= 1;   if( numBricks[2] <= 1 ) numBricks[2] = 1;
+    _low->setNumBricks( numBricks );
+
+    for( int rIdx=0; rIdx<numBricks[2]; ++rIdx )
+    {
+        for( int tIdx=0; tIdx<numBricks[1]; ++tIdx )
+        {
+            for( int sIdx=0; sIdx<numBricks[0]; ++sIdx )
+            {
+                osg::ref_ptr< osg::Image > i0( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2,   rIdx*2 ) ) );
+                osg::ref_ptr< osg::Image > i1( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2,   rIdx*2 ) ) );
+                osg::ref_ptr< osg::Image > i2( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2+1, rIdx*2 ) ) );
+                osg::ref_ptr< osg::Image > i3( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2+1, rIdx*2 ) ) );
+                osg::ref_ptr< osg::Image > i4( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2,   rIdx*2+1 ) ) );
+                osg::ref_ptr< osg::Image > i5( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2,   rIdx*2+1 ) ) );
+                osg::ref_ptr< osg::Image > i6( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2+1, rIdx*2+1 ) ) );
+                osg::ref_ptr< osg::Image > i7( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2+1, rIdx*2+1 ) ) );
+
+                osg::Image* image( sample( i0.get(), i1.get(), i2.get(), i3.get(),
+                    i4.get(), i5.get(), i6.get(), i7.get() ) );
+                _low->addBrick( osg::Vec3s( sIdx, tIdx, rIdx ), image );
+            }
+        }
+    }
+
+    return( _low );
+}
+
+osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, const osg::Image* i2, const osg::Image* i3,
+    const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const
+{
+    osg::ref_ptr< osg::Image > image( new osg::Image() );
+
+    unsigned char* data( new unsigned char[ i0->s() * i0->t() * i0->r() ] );
+    image->setImage( i0->s(), i0->t(), i0->t(),
+        GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+        (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+    unsigned char* ptr( data );
+
+    for( int rIdx=0; rIdx<image->r(); ++rIdx )
+    {
+        int rBit( ( rIdx < image->r()/2 ) ? 0 : 1 );
+        for( int tIdx=0; tIdx<image->t(); ++tIdx )
+        {
+            int tBit( ( tIdx < image->t()/2 ) ? 0 : 1 );
+            for( int sIdx=0; sIdx<image->s(); ++sIdx )
+            {
+                int sBit( ( sIdx < image->s()/2 ) ? 0 : 1 );
+                osg::Image* inImage;
+                switch( (rBit << 2) + (tBit << 1) + sBit )
+                {
+                case 0: inImage = const_cast< osg::Image* >( i0 ); break;
+                case 1: inImage = const_cast< osg::Image* >( i1 ); break;
+                case 2: inImage = const_cast< osg::Image* >( i2 ); break;
+                case 3: inImage = const_cast< osg::Image* >( i3 ); break;
+                case 4: inImage = const_cast< osg::Image* >( i4 ); break;
+                case 5: inImage = const_cast< osg::Image* >( i5 ); break;
+                case 6: inImage = const_cast< osg::Image* >( i6 ); break;
+                case 7: inImage = const_cast< osg::Image* >( i7 ); break;
+                }
+
+                const int s( sIdx % ( inImage->s() / 2 ) );
+                const int t( tIdx % ( inImage->t() / 2 ) );
+                const int r( rIdx % ( inImage->r() / 2 ) );
+                int pixel(
+                    *( inImage->data( s*2,   t*2,   r*2 ) ) +
+                    *( inImage->data( s*2+1, t*2,   r*2 ) ) +
+                    *( inImage->data( s*2,   t*2+1, r*2 ) ) +
+                    *( inImage->data( s*2+1, t*2+1, r*2 ) ) +
+                    *( inImage->data( s*2,   t*2,   r*2+1 ) ) +
+                    *( inImage->data( s*2+1, t*2,   r*2+1 ) ) +
+                    *( inImage->data( s*2,   t*2+1, r*2+1 ) ) +
+                    *( inImage->data( s*2+1, t*2+1, r*2+1 ) )
+                    );
+                pixel >>= 3; // Divide by 8.
+                *ptr++ = (unsigned char)pixel;
+            }
+        }
+    }
+
+    return( image.release() );
+}
+
+
+
+
+
+SaveHierarchy::SaveHierarchy( VolumeBrickData* base, const std::string baseName )
+  : _depth( 0 ),
+    _baseName( baseName )
+{
+    short xDim( base->getNumBricks().x() );
+    _depth = 0;
+    while( xDim > 0 )
+    {
+        ++_depth;
+        xDim >>= 1;
+    }
+    _lodVec.resize( _depth );
+
+    _lodVec[ _depth-1 ] = base;
+    for( int depthIdx = _depth-1; depthIdx > 0; --depthIdx )
+    {
+        Downsampler ds( _lodVec[ depthIdx ] );
+        _lodVec[ depthIdx-1 ] = ds.getLow();
+    }
+}
+SaveHierarchy::~SaveHierarchy()
+{
+    for( unsigned int idx=0; idx < _lodVec.size()-1; ++idx )
+    {
+        delete _lodVec[ idx ];
+    }
+}
+
+void SaveHierarchy::save( DBBasePtr db )
+{
+    if( db == NULL )
+    {
+        LFX_WARNING_STATIC( "lfx.core.hier", "NULL DB in SaveHierarchy." );
+    }
+
+    recurseSaveBricks( db, std::string( "" ) );
+}
+
+void SaveHierarchy::recurseSaveBricks( DBBasePtr db, std::string& brickName )
+{
+    const int depth( brickName.length() );
+    VolumeBrickData* vbd( _lodVec[ depth ] );
+    osg::Image* image( vbd->getBrick( brickName ) );
+
+    const std::string fileName( _baseName + "-" + brickName + "-.ive" );
+    image->setFileName( fileName );
+    db->storeImage( image, fileName );
+    LFX_INFO_STATIC( "lfx.core.hier", "Saved brick " + fileName );
+
+    if( depth < _depth-1 )
+    {
+        recurseSaveBricks( db, brickName + std::string( "0" ) );
+        recurseSaveBricks( db, brickName + std::string( "1" ) );
+        recurseSaveBricks( db, brickName + std::string( "2" ) );
+        recurseSaveBricks( db, brickName + std::string( "3" ) );
+        recurseSaveBricks( db, brickName + std::string( "4" ) );
+        recurseSaveBricks( db, brickName + std::string( "5" ) );
+        recurseSaveBricks( db, brickName + std::string( "6" ) );
+        recurseSaveBricks( db, brickName + std::string( "7" ) );
+    }
 }
 
 
