@@ -386,8 +386,6 @@ void main( void )
                 vec3 normal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
                 litColor = fragmentLighting( color, normal );
             }
-            else
-                litColor = vec4( 0., 0., 0., 0. );
         }
 
         if( litColor.a > 0. )
