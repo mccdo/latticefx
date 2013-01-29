@@ -224,7 +224,7 @@ protected:
 
 
 /** \class VolumeBrickData HierarchyUtils <latticefx/core/HierarchyUtils.h>
-\brief TBD
+\brief A collection of volume bricks for a single LOD.
 \details TBD
 */
 class LATTICEFX_EXPORT VolumeBrickData
@@ -252,9 +252,17 @@ protected:
 
 
 /** \class Downsampler HierarchyUtils <latticefx/core/HierarchyUtils.h>
-\brief TBD
-\details TBD
-*/
+\brief Resamples a VolumeBrickData into a lower LOD.
+\details To create a lower LOD version of a VolumeBrickData, pass the base LOD
+as the \c hiRes constructor parameter, then call getLow(). getLow() resamples
+\c hiRes to create a new VolumeBrickData containing 1/8th as many bricks as
+\c hiRes.
+
+The number of bricks in \c hiRes in each dimension must be a power of 2. The
+osg::Image dimensions of each brick in \c hiRes must be a power of 2.
+
+It is the application's responsibility to delete the VolumeBrickData returned
+by getLow(). */
 class LATTICEFX_EXPORT Downsampler
 {
 public:
@@ -278,9 +286,33 @@ protected:
 
 
 /** \class SaveHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
-\brief TBD
-\details TBD
-*/
+\brief Create a volume LOD set and save it to a DB.
+\details Create an instance of a VolumeBrickData containing the highest
+LOD of your volume data set in bricked form. Pass this to the constructor,
+along with a baseName to use for the database keys. Then call save() with
+the database you wish to save the hierarchy into.
+
+The \c base constructor parameter must contain (or provide access to) the
+highest LOD of the volume data in brick form. If the data set is relatively
+small, \c base can be an instance of VolumeBrickData containing each brick
+as an osg::Image. If the data set is large and doesn't fit into memory, then
+\c base should be a derivation of VolumeBrickData that loads bricks from
+secondary storage or generates bricks procedurally.
+
+The hierarchy depth is computed as the log base 2 of a \c base brick's x
+dimension. For this reason, all bricks in \c base must have the same size,
+and the bricks should have square dimensions. Furthermore, the dimensions
+should be a power of 2, and the number of bricks in \c base should also be
+a power of 2. These restrictions could be lifted as the result of future
+development.
+
+save() interatively creates a new instance of Downsampler to resample
+each successive LOD into a new VolumeBrickData, storeing each lower LOD
+as osg::Image objects in memory. This is a potential problem if the data
+set is so large that all lower LODs do not fit in available RAM.
+
+After all LODs have been created, save() stores all bricks from all LODs
+into the \c db database. */
 class LATTICEFX_EXPORT SaveHierarchy
 {
 public:
@@ -303,9 +335,18 @@ protected:
 
 
 /** \class LoadHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
-\brief TBD
-\details TBD
-*/
+\brief Loads a volume hierarchy from a DB.
+\details Create an instance of this class and specify the database
+containing the volume hierarchy with Preprocess::setDB(). Attach the
+LoadHierarchy instance to the DataSet. LoadHierarchy::operator()()
+creates a hierarchy of ChannelDataLOD and ChannelDataImageSet objects,
+with ChannelDataImage objects holding references to images in the
+database.
+
+All keys in the database that are valid (of the form "<text>-<numbers>-<text>")
+are added, so it is recommended that apps store one volume data set per DB
+(do not store multiple volume data sets in the DB, otherwise all valid keys
+from all volume data sets will be added to the ChannelData hierarchy). */
 class LATTICEFX_EXPORT LoadHierarchy : public Preprocess
 {
 public:
