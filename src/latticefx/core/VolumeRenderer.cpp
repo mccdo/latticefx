@@ -406,8 +406,6 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
     tex->setResizeNonPowerOfTwoHint( false );
-    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
-    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
     tex->setWrap( osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setWrap( osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setWrap( osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE );
