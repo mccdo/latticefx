@@ -25,7 +25,7 @@ if( WIN32 AND MSVC )
 endif()
 
 
-include( FindPocoHelper )
+include( FindPOCOHelper )
 PocoMenuSetup()
 
 include( FindOSGHelper )
