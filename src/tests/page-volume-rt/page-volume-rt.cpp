@@ -230,7 +230,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 }
 
 void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
-    osgViewer::Viewer& viewer, osg::Node* scene, osg::Node* volume )
+    osgViewer::Viewer& viewer, osg::Node* volume )
 {
     // Get the root Group node attached to the osgViewer::Viewer.
     osg::Node* sceneRootNode( viewer.getSceneData() );
@@ -343,7 +343,7 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
     DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
-    setupLfxVolumeRTRendering( rttInfo, viewer, scene, dsp->getSceneData() );
+    setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData() );
 
 
     // Really we would need to change the projection matrix and viewport
