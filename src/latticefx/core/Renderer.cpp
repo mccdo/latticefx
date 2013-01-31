@@ -326,7 +326,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
         tf1dTex->setResizeNonPowerOfTwoHint( false );
-        tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP );
+        tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tf1dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf1d" ), tf1dTex,
             osg::StateAttribute::OFF );
@@ -338,8 +338,8 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture2D* tf2dTex( new osg::Texture2D( function ) );
         tf2dTex->setResizeNonPowerOfTwoHint( false );
-        tf2dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP );
-        tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP );
+        tf2dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
         tf2dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf2d" ), tf2dTex,
             osg::StateAttribute::OFF );
@@ -351,9 +351,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 
         osg::Texture3D* tf3dTex( new osg::Texture3D( function ) );
         tf3dTex->setResizeNonPowerOfTwoHint( false );
-        tf3dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP );
-        tf3dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP );
-        tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP );
+        tf3dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        tf3dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+        tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE );
         tf3dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf3d" ), tf3dTex,
             osg::StateAttribute::OFF );
