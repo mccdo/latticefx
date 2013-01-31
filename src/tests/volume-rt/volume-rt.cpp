@@ -335,7 +335,7 @@ int main( int argc, char** argv )
     std::string fileName( "HeadVolume.dds" );
     arguments.read( "-f", fileName );
 
-    std::cout << "-d <x> <y> <z>\tDefault is 1 1 1." << std::endl;
+    std::cout << "-d <x> <y> <z>\tDefault is 50 50 50." << std::endl;
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
