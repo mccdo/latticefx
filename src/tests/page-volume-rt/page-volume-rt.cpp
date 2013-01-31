@@ -105,7 +105,7 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
     renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
-    renderOp->setMaxSamples( 100.f );
+    renderOp->setMaxSamples( 400.f );
 
     // Must disable transparency for bricked volumes. Otherwise, underlying
     // bricks will show through.
@@ -164,7 +164,7 @@ struct RTTInfo {
 
 RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 {
-    RTTInfo rttInfo( 800, 460 );
+    RTTInfo rttInfo( 1200, 690 );
 
 
     //
@@ -309,6 +309,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies directory to use for DBDisk. Default: cwd." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+    LFX_CRITICAL_STATIC( logstr, "-d <x> <y> <z>\tDefault is 50 50 50." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
