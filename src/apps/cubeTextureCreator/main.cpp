@@ -46,8 +46,8 @@ using namespace lfx::core;
 class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
-    CubeVolumeBrickData()
-      : VolumeBrickData(),
+    CubeVolumeBrickData( bool prune )
+      : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
         _cubeMin( .1, .1, .1 ),
         _cubeMax( .9, .9, .9 )
@@ -107,11 +107,76 @@ protected:
     osg::Vec3f _cubeMin, _cubeMax;
 };
 
-
-void createDataSet( const std::string& csFile, const bool prune )
+class SphereVolumeBrickData : public VolumeBrickData
 {
-    VolumeBrickData* shapeGen( new CubeVolumeBrickData() );
-    SaveHierarchy* saver( new SaveHierarchy( shapeGen, "cubetexture" ) );
+public:
+    SphereVolumeBrickData( bool prune )
+      : VolumeBrickData( prune ),
+        _brickRes( 32, 32, 32 ),
+        _center( .5, .5, .5 ),
+        _radius( .4 )
+    {
+        setNumBricks( osg::Vec3s( 4, 4, 4 ) );
+    }
+    ~SphereVolumeBrickData()
+    {}
+
+    virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const
+    {
+        const int idx( brickIndex( brickNum ) );
+        if( ( idx < 0 ) || ( idx >= _images.size() ) )
+            return( NULL );
+
+
+        const osg::Vec3f brick( brickNum[0], brickNum[1], brickNum[2] );
+        const osg::Vec3f invNumBricks( 1. / _numBricks[0], 1. / _numBricks[1], 1. / _numBricks[2] );
+
+        // Compute brick min, max, and extents in normalized 0 <-> 1 volume coordinates.
+        const osg::Vec3f brickMin( brick[0] * invNumBricks[0], brick[1] * invNumBricks[1], 
+            brick[2] * invNumBricks[2] );
+        const osg::Vec3f brickMax( brickMin + invNumBricks );
+        const osg::Vec3f extent( brickMax - brickMin );
+
+        unsigned char* data( new unsigned char[ _brickRes[0] * _brickRes[1] * _brickRes[2] ] );
+        unsigned char* ptr( data );
+        for( int rIdx=0; rIdx<_brickRes[2]; ++rIdx )
+        {
+            const float rVal( (float)rIdx/(float)_brickRes[2] * extent[2] + brickMin[2] );
+            for( int tIdx=0; tIdx<_brickRes[1]; ++tIdx )
+            {
+                const float tVal( (float)tIdx/(float)_brickRes[1] * extent[1] + brickMin[1] );
+                for( int sIdx=0; sIdx<_brickRes[0]; ++sIdx )
+                {
+                    const float sVal( (float)sIdx / (float)_brickRes[0] * extent[0] + brickMin[0] );
+
+                    const osg::Vec3f pt( sVal - _center[0], tVal - _center[1], rVal - _center[2] );
+                    const float length( pt.length() );
+
+                    if( length < _radius )
+                            *ptr++ = 255;
+                    else
+                            *ptr++ = 0;
+                }
+            }
+        }
+
+        osg::ref_ptr< osg::Image > image( new osg::Image() );
+        image->setImage( _brickRes[0], _brickRes[1], _brickRes[2],
+            GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+            (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+        return( image.release() );
+    }
+
+protected:
+    osg::Vec3s _brickRes;
+    osg::Vec3f _center;
+    float _radius;
+};
+
+
+void createDataSet( const std::string& csFile, VolumeBrickData* shapeGen )
+{
+    SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
@@ -154,6 +219,9 @@ int main( int argc, char** argv )
 
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+    LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );
+    LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
+    LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes.." );
 
     osg::ArgumentParser arguments( &argc, argv );
 
@@ -164,7 +232,13 @@ int main( int argc, char** argv )
     arguments.read( "-cs", csFile );
 #endif
 
-    createDataSet( csFile, prune );
+    VolumeBrickData* shapeGen( NULL );
+    if( arguments.find( "-sphere" ) > 0 )
+        shapeGen = new SphereVolumeBrickData( prune );
+    else
+        shapeGen = new CubeVolumeBrickData( prune );
+
+    createDataSet( csFile, shapeGen );
 
     return( 0 );
 }

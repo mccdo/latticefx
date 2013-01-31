@@ -230,7 +230,7 @@ protected:
 class LATTICEFX_EXPORT VolumeBrickData
 {
 public:
-    VolumeBrickData();
+    VolumeBrickData( const bool prune=false );
     ~VolumeBrickData();
 
     void setNumBricks( const osg::Vec3s& numBricks );
@@ -244,6 +244,7 @@ protected:
     int brickIndex( const osg::Vec3s& brickNum ) const;
 
     osg::Vec3s _numBricks;
+    bool _prune;
 
     typedef std::vector< osg::ref_ptr< osg::Image > > ImageVector;
     ImageVector _images;

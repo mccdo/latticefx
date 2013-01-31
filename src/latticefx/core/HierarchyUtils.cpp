@@ -419,8 +419,9 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
 
 
 
-VolumeBrickData::VolumeBrickData()
-  : _numBricks( 0, 0, 0 )
+VolumeBrickData::VolumeBrickData( const bool prune )
+  : _numBricks( 0, 0, 0 ),
+    _prune( prune )
 {
 }
 VolumeBrickData::~VolumeBrickData()
