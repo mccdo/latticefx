@@ -46,7 +46,7 @@ using namespace lfx::core;
 class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
-    CubeVolumeBrickData( bool prune )
+    CubeVolumeBrickData( const bool prune )
       : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
         _cubeMin( .1, .1, .1 ),
@@ -110,11 +110,12 @@ protected:
 class SphereVolumeBrickData : public VolumeBrickData
 {
 public:
-    SphereVolumeBrickData( bool prune )
+    SphereVolumeBrickData( const bool prune, const bool soft )
       : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
         _center( .5, .5, .5 ),
-        _radius( .4 )
+        _minRad( soft ? .1 : .4 ),
+        _maxRad( .45 )
     {
         setNumBricks( osg::Vec3s( 4, 4, 4 ) );
     }
@@ -137,6 +138,8 @@ public:
         const osg::Vec3f brickMax( brickMin + invNumBricks );
         const osg::Vec3f extent( brickMax - brickMin );
 
+        const float transition( _maxRad - _minRad );
+
         unsigned char* data( new unsigned char[ _brickRes[0] * _brickRes[1] * _brickRes[2] ] );
         unsigned char* ptr( data );
         for( int rIdx=0; rIdx<_brickRes[2]; ++rIdx )
@@ -152,10 +155,15 @@ public:
                     const osg::Vec3f pt( sVal - _center[0], tVal - _center[1], rVal - _center[2] );
                     const float length( pt.length() );
 
-                    if( length < _radius )
-                            *ptr++ = 255;
+                    if( length <= _minRad )
+                        *ptr++ = 255;
+                    else if( length > _maxRad )
+                        *ptr++ = 0;
                     else
-                            *ptr++ = 0;
+                    {
+                        float norm( ( length - _minRad ) / transition );
+                        *ptr++ = (unsigned char)( ( 1.f - norm ) * 255.f );
+                    }
                 }
             }
         }
@@ -170,7 +178,7 @@ public:
 protected:
     osg::Vec3s _brickRes;
     osg::Vec3f _center;
-    float _radius;
+    float _minRad, _maxRad;
 };
 
 
@@ -221,6 +229,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
     LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );
     LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
+    LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes.." );
 
     osg::ArgumentParser arguments( &argc, argv );
@@ -232,9 +241,11 @@ int main( int argc, char** argv )
     arguments.read( "-cs", csFile );
 #endif
 
+    bool softSphere( arguments.find( "-ssphere" ) > 0 );
+
     VolumeBrickData* shapeGen( NULL );
-    if( arguments.find( "-sphere" ) > 0 )
-        shapeGen = new SphereVolumeBrickData( prune );
+    if( ( arguments.find( "-sphere" ) > 0 ) || softSphere )
+        shapeGen = new SphereVolumeBrickData( prune, softSphere );
     else
         shapeGen = new CubeVolumeBrickData( prune );
 
