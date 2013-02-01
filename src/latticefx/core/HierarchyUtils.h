@@ -225,8 +225,16 @@ protected:
 
 /** \class VolumeBrickData HierarchyUtils <latticefx/core/HierarchyUtils.h>
 \brief A collection of volume bricks for a single LOD.
-\details TBD
-*/
+\details In typical use, an application derives from VolumeBrickData, and the
+derived class overrides the getBrick(const osg::Vec3s&) method to allow access
+to bricks representing the volume. See the shapeCreator application for an
+example of this usage (for procedurally generated volume data 00 However, a
+derived class might simply generate and store all bricks, or page them in from
+disk).
+
+Note that it is up to the derived class to support the \c prune contructor
+parameter (and \c _prune member variable). When exabled, getBrick() should
+return NULL. (However, see Downsampler for implementation details.) */
 class LATTICEFX_EXPORT VolumeBrickData
 {
 public:
@@ -261,6 +269,11 @@ as the \c hiRes constructor parameter, then call getLow(). getLow() resamples
 
 The number of bricks in \c hiRes in each dimension must be a power of 2. The
 osg::Image dimensions of each brick in \c hiRes must be a power of 2.
+
+If \c hiRes supports pruning, hiRes.getBrick() might return a NULL pointer.
+Downsampler needs to be modified to support this elegantly. Currently this is
+unsupported, and will likely result in a crash in Downsampler::getLow() while
+jumping through a NULL osg::Image pointer.
 
 It is the application's responsibility to delete the VolumeBrickData returned
 by getLow(). */
