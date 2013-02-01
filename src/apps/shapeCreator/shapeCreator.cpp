@@ -114,7 +114,7 @@ public:
       : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
         _center( .5, .5, .5 ),
-        _minRad( soft ? .1 : .4 ),
+        _minRad( soft ? .1 : .45 ),
         _maxRad( .45 )
     {
         setNumBricks( osg::Vec3s( 4, 4, 4 ) );
