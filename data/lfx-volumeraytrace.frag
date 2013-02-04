@@ -343,6 +343,7 @@ void main( void )
     // recomputing the normal if the new sample value matches the old.
     float lastSample = -1.f;
 
+    bool lastPassHM = false;
     float sampleCount = 0.f;
     while( sampleCount < totalSamples )
     {
@@ -355,13 +356,25 @@ void main( void )
 
         if( baseColor.r != lastSample )
         {
-            lastSample = baseColor.r;
-
             // Obtain transfer function color and alpha values.
             vec4 color = transferFunction( baseColor.r );
 
             if( hardwareMask( coord, color ) )
             {
+                if( !lastPassHM && ( lastSample > -1.f ) )
+                {
+                    lastPassHM = true;
+
+                    float len = ( hmParams[3] - lastSample ) / ( baseColor.r - lastSample );
+                    sampleCount -= ( 2.f - len );
+
+                    sampleLen = sampleCount / totalSamples;
+                    sampleCount += 1.f;
+                    coord = tcStart + sampleVec * sampleLen;
+                    baseColor.r = hmParams[3];
+                    color = transferFunction( baseColor.r );
+                }
+
                 // We have passed the hardware mask. Compute a normal
                 // and light the fragment.
 
@@ -387,7 +400,12 @@ void main( void )
                 litColor = fragmentLighting( color, normal );
             }
             else
-                litColor = vec4( 0. );
+            {
+                lastPassHM = false;
+                litColor = vec4( 0.f );
+            }
+
+            lastSample = baseColor.r;
         }
 
         if( litColor.a > 0. )
