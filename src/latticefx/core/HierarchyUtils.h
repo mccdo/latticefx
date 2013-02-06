@@ -272,6 +272,22 @@ protected:
     int brickIndex( const osg::Vec3s& brickNum ) const;
     osg::Vec3s nameToBrickNum( const std::string& name ) const;
 
+    /** \brief Copy texels for proper brick overlap.
+    \details Copy texels from \c source to \c dest to eliminate seams between bricks.
+    \c index indicates which of eight \c source images are being executed: 0 indicates
+    the primary brick, 1 is adjacane in +s, 2 in +t, 3 in +s and +t, 4 in +r, 5 in +s
+    and +r, 6 in +t and +r, and 7 in +s, +t, and +r.
+
+    Derives classes can optionally override this method to provide their own overlapping
+    sceheme. */
+    virtual void overlap( osg::Image* dest, const osg::Image* source, const unsigned int index ) const;
+
+    /** \brief Create a new brick for overlapping.
+    \details Using \c proto as a base Image, this function creates a new image with
+    dimensions equal to \c proto plus \c overlap. The new image has the same format and
+    type as \c proto. The function allocates pixel data initialized to 0. */
+    osg::Image* newBrick( const osg::Image* proto, const osg::Vec3s& overlap=osg::Vec3s(1,1,1) ) const;
+
     osg::Vec3s _numBricks;
     bool _prune;
 

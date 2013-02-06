@@ -465,8 +465,33 @@ osg::Image* VolumeBrickData::getBrick( const std::string& brickName ) const
 
 osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) const
 {
-    // Not yet implemented.
-    return( getBrick( brickNum ) );
+    osg::ref_ptr< osg::Image > dest;
+
+    for( int idx=0; idx<8; ++idx )
+    {
+        osg::Vec3s current;
+        switch( idx ) {
+        case 0: current = brickNum; break;
+        case 1: current = brickNum + osg::Vec3s( 1, 0, 0 ); break;
+        case 2: current = brickNum + osg::Vec3s( 0, 1, 0 ); break;
+        case 3: current = brickNum + osg::Vec3s( 1, 1, 0 ); break;
+        case 4: current = brickNum + osg::Vec3s( 0, 0, 1 ); break;
+        case 5: current = brickNum + osg::Vec3s( 1, 0, 1 ); break;
+        case 6: current = brickNum + osg::Vec3s( 0, 1, 1 ); break;
+        case 7: current = brickNum + osg::Vec3s( 1, 1, 1 ); break;
+        default: LFX_ERROR_STATIC( "lfx.core.hier", "Brick index out of range." ); break;
+        }
+
+        osg::ref_ptr< osg::Image > srcBrick( getBrick( brickNum ) );
+        if( srcBrick.valid() )
+        {
+            if( !( dest.valid() ) )
+                dest = newBrick( srcBrick.get() );
+            overlap( dest, srcBrick, idx );
+        }
+    }
+
+    return( dest.release() );
 }
 osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) const
 {
@@ -510,6 +535,88 @@ osg::Vec3s VolumeBrickData::nameToBrickNum( const std::string& name ) const
     }
 
     return( brickNum );
+}
+void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const unsigned int index ) const
+{
+    const unsigned int pixSize( dest->getPixelSizeInBits() >> 3 );
+    const unsigned int rowSize( source->getRowSizeInBytes() );
+    const unsigned int srcS( source->s() );
+    const unsigned int srcT( source->t() );
+    const unsigned int srcST( srcS * srcT );
+    const unsigned int srcR( source->r() );
+    const unsigned char* srcData( source->data() );
+    const unsigned int destS( dest->s() );
+    const unsigned int destT( dest->t() );
+    const unsigned int destST( destS * destT );
+    const unsigned int destR( dest->r() );
+    unsigned char* destData( dest->data() );
+
+#define SRC_ADDR(_s,_t,_r) \
+    ( srcData + ( ( (_r) * srcST + (_t) * srcS + (_s) ) * pixSize ) )
+#define DEST_ADDR(_s,_t,_r) \
+    ( destData + ( ( (_r) * destST + (_t) * destS + (_s) ) * pixSize ) )
+
+    switch( index ) {
+    case 0:
+    {
+        break;
+    }
+    case 4:
+    {
+        for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+        {
+            memcpy( DEST_ADDR( 0, tIdx, destR-1 ),
+                SRC_ADDR( 0, tIdx, 0 ), rowSize );
+        }
+        break;
+    }
+    case 5:
+    {
+        for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+        {
+            memcpy( DEST_ADDR( destS-1, tIdx, destR-1 ),
+                SRC_ADDR( 0, tIdx, 0 ), pixSize );
+        }
+        break;
+    }
+    case 6:
+    {
+        memcpy( DEST_ADDR( 0, destT-1, destR-1 ),
+            SRC_ADDR( 0, 0, 0 ), rowSize );
+        break;
+    }
+    case 7:
+    {
+        memcpy( DEST_ADDR( destS-1, destT-1, destR-1 ),
+            SRC_ADDR( 0, 0, 0 ), pixSize );
+        break;
+    }
+    default:
+        break;
+    }
+
+#undef SRC_ADDR
+#undef DEST_ADDR
+}
+osg::Image* VolumeBrickData::newBrick( const osg::Image* proto, const osg::Vec3s& overlap ) const
+{
+    osg::ref_ptr< osg::Image > image( new osg::Image() );
+
+    osg::Vec3s dims( overlap );
+    dims[0] += proto->s();
+    dims[1] += proto->t();
+    dims[2] += proto->r();
+    unsigned int pixelSizeBytes( proto->getPixelSizeInBits() >> 3 );
+    unsigned int totalSizeBytes( dims[0] * dims[1] * dims[2] * pixelSizeBytes );
+
+    unsigned char* data( new unsigned char[ totalSizeBytes ] );
+    memset( data, 0, totalSizeBytes );
+
+    image->setImage( dims[0], dims[1], dims[2],
+        proto->getInternalTextureFormat(), proto->getPixelFormat(), proto->getDataType(),
+        (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+
+    return( image.release() );
 }
 
 
