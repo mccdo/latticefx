@@ -456,26 +456,25 @@ osg::Image* VolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 }
 osg::Image* VolumeBrickData::getBrick( const std::string& brickName ) const
 {
-    // Depth check
-    short dim( 1 << brickName.length() );
-    if( ( dim != _numBricks[0] ) || ( dim != _numBricks[1] ) || ( dim != _numBricks[2] ) )
+    const osg::Vec3s brickNum( nameToBrickNum( brickName ) );
+    if( brickNum == osg::Vec3s( -1, -1, -1 ) )
         return( NULL );
 
-    osg::Vec3s brickNum;
-    if( brickName.empty() )
-        return( getBrick( brickNum ) );
-
-    osg::Vec3s half( _numBricks[0]/2, _numBricks[1]/2, _numBricks[2]/2 );
-    for( int idx=0; idx < brickName.length(); ++idx )
-    {
-        int pos( (char)( brickName[ idx ] ) - 0 );
-        brickNum[0] += ( pos & 0x1 ) ? half[0] : 0;
-        brickNum[1] += ( pos & 0x2 ) ? half[1] : 0;
-        brickNum[2] += ( pos & 0x4 ) ? half[2] : 0;
-        half.set( half[0]/2, half[1]/2, half[2]/2 );
-    }
-
     return( getBrick( brickNum ) );
+}
+
+osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) const
+{
+    // Not yet implemented.
+    return( getBrick( brickNum ) );
+}
+osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) const
+{
+    const osg::Vec3s brickNum( nameToBrickNum( brickName ) );
+    if( brickNum == osg::Vec3s( -1, -1, -1 ) )
+        return( NULL );
+
+    return( getSeamlessBrick( brickNum ) );
 }
 
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
@@ -488,6 +487,29 @@ int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
     return( brickNum[0] * _numBricks[1] * _numBricks[2] +
         brickNum[1] * _numBricks[2] +
         brickNum[2] );
+}
+osg::Vec3s VolumeBrickData::nameToBrickNum( const std::string& name ) const
+{
+    // Depth check
+    short dim( 1 << name.length() );
+    if( ( dim != _numBricks[0] ) || ( dim != _numBricks[1] ) || ( dim != _numBricks[2] ) )
+        return( osg::Vec3s( -1, -1, -1 ) );
+
+    osg::Vec3s brickNum;
+    if( name.empty() )
+        return( brickNum ); // 0,0,0
+
+    osg::Vec3s half( _numBricks[0]/2, _numBricks[1]/2, _numBricks[2]/2 );
+    for( int idx=0; idx < name.length(); ++idx )
+    {
+        int pos( (char)( name[ idx ] ) - 0 );
+        brickNum[0] += ( pos & 0x1 ) ? half[0] : 0;
+        brickNum[1] += ( pos & 0x2 ) ? half[1] : 0;
+        brickNum[2] += ( pos & 0x4 ) ? half[2] : 0;
+        half.set( half[0]/2, half[1]/2, half[2]/2 );
+    }
+
+    return( brickNum );
 }
 
 

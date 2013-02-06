@@ -244,12 +244,33 @@ public:
     void setNumBricks( const osg::Vec3s& numBricks );
     osg::Vec3s getNumBricks() const;
 
+    /** \brief Add a brick to the \c _images vector of bricks.
+    \details This is used
+    by the Downsample class to create lower LODs. It can also be used
+    by an application or any derived class. However, for derived classes
+    that load bricks from secondary storage, or generate bricks
+    procedurally, this function is generally not used.
+    
+    Note that the added brick does not account for brick overlap. */
     void addBrick( const osg::Vec3s& brickNum, osg::Image* image );
+
+    /** \brief Return the apecified brick by xyz index into the volume.
+    \details Indices are in the range (0,0,0) to getNumBricks(). The
+    return value could be NULL if \c brickNum is out of range, or if
+    pruning is enabled.
+
+    The returned brick does not account for brick overlap. */
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+    /** \brief Hierarchy name interface to brick access.
+    \details The returned brick does not account for brick overlap. */
     osg::Image* getBrick( const std::string& brickName ) const;
+
+    osg::Image* getSeamlessBrick( const osg::Vec3s& brickNum ) const;
+    osg::Image* getSeamlessBrick( const std::string& brickName ) const;
 
 protected:
     int brickIndex( const osg::Vec3s& brickNum ) const;
+    osg::Vec3s nameToBrickNum( const std::string& name ) const;
 
     osg::Vec3s _numBricks;
     bool _prune;
