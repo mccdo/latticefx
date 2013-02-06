@@ -39,6 +39,7 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/ReadFile>
+#include <osg/DisplaySettings>
 #include <osg/ComputeBoundsVisitor>
 #include <osg/Group>
 #include <osg/ArgumentParser>
@@ -46,6 +47,7 @@
 
 #include <osgwTools/MultiCameraProjectionMatrix.h>
 #include <osgwTools/Shapes.h>
+#include <osgwTools/Version.h>
 
 #include <boost/foreach.hpp>
 
@@ -298,7 +300,13 @@ int main( int argc, char** argv )
     //
     // This test uses 585 textures that are 32kb in size; if all are kept in
     // memory, that's 18mb, pretty small. May as well keep all of them around.
+#if( OSGWORKS_OSG_VERSION < 20906 )
     osg::Texture::setMinimumNumberOfTextureObjectsToRetainInCache( 600 );
+#else
+    // In v2.9.6, new texture pool added. Set max size in bytes.
+    // Here, we set it to 50MB.
+    osg::DisplaySettings::instance()->setMaxTexturePoolSize( 50000000 );
+#endif
 
 
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
