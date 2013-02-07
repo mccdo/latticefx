@@ -43,6 +43,7 @@ using namespace lfx::core;
 
 
 
+/** TBD Does not yet support _prune. */
 class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
@@ -54,7 +55,7 @@ public:
     {
         setNumBricks( osg::Vec3s( 4, 4, 4 ) );
     }
-    ~CubeVolumeBrickData()
+    virtual ~CubeVolumeBrickData()
     {}
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const
@@ -107,6 +108,7 @@ protected:
     osg::Vec3f _cubeMin, _cubeMax;
 };
 
+/** TBD Does not yet support _prune. */
 class SphereVolumeBrickData : public VolumeBrickData
 {
 public:
@@ -119,7 +121,7 @@ public:
     {
         setNumBricks( osg::Vec3s( 4, 4, 4 ) );
     }
-    ~SphereVolumeBrickData()
+    virtual ~SphereVolumeBrickData()
     {}
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const
@@ -179,6 +181,71 @@ protected:
     osg::Vec3s _brickRes;
     osg::Vec3f _center;
     float _minRad, _maxRad;
+};
+
+class ConeVolumeBrickData : public VolumeBrickData
+{
+public:
+    ConeVolumeBrickData( const bool prune )
+      : VolumeBrickData( prune ),
+        _brickRes( 32, 32, 32 ),
+        _baseRad( .475 )
+    {
+        setNumBricks( osg::Vec3s( 4, 4, 4 ) );
+    }
+    virtual ~ConeVolumeBrickData()
+    {}
+
+    virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const
+    {
+        const int idx( brickIndex( brickNum ) );
+        if( ( idx < 0 ) || ( idx >= _images.size() ) )
+            return( NULL );
+
+
+        const osg::Vec3f brick( brickNum[0], brickNum[1], brickNum[2] );
+        const osg::Vec3f invNumBricks( 1. / _numBricks[0], 1. / _numBricks[1], 1. / _numBricks[2] );
+
+        // Compute brick min, max, and extents in normalized 0 <-> 1 volume coordinates.
+        const osg::Vec3f brickMin( brick[0] * invNumBricks[0], brick[1] * invNumBricks[1], 
+            brick[2] * invNumBricks[2] );
+        const osg::Vec3f brickMax( brickMin + invNumBricks );
+        const osg::Vec3f extent( brickMax - brickMin );
+
+        unsigned char* data( new unsigned char[ _brickRes[0] * _brickRes[1] * _brickRes[2] ] );
+        unsigned char* ptr( data );
+        for( int rIdx=0; rIdx<_brickRes[2]; ++rIdx )
+        {
+            const float rVal( (float)rIdx/(float)_brickRes[2] * extent[2] + brickMin[2] );
+            const float scaledRad( ( 1.f - rVal ) * _baseRad );
+            for( int tIdx=0; tIdx<_brickRes[1]; ++tIdx )
+            {
+                const float tVal( (float)tIdx/(float)_brickRes[1] * extent[1] + brickMin[1] );
+                for( int sIdx=0; sIdx<_brickRes[0]; ++sIdx )
+                {
+                    const float sVal( (float)sIdx / (float)_brickRes[0] * extent[0] + brickMin[0] );
+
+                    const osg::Vec2f pt( sVal - .5f, tVal - .5f );
+                    const float length( pt.length() );
+
+                    if( length <= scaledRad )
+                        *ptr++ = 255;
+                    else
+                        *ptr++ = 0;
+                }
+            }
+        }
+
+        osg::ref_ptr< osg::Image > image( new osg::Image() );
+        image->setImage( _brickRes[0], _brickRes[1], _brickRes[2],
+            GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+            (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+        return( image.release() );
+    }
+
+protected:
+    osg::Vec3s _brickRes;
+    float _baseRad;
 };
 
 
@@ -246,6 +313,8 @@ int main( int argc, char** argv )
     VolumeBrickData* shapeGen( NULL );
     if( ( arguments.find( "-sphere" ) > 0 ) || softSphere )
         shapeGen = new SphereVolumeBrickData( prune, softSphere );
+    else if( arguments.find( "-cone" ) > 0 )
+        shapeGen = new ConeVolumeBrickData( prune );
     else
         shapeGen = new CubeVolumeBrickData( prune );
 
