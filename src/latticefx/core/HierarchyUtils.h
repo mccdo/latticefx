@@ -239,7 +239,7 @@ class LATTICEFX_EXPORT VolumeBrickData
 {
 public:
     VolumeBrickData( const bool prune=false );
-    ~VolumeBrickData();
+    virtual ~VolumeBrickData();
 
     void setNumBricks( const osg::Vec3s& numBricks );
     osg::Vec3s getNumBricks() const;
@@ -318,7 +318,7 @@ class LATTICEFX_EXPORT Downsampler
 {
 public:
     Downsampler( const VolumeBrickData* hiRes );
-    ~Downsampler();
+    virtual ~Downsampler();
 
     /** \brief TBD
     \details
@@ -368,7 +368,7 @@ class LATTICEFX_EXPORT SaveHierarchy
 {
 public:
     SaveHierarchy( VolumeBrickData* base, const std::string baseName );
-    ~SaveHierarchy();
+    virtual ~SaveHierarchy();
 
     void save( DBBasePtr db );
 
@@ -402,7 +402,7 @@ class LATTICEFX_EXPORT LoadHierarchy : public Preprocess
 {
 public:
     LoadHierarchy();
-    ~LoadHierarchy();
+    virtual ~LoadHierarchy();
 
     virtual ChannelDataPtr operator()();
 

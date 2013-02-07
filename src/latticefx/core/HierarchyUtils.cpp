@@ -469,25 +469,25 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
 
     for( int idx=0; idx<8; ++idx )
     {
-        osg::Vec3s current;
+        osg::Vec3s current( brickNum );
         switch( idx ) {
-        case 0: current = brickNum; break;
-        case 1: current = brickNum + osg::Vec3s( 1, 0, 0 ); break;
-        case 2: current = brickNum + osg::Vec3s( 0, 1, 0 ); break;
-        case 3: current = brickNum + osg::Vec3s( 1, 1, 0 ); break;
-        case 4: current = brickNum + osg::Vec3s( 0, 0, 1 ); break;
-        case 5: current = brickNum + osg::Vec3s( 1, 0, 1 ); break;
-        case 6: current = brickNum + osg::Vec3s( 0, 1, 1 ); break;
-        case 7: current = brickNum + osg::Vec3s( 1, 1, 1 ); break;
+        case 0: break;
+        case 1: current += osg::Vec3s( 1, 0, 0 ); break;
+        case 2: current += osg::Vec3s( 0, 1, 0 ); break;
+        case 3: current += osg::Vec3s( 1, 1, 0 ); break;
+        case 4: current += osg::Vec3s( 0, 0, 1 ); break;
+        case 5: current += osg::Vec3s( 1, 0, 1 ); break;
+        case 6: current += osg::Vec3s( 0, 1, 1 ); break;
+        case 7: current += osg::Vec3s( 1, 1, 1 ); break;
         default: LFX_ERROR_STATIC( "lfx.core.hier", "Brick index out of range." ); break;
         }
 
-        osg::ref_ptr< osg::Image > srcBrick( getBrick( brickNum ) );
+        osg::ref_ptr< osg::Image > srcBrick( getBrick( current ) );
         if( srcBrick.valid() )
         {
             if( !( dest.valid() ) )
                 dest = newBrick( srcBrick.get() );
-            overlap( dest, srcBrick, idx );
+            overlap( dest.get(), srcBrick.get(), idx );
         }
     }
 
@@ -509,9 +509,9 @@ int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
         ( brickNum[2] >= _numBricks[2] ) || ( brickNum[2] < 0 ) )
             return( -1 );
 
-    return( brickNum[0] * _numBricks[1] * _numBricks[2] +
-        brickNum[1] * _numBricks[2] +
-        brickNum[2] );
+    return( brickNum[2] * _numBricks[0] * _numBricks[1] +
+        brickNum[1] * _numBricks[0] +
+        brickNum[0] );
 }
 osg::Vec3s VolumeBrickData::nameToBrickNum( const std::string& name ) const
 {
@@ -559,6 +559,44 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
     switch( index ) {
     case 0:
     {
+        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        {
+            for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+            {
+                memcpy( DEST_ADDR( 0, tIdx, rIdx ),
+                    SRC_ADDR( 0, tIdx, rIdx ), rowSize );
+            }
+        }
+        break;
+    }
+    case 1:
+    {
+        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        {
+            for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+            {
+                memcpy( DEST_ADDR( destS-1, tIdx, rIdx ),
+                    SRC_ADDR( 0, tIdx, rIdx ), pixSize );
+            }
+        }
+        break;
+    }
+    case 2:
+    {
+        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        {
+            memcpy( DEST_ADDR( 0, destT-1, rIdx ),
+                SRC_ADDR( 0, 0, rIdx ), rowSize );
+        }
+        break;
+    }
+    case 3:
+    {
+        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        {
+            memcpy( DEST_ADDR( destS-1, destT-1, rIdx ),
+                SRC_ADDR( 0, 0, rIdx ), pixSize );
+        }
         break;
     }
     case 4:
