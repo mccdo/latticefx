@@ -357,13 +357,14 @@ should be a power of 2, and the number of bricks in \c base should also be
 a power of 2. These restrictions could be lifted as the result of future
 development.
 
-save() interatively creates a new instance of Downsampler to resample
+save() iteratively creates a new instance of Downsampler to resample
 each successive LOD into a new VolumeBrickData, storeing each lower LOD
 as osg::Image objects in memory. This is a potential problem if the data
 set is so large that all lower LODs do not fit in available RAM.
 
-After all LODs have been created, save() stores all bricks from all LODs
-into the \c db database. */
+After all LODs have been created, save() obtains bricks from each LOD
+using VolumeBrickData::getSeamlessBrick(), and stores them to the
+\c db database. */
 class LATTICEFX_EXPORT SaveHierarchy
 {
 public:

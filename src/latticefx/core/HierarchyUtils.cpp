@@ -805,7 +805,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, std::string& brickName )
 {
     const int depth( brickName.length() );
     VolumeBrickData* vbd( _lodVec[ depth ] );
-    osg::Image* image( vbd->getBrick( brickName ) );
+    osg::Image* image( vbd->getSeamlessBrick( brickName ) );
 
     const std::string fileName( _baseName + "-" + brickName + "-.ive" );
     image->setFileName( fileName );
