@@ -34,6 +34,7 @@
 
 #include <osg/ArgumentParser>
 #include <osgViewer/Viewer>
+#include <osg/io_utils>
 
 
 
@@ -212,6 +213,12 @@ public:
         const osg::Vec3f brickMax( brickMin + invNumBricks );
         const osg::Vec3f extent( brickMax - brickMin );
 
+        if( _prune && pruneTest( brickMin, brickMax ) )
+        {
+            //std::cout << "Pruning " << brickNum << std::endl;
+            return( NULL );
+        }
+
         unsigned char* data( new unsigned char[ _brickRes[0] * _brickRes[1] * _brickRes[2] ] );
         unsigned char* ptr( data );
         for( int rIdx=0; rIdx<_brickRes[2]; ++rIdx )
@@ -244,6 +251,20 @@ public:
     }
 
 protected:
+    bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const
+    {
+        const osg::Vec2f p0( bMin[0]-.5f, bMin[1]-.5f );
+        const osg::Vec2f p1( bMax[0]-.5f, bMin[1]-.5f );
+        const osg::Vec2f p2( bMin[0]-.5f, bMax[1]-.5f );
+        const osg::Vec2f p3( bMax[0]-.5f, bMax[1]-.5f );
+        const float scaledRad( ( 1.f - bMin[2] ) * _baseRad );
+
+        return( ( p0.length() > scaledRad ) &&
+            ( p1.length() > scaledRad ) &&
+            ( p2.length() > scaledRad ) &&
+            ( p3.length() > scaledRad ) );
+    }
+
     osg::Vec3s _brickRes;
     float _baseRad;
 };
@@ -295,6 +316,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
     LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );
+    LFX_CRITICAL_STATIC( logstr, "-cone Generate a cone data set." );
     LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes.." );

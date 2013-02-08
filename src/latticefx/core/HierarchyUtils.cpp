@@ -482,6 +482,9 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
         default: LFX_ERROR_STATIC( "lfx.core.hier", "Brick index out of range." ); break;
         }
 
+        // TBD we might be outside the boundary defined by _numBricks.
+        // I think we should 'continue' here if that's the case.
+
         osg::ref_ptr< osg::Image > srcBrick( getBrick( current ) );
         if( srcBrick.valid() )
         {
@@ -491,7 +494,23 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
         }
     }
 
-    return( dest.release() );
+    if( dest.valid() )
+    {
+        bool nonZeroPixels( false );
+        unsigned char* ptr( dest->data() );
+        const unsigned int sz( dest->getTotalSizeInBytes() );
+        for( unsigned int idx=0; idx<sz; ++idx, ++ptr )
+        {
+            if( *ptr > 0 )
+            {
+                nonZeroPixels = true;
+                break;
+            }
+        }
+        return( nonZeroPixels ? dest.release() : NULL );
+    }
+    else
+        return( NULL );
 }
 osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) const
 {
@@ -709,11 +728,23 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
 {
     osg::ref_ptr< osg::Image > image( new osg::Image() );
 
-    unsigned char* data( new unsigned char[ i0->s() * i0->t() * i0->r() ] );
-    image->setImage( i0->s(), i0->t(), i0->t(),
+    unsigned int sDim, tDim, rDim;
+    if( i0 != NULL ) { sDim=i0->s(); tDim=i0->t(); rDim=i0->r(); }
+    else if( i1 != NULL ) { sDim=i1->s(); tDim=i1->t(); rDim=i1->r(); }
+    else if( i2 != NULL ) { sDim=i2->s(); tDim=i2->t(); rDim=i2->r(); }
+    else if( i3 != NULL ) { sDim=i3->s(); tDim=i3->t(); rDim=i3->r(); }
+    else if( i4 != NULL ) { sDim=i4->s(); tDim=i4->t(); rDim=i4->r(); }
+    else if( i5 != NULL ) { sDim=i5->s(); tDim=i5->t(); rDim=i5->r(); }
+    else if( i6 != NULL ) { sDim=i6->s(); tDim=i6->t(); rDim=i6->r(); }
+    else if( i7 != NULL ) { sDim=i7->s(); tDim=i7->t(); rDim=i7->r(); }
+    else return( NULL );
+
+    unsigned char* data( new unsigned char[ sDim * tDim * rDim ] );
+    image->setImage( sDim, tDim, rDim,
         GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
         (unsigned char*) data, osg::Image::USE_NEW_DELETE );
     unsigned char* ptr( data );
+    bool validData( false );
 
     for( int rIdx=0; rIdx<image->r(); ++rIdx )
     {
@@ -737,26 +768,29 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
                 case 7: inImage = const_cast< osg::Image* >( i7 ); break;
                 }
 
-                const int s( sIdx % ( inImage->s() / 2 ) );
-                const int t( tIdx % ( inImage->t() / 2 ) );
-                const int r( rIdx % ( inImage->r() / 2 ) );
-                int pixel(
-                    *( inImage->data( s*2,   t*2,   r*2 ) ) +
-                    *( inImage->data( s*2+1, t*2,   r*2 ) ) +
-                    *( inImage->data( s*2,   t*2+1, r*2 ) ) +
-                    *( inImage->data( s*2+1, t*2+1, r*2 ) ) +
-                    *( inImage->data( s*2,   t*2,   r*2+1 ) ) +
-                    *( inImage->data( s*2+1, t*2,   r*2+1 ) ) +
-                    *( inImage->data( s*2,   t*2+1, r*2+1 ) ) +
-                    *( inImage->data( s*2+1, t*2+1, r*2+1 ) )
-                    );
-                pixel >>= 3; // Divide by 8.
+                int pixel( 0 );
+                if( inImage != NULL )
+                {
+                    const int s( sIdx % ( inImage->s() / 2 ) );
+                    const int t( tIdx % ( inImage->t() / 2 ) );
+                    const int r( rIdx % ( inImage->r() / 2 ) );
+                    pixel = *( inImage->data( s*2,   t*2,   r*2 ) ) +
+                        *( inImage->data( s*2+1, t*2,   r*2 ) ) +
+                        *( inImage->data( s*2,   t*2+1, r*2 ) ) +
+                        *( inImage->data( s*2+1, t*2+1, r*2 ) ) +
+                        *( inImage->data( s*2,   t*2,   r*2+1 ) ) +
+                        *( inImage->data( s*2+1, t*2,   r*2+1 ) ) +
+                        *( inImage->data( s*2,   t*2+1, r*2+1 ) ) +
+                        *( inImage->data( s*2+1, t*2+1, r*2+1 ) );
+                    pixel >>= 3; // Divide by 8.
+                    validData = true;
+                }
                 *ptr++ = (unsigned char)pixel;
             }
         }
     }
 
-    return( image.release() );
+    return( validData ? image.release() : NULL );
 }
 
 
@@ -807,10 +841,17 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, std::string& brickName )
     VolumeBrickData* vbd( _lodVec[ depth ] );
     osg::Image* image( vbd->getSeamlessBrick( brickName ) );
 
-    const std::string fileName( _baseName + "-" + brickName + "-.ive" );
-    image->setFileName( fileName );
-    db->storeImage( image, fileName );
-    LFX_INFO_STATIC( "lfx.core.hier", "Saved brick " + fileName );
+    if( image != NULL )
+    {
+        const std::string fileName( _baseName + "-" + brickName + "-.ive" );
+        image->setFileName( fileName );
+        db->storeImage( image, fileName );
+        LFX_INFO_STATIC( "lfx.core.hier", "Saved brick " + fileName );
+    }
+    else
+    {
+        LFX_INFO_STATIC( "lfx.core.hier", "NULL brick " + brickName );
+    }
 
     if( depth < _depth-1 )
     {
