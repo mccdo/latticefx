@@ -51,10 +51,10 @@ public:
     CubeVolumeBrickData( const bool prune )
       : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
-        _cubeMin( .1, .1, .1 ),
-        _cubeMax( .9, .9, .9 )
+        _cubeMin( .2, .2, .2 ),
+        _cubeMax( .8, .8, .8 )
     {
-        setNumBricks( osg::Vec3s( 4, 4, 4 ) );
+        setNumBricks( osg::Vec3s( 8, 8, 8 ) );
     }
     virtual ~CubeVolumeBrickData()
     {}
@@ -74,6 +74,9 @@ public:
             brick[2] * invNumBricks[2] );
         const osg::Vec3f brickMax( brickMin + invNumBricks );
         const osg::Vec3f extent( brickMax - brickMin );
+
+        if( _prune && pruneTest( brickMin, brickMax ) )
+            return( NULL );
 
         unsigned char* data( new unsigned char[ _brickRes[0] * _brickRes[1] * _brickRes[2] ] );
         unsigned char* ptr( data );
@@ -105,6 +108,17 @@ public:
     }
 
 protected:
+    bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const
+    {
+        return( ( bMin[0] > _cubeMax[0] ) ||
+            ( bMax[0] < _cubeMin[0] ) ||
+            ( bMin[1] > _cubeMax[1] ) ||
+            ( bMax[1] < _cubeMin[1] ) ||
+            ( bMin[2] > _cubeMax[2] ) ||
+            ( bMax[2] < _cubeMin[2] )
+            );
+    }
+
     osg::Vec3s _brickRes;
     osg::Vec3f _cubeMin, _cubeMax;
 };
@@ -120,7 +134,7 @@ public:
         _minRad( soft ? .1 : .45 ),
         _maxRad( .45 )
     {
-        setNumBricks( osg::Vec3s( 4, 4, 4 ) );
+        setNumBricks( osg::Vec3s( 8, 8, 8 ) );
     }
     virtual ~SphereVolumeBrickData()
     {}
@@ -140,6 +154,9 @@ public:
             brick[2] * invNumBricks[2] );
         const osg::Vec3f brickMax( brickMin + invNumBricks );
         const osg::Vec3f extent( brickMax - brickMin );
+
+        if( _prune && pruneTest( brickMin, brickMax ) )
+            return( NULL );
 
         const float transition( _maxRad - _minRad );
 
@@ -179,6 +196,28 @@ public:
     }
 
 protected:
+    bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const
+    {
+        const osg::Vec3f p0( bMin[0]-.5f, bMin[1]-.5f, bMin[2]-.5f );
+        const osg::Vec3f p1( bMax[0]-.5f, bMin[1]-.5f, bMin[2]-.5f );
+        const osg::Vec3f p2( bMin[0]-.5f, bMax[1]-.5f, bMin[2]-.5f );
+        const osg::Vec3f p3( bMax[0]-.5f, bMax[1]-.5f, bMin[2]-.5f );
+        const osg::Vec3f p4( bMin[0]-.5f, bMin[1]-.5f, bMax[2]-.5f );
+        const osg::Vec3f p5( bMax[0]-.5f, bMin[1]-.5f, bMax[2]-.5f );
+        const osg::Vec3f p6( bMin[0]-.5f, bMax[1]-.5f, bMax[2]-.5f );
+        const osg::Vec3f p7( bMax[0]-.5f, bMax[1]-.5f, bMax[2]-.5f );
+
+        return( ( p0.length() > _maxRad ) &&
+            ( p1.length() > _maxRad ) &&
+            ( p2.length() > _maxRad ) &&
+            ( p3.length() > _maxRad ) &&
+            ( p4.length() > _maxRad ) &&
+            ( p5.length() > _maxRad ) &&
+            ( p6.length() > _maxRad ) &&
+            ( p7.length() > _maxRad )
+            );
+    }
+
     osg::Vec3s _brickRes;
     osg::Vec3f _center;
     float _minRad, _maxRad;
