@@ -153,13 +153,13 @@ AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
     {
         const std::string errorText( "AssembleHierarchy: maxDepth must be >= 2." );
         LFX_ERROR_STATIC( "lfx.core.hier", errorText );
-        throw( std::exception( errorText.c_str() ) );
+        throw( std::exception() );
     }
     if( baseRange <= 0. )
     {
         const std::string errorText( "AssembleHierarchy: baseRange must be > 0." );
         LFX_ERROR_STATIC( "lfx.core.hier", errorText );
-        throw( std::exception( errorText.c_str() ) );
+        throw( std::exception() );
     }
 
     double range( baseRange );
