@@ -835,7 +835,7 @@ void SaveHierarchy::save( DBBasePtr db )
     recurseSaveBricks( db, std::string( "" ) );
 }
 
-void SaveHierarchy::recurseSaveBricks( DBBasePtr db, std::string& brickName )
+void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName )
 {
     const int depth( brickName.length() );
     VolumeBrickData* vbd( _lodVec[ depth ] );

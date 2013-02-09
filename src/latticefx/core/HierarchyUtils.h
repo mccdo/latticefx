@@ -374,7 +374,7 @@ public:
     void save( DBBasePtr db );
 
 protected:
-    void recurseSaveBricks( DBBasePtr db, std::string& brickName );
+    void recurseSaveBricks( DBBasePtr db, const std::string brickName );
 
     unsigned int _depth;
 
