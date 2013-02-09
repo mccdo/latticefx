@@ -21,7 +21,7 @@
 #include <latticefx/core/ChannelDataImageSet.h>
 #include <latticefx/core/LogMacros.h>
 
-#include <osg/math>
+#include <osg/Math>
 
 #include <boost/foreach.hpp>
 

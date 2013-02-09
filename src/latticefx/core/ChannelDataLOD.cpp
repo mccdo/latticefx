@@ -20,7 +20,7 @@
 
 #include <latticefx/core/ChannelDataLOD.h>
 
-#include <osg/math>
+#include <osg/Math>
 
 #include <boost/foreach.hpp>
 
