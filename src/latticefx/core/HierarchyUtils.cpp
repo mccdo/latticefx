@@ -209,8 +209,12 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         case '6': localOffset.set( -1., 1., 1. ); break;
         case '7': localOffset.set( 1., 1., 1. ); break;
         default:
-            LFX_ERROR_STATIC( "lfx.core.hier", "addChannelData: Invalid nameString digit: " + *iter );
-            break;
+            {
+                std::string message = "addChannelData: Invalid nameString digit: ";
+                message.push_back( *iter );
+                LFX_ERROR_STATIC( "lfx.core.hier", message );
+                break;
+            }
         }
     }
 
@@ -382,6 +386,8 @@ std::string NameStringGenerator::getNameString( const osg::Vec3s& subDims, const
         case 5: nameString += "5"; break;
         case 6: nameString += "6"; break;
         case 7: nameString += "7"; break;
+        default:
+            break;
         }
 
         octant = octant / 2;
@@ -408,8 +414,12 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
         case '6': offset.set( -1., 1., 1. ); break;
         case '7': offset.set( 1., 1., 1. ); break;
         default:
-            LFX_ERROR_STATIC( "lfx.core.hier", "getNameString: Invalid nameString digit: " + *iter );
-            break;
+            {
+                std::string message = "getNameString: Invalid nameString digit: ";
+                message.push_back( *iter );
+                LFX_ERROR_STATIC( "lfx.core.hier", message );
+                break;
+            }
         }
     }
 
