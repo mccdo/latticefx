@@ -141,7 +141,7 @@ AssembleHierarchy::AssembleHierarchy( RangeVec ranges )
     {
         const std::string errorText( "AssembleHierarchy: RangeVec must have at least 1 element." );
         LFX_ERROR_STATIC( "lfx.core.hier", errorText );
-        throw( std::exception( errorText.c_str() ) );
+        throw( std::exception() );
     }
 
     _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
