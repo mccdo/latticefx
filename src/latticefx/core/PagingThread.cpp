@@ -23,7 +23,9 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osgDB/ReadFile>
+
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -87,7 +89,7 @@ void PagingThread::dump( const std::string& header, const LoadRequestList& reque
     LFX_CRITICAL( header );
     BOOST_FOREACH( const LoadRequestPtr req, requests )
     {
-        LFX_CRITICAL( "\t" + req->_keys.size() );
+        LFX_CRITICAL( "\t" + boost::lexical_cast< std::string >( req->_keys.size() ) );
     }
 }
 

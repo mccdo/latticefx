@@ -50,7 +50,7 @@ struct LoadRequest {
     LoadRequest();
     LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db=DBBasePtr( (DBBase*)NULL ) );
     LoadRequest( const LoadRequest& rhs );
-    ~LoadRequest();
+    virtual ~LoadRequest();
 
     virtual bool load() = 0;
 

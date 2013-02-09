@@ -178,7 +178,7 @@ public:
     std::string getActivelyLoadingPlugin() { return( _activelyLoadingPlugin ); }
 
 
-    typedef struct PluginInfo
+    struct PluginInfo
     {
         PluginInfo( const std::string& name=std::string( "" ) ) : _name( name ) {}
 

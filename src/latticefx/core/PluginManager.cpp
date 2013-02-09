@@ -45,11 +45,12 @@ namespace core {
 
 OperationInfo::OperationInfo( OperationBasePtr instance, const std::string& className,
             const std::string& baseClassName, const std::string& description )
-  : _opInstance( instance ),
+    :
     _pluginName( PluginManager::instance()->getActivelyLoadingPlugin() ),
     _className( className ),
     _baseClassName( baseClassName ),
-    _description( description )
+    _description( description ),
+    _opInstance( instance )
 {
     PluginManager::instance()->addOperation( *this );
 }

@@ -61,7 +61,7 @@ public:
     LogBase that uses LogFile as a destination.) */
     void setLogFileName( const std::string& logFileName );
 
-    typedef enum {
+    enum {
         PrioSilent = 0,
         PrioFatal = Poco::Message::PRIO_FATAL,
         PrioCritical = Poco::Message::PRIO_CRITICAL,
