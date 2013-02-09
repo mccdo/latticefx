@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include <latticefx/core/vtk/VTKIsosurfaceRTP.h>
+#include <latticefx/core/vtk/VTKIsoSurfaceRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 

@@ -139,7 +139,7 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
     if( it == _uuidMap.end() )
     {
         LFX_WARNING( "loadImage(): Can't find key \"" + keyString + "\"." );
-        return( false );
+        return( NULL );
     }
     LFX_TRACE( "loadImage(): Loading key \"" + dbKey + "\", uuid: " + it->second );
 
@@ -160,8 +160,8 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
 
     // Copy image data from DB into a ref-counted struct, which we can
     // attach as UserData. This avoids a second data copy.
-    osg::ref_ptr< CharVecUserData > imageData( new CharVecUserData(
-        persist.GetDatumValue<CharVec>( "Data" ) ) );
+    CharVec charVec = persist.GetDatumValue<CharVec>( "Data" );
+    osg::ref_ptr< CharVecUserData > imageData( new CharVecUserData( charVec ) );
     unsigned char* dataPtr( (unsigned char*)&(*imageData)[0] );
 
     osg::ref_ptr< osg::Image > tempImage( new osg::Image() );

@@ -41,7 +41,7 @@
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
-#include <latticefx/core/vtk/VTKIsosurfaceRTP.h>
+#include <latticefx/core/vtk/VTKIsoSurfaceRTP.h>
 
 #include <osgViewer/Viewer>
 

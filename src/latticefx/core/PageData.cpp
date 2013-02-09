@@ -22,6 +22,8 @@
 
 #include <iostream>
 
+//For FLT_MAX on *nix platforms.
+#include <cfloat>
 
 namespace lfx {
 namespace core {
