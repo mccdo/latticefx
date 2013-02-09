@@ -49,6 +49,8 @@ public:
 
     virtual void traverse( osg::NodeVisitor& nv );
 
+    using osg::Group::addChild;
+
     virtual bool addChild( Node *child, const osg::Vec3& offset );
 
     /** \brief Convenience accessor for dot OSG support. */
