@@ -361,6 +361,10 @@ void main( void )
 
             if( hardwareMask( coord, color ) )
             {
+                // TBD This is a workaround to eliminate sampling errors. The
+                // code ensures that the first sample that passes the hardware
+                // mask is the *exact* value that would pass the mask.
+                // TBD The code needs to be modified to be more general-purpose.
                 if( !lastPassHM && ( lastSample > -1.f ) )
                 {
                     lastPassHM = true;
