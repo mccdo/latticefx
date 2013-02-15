@@ -246,33 +246,39 @@ void main( void )
         // to compute the ray/plane intersection point.
         if( tcStart.x < 0. )
         {
-            float t = -tcStart.x / ( tcEnd.x - tcStart.x );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = -tcStart.x / ray.x;
+            tcStart = tcStart + t * ray;
         }
         if( tcStart.x > 1. )
         {
-            float t = ( 1. - tcStart.x ) / ( tcEnd.x - tcStart.x );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = ( 1. - tcStart.x ) / ray.x;
+            tcStart = tcStart + t * ray;
         }
         if( tcStart.y < 0. )
         {
-            float t = -tcStart.y / ( tcEnd.y - tcStart.y );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = -tcStart.y / ray.y;
+            tcStart = tcStart + t * ray;
         }
         if( tcStart.y > 1. )
         {
-            float t = ( 1. - tcStart.y ) / ( tcEnd.y - tcStart.y );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = ( 1. - tcStart.y ) / ray.y;
+            tcStart = tcStart + t * ray;
         }
         if( tcStart.z < 0. )
         {
-            float t = -tcStart.z / ( tcEnd.z - tcStart.z );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = -tcStart.z / ray.z;
+            tcStart = tcStart + t * ray;
         }
         if( tcStart.z > 1. )
         {
-            float t = ( 1. - tcStart.z ) / ( tcEnd.z - tcStart.z );
-            tcStart = tcStart + t * ( tcEnd - tcStart );
+            vec3 ray = tcEnd - tcStart;
+            float t = ( 1. - tcStart.z ) / ray.z;
+            tcStart = tcStart + t * ray;
         }
     }
 
