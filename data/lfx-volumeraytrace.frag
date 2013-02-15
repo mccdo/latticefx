@@ -15,7 +15,7 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
     vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
-   
+
     // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
     float specExp = 10.; // gl_FrontMaterial.shininess
     vec4 spec = gl_FrontLightProduct[0].specular *
@@ -237,47 +237,48 @@ void main( void )
     // Step 1:
     // If the ray start (tcStart) is outside the volume, clip
     // it to the volume boundaries.
-    if( ( tcStart.x < 0. ) || ( tcStart.x > 1. ) ||
-        ( tcStart.y < 0. ) || ( tcStart.y > 1. ) ||
-        ( tcStart.z < 0. ) || ( tcStart.z > 1. ) )
+    vec3 maxEps = vec3( 1. - edgeEps );
+    if( ( tcStart.x < edgeEps.x ) || ( tcStart.x > maxEps.x ) ||
+        ( tcStart.y < edgeEps.y ) || ( tcStart.y > maxEps.y ) ||
+        ( tcStart.z < edgeEps.z ) || ( tcStart.z > maxEps.z ) )
     {
         // Compute the ray start position such that it lies on a
         // volume face. The code below is using algebraic shorthand
         // to compute the ray/plane intersection point.
-        if( tcStart.x < 0. )
+        if( tcStart.x < edgeEps.x )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = -tcStart.x / ray.x;
+            float t = ( edgeEps.x - tcStart.x ) / ray.x;
             tcStart = tcStart + t * ray;
         }
-        if( tcStart.x > 1. )
+        if( tcStart.x > maxEps.x )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( 1. - tcStart.x ) / ray.x;
+            float t = ( maxEps.x - tcStart.x ) / ray.x;
             tcStart = tcStart + t * ray;
         }
-        if( tcStart.y < 0. )
+        if( tcStart.y < edgeEps.y )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = -tcStart.y / ray.y;
+            float t = ( edgeEps.y - tcStart.y ) / ray.y;
             tcStart = tcStart + t * ray;
         }
-        if( tcStart.y > 1. )
+        if( tcStart.y > maxEps.y )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( 1. - tcStart.y ) / ray.y;
+            float t = ( maxEps.y - tcStart.y ) / ray.y;
             tcStart = tcStart + t * ray;
         }
-        if( tcStart.z < 0. )
+        if( tcStart.z < edgeEps.z )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = -tcStart.z / ray.z;
+            float t = ( edgeEps.z - tcStart.z ) / ray.z;
             tcStart = tcStart + t * ray;
         }
-        if( tcStart.z > 1. )
+        if( tcStart.z > maxEps.z )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( 1. - tcStart.z ) / ray.z;
+            float t = ( maxEps.z - tcStart.z ) / ray.z;
             tcStart = tcStart + t * ray;
         }
     }
