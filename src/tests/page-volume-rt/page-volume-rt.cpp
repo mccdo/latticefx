@@ -315,8 +315,8 @@ int main( int argc, char** argv )
     osg::ArgumentParser arguments( &argc, argv );
 
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
-    LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies directory to use for DBDisk. Default: cwd." );
-    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+    LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies DBDisk directory containing volume image data. Default: cwd." );
+    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Specifies DBCrunchStore database containing volume image data." );
     LFX_CRITICAL_STATIC( logstr, "-d <x> <y> <z>\tDefault is 50 50 50." );
 
     std::string csFile;
