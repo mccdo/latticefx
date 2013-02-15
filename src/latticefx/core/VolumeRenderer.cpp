@@ -199,15 +199,14 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     tc->resize( 8 );
     geom->setTexCoordArray( 0, tc );
 
-    const osg::Vec3f eps( .5f / _volumeDims.x(), .5f / _volumeDims.y(), .5f / _volumeDims.z() );
-    (*tc)[0].set( eps );
-    (*tc)[1].set( 1.f - eps.x(), eps.y(), eps.z() );
-    (*tc)[2].set( eps.x(), 1.f - eps.y(), eps.z() );
-    (*tc)[3].set( 1.f - eps.x(), 1.f - eps.y(), eps.z() );
-    (*tc)[4].set( eps.x(), eps.y(), 1.f - eps.z() );
-    (*tc)[5].set( 1.f - eps.x(), eps.y(), 1.f - eps.z() );
-    (*tc)[6].set( eps.x(), 1.f - eps.y(), 1.f - eps.z() );
-    (*tc)[7].set( 1.f - eps.x(), 1.f - eps.y(), 1.f - eps.z() );
+    (*tc)[0].set( 0.f, 0.f, 0.f );
+    (*tc)[1].set( 1.f, 0.f, 0.f );
+    (*tc)[2].set( 0.f, 1.f, 0.f );
+    (*tc)[3].set( 1.f, 1.f, 0.f );
+    (*tc)[4].set( 0.f, 0.f, 1.f );
+    (*tc)[5].set( 1.f, 0.f, 1.f );
+    (*tc)[6].set( 0.f, 1.f, 1.f );
+    (*tc)[7].set( 1.f, 1.f, 1.f );
 
     GLushort indices[] = {
         2, 0, 6, 6, 0, 4, // -x face

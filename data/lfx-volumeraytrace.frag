@@ -199,15 +199,15 @@ uniform float volumeTransparency;
 uniform bool volumeTransparencyEnable;
 
 uniform float volumeMaxSamples;
-uniform vec3 volumeResolution;
 
 // These uniforms must be specified by the application. Lfx does not have access to them.
 uniform vec2 windowSize;
 uniform sampler2D sceneDepth;
 
 
-varying vec3 tcEye;
-varying float ecVolumeSize;
+flat varying vec3 tcEye;
+flat varying vec3 edgeEps;
+flat varying float ecVolumeSize;
 
 void main( void )
 {
@@ -337,7 +337,8 @@ void main( void )
     vec4 litColor = vec4( 0., 0., 0., 0. );
 
     // Tex coord delta used for normal computation.
-    vec3 tcDelta = .5 / volumeResolution;
+    // Use half of the inverse volume resolution for best results.
+    vec3 tcDelta = edgeEps;
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.

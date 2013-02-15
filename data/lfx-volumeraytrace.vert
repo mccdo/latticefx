@@ -12,8 +12,9 @@ uniform mat3 osg_NormalMatrixInverse;
 //   OSG near & far computation to span two Cameras.
 uniform mat4 osgw_ProjectionMatrix;
 
-varying vec3 tcEye;
-varying float ecVolumeSize;
+flat varying vec3 tcEye;
+flat varying vec3 edgeEps;
+flat varying float ecVolumeSize;
 
 
 vec4 eyeToTexCoords( in vec4 ec, in vec4 ocCenter, in vec4 ocDims )
@@ -35,8 +36,12 @@ void main( void )
     const vec4 ecEye = vec4( 0., 0., 0., 1. );
     tcEye = eyeToTexCoords( ecEye, ocCenter, ocDims ).xyz;
 
-    // Pass through texture coordinate.
-    gl_TexCoord[0] = gl_MultiTexCoord0;
+    // Incoming (0,1) texture coordinates need to be scaled and biased
+    // into the range (eps,1-eps), where epsilon is 1/2 of the inverse
+    // volume resolution.
+    vec3 invRes = 1. / volumeResolution;
+    edgeEps = .5 * invRes;
+    gl_TexCoord[0] = vec4( gl_MultiTexCoord0.stp * ( 1. - invRes ) + edgeEps, 1. );
 
     // Do NOT use ftransform() -- Must use the osgWorks
     // MultiCameraProjectionMatrix for correct z testing.
