@@ -38,9 +38,11 @@ void main( void )
 
     // Incoming (0,1) texture coordinates need to be scaled and biased
     // into the range (eps,1-eps), where epsilon is 1/2 of the inverse
-    // volume resolution.
+    // volume resolution. (This forces the texture lookup to never extend
+    // beyond the texel *center*, necessary for eliminating seams between
+    // texture bricks.)
     vec3 invRes = 1. / volumeResolution;
-    edgeEps = .5 * invRes;
+    edgeEps = .5 / volumeResolution;
     gl_TexCoord[0] = vec4( gl_MultiTexCoord0.stp * ( 1. - invRes ) + edgeEps, 1. );
 
     // Do NOT use ftransform() -- Must use the osgWorks

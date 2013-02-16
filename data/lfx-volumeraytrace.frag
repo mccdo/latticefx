@@ -211,7 +211,7 @@ flat varying float ecVolumeSize;
 
 void main( void )
 {
-    // Compute window tex coords to sample the scene color and depth textures.
+    // Compute window tex coords to sample the depth textures.
     vec2 winTC = gl_FragCoord.xy / windowSize;
 
     // Must interpolate tex coords along the ray, in theory, from the
