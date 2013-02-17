@@ -119,7 +119,7 @@ uniform vec3 volumeCenter;
 
 vec4 texToEyeCoords( in vec3 tc )
 {
-    vec4 oc = vec4( ( tc - .5f ) * volumeDims + volumeCenter, 1.f );
+    vec4 oc = vec4( ( tc - .5 ) * volumeDims + volumeCenter, 1. );
     return( gl_ModelViewMatrix * oc );
 }
 
@@ -137,9 +137,9 @@ void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
 
     float dotStart = dot( texToEyeCoords( start ), clipPlane );
     float dotEnd = dot( texToEyeCoords( end ), clipPlane );
-    if( dotStart < 0.f )
+    if( dotStart < 0. )
     {
-        if( dotEnd < 0.f )
+        if( dotEnd < 0. )
             // both start and end were clipped.
             discard;
 
@@ -147,9 +147,9 @@ void clipRay( inout vec3 start, inout vec3 end, in vec4 clipPlane )
         float pct = dotEnd / ( dotEnd - dotStart );
         start = ( start - end ) * pct + end;
     }
-    else if( dotStart >= 0.f )
+    else if( dotStart >= 0. )
     {
-        if( dotEnd >= 0.f )
+        if( dotEnd >= 0. )
             // both start and end are not clipped.
             return;
 
@@ -290,8 +290,8 @@ void main( void )
     // Transform the scene depth value into tex coord space. We don't want
     // to shoot a ray past this point.
     float winZScene = texture2D( sceneDepth, winTC ).r;
-    vec3 ndcScene = vec3( winTC, winZScene ) * 2.f - 1.f;
-    vec4 ecScene = osgw_ProjectionMatrixInverse * vec4( ndcScene, 1.f );
+    vec3 ndcScene = vec3( winTC, winZScene ) * 2. - 1.;
+    vec4 ecScene = osgw_ProjectionMatrixInverse * vec4( ndcScene, 1. );
     ecScene /= ecScene.w;
     vec4 ocScene = gl_ModelViewMatrixInverse * ecScene;
     vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
@@ -299,10 +299,10 @@ void main( void )
     vec3 scenePlaneNormal = tcEye - tcScene;
 
     // Clip against the scene depth value
-    if( dot( tcStart - tcScene, scenePlaneNormal ) < 0.f )
+    if( dot( tcStart - tcScene, scenePlaneNormal ) < 0. )
         // Volume is behind the scene depth value. Do nothing.
         discard;
-    if( dot( tcEnd - tcScene, scenePlaneNormal ) < 0.f )
+    if( dot( tcEnd - tcScene, scenePlaneNormal ) < 0. )
         // Stop the ray when it hits the scene depth value.
         tcEnd = tcScene;
 
@@ -332,12 +332,12 @@ void main( void )
     float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
 
     // Ensure a minimum totalSamples to reduce banding artifacts in thin areas.
-    //totalSamples = max( totalSamples, 3.f );
+    //totalSamples = max( totalSamples, 3. );
     // TBD Hack alert.
     // I am seeing some TDR timeout errors on Win7 unless we clamp totalSamples
     // to the maximum value. This should not be necessary, as the math to compute
     // totalSamples should never result in a value greater than volumeMaxSamples. Hm.
-    totalSamples = clamp( totalSamples, 3.f, volumeMaxSamples );
+    totalSamples = clamp( totalSamples, 3., volumeMaxSamples );
 
     // Accumulate color samples into finalColor, initially contains no color.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
@@ -349,14 +349,14 @@ void main( void )
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.
-    float lastSample = -1.f;
+    float lastSample = -1.;
 
     bool lastPassHM = false;
-    float sampleCount = 0.f;
+    float sampleCount = 0.;
     while( sampleCount < totalSamples )
     {
         float sampleLen = sampleCount / totalSamples;
-        sampleCount += 1.f;
+        sampleCount += 1.;
 
         // Obtain volume sample.
         vec3 coord = tcStart + sampleVec * sampleLen;
@@ -373,15 +373,15 @@ void main( void )
                 // code ensures that the first sample that passes the hardware
                 // mask is the *exact* value that would pass the mask.
                 // TBD The code needs to be modified to be more general-purpose.
-                if( !lastPassHM && ( lastSample > -1.f ) )
+                if( !lastPassHM && ( lastSample > -1. ) )
                 {
                     lastPassHM = true;
 
                     float len = ( hmParams[3] - lastSample ) / ( baseColor.r - lastSample );
-                    sampleCount -= ( 2.f - len );
+                    sampleCount -= ( 2. - len );
 
                     sampleLen = sampleCount / totalSamples;
-                    sampleCount += 1.f;
+                    sampleCount += 1.;
                     coord = tcStart + sampleVec * sampleLen;
                     baseColor.r = hmParams[3];
                     color = transferFunction( baseColor.r );
@@ -414,7 +414,7 @@ void main( void )
             else
             {
                 lastPassHM = false;
-                litColor = vec4( 0.f );
+                litColor = vec4( 0. );
             }
 
             lastSample = baseColor.r;
@@ -425,7 +425,7 @@ void main( void )
             if( !volumeTransparencyEnable )
             {
                 // Transparency is off, so max the alpha.
-                finalColor = vec4( litColor.rgb, 1.f );
+                finalColor = vec4( litColor.rgb, 1. );
             }
             else
             {
@@ -436,10 +436,10 @@ void main( void )
                 //    dst.rgb = dst.rgb + (1 - dst.a) * src.a * src.rgb
                 //    dst.a   = dst.a   + (1 - dst.a) * src.a
                 vec4 srcColor = vec4( litColor.rgb * litColor.a, litColor.a );
-                finalColor = ( 1.f - finalColor.a ) * srcColor + finalColor;
+                finalColor = ( 1. - finalColor.a ) * srcColor + finalColor;
             }
 
-            if( finalColor.a > .95f )
+            if( finalColor.a > .95 )
                 // It's opaque enough. Break out of the loop.
                 // And, we take this branch if transparency is disabled because
                 // we forced the alpha to 1.0.

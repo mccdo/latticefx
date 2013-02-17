@@ -26,8 +26,8 @@ vec4 eyeToTexCoords( in vec4 ec, in vec4 ocCenter, in vec4 ocDims )
 
 void main( void )
 {
-    vec4 ocCenter = vec4( volumeCenter, 1.f );
-    vec4 ocDims = vec4( volumeDims, 1.f );
+    vec4 ocCenter = vec4( volumeCenter, 1. );
+    vec4 ocDims = vec4( volumeDims, 1. );
 
     vec4 ecDims = gl_ModelViewMatrix * ocDims;
     ecVolumeSize = length( ecDims.xyz );
