@@ -7,6 +7,8 @@
 General description, OSG-based, support for time series data, support for volume visualization,
 support for large data sets, configurable, etc.
 
+\ref Building "How to Build LatticeFX"
+
 \subsection ssDataSet The DataSet class
 
   \li \link lfx::core::DataSet The DataSet class \endlink

@@ -1,0 +1,57 @@
+/** \page Building How to Build LatticeFX
+
+<h2>Get the Source Code</h2>
+
+The LatticeFX source code is in a GoogleCode subversion repository.
+\code
+svn checkout http://latticefx.googlecode.com/svn/trunk/
+\endcode
+
+<h2>Dependencies on External Projects</h2>
+
+Required:
+\li <a href=http://www.openscenegraph.org/projects/osg >OpenSceneGraph (OSG)</a> v2.8.5 or newer.
+\li <a href=http://osgworks.googlecode.com >osgWorks</a>. Get current svn trunk.
+\li <a href=http://pocoproject.org/download/index.html >Poco</a> v1.4.3p1 or newer. (See the Poco Note below.)
+\li <a href=http://www.boost.org/users/download/ >Boost</a> v1.48_0 or newer. Some libraries are required.
+\li <a href=http://www.cmake.org/cmake/resources/software.html >CMake</a> v2.8.5 or newer.
+
+Optional:
+\li <a href=http://crunchstore.googlecode.com >crunchstore</a>. Get current svn trunk.
+\li <a href=http://www.vtk.org/ >VTK</a>.
+\li <a href=http://www.stack.nl/~dimitri/doxygen/download.html >Doxygen</a>.
+
+Poco note: LatticeFX itself doesn't require the "Complete Edition". However, if you intent
+to use LatticeFX's optional crunchstore project for external database support, crunchstore
+requires the "Complete Edition" for the MySQL library. In summery: If you have opted to
+use crunchstore, then get the "Complete Edition". Otherwise, get the "Basic Edition".
+
+Poco and Boost must be built as shared libraries / DLLs in order for LatticeFX to work correctly.
+
+<h2>Configuring CMake to Create LatticeFX Project Files</h2>
+
+LatticeFX requires CMake v2.8.5 or newer.
+
+The following CMake variables will probably need to be set in order to find the dependencies:
+\li BOOST_ROOT
+\li Poco_ROOT
+\li osgWorks_DIR
+\li crunchstore_DIR
+\li VTK_DIR
+
+LatticeFX uses CMake's built-in scripts for finding Boost and OSG. See those
+scripts for help with finding those dependencies.
+
+BOOST_ALL_DYN_LINK should be checked / enabled / set to true.
+
+<h2>Build LatticeFX</h2>
+
+After CMake is completely configured, build the entire project. For Windows, enter
+Visual Studio and do a batch build. For Unix/Linix/OSX makefiles, use the \c make command.
+
+<h2>Running LatticeFX</h2>
+
+After a successful build, you should be able to perform a simple test by executing the
+\c test0 test.
+
+*/
