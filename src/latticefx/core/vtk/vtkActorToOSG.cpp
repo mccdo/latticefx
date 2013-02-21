@@ -95,7 +95,7 @@ osg::Geode* vtkActorToOSG( vtkActor* actor, osg::Geode* geode, int verbose )
     // remove old gsets and delete them
     while( geode->getNumDrawables() )
     {
-        geode->removeDrawable( ( unsigned int )0 );    //removeDrawable(0);
+        geode->removeDrawable( NULL );
     }
 
     if( points.valid() )
