@@ -172,3 +172,4 @@ configure_file(extra/latticefx.fpc.in
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/flagpoll/latticefx.fpc
         DESTINATION lib/flagpoll )
 
+
