@@ -37,6 +37,8 @@
 #include <osgUtil/CullVisitor>
 #include <osgUtil/RenderStage>
 #include <osg/ComputeBoundsVisitor>
+#include <osg/Texture2D>
+#include <osg/Texture3D>
 
 #include <osgwTools/MultiCameraProjectionMatrix.h>
 #include <osgwTools/Shapes.h>
@@ -44,6 +46,40 @@
 #include <boost/foreach.hpp>
 #include <iostream>
 #include <osg/io_utils>
+
+#include <osgGA/GUIEventHandler>
+
+class MyKeyHandler : public osgGA::GUIEventHandler
+{
+public:
+    MyKeyHandler( osg::StateSet* stateSet )
+      : _stateSet( stateSet ),
+        _mode( false )
+    {
+        osg::Uniform* u = new osg::Uniform( "toggle", _mode );
+        _stateSet->addUniform( u );
+    }
+
+    virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* )
+    {
+        bool handled( false );
+        if( ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN )
+        {
+            if( ea.getKey() == 'a' )
+            {
+                osg::Uniform* u( _stateSet->getUniform( "toggle" ) );
+                _mode = !_mode;
+                u->set( _mode );
+                handled = true;
+            }
+        }
+        return( handled );
+    }
+
+protected:
+    osg::ref_ptr< osg::StateSet > _stateSet;
+    bool _mode;
+};
 
 
 using namespace lfx::core;
@@ -297,7 +333,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     return( dsp );
 }
 
-osg::Node* createScene( const bool clip )
+osg::Node* createScene( const bool clip, const osg::Vec3& dims=osg::Vec3(0.,0.,0.) )
 {
     osg::Geometry* geom( osgwTools::makeClosedCylinder(
         osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s(1,16) ) );
@@ -311,6 +347,15 @@ osg::Node* createScene( const bool clip )
 
     osg::Group* root( new osg::Group );
     root->addChild( geode );
+
+    if( dims.length2() > 0. )
+    {
+        geom = osgwTools::makeWireBox( dims * .5 );
+        geode = new osg::Geode;
+        geode->addDrawable( geom );
+        root->addChild( geode );
+    }
+
     if( clip )
     {
         root->addChild( createClipSubgraph() );
@@ -401,7 +446,7 @@ int main( int argc, char** argv )
     viewer.addEventHandler( new osgViewer::StatsHandler() );
 
 
-    osg::Node* scene( createScene( clip ) );
+    osg::Node* scene( createScene( clip, dims ) );
 
     // Assemble camera RTT and scene hierarchy.
     // viewerCamera (renders to both color and depth textures)
@@ -421,6 +466,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( rootGroup );
     viewer.addEventHandler( new ResizeHandler( scene ) );
 
+    viewer.addEventHandler( new MyKeyHandler( rootGroup->getOrCreateStateSet() ) );
 
     while( !( viewer.done() ) )
     {
