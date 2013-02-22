@@ -28,6 +28,7 @@
 #include <Poco/File.h>
 #include <Poco/Glob.h>
 
+#include <iostream>
 
 namespace lfx {
 namespace core {
@@ -131,9 +132,18 @@ std::string DBDisk::fileNameFromDBKey( const DBKey& dbKey ) const
     // Create the directory, if it doesn't exist.
     Poco::Path pathOnly( pocoPath );
     pathOnly.makeParent();
-    Poco::File pocoFile( pathOnly );
-    pocoFile.createDirectories();
-
+    if( !pathOnly.toString().empty() )
+    {
+        Poco::File pocoFile( pathOnly );
+        try
+        {
+            pocoFile.createDirectories();
+        }
+        catch( Poco::Exception& e )
+        {
+            std::cout << e.displayText() << std::endl;
+        }
+    }
     return( pocoPath.toString() );
 }
 
