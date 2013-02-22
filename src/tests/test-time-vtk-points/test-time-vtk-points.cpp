@@ -27,11 +27,15 @@
 #include <latticefx/core/VectorRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
 #include <latticefx/core/PlayControl.h>
+#include <latticefx/core/DBDisk.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <latticefx/core/vtk/DataSet.h>
 #include <latticefx/core/vtk/VTKSurfaceWrapRTP.h>
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -39,10 +43,13 @@
 #include <osg/Shader>
 #include <osg/Program>
 #include <osg/Uniform>
+#include <osg/io_utils>
+
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
 #include <osgDB/FileUtils>
+
 
 #include <latticefx/utils/vtk/FindVertexCellsCallback.h>
 #include <latticefx/utils/vtk/GetScalarDataArraysCallback.h>
@@ -65,11 +72,17 @@
 namespace fs = boost::filesystem;
 
 std::vector< lfx::core::vtk::DataSetPtr > transientSeries;
+//std::string diameterNameString = "Diameter";
+//std::string vmagNameString = "VelocityMagnitude";
+
+std::string diameterNameString = "RepDiam";
+std::string vmagNameString = "MotionVector_magnitude";
 
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSetPtr >& transData,
                                                                    const std::string& activeScalar,
-                                                                   const std::string& activeVector )
+                                                                   const std::string& activeVector,
+                                                                   lfx::core::DBBasePtr dbBase )
 {
     std::vector< std::vector< std::pair< vtkIdType, double* > > >  m_pointCollection;
     ///The raw data for the respective points
@@ -106,7 +119,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         }
     }
     delete findVertexCellsCbk;
-    
+    std::cout << maxNumPoints << std::endl;
     lfx::vtk_utils::CountNumberOfParametersCallback* getNumParamsCbk =
         new lfx::vtk_utils::CountNumberOfParametersCallback();
     dataObjectHandler->SetDatasetOperatorCallback( getNumParamsCbk );
@@ -133,8 +146,8 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         dataObjectHandler->SetDatasetOperatorCallback( processScalarRangeCbk );
         vtkDataObject* tempDataSet = m_transientDataSet.at( j )->GetDataSet();
         dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
-        processScalarRangeCbk->GetScalarRange( "Diameter", diamRange ); 
-        processScalarRangeCbk->GetScalarRange( "VelocityMagnitude", vmagRange );
+        processScalarRangeCbk->GetScalarRange( diameterNameString, diamRange ); 
+        processScalarRangeCbk->GetScalarRange( vmagNameString, vmagRange );
         if( diamRange[ 0 ] < diamRangeF[ 0 ] )
         {
             diamRangeF[ 0 ] = diamRange[ 0 ];
@@ -196,12 +209,12 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
 
         for( size_t j = 0; j < tempScalarData->size(); ++j )
         {
-            if( tempScalarData->at( j ).first == "Diameter" && tempScalarData->at( j ).second.size() > 0 )
+            if( tempScalarData->at( j ).first == diameterNameString && tempScalarData->at( j ).second.size() > 0 )
             {
                 //std::cout << tempScalarData->at( j ).second.size() << std::endl;
                 diamArray = &tempScalarData->at( j ).second;
             }
-            else if( tempScalarData->at( j ).first == "VelocityMagnitude" && tempScalarData->at( j ).second.size() > 0 )
+            else if( tempScalarData->at( j ).first == vmagNameString && tempScalarData->at( j ).second.size() > 0 )
             {
                 //std::cout << tempScalarData->at( j ).second.size() << std::endl;
                 vmagArray = &tempScalarData->at( j ).second;
@@ -272,8 +285,11 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     renderOp->setHardwareMaskOperator( lfx::core::Renderer::HM_OP_OFF );
     renderOp->setHardwareMaskReference( 0.f );
     
-    dsp->setRenderer( renderOp );
+    renderOp->setDB( dbBase );
     
+    dsp->setRenderer( renderOp );
+    dsp->setDB( dbBase );
+   
     /*m_bb[0] = 1000000;
     m_bb[1] = -1000000;
     m_bb[2] = 1000000;
@@ -415,7 +431,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 
         fs::path parentDir = pathName.parent_path();
 
-        tempDataSet->LoadTransientData( parentDir.string() );
+        tempDataSet->LoadTransientData( parentDir.string(), pathName.extension().string() );
     }
 
     /*{
@@ -470,13 +486,52 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
+    
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
 
+
+    lfx::core::DBBasePtr dbBase;
+/*#ifdef LFX_USE_CRUNCHSTORE
+    if( !( csFile.empty() ) )
+    {
+        DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+
+        crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+        crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+        crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+        manager->SetCache( cache );
+        manager->SetBuffer( buffer );
+        crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+        sqstore->SetStorePath( csFile );
+        manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+        try {
+            cs->setDataManager( manager );
+        }
+        catch( std::exception exc ) {
+            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+            LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
+            exit( 1 );
+        }
+
+        dbBase = (DBBasePtr)cs;
+    }
+#endif*/
+    //if( csFile.empty() )
+    {
+        lfx::core::DBDiskPtr disk( lfx::core::DBDiskPtr( new lfx::core::DBDisk() ) );
+        std::string filePath( "." );
+        disk->setRootPath( filePath );
+        dbBase = disk;
+    }
+
+
+
     lfx::core::vtk::DataSetPtr tempDataSet = LoadDataSet( argv[ 1 ] );
     //vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
-    lfx::core::DataSetPtr dsp = createInstanced( transientSeries, "test", "test" );
+    lfx::core::DataSetPtr dsp = createInstanced( transientSeries, "test", "test", dbBase );
     //tempVtkDataSet->Delete();
     //delete tempDataSet;
     // Create an example data set.
@@ -488,7 +543,7 @@ int main( int argc, char** argv )
     osg::ref_ptr< osg::Group > rootGroup = new osg::Group();
     rootGroup->addChild( dsp->getSceneData() );
 
-    {
+    /*{
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp2( new lfx::core::DataSet() );
 
@@ -507,12 +562,14 @@ int main( int argc, char** argv )
         dsp2->setRenderer( renderOp );
 
         rootGroup->addChild( dsp2->getSceneData() );
-    }
+    }*/
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
+    // add the window size toggle handler
+    viewer.addEventHandler(new osgViewer::WindowSizeHandler);
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( rootGroup.get() );
 
