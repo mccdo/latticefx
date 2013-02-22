@@ -293,7 +293,7 @@ public:
     ///Set the active data arrays to load
     void SetActiveDataArrays( std::vector< std::string > activeArrays );
     ///Load transient data based on a file prefix or directory scan.
-    void LoadTransientData( const std::string& dirName );
+    void LoadTransientData( const std::string& dirName, const std::string fileExtension = ".vtm" );
 
     ///Get Transient vectors for dataset
     ///\return The vector of datasets associated with this transient series

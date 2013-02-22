@@ -1901,7 +1901,7 @@ void DataSet::SetActiveDataArrays( std::vector< std::string > activeArrays )
     m_activeDataArrays = activeArrays;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void DataSet::LoadTransientData( const std::string& dirName )
+void DataSet::LoadTransientData( const std::string& dirName, const std::string fileExtension )
 {
     ///Get base file name or directory
     ///Scan directory for all of the files
@@ -1912,7 +1912,7 @@ void DataSet::LoadTransientData( const std::string& dirName )
     }
 
     std::vector<std::string> transientFile =
-        lfx::vtk_utils::fileIO::GetFilesInDirectory( dirName, ".vtm" );
+        lfx::vtk_utils::fileIO::GetFilesInDirectory( dirName, fileExtension );
 
     ///Load data for the file selected by the user for the transient series
     LoadData();
