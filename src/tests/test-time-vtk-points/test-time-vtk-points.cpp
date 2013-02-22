@@ -72,12 +72,15 @@
 namespace fs = boost::filesystem;
 
 std::vector< lfx::core::vtk::DataSetPtr > transientSeries;
-//std::string diameterNameString = "Diameter";
-//std::string vmagNameString = "VelocityMagnitude";
-
+#if 0
+std::string diameterNameString = "Diameter";
+std::string vmagNameString = "VelocityMagnitude";
+double conversionFactor = 1.0;
+#else
 std::string diameterNameString = "RepDiam";
 std::string vmagNameString = "MotionVector_magnitude";
-
+double conversionFactor = 0.00328084;
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSetPtr >& transData,
                                                                    const std::string& activeScalar,
@@ -231,13 +234,15 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         {
             //std::cout << tempCellGroups->size() << std::endl;
             double* tempData = tempCellGroups->at( j ).second;
-            posArray->push_back( osg::Vec3d( tempData[ 0 ], tempData[ 1 ], tempData[ 2 ] ) );
+            osg::Vec3d position( tempData[ 0 ], tempData[ 1 ], tempData[ 2 ] );
+            position *= conversionFactor;
+            posArray->push_back( position );
             //std::cout << tempCellGroups->at( j ).first << " " << tempData[ 0 ] << " " << tempData[ 1 ] << " " << tempData[ 2 ] << std::endl;
 
             //radArray->push_back( 0.02 );
             if( diamArray )
             {
-                val = diamArray->at( j ) * 0.5;
+                val = diamArray->at( j ) * 0.5 * conversionFactor;
                 //val = vtkMath::ClampAndNormalizeValue( val, diamRange );
 
                 radArray->push_back( val );
