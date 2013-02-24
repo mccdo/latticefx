@@ -194,6 +194,7 @@ protected:
 void prepareSceneCamera( osgViewer::Viewer& viewer )
 {
     rootCam = viewer.getCamera();
+    rootCam->setName( "rootCam" );
 
     // Viewer's Camera will render into there color and depth texture buffers:
     colorTexA = new osg::Texture2D;
@@ -220,6 +221,7 @@ void prepareSceneCamera( osgViewer::Viewer& viewer )
 osg::Camera* createDisplaySceneCamera()
 {
     splatCam = new osg::Camera;
+    splatCam->setName( "splatCam" );
     
     splatCam->setClearMask( 0 );
     splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
@@ -253,7 +255,7 @@ osg::Node* createClipSubgraph()
 osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
 {
     osg::ref_ptr< osg::Camera > lfxCam( new osg::Camera );
-    lfxCam->setName( "latticeFX-VolumeCamera" );
+    lfxCam->setName( "app lfxCam" );
 
     lfxCam->setClearMask( 0 );
     lfxCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
