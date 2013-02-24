@@ -115,7 +115,7 @@ DataSet::DataSet()
     _vtkFHndlr( 0 ),
     m_dataObjectHandler( 0 ),
     partOfTransientSeries( 0 ),
-    //m_externalFileLoader( 0 ),
+    m_externalFileLoader( 0 ),
     m_isPartOfCompositeDataset( false )//,
     //m_logger( Poco::Logger::get( "xplorer.DataSet" ) ),
     //m_logStream( ves::xplorer::LogStreamPtr( new Poco::LogStream( m_logger ) ) )
