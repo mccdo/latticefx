@@ -411,13 +411,14 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     tex->setBorderWidth( 0 );
 #if 0
     // TBD why doesn't this work?
+    tex->setMaxAnisotropy( 16.f );
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
-    tex->setMaxAnisotropy( 16.f );
 #else
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
 #endif
+
     osg::Image* dummyImage( new osg::Image );
     dummyImage->setFileName( key );
     tex->setImage( dummyImage );
