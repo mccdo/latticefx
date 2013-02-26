@@ -217,7 +217,7 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
         4, 5, 6, 6, 5, 7    // +z face
     };
 
-    osg::DrawElementsUShort* deus( new osg::DrawElementsUShort( GL_TRIANGLES, 36, indices ) );
+    osg::DrawElementsUShort* deus( new osg::DrawElementsUShort( GL_TRIANGLES, sizeof( indices ) / sizeof( GLushort ), indices ) );
     geom->addPrimitiveSet( deus );
 
     return( geom.release() );
@@ -405,9 +405,9 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
     tex->setResizeNonPowerOfTwoHint( false );
-    tex->setWrap( osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setWrap( osg::Texture2D::WRAP_S, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setWrap( osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE );
+    tex->setWrap( osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setBorderWidth( 0 );
 #if 0
     // TBD why doesn't this work?
