@@ -248,38 +248,68 @@ void main( void )
         if( tcStart.x < edgeEps.x )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( edgeEps.x - tcStart.x ) / ray.x;
-            tcStart = tcStart + t * ray;
+            if( ray.x != 0. )
+            {
+                float t = ( edgeEps.x - tcStart.x ) / ray.x;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.x = edgeEps.x;
         }
         if( tcStart.x > maxEps.x )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( maxEps.x - tcStart.x ) / ray.x;
-            tcStart = tcStart + t * ray;
+            if( ray.x != 0. )
+            {
+                float t = ( maxEps.x - tcStart.x ) / ray.x;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.x = maxEps.x;
         }
         if( tcStart.y < edgeEps.y )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( edgeEps.y - tcStart.y ) / ray.y;
-            tcStart = tcStart + t * ray;
+            if( ray.y != 0. )
+            {
+                float t = ( edgeEps.y - tcStart.y ) / ray.y;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.y = edgeEps.y;
         }
         if( tcStart.y > maxEps.y )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( maxEps.y - tcStart.y ) / ray.y;
-            tcStart = tcStart + t * ray;
+            if( ray.y != 0. )
+            {
+                float t = ( maxEps.y - tcStart.y ) / ray.y;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.y = maxEps.y;
         }
         if( tcStart.z < edgeEps.z )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( edgeEps.z - tcStart.z ) / ray.z;
-            tcStart = tcStart + t * ray;
+            if( ray.z != 0. )
+            {
+                float t = ( edgeEps.z - tcStart.z ) / ray.z;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.z = edgeEps.z;
         }
         if( tcStart.z > maxEps.z )
         {
             vec3 ray = tcEnd - tcStart;
-            float t = ( maxEps.z - tcStart.z ) / ray.z;
-            tcStart = tcStart + t * ray;
+            if( ray.z != 0. )
+            {
+                float t = ( maxEps.z - tcStart.z ) / ray.z;
+                tcStart = tcStart + t * ray;
+            }
+            else
+                tcStart.z = maxEps.z;
         }
     }
 
