@@ -409,15 +409,12 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     tex->setWrap( osg::Texture2D::WRAP_T, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setWrap( osg::Texture2D::WRAP_R, osg::Texture2D::CLAMP_TO_EDGE );
     tex->setBorderWidth( 0 );
-#if 0
-    // TBD why doesn't this work?
-    tex->setMaxAnisotropy( 16.f );
-    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR );
+
+    // Can't use mipmapping because of a shortcoming in NVIDIA's anisotropic filtering.
+    // Best results are obtained by disabling mimapping and using LINEAR filtering.
+    tex->setUseHardwareMipMapGeneration( false );
+    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
-#else
-    tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
-    tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
-#endif
 
     osg::Image* dummyImage( new osg::Image );
     dummyImage->setFileName( key );
