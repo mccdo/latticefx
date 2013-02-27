@@ -154,7 +154,8 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         _primitiveSetGenerator = PrimitiveSetGeneratorPtr( new SimpleTrianglePrimitiveSetGenerator() );
     (*_primitiveSetGenerator)( this, geom.get() );
 
-    geode->addDrawable( geom.get() );
+    if( geom->getNumPrimitiveSets() > 0 )
+        geode->addDrawable( geom.get() );
     return( geode.release() );
 }
 
