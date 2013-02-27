@@ -24,6 +24,8 @@
 
 #include <latticefx/core/vtk/Export.h>
 
+#include <latticefx/core/vtk/CuttingPlane.h>
+
 namespace lfx {
 
 namespace core {
@@ -46,7 +48,8 @@ public:
         m_requestedValue( 0.2 ),
         m_minScalarValue( 0.0 ),
         m_maxScalarValue( 100.0 ),
-        m_mask( 1.0 )
+        m_mask( 1.0 ),
+        m_planeDirection( CuttingPlane::X_PLANE )
     {
         ;
     }
@@ -73,6 +76,9 @@ public:
     ///controls the number of points masked
     void SetMaskValue( double const value );
 
+    ///Set the plane direction if it is needed for this rtp operation
+    void SetPlaneDirection( const CuttingPlane::SliceDirection& planeDirection );
+
 protected:
     ///Value for setting the position or value for an iso surface
     double m_requestedValue;
@@ -89,6 +95,9 @@ protected:
     
     ///Number of points to be masked
     double m_mask;
+    
+    ///Plane direction
+    CuttingPlane::SliceDirection m_planeDirection;
 };
 
 typedef boost::shared_ptr< VTKBaseRTP > VTKBaseRTPPtr;

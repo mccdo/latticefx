@@ -46,10 +46,9 @@ public:
     ///operation when we construct the VTKVectorFieldRTP.
     VTKVectorSliceRTP( CuttingPlane::SliceDirection slice = CuttingPlane::X_PLANE )
         : 
-        VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-        m_planeDirection( slice )
+        VTKBaseRTP( lfx::core::RTPOperation::Channel )
     {
-        ;
+        m_planeDirection = slice;
     }
     
     ///Destructor
@@ -63,7 +62,6 @@ public:
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
     
 protected:
-    CuttingPlane::SliceDirection m_planeDirection;
 };
 
 typedef boost::shared_ptr< VTKVectorSliceRTP > VTKVectorSliceRTPPtr;
