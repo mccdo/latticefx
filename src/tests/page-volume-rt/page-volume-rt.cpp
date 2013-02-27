@@ -108,10 +108,7 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setVolumeDims( dims );
     renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
     renderOp->setMaxSamples( 400.f );
-
-    // Must disable transparency for bricked volumes. Otherwise, underlying
-    // bricks will show through.
-    renderOp->setTransparencyEnable( false );
+    renderOp->setTransparencyEnable( true );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
