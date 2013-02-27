@@ -165,6 +165,7 @@ else(WIN32)
     set(latticefx_FPC_INCLUDES "-I\${includedir}")
     set(latticefx_FPC_LIBRARIES "-L\${libdir} -llatticefx_core -llatticefx_core_vtk -llatticefx_translators_vtk -llatticefx_utils_vtk")
 endif(WIN32)
+set(latticefx_VERSION "${LATTICEFX_VERSION}")
 
 configure_file(extra/latticefx.fpc.in
   "${PROJECT_BINARY_DIR}/lib/flagpoll/latticefx.fpc" @ONLY)
