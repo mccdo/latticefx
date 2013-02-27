@@ -115,20 +115,20 @@ public:
     may return a pointer to the original ChannelData. Otherwise, a data copy
     would likely be created. The actual implementation is determined by the
     derived class. */
-    virtual ChannelDataPtr getMaskedChannel( const ChannelDataPtr maskIn )
+    virtual ChannelDataPtr getMaskedChannel( const ChannelDataPtr )
     {
         return( shared_from_this() );
     }
 
     /** \brief Set all elements of the data to the same value.
     \details */
-    virtual void setAll( const char value ) {}
-    virtual void setAll( const float value ) {}
+    virtual void setAll( const char ) {}
+    virtual void setAll( const float ) {}
 
     /** \brief Boolean AND \c rhs with the existing data.
     \details Assumes both the existing data and \c rhs are osg::ByteArray type, zero
     representing false and non-zero representing true. */
-    virtual void andValues( const ChannelData* rhs ) {}
+    virtual void andValues( const ChannelData* ) {}
 
     /** \brief Prepare the ChannelData for processing by the DataSet.
     \details Prior to processing ChannelData in the LatticeFX data pipeline,
@@ -142,7 +142,7 @@ public:
 
     /** \brief Specify the size of the ChannelData.
     \details Used by derived classes to resize internal arrays. */
-    virtual void resize( size_t size ) {}
+    virtual void resize( size_t ) {}
 
 protected:
     /** \brief

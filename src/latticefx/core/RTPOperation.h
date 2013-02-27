@@ -72,13 +72,13 @@ public:
 
 
     /** \brief Override to implement a mask operation. */
-    virtual ChannelDataPtr mask( const ChannelDataPtr maskIn ) { return( ChannelDataPtr( ( ChannelData* )( NULL ) ) ); }
+    virtual ChannelDataPtr mask( const ChannelDataPtr ) { return( ChannelDataPtr() ); }
 
     /** \brief Override to implement a filter operation. */
-    virtual void filter( const ChannelDataPtr maskIn ) { return; }
+    virtual void filter( const ChannelDataPtr ) { return; }
 
     /** \brief Override to implement a channel creation operation. */
-    virtual ChannelDataPtr channel( const ChannelDataPtr maskIn ) { return( ChannelDataPtr( ( ChannelData* )( NULL ) ) ); }
+    virtual ChannelDataPtr channel( const ChannelDataPtr ) { return( ChannelDataPtr() ); }
 
 
     // 'public' required for plugin access?? TBD.
