@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef _CFD_TRANSLATOR_TO_VTK_H_
-#define _CFD_TRANSLATOR_TO_VTK_H_
+#ifndef LFX_TRANSLATOR_TO_VTK_H_
+#define LFX_TRANSLATOR_TO_VTK_H_
 #include <string>
 #include <vector>
 

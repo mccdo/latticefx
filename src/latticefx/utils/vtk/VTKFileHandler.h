@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CFD_VTK_FILE_HANDLER_H
-#define CFD_VTK_FILE_HANDLER_H
+#ifndef LFX_VTK_FILE_HANDLER_H
+#define LFX_VTK_FILE_HANDLER_H
 /*!\file VTKFileHandler.h
 VTKFileHandler API
 */

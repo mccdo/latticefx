@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef VE_XPLORER_CFD_DATA_SET_PTR_H
-#define VE_XPLORER_CFD_DATA_SET_PTR_H
+#ifndef LFX_DATA_SET_PTR_H
+#define LFX_DATA_SET_PTR_H
 
 //#include <ves/util/PointerTypes.h>
 #include <boost/smart_ptr/shared_ptr.hpp>

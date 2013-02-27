@@ -21,8 +21,8 @@
 //Distributed under the terms of the GNU Library General Public License (LGPL)
 //as published by the Free Software Foundation.
 
-#ifndef VTKACTORTOOSG_H
-#define VTKACTORTOOSG_H
+#ifndef LFX_VTKACTORTOOSG_H
+#define LFX_VTKACTORTOOSG_H
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/ref_ptr>

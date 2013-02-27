@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CFD_ACCESSORY_FUNCTIONS_H
-#define CFD_ACCESSORY_FUNCTIONS_H
+#ifndef LFX_VTK_ACCESSORY_FUNCTIONS_H
+#define LFX_VTK_ACCESSORY_FUNCTIONS_H
 
 /*!file AccessoryFunctions.h
 AccessoryFunctions API

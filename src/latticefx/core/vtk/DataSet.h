@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef VE_XPLORER_CFD_DATA_SET_H
-#define VE_XPLORER_CFD_DATA_SET_H
+#ifndef LFX_VTK_DATA_SET_H
+#define LFX_VTK_DATA_SET_H
 
 #include <latticefx/core/vtk/DataSetPtr.h>
 
