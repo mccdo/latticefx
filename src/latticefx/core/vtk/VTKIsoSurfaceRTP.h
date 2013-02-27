@@ -35,12 +35,12 @@ namespace vtk {
  \details This class takes a vtkDataObject in a ChannelDatavtkDataObject with the
  name vtkDataObject and creates a vtkPolyData with the vector field. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKIsosurfaceRTP : public VTKBaseRTP
+class LATTICEFX_CORE_VTK_EXPORT VTKIsoSurfaceRTP : public VTKBaseRTP
 {
 public:
     
     ///Default constructor
-    VTKIsosurfaceRTP()
+    VTKIsoSurfaceRTP()
         : 
         VTKBaseRTP( lfx::core::RTPOperation::Channel )    
     {
@@ -48,7 +48,7 @@ public:
     }
     
     ///Destructor
-    virtual ~VTKIsosurfaceRTP()
+    virtual ~VTKIsoSurfaceRTP()
     {
         ;
     }
@@ -60,7 +60,7 @@ public:
 protected:
 };
 
-typedef boost::shared_ptr< VTKIsosurfaceRTP > VTKIsosurfaceRTPPtr;
+typedef boost::shared_ptr< VTKIsoSurfaceRTP > VTKIsoSurfaceRTPPtr;
 
 }
 }

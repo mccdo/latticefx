@@ -238,7 +238,7 @@ int main( int argc, char** argv )
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
         dsp->addChannel( dobjPtr );
 
-        lfx::core::vtk::VTKIsosurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsosurfaceRTP() );
+        lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
         isosurfaceRTP->SetRequestedValue( 0.3 );
         isosurfaceRTP->SetActiveScalar( "Density" );
         isosurfaceRTP->addInput( "vtkDataObject" );
