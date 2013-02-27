@@ -52,6 +52,11 @@ void VTKBaseRTP::SetMaskValue( double const value )
     m_mask = value;
 }
 ////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetPlaneDirection( const CuttingPlane::SliceDirection& planeDirection )
+{
+    m_planeDirection = planeDirection;
+}
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }
