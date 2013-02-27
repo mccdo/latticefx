@@ -56,30 +56,40 @@ void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     m_pd = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
+        boost::dynamic_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
+    if( !m_pd )
+    {
+        std::cout << "VTKSurfaceRenderer::getSceneGraph : The PolyData was not set as an input." << std::endl;
+        return 0;
+    }
 
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr dataObject = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) );
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr dataObject =
+        boost::dynamic_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) );
     if( !dataObject )
     {
         std::cout << "No vtkDataObject input was specified to VTKSurfaceRenderer." << std::endl;
         return 0;
     }
 
-    dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
-    
-    ExtractVTKPrimitives();
-    
     vtkPoints* points = m_pd->GetPoints();
+    if( !points )
+    {
+        std::cout << "VTKSurfaceRenderer::getSceneGraph : There are no points in this surface." << std::endl;
+        return 0;
+    }
+
+    dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
+    ExtractVTKPrimitives();
+
     size_t dataSize = points->GetNumberOfPoints();
-    
+
     vtkPointData* pointData = m_pd->GetPointData();
     vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
     vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
     
     double x[3];
     double val;
-    
+
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     vertArray->resize( dataSize );
     osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
@@ -114,7 +124,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
             (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
         }
     }
-    
+   
     //setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
     
     //by this stage of the game the render has already had setInputs called 
@@ -134,7 +144,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 #if WRITE_IMAGE_DATA            
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
-    
+
     return( lfx::core::SurfaceRenderer::getSceneGraph( maskIn ) );
 }
 ////////////////////////////////////////////////////////////////////////////////

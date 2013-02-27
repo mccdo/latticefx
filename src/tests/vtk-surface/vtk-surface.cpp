@@ -222,8 +222,8 @@ int main( int argc, char** argv )
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp->SetActiveVector( "Momentum" );
-        renderOp->SetActiveScalar( "Density" );
+        renderOp->SetActiveVector( "steve's_vector" );
+        renderOp->SetActiveScalar( "200_to_1000" );
         renderOp->addInput( "vtkPolyDataMapper" );
         renderOp->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp );
@@ -239,15 +239,15 @@ int main( int argc, char** argv )
         dsp->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
-        isosurfaceRTP->SetRequestedValue( 0.3 );
-        isosurfaceRTP->SetActiveScalar( "Density" );
+        isosurfaceRTP->SetRequestedValue( 600.0 );
+        isosurfaceRTP->SetActiveScalar( "200_to_1000" );
         isosurfaceRTP->addInput( "vtkDataObject" );
         dsp->addOperation( isosurfaceRTP );
         
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
-        renderOp2->SetActiveVector( "Momentum" );
-        renderOp2->SetActiveScalar( "Momentum_magnitude" );
+        renderOp2->SetActiveVector( "steve's_vector" );
+        renderOp2->SetActiveScalar( "200_to_1000" );
         renderOp2->addInput( "vtkPolyDataMapper" );
         renderOp2->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp2 );
