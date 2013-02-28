@@ -500,17 +500,15 @@ bool DataSet::updateRenderer()
         ChannelDataList currentData( getDataAtTime( time ) );
 
         osg::ref_ptr< osg::Node > newChild( recurseGetSceneGraph( currentData, *maskIt ) );
-        if( newChild == NULL )
-            // Must stub in something, otherwise animation could croak.
-            newChild = new osg::Group();
+        if( newChild != NULL )
+        {
+            PageData::RangeData rangeData( time, time );
+            rangeData._status = PageData::RangeData::UNLOADED;
+            pageData->setRangeData( childIndex++, rangeData );
 
-        PageData::RangeData rangeData( time, time );
-        rangeData._status = PageData::RangeData::UNLOADED;
-        pageData->setRangeData( childIndex++, rangeData );
-
-        newChild->setNodeMask( 0u );
-        _sceneGraph->addChild( newChild.get() );
-
+            newChild->setNodeMask( 0u );
+            _sceneGraph->addChild( newChild.get() );
+        }
         ++maskIt;
     }
     if( timeSet.size() > 1 )

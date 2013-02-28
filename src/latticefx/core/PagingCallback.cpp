@@ -272,7 +272,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         // of the current animation time. If no children are marked as
         // ACTIVE, then child 0 will display.
 
-        osg::Node* bestChild( grp->getChild( 0 ) );
+        unsigned int bestChild( 0 );
         TimeValue minTimeDifference( FLT_MAX );
 
         BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
@@ -288,7 +288,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
             if( timeDifference < minTimeDifference )
             {
                 minTimeDifference = timeDifference;
-                bestChild = pageData->getParent()->getChild( childIndex );
+                bestChild = childIndex;
             }
         }
 
@@ -296,7 +296,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         for( childIndex=0; childIndex < grp->getNumChildren(); ++childIndex )
         {
             osg::Node* child( grp->getChild( childIndex ) );
-            child->setNodeMask( ( child == bestChild ) ? 0xffffffff : 0x0 );
+            child->setNodeMask( ( childIndex == bestChild ) ? 0xffffffff : 0x0 );
         }
     }
 
