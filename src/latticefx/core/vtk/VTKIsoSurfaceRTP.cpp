@@ -44,7 +44,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
 {
     if( m_activeScalar.empty() )
     {
-        //LFX_ERROR( "VTKIsoSurfaceRTP::channel : The scalar name for the iso-surface is empty." );
+        LFX_ERROR( "VTKIsoSurfaceRTP::channel : The scalar name for the iso-surface is empty." );
     }
 
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =

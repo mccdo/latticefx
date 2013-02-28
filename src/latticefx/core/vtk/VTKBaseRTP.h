@@ -21,6 +21,7 @@
 #define __LATTICEFX_CORE_VTK_BASE_RTP_OPERATION_H__ 1
 
 #include <latticefx/core/RTPOperation.h>
+#include <latticefx/core/LogBase.h>
 
 #include <latticefx/core/vtk/Export.h>
 
@@ -37,13 +38,14 @@ namespace vtk {
  \details This class holds common functions that most VTK RTP operations utilized
  in creating vtkPolyData. */
 
-class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : public lfx::core::RTPOperation
+class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : protected lfx::core::LogBase, public lfx::core::RTPOperation
 {
 public:
     
     ///Default constructor
     VTKBaseRTP( const RTPOpType rtpOpType )
-        : 
+        :
+        lfx::core::LogBase( "lfx.core.vtk.VTKBaseRTP" ),
         lfx::core::RTPOperation( rtpOpType ),
         m_requestedValue( 0.2 ),
         m_minScalarValue( 0.0 ),
