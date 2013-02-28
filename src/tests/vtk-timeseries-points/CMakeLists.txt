@@ -1,5 +1,5 @@
-_addExecutable( Test test-vtk-vector
-    test-vtk-vector.cpp
+_addExecutable( Test vtk-timeseries-points
+    vtk-timeseries-points.cpp
     LATTICEFX_LIBRARIES
         latticefx_core
         latticefx_utils_vtk
