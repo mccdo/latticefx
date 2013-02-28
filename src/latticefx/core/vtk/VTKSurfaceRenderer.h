@@ -64,8 +64,13 @@ public:
     ///Set the active scalar name to tell the render what to put in the textures
     ///\param activeScalar The active scalar name to use
     void SetActiveScalar( const std::string& activeScalar );
-    
-    ///We are overriding the lfx::core::VectorRenderer method and then calling it 
+
+    ///Set the color by scalar
+    ///\note Used in pipelines where the active scalar is used to make a surface
+    ///or some other feature and a second scalar is used for color.
+    void SetColorByScalar( std::string const scalarName );
+
+    ///We are overriding the lfx::core::VectorRenderer method and then calling it
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
 
@@ -77,6 +82,8 @@ protected:
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering
     std::string m_activeScalar;
+    ///The color by scalar
+    std::string m_colorByScalar;
     ///The raw VTK data to render
     vtkPolyData* m_pd;
     ///The scalar range for the color component of the vis feature

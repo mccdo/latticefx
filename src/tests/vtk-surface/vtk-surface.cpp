@@ -239,7 +239,7 @@ int main( int argc, char** argv )
         dsp->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
-        isosurfaceRTP->SetRequestedValue( 600.0 );
+        isosurfaceRTP->SetRequestedValue( 500.0 );
         isosurfaceRTP->SetActiveScalar( "200_to_1000" );
         isosurfaceRTP->addInput( "vtkDataObject" );
         dsp->addOperation( isosurfaceRTP );

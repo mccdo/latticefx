@@ -36,6 +36,8 @@
 #include <vtkCellArray.h>
 #include <vtkPolyDataMapper.h>
 
+//#include <vtkXMLPolyDataWriter.h>
+
 namespace lfx {
     
 namespace core {
@@ -53,10 +55,24 @@ void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::SetColorByScalar( std::string const scalarName )
+{
+    m_colorByScalar = scalarName;
+}
+////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     m_pd = 
-        boost::dynamic_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
+    /*{
+        vtkXMLPolyDataWriter* writer = vtkXMLPolyDataWriter::New();
+        writer->SetInput( ( vtkPolyData* ) m_pd );
+        writer->SetDataModeToAscii();
+        writer->SetFileName( "teststreamersclean.vtk" );
+        writer->Write();
+        writer->Delete();
+    }*/
+
     if( !m_pd )
     {
         std::cout << "VTKSurfaceRenderer::getSceneGraph : The PolyData was not set as an input." << std::endl;
@@ -78,6 +94,10 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         return 0;
     }
 
+    if( !m_colorByScalar.empty() )
+    {
+        m_activeScalar = m_colorByScalar;
+    }
     dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
     ExtractVTKPrimitives();
 

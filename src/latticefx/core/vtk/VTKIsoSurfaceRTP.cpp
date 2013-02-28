@@ -21,6 +21,8 @@
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
+#include <latticefx/core/LogMacros.h>
+
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
@@ -29,6 +31,7 @@
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
 #include <vtkPolyDataNormals.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lfx {
 
@@ -39,8 +42,12 @@ namespace vtk {
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
-    
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
+    if( m_activeScalar.empty() )
+    {
+        //LFX_ERROR( "VTKIsoSurfaceRTP::channel : The scalar name for the iso-surface is empty." );
+    }
+
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
         getInput( "vtkDataObject" ) );
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
@@ -48,7 +55,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDO );
     //c2p->Update();
-    
+
     vtkContourFilter* contourFilter = vtkContourFilter::New();
     contourFilter->UseScalarTreeOn();
     contourFilter->SetInputConnection( 0, c2p->GetOutputPort( 0 ) );
@@ -58,7 +65,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
         vtkDataObject::FIELD_ASSOCIATION_POINTS,
         m_activeScalar.c_str() );
     //contourFilter->Update();
-    
+
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
     
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
@@ -81,10 +88,13 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     }
     
     normals->Update();
-    
-    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd( 
+
+    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
         new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
-    
+    //cdpd->GetPolyDataMapper()->SetScalarModeToUsePointFieldData();
+    //cdpd->GetPolyDataMapper()->UseLookupTableScalarRangeOn();
+    //cdpd->GetPolyDataMapper()->SelectColorArray( m_colorByScalar.c_str() );
+
     normals->Delete();
     c2p->Delete();
     contourFilter->Delete();
