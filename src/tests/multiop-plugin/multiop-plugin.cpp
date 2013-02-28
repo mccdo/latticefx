@@ -29,15 +29,24 @@
 using namespace lfx::core;
 
 
-const std::string logstr( "lfx.demo" );
+const std::string logstr( "lfx.ctest.multiop" );
 
 
 int main()
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
+    LFX_CRITICAL_STATIC( logstr, "This is a CTest regression test. To launch under Visual Studio, build the" );
+    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompty.\n" );
+
+
     // Add additional plugin search paths.
     PluginManager* plug( PluginManager::instance() );
+    if( plug == NULL )
+    {
+        LFX_ERROR_STATIC( logstr, "Failure: NULL PluginManager." );
+        return( 1 );
+    }
     plug->loadConfigFiles();
 
     // Load all plugins named "MultipleOperationsPluginTest".
@@ -48,6 +57,8 @@ int main()
         LFX_CRITICAL_STATIC( logstr, "\tfile data/plugin-example.ini to the directory containing multiop.dll/.so" );
         LFX_CRITICAL_STATIC( logstr, "\tand rename it multiop.ini. Edit it, and change the value of the 'Name'" );
         LFX_CRITICAL_STATIC( logstr, "\tvariable to 'MultipleOperationsPluginTest'. Then re-run this test." );
+
+        LFX_ERROR_STATIC( logstr, "Failure: Can't load plugin." );
         return( 1 );
     }
     LFX_NOTICE_STATIC( logstr, pluginName + ": Shared library loaded successfully." );
@@ -58,7 +69,8 @@ int main()
         OperationBasePtr op( plug->createOperation( pluginName, opName ) );
         if( op == NULL )
         {
-            LFX_ERROR_STATIC( logstr, opName + ": createOperation() returned NULL." );
+            LFX_ERROR_STATIC( logstr, "Failure: " + opName + ": createOperation() returned NULL." );
+            return( 1 );
         }
         else
         {
@@ -69,7 +81,8 @@ int main()
         op = plug->createOperation( pluginName, opName );
         if( op == NULL )
         {
-            LFX_ERROR_STATIC( logstr, opName + ": createOperation() returned NULL." );
+            LFX_ERROR_STATIC( logstr, "Failute: " + opName + ": createOperation() returned NULL." );
+            return( 1 );
         }
         else
         {
@@ -77,5 +90,6 @@ int main()
         }
     }
 
+    LFX_CRITICAL_STATIC( logstr, "Pass." );
     return( 0 );
 }

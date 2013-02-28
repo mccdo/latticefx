@@ -22,18 +22,17 @@
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
-static std::string logstr( "lfx.test" );
+static std::string logstr( "lfx.ctest.hutils" );
 
 
 using namespace lfx::core;
 
 int main( int argc, char** argv )
 {
-    Log::instance()->setPriority( Log::PrioTrace, Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     LFX_CRITICAL_STATIC( logstr, "This is a CTest regression test. To launch under Visual Studio, build the" );
-    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompty." );
-    LFX_CRITICAL_STATIC( logstr, "" );
+    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompty.\n" );
 
 
     NameStringGenerator nsg( osg::Vec3s( 128, 128, 128 ) );
@@ -42,7 +41,7 @@ int main( int argc, char** argv )
     std::string correct( "" );
     if( result != correct )
     {
-        LFX_ERROR_STATIC( logstr, "Root node has non-null name string: " + result );
+        LFX_ERROR_STATIC( logstr, "Failure: Root node has non-null name string: " + result );
         return( 1 );
     }
 
@@ -50,7 +49,7 @@ int main( int argc, char** argv )
     correct = "0";
     if( result != correct )
     {
-        LFX_ERROR_STATIC( logstr, "Name string incorrect. \"" + result + "\" (returned) != \"" + correct + "\" (expected)." );
+        LFX_ERROR_STATIC( logstr, "Failure: Name string incorrect. \"" + result + "\" (returned) != \"" + correct + "\" (expected)." );
         return( 1 );
     }
 
@@ -58,9 +57,10 @@ int main( int argc, char** argv )
     correct = "07";
     if( result != correct )
     {
-        LFX_ERROR_STATIC( logstr, "Name string incorrect. \"" + result + "\" (returned) != \"" + correct + "\" (expected)." );
+        LFX_ERROR_STATIC( logstr, "Failure: Name string incorrect. \"" + result + "\" (returned) != \"" + correct + "\" (expected)." );
         return( 1 );
     }
 
+    LFX_CRITICAL_STATIC( logstr, "Pass." );
     return( 0 );
 }
