@@ -14,6 +14,8 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
 
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
+    if( dot( normal, lightVec ) < 0. )
+    return( vec4(1,1,1,1) );
     vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
 
     // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
@@ -375,7 +377,7 @@ void main( void )
 
     // Tex coord delta used for normal computation.
     // Use half of the inverse volume resolution for best results.
-    vec3 tcDelta = edgeEps;
+    vec3 tcDelta = edgeEps * .9;
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.
