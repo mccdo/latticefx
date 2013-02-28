@@ -14,8 +14,6 @@ vec4 fragmentLighting( vec4 baseColor, vec3 normal )
 
     vec4 amb = gl_LightSource[0].ambient * baseColor;
 
-    if( dot( normal, lightVec ) < 0. )
-    return( vec4(1,1,1,1) );
     vec4 diff = gl_LightSource[0].diffuse * baseColor * max( dot( normal, lightVec ), 0. );
 
     // Hm. front material shininess is negative for some reason. Hack in "10.0" for now.
@@ -41,7 +39,9 @@ uniform vec4 tfDest;
 vec4 transferFunction( in float index )
 {
     float range = tfRange.y - tfRange.x;
-    float rangeIndex = ( index - tfRange.x ) / range;
+    float rangeIndex = index;
+    if( range > 0. )
+        rangeIndex = ( index - tfRange.x ) / range;
 
     // Support only 1D transfer function for now.
     vec4 xfer = texture1D( tf1d, rangeIndex );
@@ -119,9 +119,12 @@ uniform mat4 osgw_ProjectionMatrixInverse;
 uniform vec3 volumeDims;
 uniform vec3 volumeCenter;
 
+flat varying vec3 edgeEps, maxEps, invRes;
+
 vec4 texToEyeCoords( in vec3 tc )
 {
-    vec4 oc = vec4( ( tc - .5 ) * volumeDims + volumeCenter, 1. );
+    vec3 sbTC = ( tc - edgeEps ) / ( maxEps - edgeEps );
+    vec4 oc = vec4( ( sbTC - .5 ) * volumeDims + volumeCenter, 1. );
     return( gl_ModelViewMatrix * oc );
 }
 
@@ -208,7 +211,6 @@ uniform sampler2D sceneDepth;
 
 
 flat varying vec3 tcEye;
-flat varying vec3 edgeEps;
 flat varying float ecVolumeSize;
 
 void main( void )
@@ -239,7 +241,6 @@ void main( void )
     // Step 1:
     // If the ray start (tcStart) is outside the volume, clip
     // it to the volume boundaries.
-    vec3 maxEps = vec3( 1. - edgeEps );
     if( ( tcStart.x < edgeEps.x ) || ( tcStart.x > maxEps.x ) ||
         ( tcStart.y < edgeEps.y ) || ( tcStart.y > maxEps.y ) ||
         ( tcStart.z < edgeEps.z ) || ( tcStart.z > maxEps.z ) )
@@ -327,6 +328,7 @@ void main( void )
     ecScene /= ecScene.w;
     vec4 ocScene = gl_ModelViewMatrixInverse * ecScene;
     vec3 tcScene = ( ocScene.xyz - volumeCenter ) / volumeDims + vec3( .5 );
+    tcScene = tcScene * ( 1. - invRes ) + edgeEps;
     // Compute the tex coord vector from the eye to tcScene.
     vec3 scenePlaneNormal = tcEye - tcScene;
 
@@ -360,16 +362,17 @@ void main( void )
 
     // Compute number of samples. sampleVec is the ray in tex coord space.
     vec3 sampleVec = tcEnd - tcStart;
-    float sampleStepSize = ecVolumeSize / volumeMaxSamples;
-    float totalSamples = ecVolumeSize * length( sampleVec ) / sampleStepSize;
+    // Corner-to-corner, sampleVec could be as long as sqrt(3), or 1.7321.
+    // But we never want totalSamples > volumeMaxSamples, so normalize length to (0..1).
+    float totalSamples = ( length( sampleVec ) / 1.7321 ) * volumeMaxSamples;
 
-    // Ensure a minimum totalSamples to reduce banding artifacts in thin areas.
-    //totalSamples = max( totalSamples, 3. );
+    // Ensure at least 1 sample.
+    //totalSamples = max( totalSamples, 1. );
     // TBD Hack alert.
     // I am seeing some TDR timeout errors on Win7 unless we clamp totalSamples
     // to the maximum value. This should not be necessary, as the math to compute
     // totalSamples should never result in a value greater than volumeMaxSamples. Hm.
-    totalSamples = clamp( totalSamples, 3., volumeMaxSamples );
+    totalSamples = clamp( totalSamples, 1., volumeMaxSamples );
 
     // Accumulate color samples into finalColor, initially contains no color.
     vec4 finalColor = vec4( 0., 0., 0., 0. );
@@ -377,7 +380,7 @@ void main( void )
 
     // Tex coord delta used for normal computation.
     // Use half of the inverse volume resolution for best results.
-    vec3 tcDelta = edgeEps * .9;
+    vec3 tcDelta = edgeEps;
 
     // Track the last volume sample value and last computed normal. We can avoid
     // recomputing the normal if the new sample value matches the old.

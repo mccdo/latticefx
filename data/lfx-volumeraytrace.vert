@@ -13,10 +13,8 @@ uniform mat3 osg_NormalMatrixInverse;
 uniform mat4 osgw_ProjectionMatrix;
 
 flat varying vec3 tcEye;
-flat varying vec3 edgeEps;
+flat varying vec3 edgeEps, maxEps, invRes;
 flat varying float ecVolumeSize;
-
-vec3 invRes;
 
 
 vec4 eyeToTexCoords( in vec4 ec, in vec4 ocCenter, in vec4 ocDims )
@@ -46,6 +44,8 @@ void main( void )
     // Required for scaleBiasTexCoords() to work properly.
     invRes = 1. / volumeResolution;
     edgeEps = .5 / volumeResolution;
+
+    maxEps = vec3( 1. - edgeEps );
 
     // Compute eye position in texture coordinate space.
     const vec4 ecEye = vec4( 0., 0., 0., 1. );
