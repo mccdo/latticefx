@@ -42,6 +42,7 @@ endif()
 find_package( VTK )
 if( VTK_FOUND )
     include( ${VTK_USE_FILE} )
+    add_definitions( -DVTK_FOUND )
 endif()
 
 find_package( crunchstore 0.2.0 )
