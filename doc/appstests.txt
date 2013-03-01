@@ -1,0 +1,12 @@
+/** \page AppsTests Applications, Examples, and Tests
+
+<h2>Applications</h2>
+
+\li \ref AppRaw2Ive "raw2ive"
+\li \ref AppShapeCreator "shapeCreator"
+
+If you build LatticeFX with the optional VTK dependency, the following applications are also available:
+\li \ref AppVtiTextureDecompose "vti_texture_decompose"
+\li \ref AppLoaderToVTK "loaderToVTK"
+
+*/

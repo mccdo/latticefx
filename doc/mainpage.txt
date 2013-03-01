@@ -9,6 +9,8 @@ support for large data sets, configurable, etc.
 
 \ref Building "How to Build LatticeFX"
 
+\ref AppsTests "Applications, Examples, and Tests"
+
 \subsection ssDataSet The DataSet class
 
   \li \link lfx::core::DataSet The DataSet class \endlink

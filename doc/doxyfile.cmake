@@ -100,8 +100,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = "${PROJECT_SOURCE_DIR}/src/latticefx" \
-                         "${PROJECT_SOURCE_DIR}/src/plugins" \
+INPUT                  = "${PROJECT_SOURCE_DIR}/src" \
                          "${PROJECT_SOURCE_DIR}/doc"
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp *.h *.txt

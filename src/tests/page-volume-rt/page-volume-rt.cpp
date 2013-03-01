@@ -367,3 +367,10 @@ int main( int argc, char** argv )
     }
     return( 0 );
 }
+
+
+
+/** \page AppShapeCreator Application shapeCreator
+
+Need docs here.
+*/
