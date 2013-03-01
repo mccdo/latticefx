@@ -370,7 +370,7 @@ int main( int argc, char** argv )
 
 
 
-/** \page AppShapeCreator Application shapeCreator
+/** \page TestPageVolumeRT Test page-volume-rt
 
 Need docs here.
 */

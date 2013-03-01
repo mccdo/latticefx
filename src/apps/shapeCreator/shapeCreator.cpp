@@ -358,7 +358,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-cone Generate a cone data set." );
     LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
-    LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes.." );
+    LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 
     osg::ArgumentParser arguments( &argc, argv );
 
@@ -383,3 +383,39 @@ int main( int argc, char** argv )
 
     return( 0 );
 }
+
+
+
+/** \page AppShapeCreator Application shapeCreator
+
+shapeCreator generates sample volumetric data for use with the page-volume
+and page-volume-rt test programs.
+
+<h2>Shape Creation</h2>
+
+By default, shapeCreator generates a cube data set. This is the same as the \c -cube option.
+\li -cube Generate a cube data set. This is the default if no other shape is specified.
+
+Generate other shapes by specifying one of these options:
+\li -cone Generate a cone data set.
+\li -sphere Generate a sphere data set.
+\li -ssphere Generate a soft sphere data set.
+
+<h2>Database Usage</h2>
+
+With no command line args, or if LatticeFX was built without the optional
+crunchstore dependency, shapeCreator writes output image data as files using
+DBDisk. Files are written to the current working directory. To view the data,
+run page-volume or page-volume-rt with the -dp option to specify the directory.
+
+If LatticeFX is built with crunchstore, use the \c -cs option to specify the
+database file name.
+\li -cs <dbFile> Write volume image data files using DBCrunchStore.
+
+To view the data, run page-volume or page-volume-rt with the -cs option to
+specify the crunchstore database file.
+
+<h2>Other Options</h2>
+\li -prune Do not generate empty subvolumes.
+
+*/
