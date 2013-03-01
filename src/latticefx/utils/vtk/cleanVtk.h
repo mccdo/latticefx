@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CLEAN_VTK_H
-#define CLEAN_VTK_H
+#ifndef LFX_CLEAN_VTK_H
+#define LFX_CLEAN_VTK_H
 /*!\file cleanVTK.h
 cleanVTK API
 */

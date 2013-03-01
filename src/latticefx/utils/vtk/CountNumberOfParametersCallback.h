@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef COUNT_NUMBER_OF_PARAMETERS_CALLBACK
-#define  COUNT_NUMBER_OF_PARAMETERS_CALLBACK
+#ifndef LFX_COUNT_NUMBER_OF_PARAMETERS_CALLBACK
+#define LFX_COUNT_NUMBER_OF_PARAMETERS_CALLBACK
 /*!\file CountNumberOfParametersCallback.h
 CountNumberOfParametersCallback API.
 */

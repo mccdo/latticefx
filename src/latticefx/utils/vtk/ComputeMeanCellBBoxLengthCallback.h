@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef COMPUTE_MEAN_CELL_BBOX_LENGTH_CALLBACK
-#define  COMPUTE_MEAN_CELL_BBOX_LENGTH_CALLBACK
+#ifndef LFX_COMPUTE_MEAN_CELL_BBOX_LENGTH_CALLBACK
+#define LFX_COMPUTE_MEAN_CELL_BBOX_LENGTH_CALLBACK
 /*!\file ComputeMeanCellBBoxLengthCallback.h
 ComputeMeanCellBBoxLengthCallback API.
 */

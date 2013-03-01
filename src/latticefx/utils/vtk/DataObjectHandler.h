@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef DATA_OBJECT_HANDLER_H
-#define DATA_OBJECT_HANDLER_H
+#ifndef LFX_DATA_OBJECT_HANDLER_H
+#define LFX_DATA_OBJECT_HANDLER_H
 /*!\file DataObjectHandler.h
  * DataObjectHandler API. At a minimum, converts cell data to point data in each dataset of
  * the data object.

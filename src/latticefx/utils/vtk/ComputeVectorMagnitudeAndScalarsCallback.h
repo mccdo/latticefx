@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef COMPUTE_VECTOR_MAGNITUDE_AND_SCALARS_CALLBACK
-#define COMPUTE_VECTOR_MAGNITUDE_AND_SCALARS_CALLBACK
+#ifndef LFX_COMPUTE_VECTOR_MAGNITUDE_AND_SCALARS_CALLBACK
+#define LFX_COMPUTE_VECTOR_MAGNITUDE_AND_SCALARS_CALLBACK
 /*!\file ComputeVectorMagnitudeAndScalarsCallback.h
 ComputeVectorMagnitudeAndScalarsCallback API.
 */

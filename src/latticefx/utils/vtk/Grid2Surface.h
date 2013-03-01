@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CFD_GRID_2_SURFACE_H
-#define CFD_GRID_2_SURFACE_H
+#ifndef LFX_CFD_GRID_2_SURFACE_H
+#define LFX_CFD_GRID_2_SURFACE_H
 /*!\file Grid2Surface.h
 *Grid to surface converting API
 */

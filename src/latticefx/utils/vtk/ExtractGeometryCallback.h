@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef EXTRACT_GEOMETRY_CALLBACK
-#define  EXTRACT_GEOMETRY_CALLBACK
+#ifndef LFX_EXTRACT_GEOMETRY_CALLBACK
+#define LFX_EXTRACT_GEOMETRY_CALLBACK
 /*!\file ExtractGeometryCallback.h
  * ExtractGeometryCallback API.
  * \class lfx::vtk_utils::ExtractGeometryCallback

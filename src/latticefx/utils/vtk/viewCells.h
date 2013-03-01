@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef VIEWCELLS_H
-#define VIEWCELLS_H
+#ifndef LFX_VIEWCELLS_H
+#define LFX_VIEWCELLS_H
 /*!\file viewCells.h
 viewCells API
 */

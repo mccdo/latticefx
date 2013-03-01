@@ -17,9 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-
-#ifndef FILEIO_H
-#define FILEIO_H
+#ifndef LFX_FILEIO_H
+#define LFX_FILEIO_H
 /*!\file fileIO.h
  * fileIO API
  * \class lfx::vtk_utils::fileIO

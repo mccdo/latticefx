@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef CREATE_DATAOBJECT_BBOX_GEODE_CALLBACK
-#define  CREATE_DATAOBJECT_BBOX_GEODE_CALLBACK
+#ifndef LFX_CREATE_DATAOBJECT_BBOX_GEODE_CALLBACK
+#define LFX_CREATE_DATAOBJECT_BBOX_GEODE_CALLBACK
 /*!\file CreateDataObjectBBoxActorsCallback.h
 CreateDataObjectBBoxActorsCallback API.
 */

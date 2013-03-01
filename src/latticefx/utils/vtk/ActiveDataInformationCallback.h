@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef ACTIVE_DATA_INFORMATION_CALLBACK
-#define  ACTIVE_DATA_INFORMATION_CALLBACK
+#ifndef LFX_ACTIVE_DATA_INFORMATION_CALLBACK
+#define LFX_ACTIVE_DATA_INFORMATION_CALLBACK
 /*!\file ActiveDataInformationCallback.h
 ActiveDataInformationCallback API.
 */

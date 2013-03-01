@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef COMPUTE_DATAOBJECT_BOUNDS_CALLBACK
-#define  COMPUTE_DATAOBJECT_BOUNDS_CALLBACK
+#ifndef LFX_COMPUTE_DATAOBJECT_BOUNDS_CALLBACK
+#define LFX_COMPUTE_DATAOBJECT_BOUNDS_CALLBACK
 /*!\file ComputeDataObjectBoundsCallback.h
 ComputeDataObjectBoundsCallback API.
 */

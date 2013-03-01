@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef PROCESS_SCALAR_RANGE_CALLBACK
-#define PROCESS_SCALAR_RANGE_CALLBACK
+#ifndef LFX_PROCESS_SCALAR_RANGE_CALLBACK
+#define LFX_PROCESS_SCALAR_RANGE_CALLBACK
 /*!\file ProcessScalarRangeCallback.h
 ProcessScalarRangeCallback API.
 */

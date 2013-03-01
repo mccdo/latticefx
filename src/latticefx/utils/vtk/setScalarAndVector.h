@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef setScalarAndVector_H
-#define setScalarAndVector_H
+#ifndef LFX_setScalarAndVector_H
+#define LFX_setScalarAndVector_H
 /*!\file setScalarAndVector.h
 setScalarAndVector API
 */

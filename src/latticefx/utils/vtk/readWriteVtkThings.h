@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef OPENVTKTHING_H
-#define OPENVTKTHING_H
+#ifndef LFX_OPENVTKTHING_H
+#define LFX_OPENVTKTHING_H
 /*!\file readWriteVtkThings.h
 readWriteVtkThings API
 */

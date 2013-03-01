@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef GET_NUMBER_OF_POINTS_CALLBACK
-#define  GET_NUMBER_OF_POINTS_CALLBACK
+#ifndef LFX_GET_NUMBER_OF_POINTS_CALLBACK
+#define LFX_GET_NUMBER_OF_POINTS_CALLBACK
 /*!\file GetNumberOfPointsCallback.h
 GetNumberOfPointsCallback API.
 */
