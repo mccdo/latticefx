@@ -1390,12 +1390,12 @@ int DataSet::IsNewlyActivated()
     return this->isNewlyActivated;
 }
 /////////////////////////////////////////////
-DataSet* DataSet::GetParent()
+DataSetPtr DataSet::GetParent()
 {
     return this->parent;
 }
 /////////////////////////////////////////////////////////////////
-void DataSet::SetParent( DataSet* myParent )
+void DataSet::SetParent( DataSetPtr myParent )
 {
     this->parent = myParent;
 }

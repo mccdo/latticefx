@@ -215,8 +215,8 @@ public:
     const std::string GetVectorName( int );
     const std::string GetActiveVectorName();
 
-    DataSet* GetParent();
-    void SetParent( DataSet* );
+    DataSetPtr GetParent();
+    void SetParent( DataSetPtr );
 
     void SetActualScalarRange( int, double* );
     void GetActualScalarRange( int, double* );
@@ -333,7 +333,7 @@ private:
     double** actualScalarRange;
     double** displayedScalarRange;
 
-    DataSet* parent;
+    DataSetPtr parent;
     double m_bounds[6];///The bounding box data;
     int isNewlyActivated;
 
