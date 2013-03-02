@@ -378,17 +378,21 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
 
+    // Please document all options using Doxygen at the bottom of this file.
     std::cout << "-f <file>\tDefault is HeadVolume.dds." << std::endl;
     std::string fileName( "HeadVolume.dds" );
     arguments.read( "-f", fileName );
 
+    // Please document all options using Doxygen at the bottom of this file.
     std::cout << "-d <x> <y> <z>\tDefault is 50 50 50." << std::endl;
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
+    // Please document all options using Doxygen at the bottom of this file.
     std::cout << "-clip\tTest clip plane." << std::endl;
     const bool clip( arguments.find( "-clip" ) > 0 );
 
+    // Please document all options using Doxygen at the bottom of this file.
     std::cout << "-mt\tTest with parent MatrixTransforms." << std::endl;
     std::cout << std::endl;
 
@@ -476,3 +480,10 @@ int main( int argc, char** argv )
     }
     return( 0 );
 }
+
+
+
+/** \page TestVolumeRT Test volume-rt
+
+Need docs here.
+*/

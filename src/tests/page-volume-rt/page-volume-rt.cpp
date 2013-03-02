@@ -311,6 +311,7 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
 
+    // Please document all options using Doxygen at the bottom of this file.
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies DBDisk directory containing volume image data. Default: cwd." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Specifies DBCrunchStore database containing volume image data." );

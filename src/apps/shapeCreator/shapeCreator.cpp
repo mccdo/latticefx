@@ -352,6 +352,7 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     Log::instance()->setPriority( Log::PrioInfo, "lfx.core.hier" );
 
+    // Please document all options using Doxygen at the bottom of this file.
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
     LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );

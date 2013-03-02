@@ -9,4 +9,24 @@ If you build LatticeFX with the optional VTK dependency, the following applicati
 \li \ref AppVtiTextureDecompose "vti_texture_decompose"
 \li \ref AppLoaderToVTK "loaderToVTK"
 
+
+<h2>Examples</h2>
+
+\li \ref ExampleVisualField "visualfield"
+
+
+<h2>Tests</h2>
+
+\li \ref TestPageVolumeRT "page-volume-rt"
+\li \ref TestVolumeRT "volume-rt"
+
+If you build LatticeFX with the optional VTK dependency, the following applications are also available:
+\li \ref TestFoo "foo"
+
+
+<h2>Regression Tests</h2>
+
+\li \ref CTestHierarchyUtils "hierarchyutils"
+\li \ref CTestMultiopPlugin "multiop-plugin"
+
 */
