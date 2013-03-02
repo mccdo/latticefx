@@ -87,7 +87,6 @@ DataSet::DataSet()
     //m_tempModel( 0 ),
     actualScalarRange( 0 ),
     displayedScalarRange( 0 ),
-    parent( this ),
     isNewlyActivated( 0 ),
     range( 0 ),
     definedRange( 0 ),
@@ -202,11 +201,6 @@ DataSet::~DataSet()
     }
     m_dataObjectOps.clear();
 
-    for( size_t i = 0; i < m_childDataSets.size(); ++i )
-    {
-        delete m_childDataSets.at( i );
-        //m_tempModel->DeleteDataSet( m_childDataSets.at( i )->GetFileName() );
-    }
     m_childDataSets.clear();
 
     /*if( this->x_planes != NULL )
@@ -1392,7 +1386,7 @@ int DataSet::IsNewlyActivated()
 /////////////////////////////////////////////
 DataSetPtr DataSet::GetParent()
 {
-    return this->parent;
+    return parent.lock();
 }
 /////////////////////////////////////////////////////////////////
 void DataSet::SetParent( DataSetPtr myParent )
@@ -1811,11 +1805,9 @@ void DataSet::CreateCompositeDataSets()
     {
         currentDataset =
             dynamic_cast<vtkDataSet*>( mgdIterator->GetCurrentDataObject() );
-        //Do work
-        //new dataset
-        //m_tempModel->CreateCfdDataSet();
-        DataSet* tempDataset = new DataSet();
-            //m_tempModel->GetCfdDataSet( -1 );
+
+        DataSetPtr tempDataset = DataSetPtr( new DataSet() );
+        tempDataset->SetParent( tempDataset );
         //set dcs
         tempDataset->SetDCS( this->GetDCS() );
         //set filename
@@ -1879,9 +1871,8 @@ void DataSet::CreateSurfaceWrap()
     currentDataset->ShallowCopy( c2p->GetOutput() );
     c2p->Delete();
 
-    //m_tempModel->CreateCfdDataSet();
-    DataSet* tempDataset = new DataSet();
-        //m_tempModel->GetCfdDataSet( -1 );
+    DataSetPtr tempDataset = DataSetPtr( new DataSet() );
+    tempDataset->SetParent( tempDataset );
     //set dcs
     tempDataset->SetDCS( GetDCS() );
     //set filename
@@ -1924,10 +1915,8 @@ void DataSet::LoadTransientData( const std::string& dirName, const std::string f
     {
         //This could be a multi block dataset
         //Load in the dataset
-        //Do work
-        //new dataset
-        //m_tempModel->CreateCfdDataSet();
-        DataSetPtr tempDataset( new DataSet() );//m_tempModel->GetCfdDataSet( -1 );
+        DataSetPtr tempDataset( new DataSet() );
+        tempDataset->SetParent( tempDataset );
         //set dcs
         tempDataset->SetDCS( GetDCS() );
         //set filename
@@ -2021,9 +2010,8 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
         //This could be a multi block dataset
         //Load in the dataset
         //Do work
-        //new dataset
-        //m_tempModel->CreateCfdDataSet();
-        DataSetPtr tempDataset( new DataSet() );//m_tempModel->GetCfdDataSet( -1 );
+        DataSetPtr tempDataset( new DataSet() );
+        tempDataset->SetParent( tempDataset );
         //set dcs
         tempDataset->SetDCS( GetDCS() );
         //set filename

@@ -20,8 +20,9 @@
 #ifndef LFX_DATA_SET_PTR_H
 #define LFX_DATA_SET_PTR_H
 
-//#include <ves/util/PointerTypes.h>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+//#include <boost/scoped_ptr.hpp>
 
 /**
  * \file
@@ -42,7 +43,8 @@ class DataSet;
 /// Typedef for the SmartPtr types.
 //typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;
 //typedef ves::util::SharedPtrDef<DataSet>::type DataSetSharedPtr;
-//typedef ves::util::WeakPtrDef<DataSet>::type   DataSetWeakPtr;
+// WeakPtrDef used for getting around circular references only.
+typedef boost::weak_ptr< DataSet > DataSetWeakPtr;
 //typedef ves::util::ScopedPtrDef<DataSet>::type DataSetScopedPtr;
 typedef boost::shared_ptr< DataSet > DataSetPtr;
 

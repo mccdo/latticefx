@@ -333,7 +333,7 @@ private:
     double** actualScalarRange;
     double** displayedScalarRange;
 
-    DataSetPtr parent;
+    DataSetWeakPtr parent;
     double m_bounds[6];///The bounding box data;
     int isNewlyActivated;
 
@@ -410,7 +410,7 @@ private:
     ///Easy way to tell if this dataset is a child of a composite dataset
     bool m_isPartOfCompositeDataset;
     ///List of child datasets for this dataset
-    std::vector< DataSet* > m_childDataSets;
+    std::vector< DataSetPtr > m_childDataSets;
     ///Set the active data arrays to load
     std::vector< std::string > m_activeDataArrays;
     ///List of transient datasets associated with this dataset
