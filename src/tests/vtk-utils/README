@@ -1,0 +1,49 @@
+The utilities in this directory provide some capability for troubleshooting
+problems in your VTK datasets and also allow you to alter/manipulate your
+datasets.
+
+
+ISSUE CONCERNING VECTOR DATA
+
+Because VTK only lets us write one SCALARS and one VECTORS field, we typically
+write all of our scalar and vector data to the general purpose point data
+field. Thus we do not use the SCALARS or VECTORS fields. 
+
+A problem arises when our data is sent through a scale/transform filter.  VTK
+does not assume that an array in the point data field that has 3 components is
+a vector.
+
+So although VTK will normally scale all vertices AND all data in the
+VECTORS field, it will not scale vector data that us stored in the general
+purpose point data field.  That is fine by us, thus for example, the scalar
+parameter velocity magnitude will stay synchronized with the velocity vector.
+
+Similarly, VTK will normally rotate all vertices AND all data in the
+VECTORS field, but it will not rotate vector data that us stored in the
+general purpose point data field.  THAT IS A BIG PROBLEM.  The solution is to
+do all transformations (rotations and translations) at run_time by specifying
+them in the VE_Suite param files.
+
+TODO: Transformation options (at least rotation and translation) should be
+removed from the translator and the transformVtk and appendVTK utilities
+should be used with extreme caution.
+
+
+AFFECT OF THIS ISSUE ON SOME UTILITIES
+
+scaleVtk and transformVtk will not affect vector data stored in the point data 
+field.  (Use 3scl.vtk as test data.)  That is our desired result for scaleVtk.  
+But that is wrong for transformVtk (vector directions should follow geometry 
+changes). 
+ 
+scaleVtk and transformVtk WILL affect vector data stored in the VECTORS field.  
+(Use OldStyle.vtk as test data.)  That is NOT our desired result for scaleVtk 
+and that is what the warning in scaleVtk refers to.  But transformVtk works as 
+expected: vector directions do follow geometry transformations. 
+ 
+So scaleVtk needs to be used with caution if vector data is in the VECTORS
+field and transformVtk will fail if vector data is NOT in VECTORS field.   
+
+appendVTK also uses transforms and will not work correctly if rotations are
+applied to datasets with vector data stored in the general purpose point data
+field. 

@@ -12,5 +12,6 @@ if( VTK_FOUND )
     add_subdirectory( vtk-surface )
     add_subdirectory( vtk-timeseries-points )
     add_subdirectory( vtk-vector )
+    add_subdirectory( vtk-utils )
 endif()
 
