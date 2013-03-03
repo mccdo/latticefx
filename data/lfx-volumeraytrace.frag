@@ -413,7 +413,7 @@ void main( void )
                     lastPassHM = true;
 
                     float len = ( hmParams[3] - lastSample ) / ( baseColor.r - lastSample );
-                    sampleCount -= ( 2. - len );
+                    sampleCount -= clamp( 2. - len, 1., 2. );
 
                     sampleLen = sampleCount / totalSamples;
                     sampleCount += 1.;
