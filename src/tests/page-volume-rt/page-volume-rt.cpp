@@ -61,7 +61,8 @@ using namespace lfx::core;
 
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
-        const std::string& csFile, const std::string& diskPath )
+        const std::string& csFile, const std::string& diskPath,
+        const bool useIso, const float isoVal )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -220,7 +221,8 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     // Step 3: Arrange and attach the scene graph.
     //
     osg::Group* rootGroup( new osg::Group );
-    rootGroup->addChild( scene );
+    if( scene != NULL )
+        rootGroup->addChild( scene );
     rootGroup->addChild( splatCam );
     viewer.setSceneData( rootGroup );
 
@@ -312,10 +314,11 @@ int main( int argc, char** argv )
     osg::ArgumentParser arguments( &argc, argv );
 
     // Please document all options using Doxygen at the bottom of this file.
-    LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
-    LFX_CRITICAL_STATIC( logstr, "-dp <path> Specifies DBDisk directory containing volume image data. Default: cwd." );
-    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Specifies DBCrunchStore database containing volume image data." );
+    LFX_CRITICAL_STATIC( logstr, "-dp <path>\tSpecifies DBDisk directory containing volume image data." );
+    LFX_CRITICAL_STATIC( logstr, "-cs <dbFile>\tSpecifies DBCrunchStore database containing volume image data." );
     LFX_CRITICAL_STATIC( logstr, "-d <x> <y> <z>\tDefault is 50 50 50." );
+    LFX_CRITICAL_STATIC( logstr, "-cyl\tDisplay a polygonal cylinder." );
+    LFX_CRITICAL_STATIC( logstr, "-iso <x>\tDisplay as an isosurface." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -332,6 +335,11 @@ int main( int argc, char** argv )
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
+    const bool cyl( arguments.find( "-cyl" ) > 0 );
+    float isoVal( 0. );
+    const bool useIso( arguments.find( "-iso" ) > 0 );
+    if( useIso )
+        arguments.read( "-iso", isoVal );
 
 
     osgViewer::Viewer viewer;
@@ -344,12 +352,12 @@ int main( int argc, char** argv )
 
 
 
-    osg::Node* scene( createScene() );
+    osg::Node* scene( cyl ? createScene() : NULL );
 
     RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
-    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal ) );
     setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData() );
 
 
@@ -373,5 +381,15 @@ int main( int argc, char** argv )
 
 /** \page TestPageVolumeRT Test page-volume-rt
 
-Need docs here.
+Display a paged hierarchy of volume data using RAY_TRACED mode.
+
+You must specify a database using either \c -dp or \c -cs.
+\li -dp <path> Specifies DBDisk directory containing volume image data.
+\li -cs <dbFile> Specifies DBCrunchStore database containing volume image data.
+
+Other options:
+\li -d <x> <y> <z> Default is 50 50 50.
+\li -cyl Display a polygonal cylinder.
+\li -iso <x> Display as an isosurface.
+
 */
