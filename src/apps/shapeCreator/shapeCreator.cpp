@@ -48,11 +48,12 @@ using namespace lfx::core;
 class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
-    CubeVolumeBrickData( const bool prune )
+    CubeVolumeBrickData( const bool prune, const bool soft )
       : VolumeBrickData( prune ),
         _brickRes( 32, 32, 32 ),
         _cubeMin( .2, .2, .2 ),
-        _cubeMax( .8, .8, .8 )
+        _cubeMax( .8, .8, .8 ),
+        _soft( soft )
     {
         setNumBricks( osg::Vec3s( 8, 8, 8 ) );
     }
@@ -93,9 +94,19 @@ public:
                     if( ( sVal >= _cubeMin[0] ) && ( sVal <= _cubeMax[0] ) &&
                         ( tVal >= _cubeMin[1] ) && ( tVal <= _cubeMax[1] ) &&
                         ( rVal >= _cubeMin[2] ) && ( rVal <= _cubeMax[2] ) )
+                    {
+                        if( !_soft )
                             *ptr++ = 255;
+                        else
+                        {
+                            float val( sVal + tVal );
+                            if( val > 1. )
+                                val = 2. - val;
+                            *ptr++ = (unsigned char)( val * 255 );
+                        }
+                    }
                     else
-                            *ptr++ = 0;
+                        *ptr++ = 0;
                 }
             }
         }
@@ -121,6 +132,7 @@ protected:
 
     osg::Vec3s _brickRes;
     osg::Vec3f _cubeMin, _cubeMax;
+    bool _soft;
 };
 
 /** TBD Does not yet support _prune. */
@@ -356,6 +368,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
     LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );
+    LFX_CRITICAL_STATIC( logstr, "-scube Generate a soft cube data set." );
     LFX_CRITICAL_STATIC( logstr, "-cone Generate a cone data set." );
     LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
@@ -370,6 +383,7 @@ int main( int argc, char** argv )
     arguments.read( "-cs", csFile );
 #endif
 
+    bool softCube( arguments.find( "-scube" ) > 0 );
     bool softSphere( arguments.find( "-ssphere" ) > 0 );
 
     VolumeBrickData* shapeGen( NULL );
@@ -378,7 +392,7 @@ int main( int argc, char** argv )
     else if( arguments.find( "-cone" ) > 0 )
         shapeGen = new ConeVolumeBrickData( prune );
     else
-        shapeGen = new CubeVolumeBrickData( prune );
+        shapeGen = new CubeVolumeBrickData( prune, softCube );
 
     createDataSet( csFile, shapeGen );
 
@@ -398,9 +412,10 @@ By default, shapeCreator generates a cube data set. This is the same as the \c -
 \li -cube Generate a cube data set. This is the default if no other shape is specified.
 
 Generate other shapes by specifying one of these options:
+\li -scube Generate a soft cube with gradient scalar values.
 \li -cone Generate a cone data set.
 \li -sphere Generate a sphere data set.
-\li -ssphere Generate a soft sphere data set.
+\li -ssphere Generate a soft sphere with gradient scalar values.
 
 <h2>Database Usage</h2>
 
