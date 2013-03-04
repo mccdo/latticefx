@@ -74,6 +74,9 @@ Renderer::Renderer( const std::string logNameSuffix )
 
     info = UniformInfo( "hmParams", osg::Uniform::FLOAT_VEC4, "Hardware mask parameters.", UniformInfo::PRIVATE );
     registerUniform( info );
+
+    info = UniformInfo( "hmEpsilon", osg::Uniform::FLOAT, "Hardware mask comparison epsilon." );
+    registerUniform( info );
 }
 Renderer::Renderer( const Renderer& rhs )
   : OperationBase( rhs ),
@@ -371,6 +374,15 @@ float Renderer::getHardwareMaskReference() const
     return( _hmReference );
 }
 
+void Renderer::setHardwareMaskEpsilon( const float epsilon )
+{
+    _hmEpsilon = epsilon;
+}
+float Renderer::getHardwareMaskEpsilon() const
+{
+    return( _hmEpsilon );
+}
+
 void Renderer::setHardwareMaskOperator( const unsigned int& maskOp )
 {
     _hmOperator = maskOp;
@@ -513,6 +525,11 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         UniformInfo& info( getUniform( "hmParams" ) );
         info._prototype->set( maskParams );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+    {
+        UniformInfo& info( getUniform( "hmEpsilon" ) );
+        info._prototype->set( _hmEpsilon );
+        stateSet->addUniform( createUniform( info ) );
     }
 }
 

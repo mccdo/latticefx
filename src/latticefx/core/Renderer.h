@@ -373,7 +373,8 @@ public:
     specified with a call to setHardwareMaskInput().
 
     The input is compared against a floating point reference value specified with a call
-    to setHardwareMaskReference().
+    to setHardwareMaskReference(). The values are considered equal if they are within the
+    epsilon value specified with setHardwareMaskEpsilon().
 
     The comparison operation is set with setHardwareMaskOperator(). To disable the hardware
     mask, specify HM_OP_OFF. Rendering proceeds if the comparison operation evaluates to
@@ -416,6 +417,16 @@ public:
     void setHardwareMaskReference( const float reference );
     /** \brief Get the hardware mask comparison reference value. */
     float getHardwareMaskReference() const;
+
+    /** \brief Set the hardware mask comparison epsilon value.
+    \details When performing the hardware mask comparison against the reference value,
+    the input source value is considered to be equal to the reference value if the
+    source value falls within the range +/- this epsilon value.
+
+    The default in 0.0f. */
+    void setHardwareMaskEpsilon( const float epsilon );
+    /** \brief Get the hardware mask comparison epsilon value. */
+    float getHardwareMaskEpsilon() const;
 
     typedef enum {
         HM_OP_OFF = 0,
@@ -501,6 +512,7 @@ protected:
     HardwareMaskInputSource _hmSource;
     std::string _hmInputName;
     float _hmReference;
+    float _hmEpsilon;
     unsigned int _hmOperator;
 
 

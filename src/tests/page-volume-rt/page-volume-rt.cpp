@@ -42,6 +42,7 @@
 #include <osg/DisplaySettings>
 #include <osg/ComputeBoundsVisitor>
 #include <osg/Group>
+#include <osg/Image>
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
 
@@ -109,18 +110,21 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setVolumeDims( dims );
     renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
     renderOp->setMaxSamples( 400.f );
-    renderOp->setTransparencyEnable( true );
+    renderOp->setTransparencyEnable( useIso ? false : true );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
 
-    renderOp->setTransferFunction( lfx::core::loadImageFromDat( "01.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
+    osg::ref_ptr< osg::Image > tfImage( lfx::core::loadImageFromDat( "01.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
+    renderOp->setTransferFunction( tfImage.get() );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     // Render when alpha values are greater than 0.15.
     renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_ALPHA );
-    renderOp->setHardwareMaskOperator( Renderer::HM_OP_GT );
-    renderOp->setHardwareMaskReference( .15f );
+    renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
+    renderOp->setHardwareMaskReference( isoVal );
+    if( useIso )
+        renderOp->setHardwareMaskEpsilon( 0.05 );
 
     return( dsp );
 }
@@ -336,10 +340,9 @@ int main( int argc, char** argv )
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
     const bool cyl( arguments.find( "-cyl" ) > 0 );
+
     float isoVal( 0. );
-    const bool useIso( arguments.find( "-iso" ) > 0 );
-    if( useIso )
-        arguments.read( "-iso", isoVal );
+    const bool useIso( arguments.read( "-iso", isoVal ) );
 
 
     osgViewer::Viewer viewer;
@@ -391,5 +394,9 @@ Other options:
 \li -d <x> <y> <z> Default is 50 50 50.
 \li -cyl Display a polygonal cylinder.
 \li -iso <x> Display as an isosurface.
+
+If \c -iso is not specified, the test renders using the hardware mask
+condifigured to display alpha values greater than 0.15. If \c -iso is
+specified, the test renders alpha values equal to the specified value.
 
 */
