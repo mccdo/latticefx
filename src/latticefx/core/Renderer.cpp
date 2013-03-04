@@ -26,6 +26,7 @@
 #include <osg/Texture2D>
 #include <osg/Texture3D>
 #include <osgDB/FileUtils>
+#include <osg/io_utils>
 
 #include <boost/foreach.hpp>
 #include <Poco/Platform.h>
@@ -140,6 +141,77 @@ const Renderer::UniformInfo& Renderer::getUniform( const std::string& name ) con
 osg::Uniform* Renderer::createUniform( const UniformInfo& info )
 {
     return( new osg::Uniform( *( info._prototype ) ) );
+}
+void Renderer::dumpUniformInfo( std::ostream& ostr, const bool publicOnly )
+{
+    ostr << "Available uniforms:" << std::endl;
+
+    BOOST_FOREACH( const Renderer::UniformInfo& info, _uniformInfo )
+    {
+        if( !publicOnly || ( info._access == Renderer::UniformInfo::PUBLIC ) )
+        {
+            ostr << info._prototype->getName() + "\t" +
+                Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
+                info._description << std::endl;
+
+            // Display the default value.
+            ostr << "\tDefault: ";
+            switch( info._prototype->getType() )
+            {
+            case osg::Uniform::FLOAT_MAT4:
+            {
+                osg::Matrix mat; info._prototype->get( mat );
+                ostr << mat;
+                break;
+            }
+            case osg::Uniform::FLOAT_VEC2:
+            {
+                osg::Vec2f vec2; info._prototype->get( vec2 );
+                ostr << vec2;
+                break;
+            }
+            case osg::Uniform::FLOAT_VEC3:
+            {
+                osg::Vec3f vec3; info._prototype->get( vec3 );
+                ostr << vec3;
+                break;
+            }
+            case osg::Uniform::FLOAT_VEC4:
+            {
+                osg::Vec4f vec4; info._prototype->get( vec4 );
+                ostr << vec4;
+                break;
+            }
+            case osg::Uniform::FLOAT:
+            {
+                float f; info._prototype->get( f );
+                ostr << f;
+                break;
+            }
+            case osg::Uniform::SAMPLER_1D:
+            case osg::Uniform::SAMPLER_2D:
+            case osg::Uniform::SAMPLER_3D:
+            case osg::Uniform::INT:
+            {
+                int i; info._prototype->get( i );
+                ostr << i;
+                break;
+            }
+            case osg::Uniform::BOOL:
+            {
+                bool b; info._prototype->get( b );
+                ostr << b;
+                break;
+            }
+            default:
+            {
+                ostr << "unsupported uniform type.";
+                break;
+            }
+            }
+            ostr << std::endl;
+        }
+    }
 }
 
 std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )

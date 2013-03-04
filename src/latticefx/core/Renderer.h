@@ -42,6 +42,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <ostream>
 
 
 namespace osg {
@@ -229,6 +230,12 @@ public:
     \details This static method simply invokes the Uniform copy constructor on the \c info's
     UniformInfo::_prototype. */
     static osg::Uniform* createUniform( const UniformInfo& info );
+
+    /** \brief Dump uniform information to a std::ostream.
+    \details Dumps all uniforms in the Renderer's \c  _uniformInfo vector.
+    By default, dumps PUBLIC uniforms only. To dump both PUBLIC and
+    PROTECTED uniforms, set the \c publicOnly parameter to false. */
+    void dumpUniformInfo( std::ostream& ostr, const bool publicOnly=true );
 
     /** \brief Convert the Uniform data type to a string.
     \details This static method could be useful when displaying uniform data, such as in

@@ -32,89 +32,13 @@
 #include <boost/foreach.hpp>
 
 #include <osg/io_utils>
-#include <sstream>
+#include <iostream>
 
 
 using namespace lfx::core;
 
 
 const std::string logstr( "lfx.demo" );
-
-
-void dumpUniformInfo( const RendererPtr renderOp )
-{
-    LFX_CRITICAL_STATIC( logstr, "Available uniforms:" );
-
-    const Renderer::UniformInfoVector& infoVec( renderOp->getUniforms() );
-    BOOST_FOREACH( const Renderer::UniformInfo& info, infoVec )
-    {
-        if( info._access == Renderer::UniformInfo::PUBLIC )
-        {
-            LFX_CRITICAL_STATIC( logstr, info._prototype->getName() + "\t" +
-                Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
-                info._description );
-
-            // Display the default value.
-            std::ostringstream ostr;
-            ostr << "\tDefault: ";
-            switch( info._prototype->getType() )
-            {
-            case osg::Uniform::FLOAT_MAT4:
-            {
-                osg::Matrix mat; info._prototype->get( mat );
-                ostr << mat;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC2:
-            {
-                osg::Vec2f vec2; info._prototype->get( vec2 );
-                ostr << vec2;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC3:
-            {
-                osg::Vec3f vec3; info._prototype->get( vec3 );
-                ostr << vec3;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC4:
-            {
-                osg::Vec4f vec4; info._prototype->get( vec4 );
-                ostr << vec4;
-                break;
-            }
-            case osg::Uniform::FLOAT:
-            {
-                float f; info._prototype->get( f );
-                ostr << f;
-                break;
-            }
-            case osg::Uniform::SAMPLER_1D:
-            case osg::Uniform::SAMPLER_2D:
-            case osg::Uniform::SAMPLER_3D:
-            case osg::Uniform::INT:
-            {
-                int i; info._prototype->get( i );
-                ostr << i;
-                break;
-            }
-            case osg::Uniform::BOOL:
-            {
-                bool b; info._prototype->get( b );
-                ostr << b;
-                break;
-            }
-            default:
-            {
-                LFX_CRITICAL_STATIC( logstr, "unsupported uniform type." );
-                break;
-            }
-            }
-            LFX_CRITICAL_STATIC( logstr, ostr.str() );
-        }
-    }
-}
-
 
 
 class ScalarComputation : public RTPOperation
@@ -250,7 +174,7 @@ int main( int argc, char** argv )
     // By calling getSceneGraph() before dumpUniformInfo(), we allow the
     // Renderer to establish correct default values for its uniforms, many
     // of which can't be determined until the DataSet is completely processed.
-    dumpUniformInfo( dsp->getRenderer() );
+    dsp->getRenderer()->dumpUniformInfo( std::cout );
 
     osg::Group* root( new osg::Group );
     root->addChild( lfxParent );
