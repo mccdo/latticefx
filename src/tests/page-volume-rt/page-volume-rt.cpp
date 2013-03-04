@@ -42,6 +42,7 @@
 #include <osg/DisplaySettings>
 #include <osg/ComputeBoundsVisitor>
 #include <osg/Group>
+#include <osg/ClipNode>
 #include <osg/Image>
 #include <osg/ArgumentParser>
 #include <osgGA/TrackballManipulator>
@@ -60,6 +61,16 @@ static std::string logstr( "lfx.demo" );
 using namespace lfx::core;
 
 
+
+osg::Node* createClipSubgraph()
+{
+    // Test hardware clip planes
+    osg::ClipNode* cn( new osg::ClipNode() );
+    osg::Vec3 n( -.9, .8, 0. ); n.normalize();
+    cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
+
+    return( cn );
+}
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
         const std::string& csFile, const std::string& diskPath,
@@ -124,13 +135,13 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( isoVal );
     if( useIso )
-        renderOp->setHardwareMaskEpsilon( 0.05 );
+        renderOp->setHardwareMaskEpsilon( 0.025 );
 
     return( dsp );
 }
 
 
-osg::Node* createScene( const std::string fileName=std::string("") )
+osg::Node* createScene( const bool clip, const std::string fileName=std::string("") )
 {
     osg::Group* root( new osg::Group );
     if( fileName.empty() )
@@ -148,6 +159,14 @@ osg::Node* createScene( const std::string fileName=std::string("") )
     }
     else
         root->addChild( osgDB::readNodeFile( fileName ) );
+
+    if( clip )
+    {
+        root->addChild( createClipSubgraph() );
+
+        osg::StateSet* stateSet( root->getOrCreateStateSet() );
+        stateSet->setMode( GL_CLIP_PLANE0, osg::StateAttribute::ON );
+    }
 
     return( root );
 }
@@ -235,7 +254,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 }
 
 void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
-    osgViewer::Viewer& viewer, osg::Node* volume )
+    osgViewer::Viewer& viewer, osg::Node* volume, const bool clip )
 {
     // Get the root Group node attached to the osgViewer::Viewer.
     osg::Node* sceneRootNode( viewer.getSceneData() );
@@ -258,6 +277,17 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
 
     lfxCam->setReferenceFrame( osg::Camera::RELATIVE_RF );
     lfxCam->setRenderOrder( osg::Camera::POST_RENDER );
+
+    if( clip )
+    {
+        lfxCam->addChild( createClipSubgraph() );
+
+        // No built-in uniform to tell shaders that clip planes are enabled,
+        // so send that info down as uniforms, one int uniform for each plane.
+        osg::StateSet* stateSet( lfxCam->getOrCreateStateSet() );
+        osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnable0", 1 ) );
+        stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
+    }
 
     lfxCam->addChild( volume );
     sceneRoot->addChild( lfxCam );
@@ -323,6 +353,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-d <x> <y> <z>\tDefault is 50 50 50." );
     LFX_CRITICAL_STATIC( logstr, "-cyl\tDisplay a polygonal cylinder." );
     LFX_CRITICAL_STATIC( logstr, "-iso <x>\tDisplay as an isosurface." );
+    LFX_CRITICAL_STATIC( logstr, "-clip\tTest clip plane." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -344,6 +375,7 @@ int main( int argc, char** argv )
     float isoVal( 0. );
     const bool useIso( arguments.read( "-iso", isoVal ) );
 
+    const bool clip( arguments.find( "-clip" ) > 0 );
 
     osgViewer::Viewer viewer;
     viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
@@ -355,13 +387,13 @@ int main( int argc, char** argv )
 
 
 
-    osg::Node* scene( cyl ? createScene() : NULL );
+    osg::Node* scene( cyl ? createScene( clip ) : NULL );
 
     RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
     DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal ) );
-    setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData() );
+    setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData(), clip );
 
 
     // Really we would need to change the projection matrix and viewport
@@ -394,6 +426,7 @@ Other options:
 \li -d <x> <y> <z> Default is 50 50 50.
 \li -cyl Display a polygonal cylinder.
 \li -iso <x> Display as an isosurface.
+\li -clip Test clip plane.
 
 If \c -iso is not specified, the test renders using the hardware mask
 condifigured to display alpha values greater than 0.15. If \c -iso is
