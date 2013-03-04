@@ -415,8 +415,6 @@ void main( void )
                 // TBD The code needs to be modified to be more general-purpose.
                 if( !lastPassHM && ( lastSample > -1. ) )
                 {
-                    lastPassHM = true;
-
                     float len = ( hmParams[3] - lastSample ) / ( baseColor.r - lastSample );
                     sampleCount -= clamp( 2. - len, 1., 2. );
 
@@ -426,6 +424,7 @@ void main( void )
                     baseColor.r = hmParams[3];
                     color = transferFunction( baseColor.r );
                 }
+                lastPassHM = true;
 
                 // We have passed the hardware mask. Compute a normal
                 // and light the fragment.
