@@ -12,16 +12,16 @@ svn checkout http://latticefx.googlecode.com/svn/trunk/
 Required:
 \li <a href=http://www.openscenegraph.org/projects/osg >OpenSceneGraph (OSG)</a> v2.8.5 or newer.
 \li <a href=http://osgworks.googlecode.com >osgWorks</a>. Get current svn trunk.
-\li <a href=http://pocoproject.org/download/index.html >Poco</a> v1.4.3p1 or newer. (See the Poco Note below.)
+\li <a href=http://pocoproject.org/download/index.html >Poco</a> v1.4.3p1 or newer. See the Poco Note below.
 \li <a href=http://www.boost.org/users/download/ >Boost</a> v1.48_0 or newer. Some libraries are required.
 \li <a href=http://www.cmake.org/cmake/resources/software.html >CMake</a> v2.8.5 or newer.
 
 Optional:
 \li <a href=http://crunchstore.googlecode.com >crunchstore</a>. Get current svn trunk.
-\li <a href=http://www.vtk.org/ >VTK</a>.
+\li <a href=http://www.vtk.org/ >VTK</a> v5.10.1 or newer.
 \li <a href=http://www.stack.nl/~dimitri/doxygen/download.html >Doxygen</a>.
 
-Poco note: LatticeFX itself doesn't require the "Complete Edition". However, if you intent
+Poco note: LatticeFX itself doesn't require the "Complete Edition". However, if you intend
 to use LatticeFX's optional crunchstore project for external database support, crunchstore
 requires the "Complete Edition" for the MySQL library. In summery: If you have opted to
 use crunchstore, then get the "Complete Edition". Otherwise, get the "Basic Edition".
