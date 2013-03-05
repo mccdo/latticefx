@@ -34,6 +34,7 @@
 
 #include <osg/ArgumentParser>
 #include <osgViewer/Viewer>
+#include <osgDB/FileUtils>
 #include <osg/io_utils>
 
 #ifdef VTK_FOUND
@@ -51,7 +52,7 @@ using namespace lfx::core;
 VolumeBrickData* createVtkBricks(const char *vtkDataSetFile)
 {
 	vtk::DataSetPtr ds(new vtk::DataSet());
-	ds->SetFileName(vtkDataSetFile);
+	ds->SetFileName( osgDB::findDataFile( vtkDataSetFile ) );
 	ds->LoadData(); 
 
 	vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2));
@@ -392,12 +393,17 @@ int main( int argc, char** argv )
 
     // Please document all options using Doxygen at the bottom of this file.
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
+#ifdef LFX_USE_CRUNCHSTORE
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+#endif
     LFX_CRITICAL_STATIC( logstr, "-cube Generate a cube data set. This is the default if no other shape is specified." );
     LFX_CRITICAL_STATIC( logstr, "-scube Generate a soft cube data set." );
     LFX_CRITICAL_STATIC( logstr, "-cone Generate a cone data set." );
     LFX_CRITICAL_STATIC( logstr, "-sphere Generate a sphere data set." );
     LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
+#ifdef VTK_FOUND
+    LFX_CRITICAL_STATIC( logstr, "-vtk <file> Generate a data set from a VTK volume data file." );
+#endif
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 
     osg::ArgumentParser arguments( &argc, argv );
@@ -455,6 +461,10 @@ Generate other shapes by specifying one of these options:
 \li -cone Generate a cone data set.
 \li -sphere Generate a sphere data set.
 \li -ssphere Generate a soft sphere with gradient scalar values.
+
+If you've built LatticeFX with the optional VTK dependency, you can also
+generate hierarchies for VTK folume data.
+\li -vtk <file> Generate a data set from a VTK volume data file
 
 <h2>Database Usage</h2>
 

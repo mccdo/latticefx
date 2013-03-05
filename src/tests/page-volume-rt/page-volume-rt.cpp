@@ -135,7 +135,7 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( isoVal );
     if( useIso )
-        renderOp->setHardwareMaskEpsilon( 0.006 );
+        renderOp->setHardwareMaskEpsilon( 0.02 );
 
     return( dsp );
 }
