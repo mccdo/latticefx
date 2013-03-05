@@ -135,7 +135,7 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( isoVal );
     if( useIso )
-        renderOp->setHardwareMaskEpsilon( 0.025 );
+        renderOp->setHardwareMaskEpsilon( 0.006 );
 
     return( dsp );
 }
@@ -372,7 +372,7 @@ int main( int argc, char** argv )
 
     const bool cyl( arguments.find( "-cyl" ) > 0 );
 
-    float isoVal( 0. );
+    float isoVal( 0.15 );
     const bool useIso( arguments.read( "-iso", isoVal ) );
 
     const bool clip( arguments.find( "-clip" ) > 0 );

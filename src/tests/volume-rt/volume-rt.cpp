@@ -300,7 +300,8 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
     return( lfxCam.release() );
 }
 
-DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
+DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims,
+        const bool useIso, const float isoVal )
 {
     osg::ref_ptr< osg::Image > image( new osg::Image() );
     image->setFileName( fileName );
@@ -319,7 +320,7 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
     renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
     renderOp->setMaxSamples( 400.f );
     renderOp->setTransparency( 1.f );
-    renderOp->setTransparencyEnable( true );
+    renderOp->setTransparencyEnable( useIso ? false : true );
 
     renderOp->addInput( "volumedata" );
     dsp->setRenderer( renderOp );
@@ -329,8 +330,10 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims )
 
     // Render when alpha values are greater than 0.15.
     renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_ALPHA );
-    renderOp->setHardwareMaskOperator( Renderer::HM_OP_GT );
-    renderOp->setHardwareMaskReference( .15f );
+    renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
+    renderOp->setHardwareMaskReference( isoVal );
+    if( useIso )
+        renderOp->setHardwareMaskEpsilon( 0.1 );
 
     return( dsp );
 }
@@ -379,29 +382,33 @@ int main( int argc, char** argv )
     osg::ArgumentParser arguments( &argc, argv );
 
     // Please document all options using Doxygen at the bottom of this file.
-    std::cout << "-f <file>\tDefault is HeadVolume.dds." << std::endl;
+    std::cout << "-f <file>\tSpecify the 3D image file to load. Default is HeadVolume.dds." << std::endl;
+    std::cout << "-d <x> <y> <z>\tDefault is 50 50 50." << std::endl;
+    std::cout << "-cyl\tDisplay a polygonal cylinder." << std::endl;
+    std::cout << "-iso <x>\tDisplay as an isosurface." << std::endl;
+    std::cout << "-clip\tTest clip plane." << std::endl;
+    std::cout << "-mt\tTest with parent MatrixTransforms." << std::endl;
+
     std::string fileName( "HeadVolume.dds" );
     arguments.read( "-f", fileName );
 
-    // Please document all options using Doxygen at the bottom of this file.
-    std::cout << "-d <x> <y> <z>\tDefault is 50 50 50." << std::endl;
     osg::Vec3 dims( 50., 50., 50. );
     arguments.read( "-d", dims[0],dims[1],dims[2] );
 
-    // Please document all options using Doxygen at the bottom of this file.
-    std::cout << "-clip\tTest clip plane." << std::endl;
     const bool clip( arguments.find( "-clip" ) > 0 );
+    const bool cyl( arguments.find( "-cyl" ) > 0 );
+    const bool mt( arguments.find( "-mt" ) > 0 );
 
-    // Please document all options using Doxygen at the bottom of this file.
-    std::cout << "-mt\tTest with parent MatrixTransforms." << std::endl;
-    std::cout << std::endl;
+    float isoVal( 0.15 );
+    const bool useIso( arguments.read( "-iso", isoVal ) );
+
 
     // Create an example data set.
-    osg::Group* volume (new osg::Group);
+    osg::Group* volume( new osg::Group );
 
-    DataSetPtr dsp( prepareVolume( fileName, dims ) );
+    DataSetPtr dsp( prepareVolume( fileName, dims, useIso, isoVal ) );
 
-    if( arguments.find( "-mt" ) > 0 )
+    if( mt )
     {
         // the translate will occur in the unscaled units, and the scaling will occur around the new origin.
         // A is just translate and nominal scale
@@ -452,7 +459,9 @@ int main( int argc, char** argv )
     viewer.addEventHandler( new osgViewer::StatsHandler() );
 
 
-    osg::Node* scene( createScene( clip, dims ) );
+    osg::Node* scene( NULL );
+    if( cyl )
+        scene = createScene( clip, dims );
 
     // Assemble camera RTT and scene hierarchy.
     // viewerCamera (renders to both color and depth textures)
@@ -466,7 +475,8 @@ int main( int argc, char** argv )
     //   testing while stepping along the ray.
     prepareSceneCamera( viewer );
     osg::Group* rootGroup( new osg::Group );
-    rootGroup->addChild( scene );
+    if( scene != NULL )
+        rootGroup->addChild( scene );
     rootGroup->addChild( createDisplaySceneCamera() );
     rootGroup->addChild( createLfxCamera( volume, clip ) );
     viewer.setSceneData( rootGroup );
@@ -485,5 +495,21 @@ int main( int argc, char** argv )
 
 /** \page TestVolumeRT Test volume-rt
 
-Need docs here.
+Display a single volume data image using RAY_TRACED mode.
+
+Specify a file with the -f option. If you do not specify this option,
+volume-rt attempts to use a file called HeadVOlume.dds.
+\li -f <file> Specify the 3D image file to load.
+
+Other options:
+\li -d <x> <y> <z> Default is 50 50 50.
+\li -cyl Display a polygonal cylinder.
+\li -iso <x> Display as an isosurface.
+\li -clip Test clip plane.
+\li -mt Test with parent MatrixTransforms.
+
+If \c -iso is not specified, the test renders using the hardware mask
+condifigured to display alpha values greater than 0.15. If \c -iso is
+specified, the test renders alpha values equal to the specified value.
+
 */
