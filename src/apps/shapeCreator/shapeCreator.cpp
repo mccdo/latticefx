@@ -36,6 +36,11 @@
 #include <osgViewer/Viewer>
 #include <osg/io_utils>
 
+#ifdef VTK_FOUND
+#include <latticefx/core/vtk/DataSet.h>
+#include <latticefx/core/vtk/VTKVolumeBrickData.h>
+#endif
+
 
 
 const std::string logstr( "lfx.demo" );
