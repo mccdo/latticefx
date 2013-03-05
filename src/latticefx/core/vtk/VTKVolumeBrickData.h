@@ -71,7 +71,6 @@ protected:
 	int m_dataNum;
 	int m_nPtDataArrays;
 	osg::Vec3s m_brickRes;
-	osg::Vec3s m_totalNumBricks;
 };
 
 

@@ -40,7 +40,6 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, bool prune, int dataN
 	m_dataNum = dataNum;
 	m_isScalar = isScalar;
 	m_brickRes = brickRes;
-	m_totalNumBricks = totalNumBricks;
 	m_nPtDataArrays = 0;
 
 	setNumBricks(totalNumBricks);
@@ -90,9 +89,9 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
 	//
 	osg::Vec3d vtkBrickSize, vtkDelta;
-	vtkBrickSize.x() = fabs(bbox[1] - bbox[0]) / m_totalNumBricks.x();
-	vtkBrickSize.y() = fabs(bbox[3] - bbox[2]) / m_totalNumBricks.y();
-	vtkBrickSize.z() = fabs(bbox[5] - bbox[4]) / m_totalNumBricks.z();
+	vtkBrickSize.x() = fabs(bbox[1] - bbox[0]) / _numBricks.x();
+	vtkBrickSize.y() = fabs(bbox[3] - bbox[2]) / _numBricks.y();
+	vtkBrickSize.z() = fabs(bbox[5] - bbox[4]) / _numBricks.z();
 	vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
 	vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
 	vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
