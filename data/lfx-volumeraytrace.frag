@@ -71,8 +71,8 @@ const float hmAlpha = 0.;
 const float hmRed = 1.;
 const float hmScalar = 2.;
 
-// Return true if passed, false if failed.
-bool hardwareMask( in vec3 tC, in vec4 baseColor )
+// Return 1. if passed, 0. if failed.
+float hardwareMask( in vec3 tC, in vec4 baseColor )
 {
     // hmParams has all mask parameters in a single vec4 uniform:
     //   Element 0: Input source (0=alpha, 1=red, 2=scalar, 1000=no mask
@@ -94,7 +94,7 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
     else
     {
         // no mask
-        return( true );
+        return( 1. );
     }
 
     // sign() returns 1=pos, 0=0, and -1=neg -- same as what we have in hmParams[ 1 ].
@@ -103,11 +103,11 @@ bool hardwareMask( in vec3 tC, in vec4 baseColor )
     float signPlusEps = sign( value - hmParams[ 3 ] + hmEpsilon );
     if( signEps != signPlusEps )
         signEps = 0.;
-    bool result = ( signEps == hmParams[ 1 ] );
 
+    bool result = ( signEps == hmParams[ 1 ] );
     if( hmParams[ 2 ] == -1. ) // Negate
         result = !result;
-    return( result );
+    return( result ? 1. : 0. );
 }
 
 /** end hardware mask **/
@@ -407,7 +407,7 @@ void main( void )
             // Obtain transfer function color and alpha values.
             vec4 color = transferFunction( baseColor.r );
 
-            if( hardwareMask( coord, color ) )
+            if( hardwareMask( coord, color ) == 1. )
             {
                 // TBD This is a workaround to eliminate sampling errors. The
                 // code ensures that the first sample that passes the hardware
@@ -441,12 +441,23 @@ void main( void )
                 // be used in turn as an index into the transfer function. Only then can we
                 // compute a correct normal for the resulting surface.
                 // Note: Expensive.
-                vec3 negVec = vec3( clipping( tcNegX ) * transferFunction( texture3D( VolumeTexture, tcNegX ).r ).a,
-                    clipping( tcNegY ) * transferFunction( texture3D( VolumeTexture, tcNegY ).r ).a,
-                    clipping( tcNegZ ) * transferFunction( texture3D( VolumeTexture, tcNegZ ).r ).a );
-                vec3 posVec = vec3( clipping( tcPosX ) * transferFunction( texture3D( VolumeTexture, tcPosX ).r ).a,
-                    clipping( tcPosY ) * transferFunction( texture3D( VolumeTexture, tcPosY ).r ).a,
-                    clipping( tcPosZ ) * transferFunction( texture3D( VolumeTexture, tcPosZ ).r ).a );
+                vec4 negXColor = transferFunction( texture3D( VolumeTexture, tcNegX ).r );
+                vec4 negYColor = transferFunction( texture3D( VolumeTexture, tcNegY ).r );
+                vec4 negZColor = transferFunction( texture3D( VolumeTexture, tcNegZ ).r );
+                vec4 posXColor = transferFunction( texture3D( VolumeTexture, tcPosX ).r );
+                vec4 posYColor = transferFunction( texture3D( VolumeTexture, tcPosY ).r );
+                vec4 posZColor = transferFunction( texture3D( VolumeTexture, tcPosZ ).r );
+
+                // We must additionally support clip planes and hardware masking. If one of
+                // the sample points is clipped or masked away, this must affect the normal
+                // in order for correct lighting computation.
+                // Note: Also expensive.
+                vec3 negVec = vec3( clipping( tcNegX ) * hardwareMask( tcNegX, negXColor ) * negXColor.a,
+                    clipping( tcNegY ) * hardwareMask( tcNegY, negYColor ) * negYColor.a,
+                    clipping( tcNegZ ) * hardwareMask( tcNegZ, negZColor ) * negZColor.a );
+                vec3 posVec = vec3( clipping( tcPosX ) * hardwareMask( tcPosX, posXColor ) * posXColor.a,
+                    clipping( tcPosY ) * hardwareMask( tcPosY, posYColor ) * posYColor.a,
+                    clipping( tcPosZ ) * hardwareMask( tcPosZ, posZColor ) * posZColor.a );
                 vec3 normal = normalize( gl_NormalMatrix * ( negVec - posVec ) );
                 litColor = fragmentLighting( color, normal );
             }
