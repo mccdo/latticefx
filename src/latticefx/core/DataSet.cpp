@@ -40,7 +40,7 @@ namespace core {
 DataSet::DataSet()
   : LogBase( "lfx.core.dataset" ),
     _sceneGraph( new osg::Group ),
-    _dirtyFlags( ALL_DIRTY )
+    _dirty( true )
 {
 }
 DataSet::DataSet( const DataSet& rhs )
@@ -52,7 +52,7 @@ DataSet::DataSet( const DataSet& rhs )
     _ops( rhs._ops ),
     _renderer( rhs._renderer ),
     _maskList( rhs._maskList ),
-    _dirtyFlags( ALL_DIRTY )
+    _dirty( true )
 {
 }
 DataSet::~DataSet()
@@ -63,7 +63,7 @@ void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue time )
 {
     _data[ time ].push_back( channel );
     _dataNames.insert( channel->getName() );
-    setDirty( ALL_DIRTY );
+    setDirty();
 }
 void DataSet::replaceChannel( const ChannelDataPtr channel, const TimeValue time )
 {
@@ -77,7 +77,7 @@ void DataSet::replaceChannel( const ChannelDataPtr channel, const TimeValue time
     // Found a ChannelDataList for the specified 'time'. Now replace any
     // existing ChannelData with 'channel' (or append 'channel' to the end).
     cdlIt->second.replaceData( channel );
-    setDirty( ALL_DIRTY );
+    setDirty();
 }
 
 ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue time )
@@ -137,7 +137,7 @@ void DataSet::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const
 void DataSet::addPreprocess( const PreprocessPtr pre )
 {
     _preprocess.push_back( pre );
-    setDirty( PREPROCESS_DIRTY );
+    setDirty();
 }
 void DataSet::insertPreprocess( const unsigned int index, const PreprocessPtr pre )
 {
@@ -148,6 +148,7 @@ void DataSet::insertPreprocess( const unsigned int index, const PreprocessPtr pr
         if( ++idx == index )
         {
             _preprocess.insert( it, pre );
+            setDirty();
             break;
         }
     }
@@ -160,6 +161,7 @@ void DataSet::insertPreprocess( const PreprocessPtr location, const PreprocessPt
         if( *it == location )
         {
             _preprocess.insert( it, pre );
+            setDirty();
             break;
         }
     }
@@ -198,7 +200,7 @@ const PreprocessList& DataSet::getPreprocesses() const
 void DataSet::addOperation( const RTPOperationPtr op )
 {
     _ops.push_back( op );
-    setDirty( RTP_DIRTY );
+    setDirty();
 }
 void DataSet::insertOperation( const unsigned int index, const RTPOperationPtr op )
 {
@@ -209,6 +211,7 @@ void DataSet::insertOperation( const unsigned int index, const RTPOperationPtr o
         if( ++idx == index )
         {
             _ops.insert( it, op );
+            setDirty();
             break;
         }
     }
@@ -221,6 +224,7 @@ void DataSet::insertOperation( const RTPOperationPtr location, const RTPOperatio
         if( *it == location )
         {
             _ops.insert( it, op );
+            setDirty();
             break;
         }
     }
@@ -259,6 +263,7 @@ const RTPOperationList& DataSet::getOperations() const
 void DataSet::setRenderer( const RendererPtr renderer )
 {
     _renderer = renderer;
+    setDirty();
 }
 RendererPtr DataSet::getRenderer()
 {
@@ -271,14 +276,15 @@ const RendererPtr DataSet::getRenderer() const
 
 osg::Node* DataSet::getSceneData()
 {
-    updateAll();
+    if( _sceneGraph->getNumChildren() == 0 )
+        updateAll();
 
     return( _sceneGraph.get() );
 }
 
 bool DataSet::updateAll()
 {
-    if( _dirtyFlags == NOT_DIRTY )
+    if( !_dirty )
         return( true );
 
     // Reset all attached inputs. If a ChannelData instance needs to refresh
@@ -292,25 +298,16 @@ bool DataSet::updateAll()
     }
 
     // Preprocess & Cache (if dirty)
-    if( _dirtyFlags & PREPROCESS_DIRTY )
-    {
-        updatePreprocessing();
-    }
+    updatePreprocessing();
 
     // Run Time Operations (if dirty)
-    if( _dirtyFlags & RTP_DIRTY )
-    {
-        updateRunTimeProcessing();
-    }
+    updateRunTimeProcessing();
 
     // Rendering Framework support
-    if( ( _dirtyFlags & ALL_DIRTY ) != 0 )
-    {
-        _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
-        updateRenderer();
-    }
+    _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
+    updateRenderer();
 
-    _dirtyFlags = NOT_DIRTY;
+    _dirty = false;
     return( true );
 }
 
@@ -624,14 +621,13 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     return( NULL );
 }
 
-void DataSet::setDirty( const DirtyFlags flags )
+void DataSet::setDirty( const bool dirty )
 {
-    _dirtyFlags = flags;
+    _dirty = dirty;
 }
-DataSet::DirtyFlags DataSet::getDirty() const
+bool DataSet::getDirty() const
 {
-    // TBD query the Renderer to see if it's dirty.
-    return( _dirtyFlags );
+    return( _dirty );
 }
 
 TimeSet DataSet::getTimeSet() const

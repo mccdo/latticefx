@@ -218,32 +218,43 @@ public:
     /** \overload */
     const RendererPtr getRenderer() const;
 
-    /** \brief Get the OSG scene graph.
-    \details implicitly calls updateAll(), then returns the \c _sceneGraph
-    member variable. */
-    osg::Node* getSceneData();
     ///\}
+
+
+    /** \name Pipeline Processing Section
+    \details TBD */
+
+    ///\{
+    /** \brief Get the OSG scene graph.
+    \details If the scene graph is empty, this method implicitly calls
+    updateAll(), then returns the \c _sceneGraph member variable. */
+    osg::Node* getSceneData();
 
 
     /** \brief Execute all operations (process all data and create scene graph).
     \details Runs all Preprocessing & Caching, Run-Time Processing, and
     Rendering Framework operations.
 
+    updateAll() uses the current \c _dirty flag, as set by setDirty(). If the pipeline
+    is not marked as dirty, updateAll() is a no-op.
+
     To preprocess data as an offline step, apps can attach ChannelData objects and
     Preprocess objects, then call this function. If no Renderer is attached (for
     example, setRenderer(NULL) ), then DataSet will not create a scene graph. */
     bool updateAll();
 
-    /** \brief Dirty flags used by updateAll() to determine which operations to run. */
-    typedef enum {
-        NOT_DIRTY        = ( 0 ),
-        PREPROCESS_DIRTY = ( 0x1 << 0 ),
-        RTP_DIRTY        = ( 0x1 << 1 ),
-        RENDERER_DIRTY   = ( 0x1 << 2 ),
-        ALL_DIRTY = ( PREPROCESS_DIRTY | RTP_DIRTY | RENDERER_DIRTY )
-    } DirtyFlags;
-    void setDirty( const DirtyFlags flags=ALL_DIRTY );
-    DirtyFlags getDirty() const;
+    /** \brief Set the pipeline dirty flags.
+    \details If the pipeline is not dirty, updateAll() is a no-op.
+    Adding Preprocess, RTPOperation, and Renderer objects, as well
+    as ChannelData objects, automatically sets the pipeline dirty
+    ( setDirty(true) ). WARNING: Apps that remove objects from the
+    ChannelData, Preprocess, and RTPOperation vectors must manually
+    call setDirty(). */
+    void setDirty( const bool dirty=true );
+    /** \brief Get the pipeline dirty flag. */
+    bool getDirty() const;
+
+    ///\}
 
 protected:
     bool updatePreprocessing();
@@ -281,7 +292,7 @@ protected:
     ChannelDataList _maskList;
 
     osg::ref_ptr< osg::Group > _sceneGraph;
-    DirtyFlags _dirtyFlags;
+    bool _dirty;
 
 
 private:
