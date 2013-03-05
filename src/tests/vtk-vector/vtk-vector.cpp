@@ -29,6 +29,8 @@
 #include <osgViewer/Viewer>
 
 #include <latticefx/core/vtk/DataSet.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <vtkCompositeDataPipeline.h>
 #include <vtkAlgorithm.h>
@@ -98,6 +100,9 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
+
     //Pre work specific to VTK
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );

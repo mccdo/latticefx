@@ -162,6 +162,7 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     lfx::core::ChannelDataPtr cdpd;
     if( 1 )
     {        
+        normals->Update();
         cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
             new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
     }

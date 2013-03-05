@@ -23,6 +23,7 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/SurfaceRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
+
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -138,31 +139,9 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     lfx::core::vtk::DataSetPtr tempDataSet( new lfx::core::vtk::DataSet() );
     tempDataSet->SetFileName( filename );
     tempDataSet->SetUUID( "VTK_DATA_FILE", "test" );
-    //ves::open::xml::DataValuePairPtr stringDVP =
-    //    tempInfoPacket->GetProperty( "VTK_ACTIVE_DATA_ARRAYS" );
-    /*std::vector< std::string > vecStringArray;
-     if( stringDVP )
-     {
-     ves::open::xml::OneDStringArrayPtr stringArray =
-     boost::dynamic_pointer_cast <
-     ves::open::xml::OneDStringArray > (
-     stringDVP->GetDataXMLObject() );
-     vecStringArray = stringArray->GetArray();
-     tempDataSet->SetActiveDataArrays( vecStringArray );
-     }*/
     const std::string tempDataSetFilename = tempDataSet->GetFileName();
     std::cout << "|\tLoading data for file " << tempDataSetFilename << std::endl;
-    //tempDataSet->SetArrow(
-    //                        ves::xplorer::ModelHandler::instance()->GetArrow() );
-    //Check and see if the data is part of a transient series
-    /*if( tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" ) )
-     {
-     std::string precomputedSurfaceDir =
-     tempInfoPacket->GetProperty( "VTK_TRANSIENT_SERIES" )->
-     GetDataString();
-     lastDataAdded->LoadTransientData( precomputedSurfaceDir );
-     }
-     else*/
+
     {
         tempDataSet->LoadData();
         tempDataSet->SetActiveVector( 0 );
@@ -195,6 +174,9 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
+    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+    Log::instance()->setPriority( Log::PrioInfo, "lfx.core.hier" );
+
     //Pre work specific to VTK
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
@@ -214,12 +196,12 @@ int main( int argc, char** argv )
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
         dsp->addChannel( dobjPtr );
-
         lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
+        vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::X_PLANE );
         vectorRTP->SetRequestedValue( 50.0 );
         vectorRTP->addInput( "vtkDataObject" );
         dsp->addOperation( vectorRTP );
-        
+
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
         renderOp->SetActiveVector( "steve's_vector" );
@@ -231,6 +213,7 @@ int main( int argc, char** argv )
         std::cout << "lfx...creating data..." << std::endl;
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
+        dumpUniformInfo( renderOp );
     }
     
     {
@@ -255,8 +238,9 @@ int main( int argc, char** argv )
         std::cout << "lfx...creating data..." << std::endl;
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
+        dumpUniformInfo( renderOp2 );
     }
-    
+
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
     

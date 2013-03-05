@@ -203,30 +203,10 @@ DataSet::~DataSet()
 
     m_childDataSets.clear();
 
-    /*if( this->x_planes != NULL )
-    {
-        delete this->x_planes;
-        this->x_planes = NULL;
-    }
-
-    if( this->y_planes != NULL )
-    {
-        delete this->y_planes;
-        this->y_planes = NULL;
-    }
-
-    if( this->z_planes != NULL )
-    {
-        delete this->z_planes;
-        this->z_planes = NULL;
-    }*/
-
     if( this->m_dataSet != NULL )
     {
         //This dataset could be part of a composite dataset which would mean
         //its memory is handled by another destructor
-        //std::cout << m_isPartOfCompositeDataset << " "
-        //    << m_dataSet->GetReferenceCount() << std::endl;
         if( !m_isPartOfCompositeDataset )
         {
             this->m_dataSet->Delete();
@@ -240,12 +220,6 @@ DataSet::~DataSet()
         delete _vtkFHndlr;
         _vtkFHndlr = 0;
     }
-
-    /*if( m_externalFileLoader )
-    {
-        delete m_externalFileLoader;
-        m_externalFileLoader = 0;
-    }*/
 
     if( m_dataObjectHandler )
     {
@@ -292,15 +266,7 @@ double* DataSet::GetRange()
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetUserRange( double userRange[2] )
 {
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tDataSet::SetUserRange OLD userRange = "
-    //                      << userRange[0] << " : " << userRange[1]
-    //                      << std::endl << vprDEBUG_FLUSH;
-
     this->SetUserRange( userRange[0], userRange[1] );
-
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tDataSet::SetUserRange NEW userRange = "
-    //                      << userRange[0] << " : " << userRange[1]
-    //                      << std::endl << vprDEBUG_FLUSH;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetUserRange( double userMin, double userMax )
@@ -453,10 +419,6 @@ vtkUnstructuredGrid* DataSet::GetUnsData()
 
     if( ! this->m_dataSet->IsA( "vtkUnstructuredGrid" ) )
     {
-        //vprDEBUG( vesDBG, 0 )
-        //        << "|\t\tDataSet::GetUnsData - dataset is not an unsGrid !!"
-        //        << std::endl << vprDEBUG_FLUSH;
-
         return NULL;
     }
 
@@ -472,10 +434,6 @@ vtkPolyData* DataSet::GetPolyData()
 
     if( ! this->m_dataSet->IsA( "vtkPolyData" ) )
     {
-        //vprDEBUG( vesDBG, 0 )
-        //        << "|\t\tDataSet::GetPolyData - dataset is not a vtkPolyData !!"
-        //        << std::endl << vprDEBUG_FLUSH;
-
         return NULL;
     }
 
@@ -493,8 +451,6 @@ void DataSet::SetType()
     if( this->datasetType == -1 )
     {
         int dataObjectType = this->m_dataSet->GetDataObjectType();
-        //vprDEBUG( vesDBG, 1 ) << "|\t\tdataObjectType: " << dataObjectType
-        //                      << std::endl << vprDEBUG_FLUSH;
 
         this->datasetType = 0;
         // see if file is a polydata containing only vertex cells
@@ -516,8 +472,6 @@ void DataSet::SetType()
             types->Delete();
         }
     }
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tdatasetType: " << this->datasetType
-    //                      << std::endl << vprDEBUG_FLUSH;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetType( int type )
@@ -544,12 +498,6 @@ int DataSet::GetNoOfDataForProcs()
     return this->noOfData;
 }
 #endif
-////////////////////////////////////////////////////////////////////////////////
-/*void DataSet::LoadData( const std::string filename )
-{
-    SetFileName( filename );
-    LoadData();
-}*/
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::LoadData( vtkUnstructuredGrid* dataset, int datasetindex )
 {
@@ -579,14 +527,8 @@ void DataSet::LoadData()
 {
     if( m_dataSet != NULL )
     {
-        //vprDEBUG( vesDBG, 1 ) << "|\tAlready have loaded the data for "
-        //                      << fileName
-        //                      << std::endl << vprDEBUG_FLUSH;
         return;
     }
-
-    //vprDEBUG( vesDBG, 1 ) << "|\tLoadData: filename = " << fileName
-    //                      << std::endl << vprDEBUG_FLUSH;
 
     std::string extension = lfx::vtk_utils::fileIO::getExtension( fileName );
     //What should the extension of the star.param file be?
@@ -807,12 +749,6 @@ void DataSet::SetActiveScalar( const std::string& tempActiveScalar )
     else
     {
         this->activeScalar = scalar;
-
-        //vprDEBUG( vesDBG, 1 )
-        //        << "|\t\tDataSet::SetActiveScalar: requested activeScalar = "
-        //        << this->activeScalar << ", scalarName = "
-        //        << this->scalarName[ this->activeScalar ]
-        //        << std::endl << vprDEBUG_FLUSH;
     }
     /*    lfx::vtk_utils::ActiveDataInformationCallback* activeDataInfoCbk =
             dynamic_cast<lfx::vtk_utils::ActiveDataInformationCallback*>
@@ -852,21 +788,6 @@ void DataSet::SetActiveScalar( const std::string& tempActiveScalar )
     temp = this->GetDisplayedScalarRange( this->activeScalar );
     this->definedRange[ 0 ] = temp[ 0 ];
     this->definedRange[ 1 ] = temp[ 1 ];
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tdefinedRange[0] = " << this->definedRange[0]
-    //                      << ", definedRange[1] = " << this->definedRange[1]
-    //                      << std::endl << vprDEBUG_FLUSH;
-
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tactualScalarRange[0][0] = "
-    //                      << this->actualScalarRange[0][0]
-    //                      << ", actualScalarRange[0][1] = "
-    //                      << this->actualScalarRange[0][1]
-    //                      << std::endl << vprDEBUG_FLUSH;
-
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tdisplayedScalarRange[0][0] = "
-    //                      << this->displayedScalarRange[0][0]
-    //                      << ", displayedScalarRange[0][1] = "
-    //                      << this->displayedScalarRange[0][1]
-    //                      << std::endl << vprDEBUG_FLUSH;
 
     // Step length for streamline integration
     this->stepLength = this->bbDiagonal / 5.0f ;
@@ -1161,7 +1082,7 @@ void DataSet::ResetScalarBarRange( double min, double max )
 
     //Get the actual scalar range for the active scalar
     double rawRange[2];
-    GetParent()->GetRange( rawRange );
+    GetRange( rawRange );
 
     double newRawRange[2];
     newRawRange[0] = min;
@@ -1544,9 +1465,7 @@ void DataSet::StoreScalarInfo()
         for( int i = 0; i < this->numScalars; ++i )
         {
             processScalarRangeCbk->GetScalarRange( GetScalarName( i ), actualScalarRange[i] );
-            AutoComputeUserRange(
-                this->GetParent()->GetActualScalarRange( i ),
-                this->displayedScalarRange[ i ] );
+            AutoComputeUserRange( GetActualScalarRange( i ), displayedScalarRange[ i ] );
         }
     }
 }
@@ -1826,7 +1745,6 @@ void DataSet::CreateCompositeDataSets()
             filenameStream << GetFileName() << "-" << num;
             subfilename = filenameStream.str();
         }
-        //std::cout << "test out " << subfilename << std::endl;
         tempDataset->SetFileName( subfilename );
         //set the vector arrow
         tempDataset->SetArrow( arrow );
@@ -2052,12 +1970,13 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
     {
         m_dataObjectHandler = new lfx::vtk_utils::DataObjectHandler();
     }
-    //m_dataObjectHandler->OperateOnAllDatasetsInObject( m_dataSet );
-
     //Now create vector mag and vector scalars
-    m_dataObjectHandler->SetDatasetOperatorCallback( m_dataObjectOps["Compute Vector Mag and Scalars"] );
-    m_dataObjectHandler->OperateOnAllDatasetsInObject( m_dataSet );
-
+    {
+        std::map<std::string, lfx::vtk_utils::DataObjectHandler::DatasetOperatorCallback* >::iterator iterTemp =
+            m_dataObjectOps.find( "Compute Vector Mag and Scalars" );
+        m_dataObjectHandler->SetDatasetOperatorCallback( iterTemp->second );
+        m_dataObjectHandler->OperateOnAllDatasetsInObject( m_dataSet );
+    }
     //Need to get number of pda
     m_dataObjectHandler->SetDatasetOperatorCallback( 0 );
     m_dataObjectHandler->OperateOnAllDatasetsInObject( m_dataSet );
@@ -2094,12 +2013,11 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
 
     // Compute the geometrical properties of the mesh
     //this->UpdatePropertiesForNewMesh();
-
     /// Load the precomputed data
     LoadPrecomputedDataSlices();
 
     // count the number of scalars and store names and ranges...
-    this->StoreScalarInfo();
+    StoreScalarInfo();
 
     // count the number of vectors and store names ...
     this->numVectors = dynamic_cast<lfx::vtk_utils::CountNumberOfParametersCallback*>

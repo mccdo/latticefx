@@ -492,6 +492,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 int main( int argc, char** argv )
 {
     lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
     
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
