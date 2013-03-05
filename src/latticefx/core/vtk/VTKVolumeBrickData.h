@@ -23,13 +23,18 @@
 
 #include <latticefx/core/vtk/Export.h>
 #include <latticefx/core/HierarchyUtils.h>
+#include <latticefx/core/vtk/DataSet.h>
+#include <latticefx/core/vtk/DataSetPtr.h>
+
+#include <vtkCellTreeLocator.h>
+#include <vtkSmartPointer.h>
 
 
+class vtkDataArray;
 
 namespace lfx {
 namespace core {
 namespace vtk {
-
 
 /** \class VTKVolumeBrickData VTKVolumeBrickData.h <latticefx/core/vtk/VTKVolumeBrickData.h>
 \brief To be done
@@ -38,9 +43,35 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT VTKVolumeBrickData : public lfx::core::VolumeBrickData
 {
 public:
+	VTKVolumeBrickData(	DataSetPtr dataSet,
+						bool prune = false,
+						int dataNum = 0, 
+						bool isScalar = true, 
+						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
+						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8));
 
     /** To be done. Override this. */
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+
+	bool isValid();
+
+protected:
+	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, int whichValue, bool isScalar) const;
+	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
+	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* vector, int whichVector) const;
+	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar) const;
+
+	unsigned char getOutSideCellValue() const;
+
+protected:
+	DataSetPtr m_dataSet;
+	vtkDataSet* m_pds;
+	vtkSmartPointer<vtkCellTreeLocator> m_cellLocator;
+	bool m_isScalar;
+	int m_dataNum;
+	int m_nPtDataArrays;
+	osg::Vec3s m_brickRes;
+	osg::Vec3s m_totalNumBricks;
 };
 
 
