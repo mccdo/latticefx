@@ -42,6 +42,27 @@ const std::string logstr( "lfx.demo" );
 
 using namespace lfx::core;
 
+#ifdef VTK_FOUND
+VolumeBrickData* createVtkBricks(const char *vtkDataSetFile)
+{
+	vtk::DataSetPtr ds(new vtk::DataSet());
+	ds->SetFileName(vtkDataSetFile);
+	ds->LoadData(); 
+
+	vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2));
+	if (!vbd)
+	{
+		delete vbd;
+		vbd = NULL;
+
+		std::string msg = "Unable to load valid vtkDataSet from file: ";
+		msg += vtkDataSetFile;
+		LFX_CRITICAL_STATIC( logstr, msg.c_str() );
+	}
+
+	return vbd;
+}
+#endif
 
 
 /** TBD Does not yet support _prune. */
@@ -391,6 +412,19 @@ int main( int argc, char** argv )
         shapeGen = new SphereVolumeBrickData( prune, softSphere );
     else if( arguments.find( "-cone" ) > 0 )
         shapeGen = new ConeVolumeBrickData( prune );
+#ifdef VTK_FOUND
+	else if( arguments.find( "-vtk" ) > 0 ) 
+	{
+		int iarg = arguments.find( "-vtk" ) + 1;
+		if (arguments.argc() <= iarg)
+		{
+			LFX_CRITICAL_STATIC( logstr, "You must specify a vtk data file." );
+			return 0;
+		}
+
+		shapeGen = createVtkBricks(arguments[iarg]);
+	}
+#endif
     else
         shapeGen = new CubeVolumeBrickData( prune, softCube );
 
