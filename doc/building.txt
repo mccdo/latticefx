@@ -18,7 +18,7 @@ Required:
 
 Optional:
 \li <a href=http://crunchstore.googlecode.com >crunchstore</a>. Get current svn trunk.
-\li <a href=http://www.vtk.org/ >VTK</a> v5.10.1 or newer.
+\li <a href=http://www.vtk.org/ >VTK</a> v5.10.x or newer.
 \li <a href=http://www.stack.nl/~dimitri/doxygen/download.html >Doxygen</a>.
 
 Poco note: LatticeFX itself doesn't require the "Complete Edition". However, if you intend
