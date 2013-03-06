@@ -82,7 +82,7 @@ osg::Image* DBDisk::loadImage( const DBKey& dbKey )
     osg::Image* image( osgDB::readImageFile( fileName ) );
     if( image == NULL )
     {
-        LFX_ERROR_STATIC( "lfx.db.disk", "Can't load file " + fileName );
+        LFX_ERROR( "Can't load file " + fileName );
     }
 
     if( image->getFileName().empty() )

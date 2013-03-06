@@ -33,9 +33,9 @@ namespace core {
 
 
 DBBase::DBBase( const ImplementationType implType )
-  : LogBase( (implType == CRUNCHSTORE)?"lfx.db.cs":
-             ( (implType == DISK)?"lfx.db.disk":
-               "lfx.db.base" ) ),
+  : LogBase( (implType == CRUNCHSTORE)?"lfx.core.db.cs":
+             ( (implType == DISK)?"lfx.core.db.disk":
+               "lfx.core.db.base" ) ),
     _implType( implType )
 {
 }

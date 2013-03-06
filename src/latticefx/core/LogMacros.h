@@ -43,8 +43,8 @@ as follows:
       <li>\link lfx::core::Log log \endlink
       <li>\link lfx::core::PluginManager plugmgr \endlink
       <li>\link lfx::core::VectorRenderer vec \endlink
+      <li>db Database utilities
     </ul>
-    <li>db Database utilities
     <li>foo (the foo module)
     <ul>
       <li>\link foo::FooClass fooclass \endlink
