@@ -22,6 +22,7 @@ set( _headerFiles
     DBBase.h
     DBDisk.h
 #    DBUtils.h
+    DBOperations.h
     HierarchyUtils.h
     LoadRequest.h
     Log.h
@@ -58,6 +59,7 @@ set( _sourceFiles
     DBBase.cpp
     DBDisk.cpp
 #    DBUtils.cpp
+    DBOperations.cpp
     HierarchyUtils.cpp
     LoadRequest.cpp
     Log.cpp
