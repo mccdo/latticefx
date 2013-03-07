@@ -46,6 +46,7 @@ Renderer::Renderer( const std::string logNameSuffix )
     _tfDestMask( 0., 0., 0., 1. ),
     _hmSource( HM_SOURCE_ALPHA ),
     _hmReference( 0.f ),
+    _hmEpsilon( 0.f ),
     _hmOperator( HM_OP_OFF )
 {
     // Create and register uniform information, and initial/default values
