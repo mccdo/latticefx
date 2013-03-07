@@ -101,7 +101,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
     ExtractVTKPrimitives();
 
-    size_t dataSize = points->GetNumberOfPoints();
+    /*size_t dataSize = points->GetNumberOfPoints();
 
     vtkPointData* pointData = m_pd->GetPointData();
     vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
@@ -143,7 +143,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
             v.normalize();
             (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
         }
-    }
+    }*/
    
     //setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
     
@@ -222,7 +222,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     }
     
     //Number of vertex is potentially bigger than number of points,
-    //Since same point can appear in different triangle strip.
+    //Since the same points can appear in different triangle strip.
     
     int numVetex = 0;
     vtkIdType* pts = 0;
