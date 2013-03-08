@@ -1,5 +1,9 @@
+# CTest regression tests
+add_subdirectory( dboperations )
 add_subdirectory( hierarchyutils )
 add_subdirectory( multiop-plugin )
+
+# Run-time / interactive tests
 add_subdirectory( page-volume )
 add_subdirectory( page-volume-rt )
 add_subdirectory( surface )
