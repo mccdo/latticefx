@@ -180,6 +180,8 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
 
 bool DBCrunchStore::storeArray( const osg::Array* array, const DBKey& dbKey )
 {
+    LFX_CRITICAL( "storeArray(): Currently not supported.." );
+
     if( _dm == NULL )
     {
         LFX_WARNING( "storeArray(): No DataManager." );
@@ -190,6 +192,8 @@ bool DBCrunchStore::storeArray( const osg::Array* array, const DBKey& dbKey )
 }
 osg::Array* DBCrunchStore::loadArray( const DBKey& dbKey )
 {
+    LFX_CRITICAL( "loadArray(): Currently not supported.." );
+
     if( _dm == NULL )
     {
         LFX_WARNING( "loadArray(): No DataManager." );

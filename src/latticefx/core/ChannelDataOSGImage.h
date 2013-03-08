@@ -67,6 +67,12 @@ public:
 
     /** \brief
     \details */
+    virtual osg::Image* asOSGImage() { return( _image.get() ); }
+    /** \overload osg::Image* ChannelData::asOSGImage(); */
+    virtual const osg::Image* asOSGImage() const { return( _image.get() ); }
+
+    /** \brief
+    \details */
     void setImage( osg::Image* image );
     /** \brief
     \details */

@@ -35,6 +35,7 @@
 
 namespace osg {
     class Array;
+    class Image;
 }
 
 namespace lfx {
@@ -109,6 +110,12 @@ public:
     virtual osg::Array* asOSGArray() { return( NULL ); }
     /** \overload osg::Array* ChannelData::asOSGArray(); */
     virtual const osg::Array* asOSGArray() const { return( NULL ); }
+
+    /** \brief
+    \details */
+    virtual osg::Image* asOSGImage() { return( NULL ); }
+    /** \overload osg::Image* ChannelData::asOSGImage(); */
+    virtual const osg::Image* asOSGImage() const { return( NULL ); }
 
     /** \brief Return this ChannelData with the specified mask applied.
     \detailt If \maskIn indicates no masking (no zero values), getMaskedChannel()

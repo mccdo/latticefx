@@ -127,7 +127,7 @@ public:
 
     /** \brief Associate a ChannelData name with an integer value.
     \details This method allows the application to use arbitrarily named ChannelData
-    with the VectorRenderer. Classes deriving from OperationBase should
+    with any OperationBase. Classes deriving from OperationBase should
     define an integer-valued enum, so that application developers can pass
     the enum name for \c inputType rather than a const int literal. */
     void setInputNameAlias( const int inputType, const std::string& alias );

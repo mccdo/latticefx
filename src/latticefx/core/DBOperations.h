@@ -26,6 +26,7 @@
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/LogBase.h>
 #include <latticefx/core/DBBase.h>
+#include <latticefx/core/types.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -40,11 +41,17 @@ namespace core {
 class LATTICEFX_EXPORT DBLoad : public Preprocess, protected LogBase
 {
 public:
-    DBLoad();
+    DBLoad( const DBKeyList& keys );
     DBLoad( const DBLoad& rhs );
     virtual ~DBLoad();
 
+
+    /** \brief TBD
+    \details Override from Preprocess base class. */
+    virtual ChannelDataPtr operator()();
+
 protected:
+    DBKeyList _keys;
 
 private:
 };
@@ -59,11 +66,17 @@ typedef boost::shared_ptr< DBLoad > DBLoadPtr;
 class LATTICEFX_EXPORT DBSave : public RTPOperation, protected LogBase
 {
 public:
-    DBSave();
+    DBSave( DBBasePtr db );
     DBSave( const DBSave& rhs );
     virtual ~DBSave();
 
+
+    /** \brief TBD
+    \details Override from RTPOperation base class. */
+    virtual void filter( const ChannelDataPtr );
+
 protected:
+    DBBasePtr _db;
 
 private:
 };
