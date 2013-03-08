@@ -72,6 +72,11 @@ if( NOT BUILD_SHARED_LIBS )
 endif()
 
 
+option( LFX_INSTALL_DATA "Enable to add the data directory to the install target" ON )
+if( LFX_INSTALL_DATA )
+    add_subdirectory( data )
+endif()
+
 option( LFX_BUILD_APPS "Build applications." ON )
 option( LFX_BUILD_EXAMPLES "Build examples." ON )
 option( LFX_BUILD_TESTS "Build tests." ON )
@@ -81,8 +86,7 @@ endif()
 
 
 #
-# Add all of the libraries to the build system
-add_subdirectory( data )
+# Add all of the libraries & executables to the build system
 add_subdirectory( src )
 
 #
