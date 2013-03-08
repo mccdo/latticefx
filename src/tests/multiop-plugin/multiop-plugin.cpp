@@ -37,7 +37,7 @@ int main()
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     LFX_CRITICAL_STATIC( logstr, "This is a CTest regression test. To launch under Visual Studio, build the" );
-    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompty.\n" );
+    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompt.\n" );
 
 
     // Add additional plugin search paths.

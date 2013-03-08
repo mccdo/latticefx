@@ -34,12 +34,14 @@ namespace lfx {
 namespace core {
 
 
-DBDisk::DBDisk()
-  : DBBase( DISK )
+DBDisk::DBDisk( const std::string rootPath )
+  : DBBase( DISK ),
+    _rootPath( rootPath )
 {
 }
 DBDisk::DBDisk( const DBDisk& rhs )
-  : DBBase( rhs )
+  : DBBase( rhs ),
+    _rootPath( rhs._rootPath )
 {
 }
 DBDisk::~DBDisk()

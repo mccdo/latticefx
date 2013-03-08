@@ -45,7 +45,7 @@ directory by manually adding or removing files from it. */
 class LATTICEFX_EXPORT DBDisk : public DBBase
 {
 public:
-    DBDisk();
+    DBDisk( const std::string rootPath=std::string("") );
     DBDisk( const DBDisk& rhs );
     ~DBDisk();
 

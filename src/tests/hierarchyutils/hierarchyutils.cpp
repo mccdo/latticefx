@@ -32,7 +32,7 @@ int main( int argc, char** argv )
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     LFX_CRITICAL_STATIC( logstr, "This is a CTest regression test. To launch under Visual Studio, build the" );
-    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompty.\n" );
+    LFX_CRITICAL_STATIC( logstr, "RUN_TESTS target. Under Linux, enter 'make test' at a shell prompt.\n" );
 
 
     NameStringGenerator nsg( osg::Vec3s( 128, 128, 128 ) );
