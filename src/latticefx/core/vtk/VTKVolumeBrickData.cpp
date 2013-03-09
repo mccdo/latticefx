@@ -41,6 +41,8 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, bool prune, int dataN
 	m_isScalar = isScalar;
 	m_brickRes = brickRes;
 	m_nPtDataArrays = 0;
+	m_maxPts = 0;
+	m_cellCache = -1;
 
 	setNumBricks(totalNumBricks);
 
@@ -53,7 +55,13 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, bool prune, int dataN
 	m_cellLocator->SetDataSet(m_pds);
 	m_cellLocator->BuildLocator();
 
+	// can get rid of this
 	m_nPtDataArrays = m_pds->GetPointData()->GetNumberOfArrays();
+
+	initMaxPts();
+	initDataArrays();
+
+
 		/*
    _nScalars = countNumberOfParameters(1);
    _nVectors = countNumberOfParameters(3);
@@ -75,7 +83,14 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
 	// 
-	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] ] );
+	GLint textureFrmt = GL_LUMINANCE;
+	int bytesPerPixel = 1;
+	if (!m_isScalar) 
+	{
+		textureFrmt = GL_RGBA;
+		bytesPerPixel = 4;
+	}
+	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
 	unsigned char* ptr( data );
 
 	// 0,0,0 is the left, top, front cube and we have 8x8x8 boxes
@@ -113,10 +128,12 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
 	vtkIdType cellId;
 	double pcoords[3], curPos[3];
-	std::vector<double> weights(100); // TODO: need to find out max points in a cell for the whole dataset
+	std::vector<double> weights(m_maxPts); // need to find out max points in a cell for the whole dataset
 	int subId = 0;
 	osg::Vec4ub value;
 	int debugNumPts = 0;
+	vtkDoubleArray* tuples = vtkDoubleArray::New();
+	bool haveCache = false;
 	
 	// start at left, bottom, back
 	curPos[0] = min[0];
@@ -145,6 +162,8 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 				}
 				else
 				{
+					if (m_cellCache == cellId) haveCache = false;
+
 					if (cell->GetNumberOfPoints() > weights.size())
 					{
 						int idebug = 1;
@@ -154,12 +173,22 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 					value = lerpDataInCell(cell, &weights[0], m_dataNum, m_isScalar); 
 					*/
 
-					value = lerpDataInCell(cell, &weights[0], m_dataNum, m_isScalar); 
+					value = lerpDataInCell(cell, &weights[0], tuples, m_dataNum, m_isScalar, haveCache); 
 
 
 					// todo: deal with vector data that has 4 values
 					*ptr = value[0];
 					ptr++;
+
+					if (!m_isScalar)
+					{
+						*ptr = value[1];
+						ptr++;
+						*ptr = value[2];
+						ptr++;
+						*ptr = value[3];
+						ptr++;
+					}
 				}
 
 				curPos[0] += vtkDelta[0];
@@ -175,57 +204,67 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		curPos[2] += vtkDelta[2];
 	}
 
-	if (debugNumPts != m_brickRes[0] * m_brickRes[1] * m_brickRes[2])
-	{
-		int debug = 1;
-	}
+	tuples->Delete();
 	
 	// create an image with our data and return it
 	osg::ref_ptr< osg::Image > image( new osg::Image() );
         image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
-            GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+            textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
             (unsigned char*) data, osg::Image::USE_NEW_DELETE );
         return( image.release() );
 }
 
 // TODO: just take a pointer to the Vec4ub to avoid the copys everytime
-osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkGenericCell* cell, double* weights, int whichValue, bool isScalar) const
+osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache) const
 {
 	osg::Vec4ub value;
 
-   //list of point ids in cell
-   vtkIdList* pointIds = cell->GetPointIds();
+	//list of point ids in cell
+	vtkIdList* pointIds = cell->GetPointIds();
    
-   //number of verts in the cell
-   int nCellPts = cell->GetNumberOfPoints();
+	//number of verts in the cell
+	int nCellPts = cell->GetNumberOfPoints();
    
-   if (isScalar)
-   {
-      vtkDoubleArray* scalar = vtkDoubleArray::New();
-      scalar->SetNumberOfComponents(1);
-      scalar->SetNumberOfTuples(nCellPts);
+	if (isScalar)
+	{
+		if (!haveCache)
+		{
+			if (tuples->GetNumberOfComponents() != 1)
+			{
+				tuples->SetNumberOfComponents(1);
+				tuples->SetNumberOfTuples(nCellPts);
+			}
+			else if (tuples->GetNumberOfTuples() != nCellPts)
+			{
+				tuples->SetNumberOfTuples(nCellPts);
+			}
 
-      extractTuplesForScalar(pointIds, scalar, whichValue);
-      value = lerpPixelData(scalar, weights, nCellPts, whichValue, isScalar);
+			extractTuplesForScalar2(pointIds, tuples, whichValue);
+		}
+		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
       
-      scalar->Delete();
-   }
-   else
-   {
-      vtkDoubleArray* vector = vtkDoubleArray::New();
-      vector->SetNumberOfComponents(3);
-      vector->SetNumberOfTuples(nCellPts);
+		//scalar->Delete();
+	}
+	else
+	{
+		if (tuples->GetNumberOfComponents() != 3)
+		{
+			tuples->SetNumberOfComponents(3);
+			tuples->SetNumberOfTuples(nCellPts);
+		}
+		else if (tuples->GetNumberOfTuples() != nCellPts)
+		{
+			tuples->SetNumberOfTuples(nCellPts);
+		}
 
-      extractTuplesForVector(pointIds, vector, whichValue);
-      value = lerpPixelData(vector, weights, nCellPts, whichValue, isScalar);
-
-      vector->Delete();
+		extractTuplesForVector2(pointIds, tuples, whichValue);
+		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
    }
 
    return value;
 }
 
-osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const
+osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* tuples, double* weights, int npts, int whichValue, bool isScalar) const
 {
 	osg::Vec4ub data(0,0,0,0);
 
@@ -239,7 +278,7 @@ osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* ptArray, double* wei
       double vectorData[3];
       for(int j = 0; j < npts; j++)
 	  {
-         ptArray->GetTuple(j, vectorData);
+         tuples->GetTuple(j, vectorData);
          //the weighted sum of the velocities
          vector[0] += vectorData[0]*weights[j];
          vector[1] += vectorData[1]*weights[j];
@@ -259,7 +298,7 @@ osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* ptArray, double* wei
          iMag = 0;
       }
       
-      //normalize data
+      //normaliz e data
       vector[0] *= iMag;
       vector[1] *= iMag;
       vector[2] *= iMag;
@@ -283,7 +322,7 @@ osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* ptArray, double* wei
       double scalar = 0;
       for(int j = 0; j < npts; j++)
 	  {
-         ptArray->GetTuple(j,&scalarData);
+         tuples->GetTuple(j,&scalarData);
          scalar += scalarData*weights[j];
       }
 
@@ -314,6 +353,56 @@ osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* ptArray, double* wei
    }
 
    return data;
+}
+
+void VTKVolumeBrickData::extractTuplesForScalar2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const
+{
+	if (m_dataArraysScalar.size() <= num) return;
+	m_dataArraysScalar[num]->GetTuples(ptIds, tuples);
+}
+
+void VTKVolumeBrickData::extractTuplesForVector2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const
+{
+	if (m_dataArraysVector.size() <= num) return;
+	m_dataArraysVector[num]->GetTuples(ptIds, tuples);
+}
+
+void VTKVolumeBrickData::initMaxPts()
+{
+	m_maxPts = 0;
+	if (!m_pds) return;
+
+	for (int i=0; i<m_pds->GetNumberOfCells(); i++)
+	{
+		vtkCell *pCell = m_pds->GetCell(i);
+		if (pCell->GetNumberOfPoints() > m_maxPts)
+		{
+			m_maxPts = pCell->GetNumberOfPoints();
+		}
+	}
+}
+
+void VTKVolumeBrickData::initDataArrays()
+{
+	m_dataArraysScalar.clear();
+	m_dataArraysVector.clear();
+	if (!m_pds) return;
+
+	int count = m_pds->GetPointData()->GetNumberOfArrays();
+	for (int i = 0; i < count; i++)
+	{
+		vtkDataArray *ptArray = m_pds->GetPointData()->GetArray(i);
+		if (ptArray->GetNumberOfComponents() == 1)
+		{
+			m_dataArraysScalar.push_back(ptArray);
+			continue;
+		}
+
+		if (ptArray->GetNumberOfComponents() == 3 && strcmp(ptArray->GetName(), "normals"))
+		{
+			m_dataArraysVector.push_back(ptArray);
+		}
+	}
 }
 
 void VTKVolumeBrickData::extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* vector, int whichVector) const
@@ -401,144 +490,6 @@ unsigned char VTKVolumeBrickData::getOutSideCellValue() const//(int index)
    }
    */
 }
-#if 0
-void VTKDataToTexture::createTextures()
-{
-   wxString msg = wxString("Creating textures.", wxConvUTF8);
-   _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-   //check for a dataset
-   if(!_dataSet){
-      if(_vFileName){
-         createDataSetFromFile(std::string( _vFileName ) );
-      }else{
-         std::cout<<"No dataset available to";
-         std::cout<<" create a texture!!"<<std::endl;
-         std::cout<<"ERROR: VTKDataToTexture::createTextures()"<<std::endl;
-         return;
-      }
-   }
-
-   //was the resolution initialized?
-   if(_resolution[0] == 2 &&
-      _resolution[1] == 2 &&
-      _resolution[2] == 2){
-      std::cout<<"WARNING: Resolution set to the min!:"<<std::endl;
-      std::cout<<" : VTKDataToTexture::createTextures()"<<std::endl;
-   }
-   msg = wxString("Building octree.", wxConvUTF8);
-   _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-
-   //get the info about the data in the data set
-   _nPtDataArrays = _dataSet->GetPointData()->GetNumberOfArrays();
-   _nScalars = countNumberOfParameters(1);
-   _nVectors = countNumberOfParameters(3);
-   _scalarNames = getParameterNames(1,_nScalars);
-   _vectorNames = getParameterNames(3,_nVectors);
-
-   _cleanUpFileNames();
-   _applyCorrectedNamesToDataArrays();
-   //by default, _recreateValidityBetweenTimeSteps is false
-   if(!_madeValidityStructure || _recreateValidityBetweenTimeSteps)
-   {
-      msg = wxString("Sampling valid domain. . .", wxConvUTF8);
-      _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-      //build the octree
-      long timeID = (long)time( NULL );
-      std::cout << timeID << std::endl;
-      /*bbLocator = vtkOBBTree::New();
-      bbLocator->CacheCellBoundsOn();
-      bbLocator->AutomaticOn();
-      //bbLocator->SetNumberOfCellsPerBucket( 50 );
-      //bbLocator->SetMaxLevel( 10 )
-      vtkDataSet* polyData = ves::xplorer::util::readVtkThing( "./step1_0.vtp" );
-      bbLocator->SetDataSet( polyData );
-      //build the octree
-      bbLocator->BuildLocator();*/
-      
-      /*
-       vtkNew<vtkCellTreeLocator> locator;
-       locator->SetDataSet(sphere2->GetOutput());
-       locator->SetCacheCellBounds(cachedCellBounds);
-       locator->AutomaticOn();
-       locator->BuildLocator();
-       */
-      
-      vectorCellLocators.resize( numThreads );
-     for ( int i=0;i<numThreads;i++  )
-     {
-        vectorCellLocators.at( i ) = vtkCellLocator::New();
-        vectorCellLocators.at( i )->CacheCellBoundsOn();
-        vectorCellLocators.at( i )->AutomaticOn();
-        vectorCellLocators.at( i )->SetNumberOfCellsPerBucket( 50 );
-        //vtkDataSet* polyData = ves::xplorer::util::readVtkThing("./tempDataDir/surface.vtp");
-        vectorCellLocators.at( i )->SetDataSet(_dataSet);
-        //build the octree
-        vectorCellLocators.at( i )->BuildLocator();
-     }
-      //long endtimeID = (long)time( NULL );
-      //std::cout << endtimeID - timeID << std::endl;
-      //Now use it...
-      _createValidityTexture();
-      //bbLocator->Delete();
-      for ( int i=0;i<numThreads;i++  )
-      {
-         vectorCellLocators.at( i )->Delete();
-      }
-
-   }
-
-   msg = wxString("Processing scalars. . .", wxConvUTF8);
-   _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-
-   for ( int i = 0; i < _nScalars; ++i )
-   {
-      double bbox[6] = {0,0,0,0,0,0};
-      //a bounding box
-      _dataSet->GetBounds(bbox);
-      
-      FlowTexture texture;
-      msg = wxString("Scalar: ", wxConvUTF8) + wxString(_scalarNames[i].c_str(), wxConvUTF8);
-      _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-
-      texture.setTextureDimension(_resolution[0],_resolution[1],_resolution[2]);
-      texture.setBoundingBox(bbox);
-      _curScalar.push_back(texture);
-
-      msg = wxString("Resampling scalar data.", wxConvUTF8);
-      _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-      _resampleData(i,1);
-      //std::cout<<"Writing data to texture."<<std::endl;
-      writeScalarTexture(i);
-      //std::cout<<"Cleaning up."<<std::endl;
-      _curScalar.clear();
-   }
-   //std::cout<<"Processing vectors:"<<std::endl;
-    msg = wxString("Processing vectors. . .", wxConvUTF8);
-   _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-
-   for(int i = 0; i < _nVectors; i++){ 
-       double bbox[6] = {0,0,0,0,0,0};
-      //a bounding box
-      _dataSet->GetBounds(bbox);
-      FlowTexture texture;
-      wxString msg = wxString("Vector: ", wxConvUTF8) + wxString(_vectorNames[i].c_str(), wxConvUTF8);
-      _updateTranslationStatus( ConvertUnicode( msg.c_str() ) );
-
-      texture.setTextureDimension(_resolution[0],_resolution[1],_resolution[2]);
-      texture.setBoundingBox(bbox);
-      _velocity.push_back(texture);
-      
-      msg = wxString("Resampling vector data", wxConvUTF8);
-      _updateTranslationStatus( ConvertUnicode( msg.c_str()) );
-      _resampleData(i,0);
-      
-      //std::cout<<"         Writing data to texture."<<std::endl;
-      writeVelocityTexture(i);
-      //std::cout<<"      Cleaning up."<<std::endl;
-      _velocity.clear();
-   }   
-}
-#endif
 
 
 // vtk

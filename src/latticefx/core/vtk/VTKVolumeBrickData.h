@@ -56,12 +56,19 @@ public:
 	bool isValid();
 
 protected:
-	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, int whichValue, bool isScalar) const;
+	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
+
+	void extractTuplesForScalar2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const;
+	void extractTuplesForVector2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const;
+
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* vector, int whichVector) const;
 	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar) const;
 
 	unsigned char getOutSideCellValue() const;
+
+	void initMaxPts();
+	void initDataArrays();
 
 protected:
 	DataSetPtr m_dataSet;
@@ -70,7 +77,11 @@ protected:
 	bool m_isScalar;
 	int m_dataNum;
 	int m_nPtDataArrays;
+	int m_maxPts;
 	osg::Vec3s m_brickRes;
+	std::vector<vtkDataArray *> m_dataArraysScalar;
+	std::vector<vtkDataArray *> m_dataArraysVector;
+	int m_cellCache;
 };
 
 
