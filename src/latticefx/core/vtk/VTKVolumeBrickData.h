@@ -105,7 +105,7 @@ protected:
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* vector, int whichVector) const;
 	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar) const;
 
-	unsigned char getOutSideCellValue() const;
+	osg::Vec4ub getOutSideCellValue() const;
 
 	void initMaxPts();
 	void initDataArrays();
