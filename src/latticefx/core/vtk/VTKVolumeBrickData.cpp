@@ -300,9 +300,9 @@ void VTKVolumeBrickData::BrickThread::operator()()
 			curPos[0] = m_pData->vtkMin.x() + (m_pData->vtkDelta.x() * m_pData->brickStart.x());
 
 			// get the correct line
-			ptr = m_pData->ptrPixels + z * m_pData->pVBD->m_brickRes[0]*m_pData->pVBD->m_brickRes[1]; // get to the correct slice;
-			ptr += y * m_pData->pVBD->m_brickRes[0]; // get to the correct line in the slice
-			ptr += m_pData->brickStart.x(); // get to the correct x starting position;
+			ptr = m_pData->ptrPixels + (z * m_pData->pVBD->m_brickRes[0]*m_pData->pVBD->m_brickRes[1] * m_pData->bytesPerPixel); // get to the correct slice;
+			ptr += y * m_pData->pVBD->m_brickRes[0] * m_pData->bytesPerPixel; // get to the correct line in the slice
+			ptr += m_pData->brickStart.x() * m_pData->bytesPerPixel; // get to the correct x starting position;
 
 
 			for (int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++)
