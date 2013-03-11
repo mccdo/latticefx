@@ -26,13 +26,22 @@
 #include <vtkGenericCell.h>
 #include <vtkDoubleArray.h>
 
+#include <boost/thread.hpp>
+
+using namespace std::tr1;
 
 namespace lfx {
 namespace core {
 namespace vtk {
 
 
-VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, bool prune, int dataNum, bool isScalar, osg::Vec3s brickRes, osg::Vec3s totalNumBricks)
+VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, 
+									   bool prune, 
+									   int dataNum, 
+									   bool isScalar, 
+									   osg::Vec3s brickRes, 
+									   osg::Vec3s totalNumBricks, 
+									   int threadCount)
 : VolumeBrickData(prune)
 {
 	m_dataSet = dataSet;
@@ -43,6 +52,9 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, bool prune, int dataN
 	m_nPtDataArrays = 0;
 	m_maxPts = 0;
 	m_cellCache = -1;
+
+	m_threadCount = threadCount;
+	if (m_threadCount <= 0) m_threadCount = 1;
 
 	setNumBricks(totalNumBricks);
 
@@ -118,7 +130,51 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	min[2] = bbox[4] + brickNum[2] * vtkBrickSize[2];
 	max = min + vtkBrickSize;
 
+	// compute brick delta for each thread (how much of the brick will each thread work on
+	double brickThreadDeltaX = (double)m_brickRes[0] / (double)m_threadCount;
 
+	std::vector<shared_ptr<SThreadData>> threadData;
+	std::vector<shared_ptr<boost::thread>> threads;
+	double curBrickEndX = 0;
+
+	boost::thread_group group;
+	for (int i=0; i<m_threadCount; i++)
+	{
+		shared_ptr<SThreadData> pData(new SThreadData());
+		pData->pVBD = this;
+		pData->ptrPixels = ptr;
+		pData->bytesPerPixel = bytesPerPixel;
+
+		// update brick coordinates
+		pData->brickStart[0] = curBrickEndX;
+		pData->brickStart[1] = 0;
+		pData->brickStart[2] = 0;
+		curBrickEndX += brickThreadDeltaX;
+		pData->brickEnd[0] = curBrickEndX;
+		pData->brickEnd[1] = m_brickRes[1];
+		pData->brickEnd[2] = m_brickRes[2];
+
+		// avoid a round off error, make sure to cover the last x location with the last thread
+		if (i == (m_threadCount - 1))
+		{
+			pData->brickEnd[0] = m_brickRes[0];
+		}
+
+		// update vtk coordinates
+		pData->vtkDelta = vtkDelta;
+		pData->vtkMin[0] = min[0];
+		pData->vtkMin[1] = min[1];
+		pData->vtkMin[2] = min[2];
+
+		group.create_thread(BrickThread(pData));
+
+		//shared_ptr<boost::thread> pThread(new boost::thread(BrickThread(pData)));
+		//threads.push_back(pThread);
+	}
+
+	group.join_all();
+
+	/*
 	// currently just dealing with a single scalar flow but there could be multiple scalars of data
 	// where each scalar of data gets it own brick
 	//
@@ -168,10 +224,10 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 					{
 						int idebug = 1;
 					}
-					/*
-					cell->EvaluateLocation(subId, pcoords, pt, &weights[0]);
-					value = lerpDataInCell(cell, &weights[0], m_dataNum, m_isScalar); 
-					*/
+					
+					//cell->EvaluateLocation(subId, pcoords, pt, &weights[0]);
+					//value = lerpDataInCell(cell, &weights[0], m_dataNum, m_isScalar); 
+					
 
 					value = lerpDataInCell(cell, &weights[0], tuples, m_dataNum, m_isScalar, haveCache); 
 
@@ -205,13 +261,104 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	}
 
 	tuples->Delete();
-	
+	*/
+
 	// create an image with our data and return it
 	osg::ref_ptr< osg::Image > image( new osg::Image() );
         image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
             textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
             (unsigned char*) data, osg::Image::USE_NEW_DELETE );
         return( image.release() );
+}
+
+void VTKVolumeBrickData::BrickThread::operator()()
+{
+	if (!m_pData.get()) return;
+
+	vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
+	vtkIdType cellId;
+	double pcoords[3], curPos[3];
+	std::vector<double> weights(m_pData->pVBD->m_maxPts); // need to find out max points in a cell for the whole dataset
+	int subId = 0;
+	osg::Vec4ub value;
+	int debugNumPts = 0;
+	bool haveCache = false;
+
+	unsigned char* ptr = NULL;
+
+	// start at left, bottom, back
+	curPos[2] = m_pData->vtkMin.z() + (m_pData->vtkDelta.z() * m_pData->brickStart.z());
+	for (int z = m_pData->brickStart.z(); z < m_pData->brickEnd.z(); z++)
+	{
+		// new depth slice so start at the bottom most point
+		curPos[1] = m_pData->vtkMin.y() + (m_pData->vtkDelta.y() * m_pData->brickStart.y());
+
+
+		for (int y = m_pData->brickStart.y(); y < m_pData->brickEnd.y(); y++)
+		{
+			// new scanline start back at left most point;
+			curPos[0] = m_pData->vtkMin.x() + (m_pData->vtkDelta.x() * m_pData->brickStart.x());
+
+			// get the correct line
+			ptr = m_pData->ptrPixels + z * m_pData->pVBD->m_brickRes[0]*m_pData->pVBD->m_brickRes[1]; // get to the correct slice;
+			ptr += y * m_pData->pVBD->m_brickRes[0]; // get to the correct line in the slice
+			ptr += m_pData->brickStart.x(); // get to the correct x starting position;
+
+
+			for (int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++)
+			{
+				cellId = m_pData->pVBD->m_cellLocator->FindCell(curPos, 0, cell, pcoords, &weights[0]);
+
+				if (cellId < 0)
+				{
+					// todo: deal with vector data that has 4 values
+
+					*ptr = m_pData->pVBD->getOutSideCellValue();
+					ptr++;
+				}
+				else
+				{
+					//if (m_cellCache == cellId) haveCache = false;
+
+					if (cell->GetNumberOfPoints() > weights.size())
+					{
+						int idebug = 1;
+					}
+					
+					//cell->EvaluateLocation(subId, pcoords, pt, &weights[0]);
+					//value = lerpDataInCell(cell, &weights[0], m_dataNum, m_isScalar); 
+					
+
+					value = m_pData->pVBD->lerpDataInCell(cell, &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, haveCache); 
+
+
+					// todo: deal with vector data that has 4 values
+					*ptr = value[0];
+					ptr++;
+
+					if (!m_pData->pVBD->m_isScalar)
+					{
+						*ptr = value[1];
+						ptr++;
+						*ptr = value[2];
+						ptr++;
+						*ptr = value[3];
+						ptr++;
+					}
+				}
+
+				curPos[0] += m_pData->vtkDelta[0];
+				debugNumPts++;
+			}
+
+			// jump to next vertical scanline
+			curPos[1] += m_pData->vtkDelta[1];
+			
+		}
+
+		// jump to next depth slice
+		curPos[2] += m_pData->vtkDelta[2];
+	}
 }
 
 // TODO: just take a pointer to the Vec4ub to avoid the copys everytime

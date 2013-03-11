@@ -28,6 +28,7 @@
 
 #include <vtkCellTreeLocator.h>
 #include <vtkSmartPointer.h>
+#include <vtkDoubleArray.h>
 
 
 class vtkDataArray;
@@ -42,13 +43,51 @@ namespace vtk {
 */
 class LATTICEFX_CORE_VTK_EXPORT VTKVolumeBrickData : public lfx::core::VolumeBrickData
 {
+protected:
+	struct SThreadData
+	{
+		const VTKVolumeBrickData* pVBD;
+		unsigned char* ptrPixels;
+		int bytesPerPixel;
+		osg::Vec3s brickStart;
+		osg::Vec3s brickEnd;
+		osg::Vec3d vtkDelta;
+		osg::Vec3d vtkMin;
+		vtkDoubleArray* tuples;
+		
+		SThreadData()
+		{
+			tuples = vtkDoubleArray::New();
+		}
+
+		~SThreadData()
+		{
+			tuples->Delete();
+		}
+
+	};
+
+	class BrickThread
+	{
+	public:
+		BrickThread(std::tr1::shared_ptr<SThreadData> pData) { m_pData = pData; }
+		void operator()();
+
+	protected:
+		std::tr1::shared_ptr<SThreadData> m_pData;
+	};
+
+	friend class BrickThread;
+	
+	
 public:
 	VTKVolumeBrickData(	DataSetPtr dataSet,
 						bool prune = false,
 						int dataNum = 0, 
 						bool isScalar = true, 
 						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
-						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8));
+						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8),
+						int threadCount=4);
 
     /** To be done. Override this. */
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
@@ -56,6 +95,7 @@ public:
 	bool isValid();
 
 protected:
+
 	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
 
@@ -82,6 +122,11 @@ protected:
 	std::vector<vtkDataArray *> m_dataArraysScalar;
 	std::vector<vtkDataArray *> m_dataArraysVector;
 	int m_cellCache;
+
+	//osg::Vec3d vtkBrickSize;
+	//osg::Vec3d vtkDelta;
+	//osg::Vec3d brickDelta;
+	int m_threadCount;
 };
 
 
