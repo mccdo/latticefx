@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-
 #include <latticefx/core/vtk/VTKVolumeBrickData.h>
+
 #include <osg/Image>
+
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
@@ -28,11 +29,12 @@
 
 #include <boost/thread.hpp>
 
-using namespace std::tr1;
-
-namespace lfx {
-namespace core {
-namespace vtk {
+namespace lfx
+{
+namespace core
+{
+namespace vtk
+{
 
 
 VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, 
@@ -129,7 +131,8 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	for (int i=0; i<m_threadCount; i++)
 	{
-		shared_ptr<SThreadData> pData(new SThreadData());
+		SThreadDataPtr pData = SThreadDataPtr( new SThreadData() );
+        
 		pData->pVBD = this;
 		pData->ptrPixels = ptr;
 		pData->bytesPerPixel = bytesPerPixel;
