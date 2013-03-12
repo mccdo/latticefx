@@ -44,98 +44,98 @@
 #include <vtkCompositeDataIterator.h>
 
 using namespace ves::xplorer::util;
-void ProcessScalarRangeInfo(vtkDataObject* dataSet);
+void ProcessScalarRangeInfo( vtkDataObject* dataSet );
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name, then use it.
-   // Otherwise, get it from the user...
-   std::string inFileName;
-   if ( argc > 1 )
-   {
-      inFileName.assign( argv[ 1 ] );
-   }
-   else  // then get filename from user...
-   {
-      //char tempText[ 100 ]; 
-      std::string tempText("the file to compute scalar/vector range");
-      //strcpy( tempText, "the file to compute scalar/vector range" );
-      inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
-   }
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name, then use it.
+    // Otherwise, get it from the user...
+    std::string inFileName;
+    if( argc > 1 )
+    {
+        inFileName.assign( argv[ 1 ] );
+    }
+    else  // then get filename from user...
+    {
+        //char tempText[ 100 ];
+        std::string tempText( "the file to compute scalar/vector range" );
+        //strcpy( tempText, "the file to compute scalar/vector range" );
+        inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
+    }
 
-   // read the data set ("1" means print info to screen)
-   ///This will need to be changed to handle multiblock datasets
-   vtkDataObject* dataObject = readVtkThing( inFileName, 1 );
-   if(dataObject->IsA("vtkCompositeDataSet"))
-   {
-      try
-      {
-          vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*>( dataObject );
-          vtkCompositeDataIterator* mgdIterator = vtkCompositeDataIterator::New();
-          mgdIterator->SetDataSet( mgd );
-          ///For traversal of nested multigroupdatasets
-          mgdIterator->VisitOnlyLeavesOn();
-          mgdIterator->GoToFirstItem();
-          while( !mgdIterator->IsDoneWithTraversal() )
-          {
-              ProcessScalarRangeInfo( mgdIterator->GetCurrentDataObject() );
-              mgdIterator->GoToNextItem();
-          }
-          if( mgdIterator )
-          {
-              mgdIterator->Delete();
-              mgdIterator = 0;
-          }
-      }
-      catch(...)
-      {
-          std::cout<<"Invalid Dataset: "<<dataObject->GetClassName()<<std::endl;
-      }
-   }
-   else
-   {
-       ProcessScalarRangeInfo(dataObject);
-   }
-   dataObject->Delete();
-   return 0;
+    // read the data set ("1" means print info to screen)
+    ///This will need to be changed to handle multiblock datasets
+    vtkDataObject* dataObject = readVtkThing( inFileName, 1 );
+    if( dataObject->IsA( "vtkCompositeDataSet" ) )
+    {
+        try
+        {
+            vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*>( dataObject );
+            vtkCompositeDataIterator* mgdIterator = vtkCompositeDataIterator::New();
+            mgdIterator->SetDataSet( mgd );
+            ///For traversal of nested multigroupdatasets
+            mgdIterator->VisitOnlyLeavesOn();
+            mgdIterator->GoToFirstItem();
+            while( !mgdIterator->IsDoneWithTraversal() )
+            {
+                ProcessScalarRangeInfo( mgdIterator->GetCurrentDataObject() );
+                mgdIterator->GoToNextItem();
+            }
+            if( mgdIterator )
+            {
+                mgdIterator->Delete();
+                mgdIterator = 0;
+            }
+        }
+        catch( ... )
+        {
+            std::cout << "Invalid Dataset: " << dataObject->GetClassName() << std::endl;
+        }
+    }
+    else
+    {
+        ProcessScalarRangeInfo( dataObject );
+    }
+    dataObject->Delete();
+    return 0;
 }
 
-void ProcessScalarRangeInfo(vtkDataObject* dataObject)
+void ProcessScalarRangeInfo( vtkDataObject* dataObject )
 {
-   vtkDataSet* dataset = dynamic_cast<vtkDataSet*>(dataObject);
-   int numArrays = dataset->GetPointData()->GetNumberOfArrays();
-   double minMax[ 2 ];
-   for ( int i = 0; i < numArrays; i++ )
-   {
-      vtkDataArray * array_i = dataset->GetPointData()->GetArray(i);
-      int numComponents = array_i->GetNumberOfComponents();
-      if ( numComponents != 1 && numComponents != 3 )
-      {
-         std::cout << "ERROR: Unexpected number of components (" 
-              << numComponents << ") in array " << i << std::endl;
-         continue;
-      }
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( dataObject );
+    int numArrays = dataset->GetPointData()->GetNumberOfArrays();
+    double minMax[ 2 ];
+    for( int i = 0; i < numArrays; i++ )
+    {
+        vtkDataArray* array_i = dataset->GetPointData()->GetArray( i );
+        int numComponents = array_i->GetNumberOfComponents();
+        if( numComponents != 1 && numComponents != 3 )
+        {
+            std::cout << "ERROR: Unexpected number of components ("
+                      << numComponents << ") in array " << i << std::endl;
+            continue;
+        }
 
-      if ( numComponents == 3 )
-      {
-         double * vecMagRange = cfdAccessoryFunctions::
-                                ComputeVectorMagnitudeRange( 
+        if( numComponents == 3 )
+        {
+            double* vecMagRange = cfdAccessoryFunctions::
+                                  ComputeVectorMagnitudeRange(
                                       dataset->GetPointData()->GetArray( i ) );
 
-         std::cout << "array " << i << ": vector named \"" << array_i->GetName() 
-              << "\", vector magnitude range:\t" 
-              << vecMagRange[ 0 ] << "\t" << vecMagRange[ 1 ] << std::endl;
-         delete [] vecMagRange;
+            std::cout << "array " << i << ": vector named \"" << array_i->GetName()
+                      << "\", vector magnitude range:\t"
+                      << vecMagRange[ 0 ] << "\t" << vecMagRange[ 1 ] << std::endl;
+            delete [] vecMagRange;
 
-      }
-      else // if ( numComponents == 1 ) 
-      {
-         array_i->GetRange( minMax );
-         std::cout << "array " << i << ": scalar named \"" << array_i->GetName()
-              << "\", scalar magnitude range:\t"
-              << minMax[0] << "\t" << minMax[1] << std::endl;
-      }
-   }
-   std::cout << std::endl;
+        }
+        else // if ( numComponents == 1 )
+        {
+            array_i->GetRange( minMax );
+            std::cout << "array " << i << ": scalar named \"" << array_i->GetName()
+                      << "\", scalar magnitude range:\t"
+                      << minMax[0] << "\t" << minMax[1] << std::endl;
+        }
+    }
+    std::cout << std::endl;
 }
 

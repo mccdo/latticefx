@@ -55,14 +55,17 @@ public:
             m_isMultiBlock = false;
         }
         ///Destructor
-        virtual ~DatasetOperatorCallback(){;}
+        virtual ~DatasetOperatorCallback()
+        {
+            ;
+        }
 
         ///Set the type of dataset
         void SetIsMultiBlockDataset( bool multiBlock )
         {
             m_isMultiBlock = multiBlock;
         }
-        
+
         ///The operation to do on each vtkDataSet in the vtkDataObject
         ///\param dataset The vtkDataSet to operate on
         virtual void OperateOnDataset( vtkDataSet* dataset ) = 0;

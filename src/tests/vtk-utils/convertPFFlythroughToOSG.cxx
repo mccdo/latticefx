@@ -51,83 +51,83 @@ using namespace ves::xplorer::util;
 gmtl::Matrix44f GetVjMatrix( std::vector< double > perfMat );
 
 
-int main( int argc, char *argv[] )
-{    
-   std::ifstream inFile( argv[ 1 ] );
-   std::ofstream outFile( argv[ 2 ] );
-   char lineData[ 512 ];
-   inFile.getline( lineData, 512 );
-   outFile << lineData;
-   outFile << std::endl;
-   
-   int numPoints = 0;
-   inFile >> numPoints;
-   outFile << numPoints;
-   inFile.getline( lineData, 512 );
-   outFile << lineData;
-   outFile << std::endl;
-   
-   double data;
-   for ( size_t i = 0; i < numPoints; ++i )
-   {
-      std::vector< double > matrixVector;
-      for ( size_t j = 0; j < 16; ++j )
-      {
-         inFile >> data;
-         matrixVector.push_back( data );
-      }
-      //write the converted data back out
-      gmtl::Matrix44f mat = GetVjMatrix( matrixVector );
-      for ( unsigned int j=0; j<4; j++)
-      {
-         for ( unsigned int k=0; k<4; k++)
-         {
-            outFile << mat[ j ][ k ] << " ";
-         }            
-      }
-      //now move on...
-      inFile.getline( lineData, 512 );
-      outFile << lineData;
-      outFile << std::endl;
-      inFile.getline( lineData, 512 );
-      outFile << lineData;
-      outFile << std::endl;
-   }
-   
-   //process stored flythroughs
-   inFile.getline( lineData, 512 );
-   outFile << lineData;
-   outFile << std::endl;
-   inFile >> numPoints;
-   outFile << numPoints;
-   inFile.getline( lineData, 512 );
-   outFile << lineData;
-   outFile << std::endl;
-   for ( size_t i = 0; i < numPoints; ++i )
-   {
-      inFile.getline( lineData, 512 );
-      outFile << lineData;
-      outFile << std::endl;
-      inFile.getline( lineData, 512 );
-      outFile << lineData;
-      outFile << std::endl;
-   }
-   outFile.close();
-   inFile.close();
-   return 0;
+int main( int argc, char* argv[] )
+{
+    std::ifstream inFile( argv[ 1 ] );
+    std::ofstream outFile( argv[ 2 ] );
+    char lineData[ 512 ];
+    inFile.getline( lineData, 512 );
+    outFile << lineData;
+    outFile << std::endl;
+
+    int numPoints = 0;
+    inFile >> numPoints;
+    outFile << numPoints;
+    inFile.getline( lineData, 512 );
+    outFile << lineData;
+    outFile << std::endl;
+
+    double data;
+    for( size_t i = 0; i < numPoints; ++i )
+    {
+        std::vector< double > matrixVector;
+        for( size_t j = 0; j < 16; ++j )
+        {
+            inFile >> data;
+            matrixVector.push_back( data );
+        }
+        //write the converted data back out
+        gmtl::Matrix44f mat = GetVjMatrix( matrixVector );
+        for( unsigned int j = 0; j < 4; j++ )
+        {
+            for( unsigned int k = 0; k < 4; k++ )
+            {
+                outFile << mat[ j ][ k ] << " ";
+            }
+        }
+        //now move on...
+        inFile.getline( lineData, 512 );
+        outFile << lineData;
+        outFile << std::endl;
+        inFile.getline( lineData, 512 );
+        outFile << lineData;
+        outFile << std::endl;
+    }
+
+    //process stored flythroughs
+    inFile.getline( lineData, 512 );
+    outFile << lineData;
+    outFile << std::endl;
+    inFile >> numPoints;
+    outFile << numPoints;
+    inFile.getline( lineData, 512 );
+    outFile << lineData;
+    outFile << std::endl;
+    for( size_t i = 0; i < numPoints; ++i )
+    {
+        inFile.getline( lineData, 512 );
+        outFile << lineData;
+        outFile << std::endl;
+        inFile.getline( lineData, 512 );
+        outFile << lineData;
+        outFile << std::endl;
+    }
+    outFile.close();
+    inFile.close();
+    return 0;
 }
 
 gmtl::Matrix44f GetVjMatrix( std::vector< double > perfMat )
 {
-   gmtl::Matrix44f mat;
-   gmtl::Vec3f x_axis( 1.0f, 0.0f, 0.0f );
-   mat.set( perfMat.at( 0 ), perfMat.at( 1 ), perfMat.at( 2 ), perfMat.at( 3 ),
-            perfMat.at( 4 ), perfMat.at( 5 ), perfMat.at( 6 ), perfMat.at( 7 ),
-            perfMat.at( 8 ), perfMat.at( 9 ), perfMat.at( 10 ), perfMat.at( 11 ),
-            perfMat.at( 12 ), perfMat.at( 13 ), perfMat.at( 14 ), perfMat.at( 15 )
-            );
-   gmtl::postMult(mat, gmtl::makeRot<gmtl::Matrix44f>( gmtl::AxisAnglef( gmtl::Math::deg2Rad(90.0f), x_axis ) ));
-   gmtl::preMult(mat, gmtl::makeRot<gmtl::Matrix44f>( gmtl::AxisAnglef( gmtl::Math::deg2Rad(-90.0f), x_axis ) ));
-   
-   return mat;
+    gmtl::Matrix44f mat;
+    gmtl::Vec3f x_axis( 1.0f, 0.0f, 0.0f );
+    mat.set( perfMat.at( 0 ), perfMat.at( 1 ), perfMat.at( 2 ), perfMat.at( 3 ),
+             perfMat.at( 4 ), perfMat.at( 5 ), perfMat.at( 6 ), perfMat.at( 7 ),
+             perfMat.at( 8 ), perfMat.at( 9 ), perfMat.at( 10 ), perfMat.at( 11 ),
+             perfMat.at( 12 ), perfMat.at( 13 ), perfMat.at( 14 ), perfMat.at( 15 )
+           );
+    gmtl::postMult( mat, gmtl::makeRot<gmtl::Matrix44f>( gmtl::AxisAnglef( gmtl::Math::deg2Rad( 90.0f ), x_axis ) ) );
+    gmtl::preMult( mat, gmtl::makeRot<gmtl::Matrix44f>( gmtl::AxisAnglef( gmtl::Math::deg2Rad( -90.0f ), x_axis ) ) );
+
+    return mat;
 }

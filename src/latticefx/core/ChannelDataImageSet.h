@@ -36,8 +36,10 @@
 #include <map>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class ChannelDataImageSet ChannelDataImageSet.h <latticefx/core/ChannelDataImageSet.h>
@@ -46,12 +48,15 @@ namespace core {
 class LATTICEFX_EXPORT ChannelDataImageSet : public ChannelDataComposite
 {
 public:
-    ChannelDataImageSet( const std::string& name=std::string( "" ) );
+    ChannelDataImageSet( const std::string& name = std::string( "" ) );
     ChannelDataImageSet( const ChannelDataImageSet& rhs );
     virtual ~ChannelDataImageSet();
 
 
-    virtual ChannelDataImageSet* getAsSet() { return( this ); }
+    virtual ChannelDataImageSet* getAsSet()
+    {
+        return( this );
+    }
 
 
     /** \brief Override base class, to support resizing of the offsets vector.

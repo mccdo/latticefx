@@ -36,8 +36,10 @@
 #include <vector>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup PagingSupport */
@@ -81,10 +83,16 @@ public:
 
     /** \brief TBD
     \details TBD */
-    void setDB( DBBasePtr db ) { _db = db; }
+    void setDB( DBBasePtr db )
+    {
+        _db = db;
+    }
     /** \brief TBD
     \details TBD */
-    DBBasePtr getDB() const { return( _db ); }
+    DBBasePtr getDB() const
+    {
+        return( _db );
+    }
 
     /** \brief Set the current animation time.
     \details Called by PlayContaol as the time series animation advances.

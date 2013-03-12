@@ -57,138 +57,155 @@
 
 using namespace ves::xplorer::util;
 
-void writeVtkGeomToStl( vtkDataObject * dataset, std::string filename )
+void writeVtkGeomToStl( vtkDataObject* dataset, std::string filename )
 {
-   vtkTriangleFilter *tFilter = vtkTriangleFilter::New();
+    vtkTriangleFilter* tFilter = vtkTriangleFilter::New();
 
-   // convert dataset to vtkPolyData 
-   if( dataset->IsA("vtkPolyData") )
-   {
-      tFilter->SetInput( (vtkPolyData*)dataset );
-   }
+    // convert dataset to vtkPolyData
+    if( dataset->IsA( "vtkPolyData" ) )
+    {
+        tFilter->SetInput( ( vtkPolyData* )dataset );
+    }
 
-   std::cout << "Writing \"" << filename << "\"... ";
-   std::cout.flush();
-   vtkSTLWriter *writer = vtkSTLWriter::New();
-      writer->SetInput( tFilter->GetOutput() );
-      writer->SetFileName( filename.c_str() );
-      writer->SetFileTypeToBinary();
-      writer->Write();
-      writer->Delete();
-   std::cout << "... done\n" << std::endl;
+    std::cout << "Writing \"" << filename << "\"... ";
+    std::cout.flush();
+    vtkSTLWriter* writer = vtkSTLWriter::New();
+    writer->SetInput( tFilter->GetOutput() );
+    writer->SetFileName( filename.c_str() );
+    writer->SetFileTypeToBinary();
+    writer->Write();
+    writer->Delete();
+    std::cout << "... done\n" << std::endl;
 
-   tFilter->Delete();
+    tFilter->Delete();
 }
 
-int main( int argc, char *argv[] )
-{    
+int main( int argc, char* argv[] )
+{
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
     // If the command line contains an input vtk file name and an output file,
-   // set them up.  Otherwise, get them from the user...
+    // set them up.  Otherwise, get them from the user...
     std::string inFileName;// = NULL;
-   std::string outFileName;// = new char [20];
-   outFileName.assign( "surface.vtk" );//strcpy(outFileName, "surface.vtk" );  //default name
-   fileIO::processCommandLineArgs( argc, argv, 
-                  "make a surface from the data in", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
-   ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-   vtkDataObject* dataset = (readVtkThing( inFileName, 1 ));
-   //////////DEBUGGING STUFF//////////
-   if ( dataset == NULL )
-      std::cout<<"NULL dataset :"<<std::endl;
-   //////////DEBUGGING STUFF//////////
-   
-   std::cout << "\nEnter (0) to wrap the entire solution space in a surface, or"
-        << "\n      (1) to extract a particular isosurface: " << std::endl;
-   int extractIsosurface = fileIO::getIntegerBetween( 0, 1 );
+    std::string outFileName;// = new char [20];
+    outFileName.assign( "surface.vtk" );//strcpy(outFileName, "surface.vtk" );  //default name
+    fileIO::processCommandLineArgs( argc, argv,
+                                    "make a surface from the data in", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
+    ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
+    vtkDataObject* dataset = ( readVtkThing( inFileName, 1 ) );
+    //////////DEBUGGING STUFF//////////
+    if( dataset == NULL )
+    {
+        std::cout << "NULL dataset :" << std::endl;
+    }
+    //////////DEBUGGING STUFF//////////
 
-   vtkPolyData* surface = NULL;
+    std::cout << "\nEnter (0) to wrap the entire solution space in a surface, or"
+              << "\n      (1) to extract a particular isosurface: " << std::endl;
+    int extractIsosurface = fileIO::getIntegerBetween( 0, 1 );
 
-   if( extractIsosurface )
-   {
-      // set the active scalar...
-      std::cout<<"Activating scalar :"<<std::endl;
-      activateScalar( dynamic_cast<vtkDataSet*>(dataset) );
+    vtkPolyData* surface = NULL;
 
-      float value = 0.0;
-      std::cout << "Enter isosurface value: ";
-      std::cin >> value;
-      
-      vtkContourFilter *contour = vtkContourFilter::New();
-         //contour->SetInputConnection( 0, filter1->GetOutputPort(0) );
-         contour->SetInput( dataset );
-         contour->SetValue( 0, value );
-         contour->UseScalarTreeOff();
-         contour->Update();
-         if ( contour != NULL )
-            std::cout<<"Set contour filter :"<<std::endl;
+    if( extractIsosurface )
+    {
+        // set the active scalar...
+        std::cout << "Activating scalar :" << std::endl;
+        activateScalar( dynamic_cast<vtkDataSet*>( dataset ) );
 
-      vtkPolyDataNormals *normals = vtkPolyDataNormals::New();
-         normals->SetInputConnection( 0, contour->GetOutputPort(0) );
-         normals->Update();
+        float value = 0.0;
+        std::cout << "Enter isosurface value: ";
+        std::cin >> value;
 
-      std::cout<<"Set normals :"<<std::endl;
-      
-      //int numPolys = normals->GetOutput()->GetNumberOfPolys();
-      //std::cout << "     The number of polys is "<< numPolys << std::endl;
-      //if ( numPolys==0 ) return 1;
+        vtkContourFilter* contour = vtkContourFilter::New();
+        //contour->SetInputConnection( 0, filter1->GetOutputPort(0) );
+        contour->SetInput( dataset );
+        contour->SetValue( 0, value );
+        contour->UseScalarTreeOff();
+        contour->Update();
+        if( contour != NULL )
+        {
+            std::cout << "Set contour filter :" << std::endl;
+        }
 
-      float deciVal;
-      std::cout << "\nDecimation value (range from 0 [more triangles] to 1 [less triangles]) : ";
-      std::cin >> deciVal;
+        vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
+        normals->SetInputConnection( 0, contour->GetOutputPort( 0 ) );
+        normals->Update();
 
-      surface = cfdGrid2Surface( dynamic_cast<vtkDataSet*>(normals->GetOutputDataObject(0)), deciVal );
-      std::cout<<"Num polys in surf :"<<surface->GetNumberOfPolys()<<std::endl;
-      if ( surface == NULL )
-         std::cout<<"No surface !!!! "<<std::endl;
+        std::cout << "Set normals :" << std::endl;
 
-      //clean up
-      contour->Delete();
-      normals->Delete();
-   
-      std::cout<<" writing :"<<std::endl;
-      writeVtkThing( surface, outFileName, 1 );   //1 is for binary
-   }
-   else // Create a polydata surface file that completely envelopes the solution space
-   {
-      float deciVal;
-      std::cout << "\nDecimation value (range from 0 [more triangles] to 1 [less triangles]) : ";
-      std::cin >> deciVal;
-      std::cin.ignore();
+        //int numPolys = normals->GetOutput()->GetNumberOfPolys();
+        //std::cout << "     The number of polys is "<< numPolys << std::endl;
+        //if ( numPolys==0 ) return 1;
 
-      surface = cfdGrid2Surface( dynamic_cast<vtkDataSet*>(dataset), deciVal );
+        float deciVal;
+        std::cout << "\nDecimation value (range from 0 [more triangles] to 1 [less triangles]) : ";
+        std::cin >> deciVal;
 
-      int answer;
-      std::string extension = fileIO::getExtension( outFileName );
+        surface = cfdGrid2Surface( dynamic_cast<vtkDataSet*>( normals->GetOutputDataObject( 0 ) ), deciVal );
+        std::cout << "Num polys in surf :" << surface->GetNumberOfPolys() << std::endl;
+        if( surface == NULL )
+        {
+            std::cout << "No surface !!!! " << std::endl;
+        }
 
-      if ( !extension.compare("stl") || !extension.compare("STL") )//!strcmp(extension,"stl") || !strcmp(extension,"STL") )
-         answer = 1;
-      else if ( !extension.compare("vtk") || !extension.compare("VTK") )//( !strcmp(extension,"vtk") || !strcmp(extension,"VTK") )
-         answer = 0;
-      else
-      {
-         std::cout << "\nDo you want output as a VTK file or as an STL? "
-              << "( 0=VTK, 1=STL )" << std::endl;
-         answer = fileIO::getIntegerBetween( 0, 1 );
-      }
+        //clean up
+        contour->Delete();
+        normals->Delete();
 
-      //delete [] extension;    extension = NULL;
+        std::cout << " writing :" << std::endl;
+        writeVtkThing( surface, outFileName, 1 );   //1 is for binary
+    }
+    else // Create a polydata surface file that completely envelopes the solution space
+    {
+        float deciVal;
+        std::cout << "\nDecimation value (range from 0 [more triangles] to 1 [less triangles]) : ";
+        std::cin >> deciVal;
+        std::cin.ignore();
 
-      if ( answer == 0 )
-         writeVtkThing( surface, outFileName, 1 );   //1 is for binary
-      else
-         writeVtkGeomToStl( surface, outFileName );
-   }
+        surface = cfdGrid2Surface( dynamic_cast<vtkDataSet*>( dataset ), deciVal );
 
-   // Display the surface on the screen...
-   viewCells( surface );
+        int answer;
+        std::string extension = fileIO::getExtension( outFileName );
 
-   //clean up
-   surface->Delete();
-   dataset->Delete();
-   std::cout << "\ndone\n";
-   return 0;
+        if( !extension.compare( "stl" ) || !extension.compare( "STL" ) ) //!strcmp(extension,"stl") || !strcmp(extension,"STL") )
+        {
+            answer = 1;
+        }
+        else if( !extension.compare( "vtk" ) || !extension.compare( "VTK" ) ) //( !strcmp(extension,"vtk") || !strcmp(extension,"VTK") )
+        {
+            answer = 0;
+        }
+        else
+        {
+            std::cout << "\nDo you want output as a VTK file or as an STL? "
+                      << "( 0=VTK, 1=STL )" << std::endl;
+            answer = fileIO::getIntegerBetween( 0, 1 );
+        }
+
+        //delete [] extension;    extension = NULL;
+
+        if( answer == 0 )
+        {
+            writeVtkThing( surface, outFileName, 1 );    //1 is for binary
+        }
+        else
+        {
+            writeVtkGeomToStl( surface, outFileName );
+        }
+    }
+
+    // Display the surface on the screen...
+    viewCells( surface );
+
+    //clean up
+    surface->Delete();
+    dataset->Delete();
+    std::cout << "\ndone\n";
+    return 0;
 }
 

@@ -198,7 +198,7 @@ vtkDataObject* VTKFileHandler::GetDataSetFromFile( const std::string& vtkFileNam
     catch( ... )
     {
         std::cerr << "VTKFileHandler::GetDataSetFromFile "
-            << "Memory allocation error." << std::endl;
+                  << "Memory allocation error." << std::endl;
         _dataSet = 0;
     }
     return _dataSet;
@@ -207,7 +207,9 @@ vtkDataObject* VTKFileHandler::GetDataSetFromFile( const std::string& vtkFileNam
 void VTKFileHandler::_readClassicVTKFile()
 {
     if( !_inFileName.c_str() )
+    {
         return;
+    }
 
     vtkGenericDataObjectReader* genericReader = vtkGenericDataObjectReader::New();
     genericReader->SetFileName( _inFileName.c_str() );
@@ -242,7 +244,7 @@ void VTKFileHandler::_readClassicVTKFile()
         else
         {
             std::cerr << "\nERROR - Unable to read this vtk file format"
-                << std::endl;
+                      << std::endl;
             return ;
         }
         _dataSet->ShallowCopy( genericReader->GetOutput() );
@@ -299,7 +301,7 @@ void VTKFileHandler::_getXMLUGrid()
 void VTKFileHandler::_getXMLSGrid()
 {
     vtkXMLStructuredGridReader* sgReader
-    = vtkXMLStructuredGridReader::New();
+        = vtkXMLStructuredGridReader::New();
     sgReader->SetFileName( _inFileName.c_str() );
     sgReader->Update();
     UpdateReaderActiveArrays( sgReader );
@@ -311,7 +313,7 @@ void VTKFileHandler::_getXMLSGrid()
 void VTKFileHandler::_getXMLRGrid()
 {
     vtkXMLRectilinearGridReader* rgReader
-    = vtkXMLRectilinearGridReader::New();
+        = vtkXMLRectilinearGridReader::New();
     rgReader->SetFileName( _inFileName.c_str() );
     rgReader->Update();
     UpdateReaderActiveArrays( rgReader );
@@ -349,19 +351,19 @@ bool VTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileNa
         return false;
     }
 
-    //ImageData (.vti) — Serial vtkImageData (structured). 
-    //PolyData (.vtp) — Serial vtkPolyData (unstructured). 
-    //RectilinearGrid (.vtr) — Serial vtkRectilinearGrid (structured). 
-    //StructuredGrid (.vts) — Serial vtkStructuredGrid (structured). 
-    //UnstructuredGrid (.vtu) — Serial vtkUnstructuredGrid (unstructured). 
+    //ImageData (.vti) — Serial vtkImageData (structured).
+    //PolyData (.vtp) — Serial vtkPolyData (unstructured).
+    //RectilinearGrid (.vtr) — Serial vtkRectilinearGrid (structured).
+    //StructuredGrid (.vts) — Serial vtkStructuredGrid (structured).
+    //UnstructuredGrid (.vtu) — Serial vtkUnstructuredGrid (unstructured).
     //Multiblock (.vtm) - Serial vtkMultiBlockDataSet
-    //PImageData (.pvti) — Parallel vtkImageData (structured). 
-    //PPolyData (.pvtp) — Parallel vtkPolyData (unstructured). 
-    //PRectilinearGrid (.pvtr) — Parallel vtkRectilinearGrid (structured). 
-    //PStructuredGrid (.pvts) — Parallel vtkStructuredGrid (structured). 
-    //PUnstructuredGrid (.pvtu) — Parallel vtkUnstructuredGrid (unstructured). 
+    //PImageData (.pvti) — Parallel vtkImageData (structured).
+    //PPolyData (.pvtp) — Parallel vtkPolyData (unstructured).
+    //PRectilinearGrid (.pvtr) — Parallel vtkRectilinearGrid (structured).
+    //PStructuredGrid (.pvts) — Parallel vtkStructuredGrid (structured).
+    //PUnstructuredGrid (.pvtu) — Parallel vtkUnstructuredGrid (unstructured).
     fs::path file_name( outFileName );
-    
+
     if( dataSet->IsA( "vtkMultiBlockDataSet" ) )
     {
 #if BOOST_VERSION > 103301
@@ -372,7 +374,7 @@ bool VTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileNa
         writer->SetInput( dataSet );
         if( _outFileMode == CFD_ASCII )
         {
-            writer->SetDataModeToAscii();            
+            writer->SetDataModeToAscii();
         }
         if( writer->Write() )
         {
@@ -401,7 +403,7 @@ bool VTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileNa
         {
             file_name.replace_extension( "vtu" );
         }
-        else 
+        else
         {
             file_name.replace_extension( "vtk" );
         }
@@ -426,8 +428,8 @@ bool VTKFileHandler::WriteDataSet( vtkDataObject* dataSet, std::string outFileNa
     return false;
 }
 ////////////////////////////////////////////////////////////////////////
-void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
-                                              std::string vtkFilename, int binaryFlag )
+void VTKFileHandler::_writeClassicVTKFile( vtkDataObject* vtkThing,
+        std::string vtkFilename, int binaryFlag )
 {
     if( vtkThing == NULL )
     {
@@ -443,13 +445,13 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     {
         std::cout << "a vtkUnstructuredGrid... " << std::flush;
 
-        vtkUnstructuredGrid * uGrid = vtkUnstructuredGrid::SafeDownCast( vtkThing );
+        vtkUnstructuredGrid* uGrid = vtkUnstructuredGrid::SafeDownCast( vtkThing );
         if( uGrid == NULL )
         {
             std::cout << "SafeDownCast to a vtkUnstructuredGrid failed";
         }
 
-        vtkUnstructuredGridWriter *writer = vtkUnstructuredGridWriter::New();
+        vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
         //writer->SetInput( (vtkUnstructuredGrid *)vtkThing );
         writer->SetInput( uGrid );
         writer->SetFileName( vtkFilename.c_str() );
@@ -464,7 +466,7 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     {
         std::cout << "a vtkStructuredGrid... " << std::flush;
 
-        vtkStructuredGrid * sGrid = vtkStructuredGrid::SafeDownCast( vtkThing );
+        vtkStructuredGrid* sGrid = vtkStructuredGrid::SafeDownCast( vtkThing );
         if( sGrid == NULL )
         {
             std::cout << "SafeDownCast to a vtkStructuredGrid failed";
@@ -472,7 +474,7 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
         // Part of old vtk build may need to fix later
         //sGrid->BlankingOff();
 
-        vtkStructuredGridWriter *writer = vtkStructuredGridWriter::New();
+        vtkStructuredGridWriter* writer = vtkStructuredGridWriter::New();
         writer->SetInput( sGrid );
         //writer->SetInput( (vtkStructuredGrid *)vtkThing );    //core dumped
         //writer->SetInput( vtkThing );                         //won't compile
@@ -488,8 +490,8 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     else if( vtkThing->IsA( "vtkRectilinearGrid" ) )
     {
         std::cout << "a vtkRectilinearGrid... " << std::flush;
-        vtkRectilinearGridWriter *writer = vtkRectilinearGridWriter::New();
-        writer->SetInput(( vtkRectilinearGrid* )vtkThing );
+        vtkRectilinearGridWriter* writer = vtkRectilinearGridWriter::New();
+        writer->SetInput( ( vtkRectilinearGrid* )vtkThing );
         writer->SetFileName( vtkFilename.c_str() );
         if( binaryFlag )
         {
@@ -501,8 +503,8 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     else if( vtkThing->IsA( "vtkPolyData" ) )
     {
         std::cout << "a vtkPolyData... " << std::flush;
-        vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-        writer->SetInput(( vtkPolyData* )vtkThing );
+        vtkPolyDataWriter* writer = vtkPolyDataWriter::New();
+        writer->SetInput( ( vtkPolyData* )vtkThing );
         writer->SetFileName( vtkFilename.c_str() );
         if( binaryFlag )
         {
@@ -514,7 +516,7 @@ void VTKFileHandler::_writeClassicVTKFile( vtkDataObject * vtkThing,
     else
     {
         std::cerr << "\nERROR - Unsupported vtk file format: file not written"
-        << std::endl;
+                  << std::endl;
         return;
     }
 
@@ -549,17 +551,17 @@ void VTKFileHandler::UpdateReaderActiveArrays( vtkXMLReader* reader )
 {
     if( !m_activeArrays.empty() )
     {
-        vtkDataArraySelection* arraySelector = 
+        vtkDataArraySelection* arraySelector =
             reader->GetPointDataArraySelection();
         arraySelector->DisableAllArrays();
         for( size_t i = 0; i < m_activeArrays.size(); ++i )
         {
-            std::cout << "Passed arrays are: " 
-                << m_activeArrays[ i ] << std::endl;
+            std::cout << "Passed arrays are: "
+                      << m_activeArrays[ i ] << std::endl;
             arraySelector->EnableArray( m_activeArrays[ i ].c_str() );
         }
         //Need to update again before the output of the reader is read
-        reader->Update();         
+        reader->Update();
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -573,22 +575,22 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
     fs::path file_name( _inFileName );
 
     std::cout << "|\tLoading " << _inFileName
-        << " and extension " << file_name.extension() << std::endl;;
+              << " and extension " << file_name.extension() << std::endl;;
 
     if( !_xmlTester )
     {
         _xmlTester = vtkXMLFileReadTester::New();
     }
     _xmlTester->SetFileName( _inFileName.c_str() );
-    
+
     //Test for ensight file to activate scalars
     if( file_name.extension() == ".case" )
     {
         vtkGenericEnSightReader* reader = vtkGenericEnSightReader::New();
         reader->SetCaseFileName( _inFileName.c_str() );
         reader->Update();
-        
-        vtkDataArraySelection* arraySelector = 
+
+        vtkDataArraySelection* arraySelector =
             reader->GetCellDataArraySelection();
         int numArrays = arraySelector->GetNumberOfArrays();
         for( int i = 0; i < numArrays; ++i )
@@ -608,7 +610,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
         reader->Delete();
         _xmlTester->Delete();
         _xmlTester = 0;
-        return m_activeArrays;    
+        return m_activeArrays;
     }
     else if( !_xmlTester->TestReadFile() )
     {
@@ -652,13 +654,13 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
     {
         reader = vtkXMLHierarchicalDataReader::New();
     }
-    
+
     _xmlTester->Delete();
     _xmlTester = 0;
     reader->SetFileName( _inFileName.c_str() );
     reader->Update();
 
-    vtkDataArraySelection* arraySelector = 
+    vtkDataArraySelection* arraySelector =
         reader->GetCellDataArraySelection();
     int numArrays = arraySelector->GetNumberOfArrays();
     for( int i = 0; i < numArrays; ++i )
@@ -676,7 +678,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
         m_activeArrays.push_back( arrayName );
     }
     reader->Delete();
-    
+
     return m_activeArrays;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -694,7 +696,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  ///For traversal of nested multigroupdatasets
  mgdIterator->VisitOnlyLeavesOn();
  mgdIterator->GoToFirstItem();
- 
+
  while( !mgdIterator->IsDoneWithTraversal() )
  {
  currentDataset = dynamic_cast<vtkDataSet*>( mgdIterator->GetCurrentDataObject() );
@@ -704,10 +706,10 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  m_datasetOperator->OperateOnDataset( currentDataset );
  }
  UpdateNumberOfPDArrays( currentDataset );
- 
+
  mgdIterator->GoToNextItem();
  }
- 
+
  if( mgdIterator )
  {
  mgdIterator->Delete();
@@ -716,7 +718,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  }
  catch ( ... )
  {
- std::cout << "*********** Invalid Dataset: " 
+ std::cout << "*********** Invalid Dataset: "
  << dataObject->GetClassName() << " ***********" << std::endl;
  }
  }
@@ -730,7 +732,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  }
  UpdateNumberOfPDArrays( currentDataset );
  }
- 
+
  }
  ////////////////////////////////////////////////////////////////////////////////
  void DataObjectHandler::_convertCellDataToPointData( vtkDataSet* dataSet )
@@ -740,12 +742,12 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  {
  std::cout << "|\tThe dataset has no point data -- "
  << "will try to convert cell data to point data" << std::endl;
- 
+
  vtkCellDataToPointData* converter = vtkCellDataToPointData::New();
  converter->SetInput( 0, dataSet );
  converter->PassCellDataOff();
  converter->Update();
- 
+
  ///Why do we need to do this only for unstructured grids?
  if( dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID )
  {
@@ -761,7 +763,7 @@ std::vector< std::string > VTKFileHandler::GetDataSetArraysFromFile( const std::
  {
  converter->Delete();
  std::cout << "\nAttempt failed: can not currently handle "
- << "this type of data - " 
+ << "this type of data - "
  << "DataObjectHandler::_convertCellDataToPointData" << std::endl;
  exit( 1 );
  }

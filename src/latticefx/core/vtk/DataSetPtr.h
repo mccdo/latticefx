@@ -38,7 +38,7 @@ namespace lfx
 namespace core
 {
 namespace vtk
-{        
+{
 class DataSet;
 /// Typedef for the SmartPtr types.
 //typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;

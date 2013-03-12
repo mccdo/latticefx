@@ -65,13 +65,13 @@ void dumpUniformInfo( const RendererPtr renderOp )
     LFX_CRITICAL_STATIC( logstr, "Available uniforms:" );
 
     const Renderer::UniformInfoVector& infoVec( renderOp->getUniforms() );
-    BOOST_FOREACH( const Renderer::UniformInfo& info, infoVec )
+    BOOST_FOREACH( const Renderer::UniformInfo & info, infoVec )
     {
         if( info._access == Renderer::UniformInfo::PUBLIC )
         {
             LFX_CRITICAL_STATIC( logstr, info._prototype->getName() + "\t" +
-                Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
-                info._description );
+                                 Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
+                                 info._description );
 
             // Display the default value.
             std::ostringstream ostr;
@@ -80,31 +80,36 @@ void dumpUniformInfo( const RendererPtr renderOp )
             {
             case osg::Uniform::FLOAT_MAT4:
             {
-                osg::Matrix mat; info._prototype->get( mat );
+                osg::Matrix mat;
+                info._prototype->get( mat );
                 ostr << mat;
                 break;
             }
             case osg::Uniform::FLOAT_VEC2:
             {
-                osg::Vec2f vec2; info._prototype->get( vec2 );
+                osg::Vec2f vec2;
+                info._prototype->get( vec2 );
                 ostr << vec2;
                 break;
             }
             case osg::Uniform::FLOAT_VEC3:
             {
-                osg::Vec3f vec3; info._prototype->get( vec3 );
+                osg::Vec3f vec3;
+                info._prototype->get( vec3 );
                 ostr << vec3;
                 break;
             }
             case osg::Uniform::FLOAT_VEC4:
             {
-                osg::Vec4f vec4; info._prototype->get( vec4 );
+                osg::Vec4f vec4;
+                info._prototype->get( vec4 );
                 ostr << vec4;
                 break;
             }
             case osg::Uniform::FLOAT:
             {
-                float f; info._prototype->get( f );
+                float f;
+                info._prototype->get( f );
                 ostr << f;
                 break;
             }
@@ -113,13 +118,15 @@ void dumpUniformInfo( const RendererPtr renderOp )
             case osg::Uniform::SAMPLER_3D:
             case osg::Uniform::INT:
             {
-                int i; info._prototype->get( i );
+                int i;
+                info._prototype->get( i );
                 ostr << i;
                 break;
             }
             case osg::Uniform::BOOL:
             {
-                bool b; info._prototype->get( b );
+                bool b;
+                info._prototype->get( b );
                 ostr << b;
                 break;
             }
@@ -147,7 +154,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
         tempDataSet->SetActiveVector( 0 );
         tempDataSet->SetActiveScalar( 0 );
     }
-    
+
     vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
     //If the data load failed
     if( !tempVtkDataSet )
@@ -158,8 +165,8 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     else
     {
         std::cout << "|\tData is loaded for file "
-        << tempDataSetFilename
-        << std::endl;
+                  << tempDataSetFilename
+                  << std::endl;
         tempDataSet->Print();
         //if( lastDataAdded->GetParent() == lastDataAdded )
         //{
@@ -181,7 +188,7 @@ int main( int argc, char** argv )
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
-    
+
     osg::ref_ptr< osg::Group > tempGroup = new osg::Group();
 
     //Load the VTK data
@@ -191,7 +198,7 @@ int main( int argc, char** argv )
     //Since we are not modifying the original channel data we can create
     //just one instance of it
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
-    
+
     {
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
@@ -209,13 +216,13 @@ int main( int argc, char** argv )
         renderOp->addInput( "vtkPolyDataMapper" );
         renderOp->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp );
-        
+
         std::cout << "lfx...creating data..." << std::endl;
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
         dumpUniformInfo( renderOp );
     }
-    
+
     {
         //Create the DataSet for this visualization with VTK
         lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
@@ -226,7 +233,7 @@ int main( int argc, char** argv )
         isosurfaceRTP->SetActiveScalar( "200_to_1000" );
         isosurfaceRTP->addInput( "vtkDataObject" );
         dsp->addOperation( isosurfaceRTP );
-        
+
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
         renderOp2->SetActiveVector( "steve's_vector" );
@@ -234,7 +241,7 @@ int main( int argc, char** argv )
         renderOp2->addInput( "vtkPolyDataMapper" );
         renderOp2->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp2 );
-        
+
         std::cout << "lfx...creating data..." << std::endl;
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
@@ -243,12 +250,12 @@ int main( int argc, char** argv )
 
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
-    
+
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( tempGroup.get() );
-    
+
     return( viewer.run() );
 }
 

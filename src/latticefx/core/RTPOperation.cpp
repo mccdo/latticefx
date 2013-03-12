@@ -21,18 +21,20 @@
 #include <latticefx/core/RTPOperation.h>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 RTPOperation::RTPOperation( const RTPOpType rtpOpType )
-  : OperationBase( OperationBase::RunTimeProcessingType ),
-    _rtpOpType( rtpOpType )
+    : OperationBase( OperationBase::RunTimeProcessingType ),
+      _rtpOpType( rtpOpType )
 {
 }
 RTPOperation::RTPOperation( const RTPOperation& rhs )
-  : OperationBase( rhs ),
-    _rtpOpType( rhs._rtpOpType )
+    : OperationBase( rhs ),
+      _rtpOpType( rhs._rtpOpType )
 {
 }
 RTPOperation::~RTPOperation()

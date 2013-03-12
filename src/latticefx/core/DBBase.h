@@ -34,14 +34,17 @@
 #include <set>
 
 
-namespace osg {
-    class Image;
-    class Array;
+namespace osg
+{
+class Image;
+class Array;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class DBBase DBBase.h <latticefx/core/DBBase.h>
@@ -56,7 +59,8 @@ load and store data from it. */
 class LATTICEFX_EXPORT DBBase : protected LogBase
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         MEMORY,
         DISK,
         CRUNCHSTORE
@@ -73,7 +77,7 @@ public:
 
 
     virtual DBKey generateDBKey();
-    virtual DBKey generateDBKey( const std::string& baseName, const TimeValue time=(TimeValue)0. );
+    virtual DBKey generateDBKey( const std::string& baseName, const TimeValue time = ( TimeValue )0. );
 
 
     virtual bool storeImage( const osg::Image* image, const DBKey& dbKey );

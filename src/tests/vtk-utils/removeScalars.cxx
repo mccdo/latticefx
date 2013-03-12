@@ -43,52 +43,52 @@
 #include <vtkDoubleArray.h>
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name, then use it.
-   // Otherwise, get it from the user...
-   std::string inFileName;
-   std::string outFilename;
-   if ( argc > 2 )
-   {
-      inFileName.assign( argv[ 1 ] );
-      outFilename.assign( argv[ 2 ] );
-   }
-   else  // then get filename from user...
-   {
-      std::string tempText( "the file to remove scalars/vectors from" ); 
-      inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
-      tempText.assign( "the file to write to" ); 
-      outFilename = fileIO::getFilenameFromDefault( tempText, "outFile.vtk" );
-   }
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name, then use it.
+    // Otherwise, get it from the user...
+    std::string inFileName;
+    std::string outFilename;
+    if( argc > 2 )
+    {
+        inFileName.assign( argv[ 1 ] );
+        outFilename.assign( argv[ 2 ] );
+    }
+    else  // then get filename from user...
+    {
+        std::string tempText( "the file to remove scalars/vectors from" );
+        inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
+        tempText.assign( "the file to write to" );
+        outFilename = fileIO::getFilenameFromDefault( tempText, "outFile.vtk" );
+    }
 
-   // read the data set ("1" means print info to screen)
-   vtkDataSet* dataset = readVtkThing( inFileName, 1 );
-   
-   std::string input;
-   do
-   {
-      std::cout << "Enter scalar or vector to remove (enter exit to quit):" << std::endl;
-      std::cin >> input;
-      if ( input != "exit" )
-      {
-         if ( dataset->GetPointData() )
-         {
-            dataset->GetPointData()->RemoveArray( input.c_str() );
-         }
-         else if ( dataset->GetCellData() )
-         {
-            dataset->GetCellData()->RemoveArray( input.c_str() );
-         }
-      }
-   }
-   while( input != "exit" );
+    // read the data set ("1" means print info to screen)
+    vtkDataSet* dataset = readVtkThing( inFileName, 1 );
 
-   // write vtk file
-   ves::xplorer::util::writeVtkThing( dataset, outFilename, 1 );
+    std::string input;
+    do
+    {
+        std::cout << "Enter scalar or vector to remove (enter exit to quit):" << std::endl;
+        std::cin >> input;
+        if( input != "exit" )
+        {
+            if( dataset->GetPointData() )
+            {
+                dataset->GetPointData()->RemoveArray( input.c_str() );
+            }
+            else if( dataset->GetCellData() )
+            {
+                dataset->GetCellData()->RemoveArray( input.c_str() );
+            }
+        }
+    }
+    while( input != "exit" );
 
-   dataset->Delete();
+    // write vtk file
+    ves::xplorer::util::writeVtkThing( dataset, outFilename, 1 );
 
-   return 0;
+    dataset->Delete();
+
+    return 0;
 }
 

@@ -33,8 +33,10 @@
 #include <list>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class ChannelDataOSGArray ChannelDataOSGArray.h <latticefx/core/ChannelDataOSGArray.h>
@@ -50,7 +52,7 @@ vertices) are supported. */
 class LATTICEFX_EXPORT ChannelDataOSGArray : public ChannelData
 {
 public:
-    ChannelDataOSGArray( const std::string& name=std::string( "" ), osg::Array* data=NULL );
+    ChannelDataOSGArray( const std::string& name = std::string( "" ), osg::Array* data = NULL );
     ChannelDataOSGArray( const ChannelDataOSGArray& rhs );
     virtual ~ChannelDataOSGArray();
 

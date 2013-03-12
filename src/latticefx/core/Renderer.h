@@ -45,13 +45,16 @@
 #include <ostream>
 
 
-namespace osg {
-    class Node;
-    class StateSet;
+namespace osg
+{
+class Node;
+class StateSet;
 }
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class Renderer Renderer.h <latticefx/core/Renderer.h>
@@ -120,7 +123,7 @@ However, the implementation might be more complex, depending on the rendering al
 class LATTICEFX_EXPORT Renderer : public OperationBase, protected LogBase
 {
 public:
-    Renderer( const std::string logNameSuffix=std::string("unknown") );
+    Renderer( const std::string logNameSuffix = std::string( "unknown" ) );
     Renderer( const Renderer& rhs );
     virtual ~Renderer();
 
@@ -141,7 +144,10 @@ public:
     StateSet. One example is a uniform for the number of data elements in the
     ChannelData, which could vary depending on how many elements passed the host
     mask at a given time step. */
-    virtual osg::StateSet* getRootState() { return( NULL ); }
+    virtual osg::StateSet* getRootState()
+    {
+        return( NULL );
+    }
 
 
 
@@ -170,7 +176,7 @@ public:
     In general, the application should ignore any registered uniforms with UniformInfo::AccessType
     set to PRIVATE. These uniforms are internal to the Renderer; some might be controllable by
     public Renderer class methods, but others might be purely internal.
-    
+
     When a Renderer registers a UniformInfo with UniformInfo::AccessType PRIVATE, and eventually
     creates and adds a corresponding osg::Uniform to a StateSet in the scene graph, the Renderer
     should set the StateAttribute::PROTECTED bit to ensure the application doesn't override the
@@ -182,7 +188,8 @@ public:
     \details Contains a description string and AccessType, along with a prototype instance of an
     osg::Uniform with a name string, osg::Uniform::Type data type, and corresponding value.
     */
-    struct UniformInfo {
+    struct UniformInfo
+    {
         /** \brief Access information
         \details Denotes whether the described Uniform is internal to the Renderer, or available
         for the application to override.
@@ -191,7 +198,8 @@ public:
         \li PUBLIC Intended for applications to override via setting the Uniform in an ancestor
         Node's StateSet with the osg::StateAttribute OVERRIDE mode bit.
         */
-        typedef enum {
+        typedef enum
+        {
             PRIVATE,
             PUBLIC
         } AccessType;
@@ -199,7 +207,7 @@ public:
         UniformInfo() {}
         /** \brief Constructor
         \details Creates an instance of an osg::Uniform with \c name and \c type and stored it in _prototype. */
-        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description=std::string(""), const AccessType access=PUBLIC, const int numElements=1 );
+        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description = std::string( "" ), const AccessType access = PUBLIC, const int numElements = 1 );
         UniformInfo( const UniformInfo& rhs );
         ~UniformInfo();
 
@@ -235,7 +243,7 @@ public:
     \details Dumps all uniforms in the Renderer's \c  _uniformInfo vector.
     By default, dumps PUBLIC uniforms only. To dump both PUBLIC and
     PROTECTED uniforms, set the \c publicOnly parameter to false. */
-    void dumpUniformInfo( std::ostream& ostr, const bool publicOnly=true );
+    void dumpUniformInfo( std::ostream& ostr, const bool publicOnly = true );
 
     /** \brief Convert the Uniform data type to a string.
     \details This static method could be useful when displaying uniform data, such as in
@@ -317,7 +325,7 @@ public:
     Because the transfer function is a texture lookup, LatticeFX supports mapping a range
     of transfer function input values into the (texture coordinate) range 0.0 to 1.0. See
     setTransferFunctionInputRange(). Indices outside the specified range are clamped.
-    
+
     This function is ignored for the VolumeRenderer. The VolumeRenderer transfer function
     input is always taken from the volume data itself. */
     void setTransferFunctionInput( const std::string& name );
@@ -332,7 +340,8 @@ public:
     \details TBD */
     const osg::Vec2f& getTransferFunctionInputRange() const;
 
-    typedef enum {
+    typedef enum
+    {
         TF_RGB = 0,
         TF_RGBA = 1,
         TF_ALPHA = 2
@@ -385,7 +394,8 @@ public:
     */
     /**@{*/
 
-    typedef enum {
+    typedef enum
+    {
         HM_SOURCE_ALPHA,
         HM_SOURCE_RED,
         HM_SOURCE_SCALAR
@@ -428,7 +438,8 @@ public:
     /** \brief Get the hardware mask comparison epsilon value. */
     float getHardwareMaskEpsilon() const;
 
-    typedef enum {
+    typedef enum
+    {
         HM_OP_OFF = 0,
         HM_OP_EQ = ( 0x1 << 0 ),
         HM_OP_LT = ( 0x1 << 1 ),
@@ -522,16 +533,16 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
-        ar & BOOST_SERIALIZATION_NVP( _baseUnit );
-        ar & BOOST_SERIALIZATION_NVP( _tfInputName );
-        ar & BOOST_SERIALIZATION_NVP( _tfRange );
-        ar & BOOST_SERIALIZATION_NVP( _tfDest );
-        ar & BOOST_SERIALIZATION_NVP( _tfDestMask );
-        ar & BOOST_SERIALIZATION_NVP( _hmSource );
-        ar & BOOST_SERIALIZATION_NVP( _hmInputName );
-        ar & BOOST_SERIALIZATION_NVP( _hmReference );
-        ar & BOOST_SERIALIZATION_NVP( _hmOperator );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
+        ar& BOOST_SERIALIZATION_NVP( _baseUnit );
+        ar& BOOST_SERIALIZATION_NVP( _tfInputName );
+        ar& BOOST_SERIALIZATION_NVP( _tfRange );
+        ar& BOOST_SERIALIZATION_NVP( _tfDest );
+        ar& BOOST_SERIALIZATION_NVP( _tfDestMask );
+        ar& BOOST_SERIALIZATION_NVP( _hmSource );
+        ar& BOOST_SERIALIZATION_NVP( _hmInputName );
+        ar& BOOST_SERIALIZATION_NVP( _hmReference );
+        ar& BOOST_SERIALIZATION_NVP( _hmOperator );
     }
 };
 

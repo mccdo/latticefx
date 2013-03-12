@@ -65,19 +65,23 @@ public:
 
         // Set the number of instances.
         const unsigned int numElements( sourceArray->getNumElements() );
-        for( unsigned int idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+        for( unsigned int idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
+        {
             geom->getPrimitiveSet( idx )->setNumInstances( numElements );
+        }
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
         osg::Texture3D* posTex( createTexture3DForInstancedRenderer( getInput( "positions" ) ) );
         stateSet->setTextureAttributeAndModes( 0, posTex, osg::StateAttribute::OFF );
-        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) ); posUni->set( 0 );
+        osg::Uniform* posUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texPos" ) );
+        posUni->set( 0 );
         stateSet->addUniform( posUni );
 
         osg::Texture3D* dirTex( createTexture3DForInstancedRenderer( getInput( "directions" ) ) );
         stateSet->setTextureAttributeAndModes( 1, dirTex, osg::StateAttribute::OFF );
-        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) ); dirUni->set( 1 );
+        osg::Uniform* dirUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "texDir" ) );
+        dirUni->set( 1 );
         stateSet->addUniform( dirUni );
 
         const osg::Vec3f dimensions( computeTexture3DDimensions( numElements ) );
@@ -104,20 +108,20 @@ DataSetPtr prepareDataSet()
     osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
     osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
     const unsigned int w( 4 ), h( 1 ), d( 1 );
-    vertArray->resize( w*h*d );
-    dirArray->resize( w*h*d );
+    vertArray->resize( w * h * d );
+    dirArray->resize( w * h * d );
     unsigned int wIdx, hIdx, dIdx, index( 0 );
-    for( wIdx=0; wIdx<w; ++wIdx )
+    for( wIdx = 0; wIdx < w; ++wIdx )
     {
-        for( hIdx=0; hIdx<h; ++hIdx )
+        for( hIdx = 0; hIdx < h; ++hIdx )
         {
-            for( dIdx=0; dIdx<d; ++dIdx )
+            for( dIdx = 0; dIdx < d; ++dIdx )
             {
-                const float x( ((double)wIdx)/(w-1.) * 4. - 2. );
+                const float x( ( ( double )wIdx ) / ( w - 1. ) * 4. - 2. );
                 const float y( 0. );
                 const float z( 0. );
-                (*vertArray)[ index ].set( x, y, z );
-                (*dirArray)[ index ].set( sin(x), .5, .5 );
+                ( *vertArray )[ index ].set( x, y, z );
+                ( *dirArray )[ index ].set( sin( x ), .5, .5 );
                 ++index;
             }
         }

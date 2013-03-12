@@ -31,7 +31,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
-#include <vector> 
+#include <vector>
 
 #include <ves/xplorer/util/fileIO.h>
 #include <ves/xplorer/util/readWriteVtkThings.h>
@@ -46,87 +46,94 @@ using namespace ves::xplorer::util;
 
 void removeVtkPointData( vtkDataObject* dataObject )
 {
-   
-   // if there are data arrays, count the number of arrays
-   int numPDArrays;
-   if ( dataObject->IsA("vtkCompositeDataSet") )
-   {
-      vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*> ( dataObject );
 
-      //count number of arrays from the first data set in the mgd, use this as the superset of 
-      //data arrays of point data
-      numPDArrays = mgd->GetFieldData()->GetNumberOfArrays();
-   }
-   else
-   {
-      numPDArrays = dynamic_cast<vtkDataSet*>(dataObject)
-            ->GetPointData()->GetNumberOfArrays();
-   }
-   
-   std::cout << "numPDArrays = " << numPDArrays << std::endl;
-   if ( numPDArrays > 0 )
-   {
-      std::vector< std::string > names;//char **names = new char * [numPDArrays];
-      for (int i=0; i < numPDArrays; i++)
-      {
-        //get the names of the arrays
-         if ( dataObject->IsA("vtkCompositeDataSet") )
-         {
-            vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*> ( dataObject );
-            names.push_back( mgd->GetFieldData()->GetArray(i)->GetName() );
-         }
-         else
-         {
+    // if there are data arrays, count the number of arrays
+    int numPDArrays;
+    if( dataObject->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*>( dataObject );
+
+        //count number of arrays from the first data set in the mgd, use this as the superset of
+        //data arrays of point data
+        numPDArrays = mgd->GetFieldData()->GetNumberOfArrays();
+    }
+    else
+    {
+        numPDArrays = dynamic_cast<vtkDataSet*>( dataObject )
+                      ->GetPointData()->GetNumberOfArrays();
+    }
+
+    std::cout << "numPDArrays = " << numPDArrays << std::endl;
+    if( numPDArrays > 0 )
+    {
+        std::vector< std::string > names;//char **names = new char * [numPDArrays];
+        for( int i = 0; i < numPDArrays; i++ )
+        {
+            //get the names of the arrays
+            if( dataObject->IsA( "vtkCompositeDataSet" ) )
+            {
+                vtkCompositeDataSet* mgd = dynamic_cast<vtkCompositeDataSet*>( dataObject );
+                names.push_back( mgd->GetFieldData()->GetArray( i )->GetName() );
+            }
+            else
+            {
+                vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( dataObject );
+                names.push_back( dataset->GetPointData()->GetArray( i )->GetName() );
+            }
+        }
+
+        for( int i = 0; i < numPDArrays; i++ )
+        {
+            char response;
+            do
+            {
+                std::cout << "Do you want parameter \"" << names[i]
+                          << "\" retained in the flowdata file? [y/n]: ";
+                std::cin >> response;
+            }
+            while( response != 'y' && response != 'Y' && response != 'n' && response != 'N' );
+
+            // go to next scalar if anything other than n/N was input...
+            if( response != 'n' && response != 'N' )
+            {
+                continue;
+            }
+
+            std::cout << "Removing array :" << names[i].c_str() << std::endl;
             vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( dataObject );
-            names.push_back(dataset->GetPointData()->GetArray(i)->GetName());
-         }
-      }
+            dataset->GetPointData()->RemoveArray( names[i].c_str() );
+        }
 
-      for (int i=0; i < numPDArrays; i++)
-      {
-         char response;
-         do 
-         {
-            std::cout << "Do you want parameter \"" << names[i] 
-                 << "\" retained in the flowdata file? [y/n]: ";
-            std::cin >> response;
-         } while (response != 'y' && response != 'Y' && response != 'n' && response != 'N');
-
-         // go to next scalar if anything other than n/N was input...
-         if (response != 'n' && response != 'N') continue;
-         
-         std::cout<<"Removing array :"<<names[i].c_str()<<std::endl;
-         vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( dataObject );
-         dataset->GetPointData()->RemoveArray( names[i].c_str() );
-      }
-
-      for (int i=0; i < numPDArrays; i++)
-      {
-         //delete [] names[i];
-         //names[i] = NULL;
-      }
-      names.clear();//delete [] names;
-      //names = NULL;
-   }
-   return;
+        for( int i = 0; i < numPDArrays; i++ )
+        {
+            //delete [] names[i];
+            //names[i] = NULL;
+        }
+        names.clear();//delete [] names;
+        //names = NULL;
+    }
+    return;
 }
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name and an output file set them up.
-   // Otherwise, get them from the user...
-	std::string inFileName;// = NULL;
-	std::string outFileName;// = NULL;
-   fileIO::processCommandLineArgs( argc, argv, "remove point data parameters from", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name and an output file set them up.
+    // Otherwise, get them from the user...
+    std::string inFileName;// = NULL;
+    std::string outFileName;// = NULL;
+    fileIO::processCommandLineArgs( argc, argv, "remove point data parameters from", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
 
-   vtkDataObject * dataset = (readVtkThing( inFileName, 1 ));
-   removeVtkPointData( dataset );
+    vtkDataObject* dataset = ( readVtkThing( inFileName, 1 ) );
+    removeVtkPointData( dataset );
 
-   writeVtkThing( dataset, outFileName );
+    writeVtkThing( dataset, outFileName );
 
-   dataset->Delete();
+    dataset->Delete();
 
-   return 0;
+    return 0;
 }
 

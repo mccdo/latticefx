@@ -33,8 +33,10 @@
 #include <map>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 //forwards
@@ -61,19 +63,26 @@ ChannelData. */
 class LATTICEFX_EXPORT ChannelDataComposite : public ChannelData
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         UNSPECIFIED,
         COMPOSITE_LOD,
         COMPOSITE_SET
     } CompositeType;
 
-    ChannelDataComposite( const CompositeType compositeType, const std::string& name=std::string( "" ) );
+    ChannelDataComposite( const CompositeType compositeType, const std::string& name = std::string( "" ) );
     ChannelDataComposite( const ChannelDataComposite& rhs );
     virtual ~ChannelDataComposite();
 
     CompositeType getCompositeType() const;
-    virtual ChannelDataImageSet* getAsSet() { return( NULL ); }
-    virtual ChannelDataLOD* getAsLOD() { return( NULL ); }
+    virtual ChannelDataImageSet* getAsSet()
+    {
+        return( NULL );
+    }
+    virtual ChannelDataLOD* getAsLOD()
+    {
+        return( NULL );
+    }
 
 
     /** \brief Add a data channel to the ChannelDataList.

@@ -34,8 +34,10 @@
 #include <vector>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup PagingSupport */
@@ -46,9 +48,10 @@ namespace core {
 \brief Base class for loading OSG data.
 \details Derived classes override the load() method to load OSG Image
 files, Node files, or Object files as needed. */
-struct LoadRequest {
+struct LoadRequest
+{
     LoadRequest();
-    LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db=DBBasePtr( (DBBase*)NULL ) );
+    LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db = DBBasePtr( ( DBBase* )NULL ) );
     LoadRequest( const LoadRequest& rhs );
     virtual ~LoadRequest();
 

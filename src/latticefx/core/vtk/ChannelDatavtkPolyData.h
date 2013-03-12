@@ -29,11 +29,14 @@
 
 class vtkPolyData;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
-    
-namespace vtk {
+namespace core
+{
+
+namespace vtk
+{
 
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/core/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
@@ -55,12 +58,12 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkPolyData : public lfx::core::Chann
 {
 public:
 
-    ChannelDatavtkPolyData( vtkPolyData* const pd, const std::string& name=std::string( "" ) );
+    ChannelDatavtkPolyData( vtkPolyData* const pd, const std::string& name = std::string( "" ) );
     ChannelDatavtkPolyData( const ChannelDatavtkPolyData& rhs );
     virtual ~ChannelDatavtkPolyData();
 
     vtkPolyData* GetPolyData();
-    
+
 protected:
     vtkPolyData* m_pd;
 };

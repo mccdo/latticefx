@@ -33,8 +33,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class ChannelDataOSGImage ChannelDataOSGImage.h <latticefx/core/ChannelDataOSGImage.h>
@@ -43,7 +45,7 @@ namespace core {
 class LATTICEFX_EXPORT ChannelDataOSGImage : public ChannelData
 {
 public:
-    ChannelDataOSGImage( const std::string& name=std::string( "" ), osg::Image* Image=NULL );
+    ChannelDataOSGImage( const std::string& name = std::string( "" ), osg::Image* Image = NULL );
     ChannelDataOSGImage( const ChannelDataOSGImage& rhs );
     virtual ~ChannelDataOSGImage();
 
@@ -67,9 +69,15 @@ public:
 
     /** \brief
     \details */
-    virtual osg::Image* asOSGImage() { return( _image.get() ); }
+    virtual osg::Image* asOSGImage()
+    {
+        return( _image.get() );
+    }
     /** \overload osg::Image* ChannelData::asOSGImage(); */
-    virtual const osg::Image* asOSGImage() const { return( _image.get() ); }
+    virtual const osg::Image* asOSGImage() const
+    {
+        return( _image.get() );
+    }
 
     /** \brief
     \details */

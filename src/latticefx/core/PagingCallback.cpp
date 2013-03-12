@@ -37,7 +37,7 @@
 \details Computes the pixel radius of the bounding sphere, then returns
 the area of a circle with that radius. */
 double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
-    const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp );
+                         const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp );
 
 
 /** \brief Return true if \c validRange and \c childRange overlap.
@@ -54,31 +54,37 @@ inline bool inRange( const lfx::core::RangeValues& validRange, const lfx::core::
     const bool childSecondGood( childRange.second >= validRange.first );
     if( validRange.first <= validRange.second )
         // Typical case: first (min) < second (max).
+    {
         return( childSecondGood && childFirstGood );
+    }
     else
         // First (min) might be greater than second (max) due to
         // wrapping of animation time.
+    {
         return( childSecondGood || childFirstGood );
+    }
 }
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 PagingCallback::PagingCallback()
-  : osg::NodeCallback(),
-    LogBase( "lfx.core.page.cb" ),
-    _animationTime( 0. ),
-    _timeRange( RangeValues( -0.5, 0.5 ) )
+    : osg::NodeCallback(),
+      LogBase( "lfx.core.page.cb" ),
+      _animationTime( 0. ),
+      _timeRange( RangeValues( -0.5, 0.5 ) )
 {
 }
 PagingCallback::PagingCallback( const PagingCallback& rhs )
-  : osg::NodeCallback( rhs ),
-    LogBase( rhs ),
-    _animationTime( rhs._animationTime ),
-    _timeRange( rhs._timeRange )
+    : osg::NodeCallback( rhs ),
+      LogBase( rhs ),
+      _animationTime( rhs._animationTime ),
+      _timeRange( rhs._timeRange )
 {
 }
 PagingCallback::~PagingCallback()
@@ -157,7 +163,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
 
     bool removeExpired( false );
     bool continueUpdateTraversal( true );
-    BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+    BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
     {
         const unsigned int childIndex( rangeDataPair.first );
         PageData::RangeData& rangeData( rangeDataPair.second );
@@ -235,7 +241,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         // for at least one frame, even if they're no longer in range. The children
         // marked as ACTIVE are the ones that are candidates for paging out.
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
@@ -275,14 +281,16 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         unsigned int bestChild( 0 );
         TimeValue minTimeDifference( FLT_MAX );
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
             if( rangeData._status != PageData::RangeData::ACTIVE )
                 // Currently trying to find the best child for the current time, so if
                 // the status isn't ACTIVE, we don't care about it.
+            {
                 continue;
+            }
 
             TimeValue timeDifference( osg::absolute( rangeData._rangeValues.first - _animationTime ) );
             if( timeDifference < minTimeDifference )
@@ -293,7 +301,7 @@ void PagingCallback::operator()( osg::Node* node, osg::NodeVisitor* nv )
         }
 
         unsigned int childIndex;
-        for( childIndex=0; childIndex < grp->getNumChildren(); ++childIndex )
+        for( childIndex = 0; childIndex < grp->getNumChildren(); ++childIndex )
         {
             osg::Node* child( grp->getChild( childIndex ) );
             child->setNodeMask( ( childIndex == bestChild ) ? 0xffffffff : 0x0 );
@@ -315,8 +323,8 @@ class CollectImagesRecursive
 {
 public:
     CollectImagesRecursive( const osg::Matrix& rootModelMat )
-      : _request( LoadRequestImagePtr( new LoadRequestImage() ) ),
-        _rootModelMat( rootModelMat )
+        : _request( LoadRequestImagePtr( new LoadRequestImage() ) ),
+          _rootModelMat( rootModelMat )
     {
         // Get transform info for LOD calculations.
         PagingThread::instance()->getTransforms( _wcEyePosition, _proj, _vp );
@@ -330,13 +338,13 @@ public:
         osg::StateSet* stateSet( node.getStateSet() );
         if( stateSet != NULL )
         {
-            for( unsigned int unit=0; unit<16; unit++ )
+            for( unsigned int unit = 0; unit < 16; unit++ )
             {
                 osg::Texture* tex( static_cast< osg::Texture* >(
-                    stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                                       stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
                 if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
-                    ( tex->getImage( 0 ) != NULL ) &&
-                    ( tex->getImage( 0 )->data() == NULL ))
+                        ( tex->getImage( 0 ) != NULL ) &&
+                        ( tex->getImage( 0 )->data() == NULL ) )
                 {
                     DBKey key( tex->getImage( 0 )->getFileName() );
                     _request->_keys.push_back( key );
@@ -347,13 +355,15 @@ public:
         osg::Group* grp( node.asGroup() );
         PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
+                ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             if( grp != NULL )
             {
-                for( unsigned int idx=0; idx<grp->getNumChildren(); idx++ )
+                for( unsigned int idx = 0; idx < grp->getNumChildren(); idx++ )
+                {
                     recurse( *( grp->getChild( idx ) ) );
+                }
             }
             _nodePath.pop_back();
             return;
@@ -368,7 +378,7 @@ public:
         const double pixelSize( computePixelSize( bSphere, modelMat, _wcEyePosition, _proj, _vp.get() ) );
         const RangeValues validRange( pixelSize, pixelSize );
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
@@ -436,7 +446,7 @@ class DistributeImagesRecursive
 {
 public:
     DistributeImagesRecursive( const LoadRequestImagePtr request )
-      : _request( request )
+        : _request( request )
     {
     }
 
@@ -445,12 +455,12 @@ public:
         osg::StateSet* stateSet( node.getStateSet() );
         if( stateSet != NULL )
         {
-            for( unsigned int unit=0; unit<16; unit++ )
+            for( unsigned int unit = 0; unit < 16; unit++ )
             {
                 osg::Texture* tex( static_cast< osg::Texture* >(
-                    stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                                       stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
                 if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
-                    ( tex->getImage( 0 ) != NULL ) )
+                        ( tex->getImage( 0 ) != NULL ) )
                 {
                     DBKey key( tex->getImage( 0 )->getFileName() );
                     if( key.empty() )
@@ -473,13 +483,15 @@ public:
         osg::Group* grp( node.asGroup() );
         PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
+                ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             if( grp != NULL )
             {
-                for( unsigned int idx=0; idx<grp->getNumChildren(); idx++ )
+                for( unsigned int idx = 0; idx < grp->getNumChildren(); idx++ )
+                {
                     recurse( *( grp->getChild( idx ) ) );
+                }
             }
             return;
         }
@@ -488,7 +500,7 @@ public:
             LFX_WARNING_STATIC( "lfx.core.page", "DistributeImagesRecursive: Should not have NULL Group." );
         }
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
@@ -523,7 +535,7 @@ class ReclaimImagesVisitor : public osg::NodeVisitor
 {
 public:
     ReclaimImagesVisitor()
-      : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN )
+        : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN )
     {
         // Always traverse every node.
         setNodeMaskOverride( ~0u );
@@ -534,12 +546,12 @@ public:
         osg::StateSet* stateSet( node.getStateSet() );
         if( stateSet != NULL )
         {
-            for( unsigned int unit=0; unit<16; unit++ )
+            for( unsigned int unit = 0; unit < 16; unit++ )
             {
                 osg::Texture* tex( static_cast< osg::Texture* >(
-                    stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
+                                       stateSet->getTextureAttribute( unit, osg::StateAttribute::TEXTURE ) ) );
                 if( ( tex != NULL ) && ( tex->getName() != "donotpage" ) &&
-                    ( tex->getImage( 0 ) != NULL ) )
+                        ( tex->getImage( 0 ) != NULL ) )
                 {
                     DBKey key( tex->getImage( 0 )->getFileName() );
                     osg::Image* image( new osg::Image() );
@@ -555,7 +567,7 @@ public:
 
         PageData* pageData( static_cast< PageData* >( node.getUserData() ) );
         if( ( pageData == NULL ) ||
-            ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
+                ( pageData->getRangeMode() == PageData::TIME_RANGE ) )
         {
             // It's a normal Node or Group. Just traverse all children.
             traverse( node );
@@ -567,7 +579,7 @@ public:
             LFX_WARNING_STATIC( "lfx.core.page", "ReclaimImagesVisitor: Should not have NULL Group." );
         }
 
-        BOOST_FOREACH( PageData::RangeDataMap::value_type& rangeDataPair, pageData->getRangeDataMap() )
+        BOOST_FOREACH( PageData::RangeDataMap::value_type & rangeDataPair, pageData->getRangeDataMap() )
         {
             const unsigned int childIndex( rangeDataPair.first );
             PageData::RangeData& rangeData( rangeDataPair.second );
@@ -592,7 +604,9 @@ TimeValue PagingCallback::getWrappedTime( const TimeValue& time, const TimeValue
 {
     const TimeValue span( maxTime - minTime );
     if( span == 0 )
+    {
         return( time );
+    }
     double intPart;
     const double fractPart( modf( ( time - minTime ) / span, &intPart ) );
     return( fractPart * span + minTime );
@@ -607,7 +621,7 @@ TimeValue PagingCallback::getWrappedTime( const TimeValue& time, const TimeValue
 
 
 double computePixelSize( const osg::BoundingSphere& bSphere, const osg::Matrix& model,
-        const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp )
+                         const osg::Vec3& wcEyePosition, const osg::Matrix& proj, const osg::Viewport* vp )
 {
     const osg::Vec3 wcCenter = bSphere.center() * model;
     const float ecDistance( ( wcCenter - wcEyePosition ).length() );

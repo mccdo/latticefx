@@ -28,8 +28,10 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class DBDisk DBDisk.h <latticefx/core/DBDisk.h>
@@ -45,12 +47,12 @@ directory by manually adding or removing files from it. */
 class LATTICEFX_EXPORT DBDisk : public DBBase
 {
 public:
-    DBDisk( const std::string rootPath=std::string("") );
+    DBDisk( const std::string rootPath = std::string( "" ) );
     DBDisk( const DBDisk& rhs );
     ~DBDisk();
 
     virtual DBKey generateDBKey();
-    virtual DBKey generateDBKey( const std::string& baseName, const TimeValue time=(TimeValue)0. );
+    virtual DBKey generateDBKey( const std::string& baseName, const TimeValue time = ( TimeValue )0. );
 
     /** If not empty, this is prepended to dbKey.
     Allows DBDisk to read/write files from/to a specific parent path. */

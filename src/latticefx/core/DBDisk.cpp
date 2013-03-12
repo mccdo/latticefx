@@ -30,18 +30,20 @@
 
 #include <iostream>
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 DBDisk::DBDisk( const std::string rootPath )
-  : DBBase( DISK ),
-    _rootPath( rootPath )
+    : DBBase( DISK ),
+      _rootPath( rootPath )
 {
 }
 DBDisk::DBDisk( const DBDisk& rhs )
-  : DBBase( rhs ),
-    _rootPath( rhs._rootPath )
+    : DBBase( rhs ),
+      _rootPath( rhs._rootPath )
 {
 }
 DBDisk::~DBDisk()
@@ -89,7 +91,9 @@ osg::Image* DBDisk::loadImage( const DBKey& dbKey )
 
     if( image->getFileName().empty() )
         // Required for paging, in case the image load doesn't set it.
+    {
         image->setFileName( dbKey );
+    }
 
     return( image );
 }
@@ -121,7 +125,9 @@ std::string DBDisk::fileNameFromDBKey( const DBKey& dbKey ) const
 {
     const std::string keyName( dbKey );
     if( _rootPath.empty() )
+    {
         return( std::string( keyName ) );
+    }
 
     // Let Poco combine the _rootPath with the dbKey.
     // Automatically handles things like path separators,

@@ -26,7 +26,7 @@
 
 using namespace lfx::vtk_utils;
 
-void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
+void lfx::vtk_utils::activateScalar( vtkDataSet* dataSet )
 {
     // if there are data arrays, count the number of arrays
     int numPDArrays = dataSet->GetPointData()->GetNumberOfArrays();
@@ -38,11 +38,15 @@ void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
         for( int i = 0; i < numPDArrays; i++ )
         {
             if( dataSet->GetPointData()->GetArray( i )->GetNumberOfComponents() == 1 )
+            {
                 numScalars++;
+            }
         }
 
         if( numScalars == 0 )
+        {
             return;
+        }
         else if( numScalars == 1 )
         {
             for( int i = 0; i < numPDArrays; i++ )
@@ -60,7 +64,9 @@ void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
             for( int i = 0; i < numPDArrays; i++ )
             {
                 if( dataSet->GetPointData()->GetArray( i )->GetNumberOfComponents() == 1 )
+                {
                     std::cout << "\t" << i << "\t" << dataSet->GetPointData()->GetArray( i )->GetName() << std::endl;
+                }
             }
             std::cout << std::endl;
 
@@ -73,9 +79,13 @@ void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
                 // verify that the choice corresponds to a valid scalar...
                 if( dataSet->GetPointData()->GetArray( choice )
                         ->GetNumberOfComponents() == 1 )
+                {
                     break;
+                }
                 else
+                {
                     std::cout << "ERROR!: " << std::flush;
+                }
             }
             while( 1 );
 
@@ -86,7 +96,7 @@ void lfx::vtk_utils::activateScalar( vtkDataSet * dataSet )
     return;
 }
 
-void lfx::vtk_utils::activateVector( vtkDataSet * dataSet )
+void lfx::vtk_utils::activateVector( vtkDataSet* dataSet )
 {
     // if there are data arrays, count the number of arrays
     int numPDArrays = dataSet->GetPointData()->GetNumberOfArrays();
@@ -98,11 +108,15 @@ void lfx::vtk_utils::activateVector( vtkDataSet * dataSet )
         for( int i = 0; i < numPDArrays; i++ )
         {
             if( dataSet->GetPointData()->GetArray( i )->GetNumberOfComponents() == 3 )
+            {
                 numVectors++;
+            }
         }
 
         if( numVectors == 0 )
+        {
             return;
+        }
         else if( numVectors == 1 )
         {
             for( int i = 0; i < numPDArrays; i++ )
@@ -120,7 +134,9 @@ void lfx::vtk_utils::activateVector( vtkDataSet * dataSet )
             for( int i = 0; i < numPDArrays; i++ )
             {
                 if( dataSet->GetPointData()->GetArray( i )->GetNumberOfComponents() == 3 )
+                {
                     std::cout << "\t" << i << "\t" << dataSet->GetPointData()->GetArray( i )->GetName() << std::endl;
+                }
             }
 
             int choice;
@@ -132,9 +148,13 @@ void lfx::vtk_utils::activateVector( vtkDataSet * dataSet )
                 // verify that the choice corresponds to a valid vector...
                 if( dataSet->GetPointData()->GetArray( choice )
                         ->GetNumberOfComponents() == 3 )
+                {
                     break;
+                }
                 else
+                {
                     std::cout << "ERROR!: " << std::flush;
+                }
             }
             while( 1 );
 

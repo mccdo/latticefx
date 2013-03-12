@@ -34,18 +34,20 @@
 namespace csdb = crunchstore;
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 DBCrunchStore::DBCrunchStore()
-  : DBBase( CRUNCHSTORE )
+    : DBBase( CRUNCHSTORE )
 {
 }
 DBCrunchStore::DBCrunchStore( const DBCrunchStore& rhs )
-  : DBBase( rhs ),
-    _dm( rhs._dm ),
-    _uuidMap( rhs._uuidMap )
+    : DBBase( rhs ),
+      _dm( rhs._dm ),
+      _uuidMap( rhs._uuidMap )
 {
 }
 DBCrunchStore::~DBCrunchStore()
@@ -80,7 +82,7 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
 
     {
         const size_t sz( sizeof( *image ) );
-        const char* imageStart( (char*)image );
+        const char* imageStart( ( char* )image );
         const char* imageEnd( imageStart + sz );
         const CharVec imageMetadata( imageStart, imageEnd );
 
@@ -89,7 +91,7 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
     }
     {
         const size_t sz( image->getTotalSizeInBytes() );
-        const char* dataStart( (char*)image->data() );
+        const char* dataStart( ( char* )image->data() );
         const char* dataEnd( dataStart + sz );
         const CharVec imageData( dataStart, dataEnd );
 
@@ -111,19 +113,19 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
 struct CharVecUserData : public CharVec, public osg::Object
 {
     CharVecUserData()
-      : CharVec(),
-        osg::Object()
+        : CharVec(),
+          osg::Object()
     {}
     CharVecUserData( CharVec& charVec )
-      : CharVec( charVec ),
-        osg::Object()
+        : CharVec( charVec ),
+          osg::Object()
     {}
-    CharVecUserData( const CharVecUserData& rhs, const osg::CopyOp copyOp=osg::CopyOp::SHALLOW_COPY )
-      : CharVec( rhs ),
-        osg::Object( rhs )
+    CharVecUserData( const CharVecUserData& rhs, const osg::CopyOp copyOp = osg::CopyOp::SHALLOW_COPY )
+        : CharVec( rhs ),
+          osg::Object( rhs )
     {}
 
-    META_Object(lfx,CharVecUserData);
+    META_Object( lfx, CharVecUserData );
 };
 
 osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
@@ -149,31 +151,33 @@ osg::Image* DBCrunchStore::loadImage( const DBKey& dbKey )
     persist.SetUUID( keyID );
 
     const std::string metadataKey( "Metadata" );
-    persist.AddDatum( metadataKey, (char*)NULL );
-    const std::string dataKey( "Data");
-    persist.AddDatum( dataKey, (char*)NULL );
+    persist.AddDatum( metadataKey, ( char* )NULL );
+    const std::string dataKey( "Data" );
+    persist.AddDatum( dataKey, ( char* )NULL );
 
     _dm->Load( persist );
 
     CharVec metadata( persist.GetDatumValue<CharVec>( "Metadata" ) );
-    osg::Image* image( (osg::Image*)&metadata[0] );
+    osg::Image* image( ( osg::Image* )&metadata[0] );
 
     // Copy image data from DB into a ref-counted struct, which we can
     // attach as UserData. This avoids a second data copy.
     CharVec charVec = persist.GetDatumValue<CharVec>( "Data" );
     osg::ref_ptr< CharVecUserData > imageData( new CharVecUserData( charVec ) );
-    unsigned char* dataPtr( (unsigned char*)&(*imageData)[0] );
+    unsigned char* dataPtr( ( unsigned char* ) & ( *imageData )[0] );
 
     osg::ref_ptr< osg::Image > tempImage( new osg::Image() );
     tempImage->setImage( image->s(), image->t(), image->r(),
-        image->getInternalTextureFormat(), image->getPixelFormat(),
-        image->getDataType(), dataPtr,
-        osg::Image::NO_DELETE, image->getPacking() );
+                         image->getInternalTextureFormat(), image->getPixelFormat(),
+                         image->getDataType(), dataPtr,
+                         osg::Image::NO_DELETE, image->getPacking() );
     tempImage->setUserData( imageData.get() );
 
     if( tempImage->getFileName().empty() )
         // Required for paging, in case the image load doesn't set it.
+    {
         tempImage->setFileName( dbKey );
+    }
 
     return( tempImage.release() );
 }
@@ -207,7 +211,7 @@ osg::Array* DBCrunchStore::loadArray( const DBKey& dbKey )
 DBBase::StringSet DBCrunchStore::getAllKeys() const
 {
     DBBase::StringSet keys;
-    BOOST_FOREACH( const UUIDMap::value_type& info, _uuidMap )
+    BOOST_FOREACH( const UUIDMap::value_type & info, _uuidMap )
     {
         keys.insert( info.first );
     }
@@ -218,19 +222,21 @@ DBBase::StringSet DBCrunchStore::getAllKeys() const
 void DBCrunchStore::storeUUIDMap()
 {
     if( _dm == NULL )
+    {
         return;
+    }
 
     LFX_TRACE( "storeUUIDMap()." );
 
     std::ostringstream ostr;
     ostr << _uuidMap.size() << ",";
-    BOOST_FOREACH( const UUIDMap::value_type& info, _uuidMap )
+    BOOST_FOREACH( const UUIDMap::value_type & info, _uuidMap )
     {
         ostr << info.first << "," << info.second << ",";
     }
 
     const std::string mapString( ostr.str() );
-    const char* dataStart( (char*)&mapString[0] );
+    const char* dataStart( ( char* )&mapString[0] );
     const char* dataEnd( dataStart + mapString.size() );
     CharVec mapData( dataStart, dataEnd );
     // Add NULL terminator
@@ -248,7 +254,9 @@ void DBCrunchStore::storeUUIDMap()
 void DBCrunchStore::loadUUIDMap()
 {
     if( _dm == NULL )
+    {
         return;
+    }
 
     LFX_TRACE( "loadUUIDMap()" );
 
@@ -256,11 +264,13 @@ void DBCrunchStore::loadUUIDMap()
     const boost::uuids::uuid knownID( strGen( "00000000-0000-0000-0000-000000000000" ) );
     const std::string typeName( "UUIDMap" );
     if( !_dm->HasIDForTypename( knownID, typeName ) )
+    {
         return;
+    }
 
     csdb::Persistable persist( typeName );
     persist.SetUUID( knownID );
-    persist.AddDatum( "UUIDMap", (char*)NULL );
+    persist.AddDatum( "UUIDMap", ( char* )NULL );
     _dm->Load( persist );
 
     CharVec mapData( persist.GetDatumValue<CharVec>( "UUIDMap" ) );
@@ -274,12 +284,12 @@ void DBCrunchStore::loadUUIDMap()
     unsigned int entries;
     istr >> entries;
 
-    for( unsigned int idx=0; idx<entries; ++idx )
+    for( unsigned int idx = 0; idx < entries; ++idx )
     {
-        size_t nextPos( mapStr.find( comma, pos+1 ) );
-        size_t finalPos( mapStr.find( comma, nextPos+1 ) );
-        const std::string fileName( mapStr.substr( pos+1, nextPos-pos-1 ) );
-        const std::string uuidStr( mapStr.substr( nextPos+1, finalPos-nextPos-1 ) );
+        size_t nextPos( mapStr.find( comma, pos + 1 ) );
+        size_t finalPos( mapStr.find( comma, nextPos + 1 ) );
+        const std::string fileName( mapStr.substr( pos + 1, nextPos - pos - 1 ) );
+        const std::string uuidStr( mapStr.substr( nextPos + 1, finalPos - nextPos - 1 ) );
         pos = finalPos;
 
         _uuidMap[ fileName ] = uuidStr;

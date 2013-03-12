@@ -35,25 +35,26 @@
 #include <wx/wx.h>
 #include "tcFrame.h"
 
-//The main application  
-class TCApp: public wxApp{
-public: 
-   bool OnInit();
-   void OnInitCmdLine(wxCmdLineParser& parser);
-   bool OnCmdLineParsed(wxCmdLineParser& parser);
+//The main application
+class TCApp: public wxApp
+{
+public:
+    bool OnInit();
+    void OnInitCmdLine( wxCmdLineParser& parser );
+    bool OnCmdLineParsed( wxCmdLineParser& parser );
 protected:
-   TCFrame* _frame;
-   bool _isBatch;
-   bool _translateFromCmdLine();
+    TCFrame* _frame;
+    bool _isBatch;
+    bool _translateFromCmdLine();
 private:
-   int p;
-   int rank;
-   std::string ConvertUnicode( const wxChar* data )
-   {
-      std::string tempStr( static_cast< const char* >( wxConvCurrent->cWX2MB( data ) ) );
-      return tempStr;
-   }
+    int p;
+    int rank;
+    std::string ConvertUnicode( const wxChar* data )
+    {
+        std::string tempStr( static_cast< const char* >( wxConvCurrent->cWX2MB( data ) ) );
+        return tempStr;
+    }
 };
-DECLARE_APP(TCApp)
- 
+DECLARE_APP( TCApp )
+
 #endif //_TC_APP_H_

@@ -25,21 +25,23 @@
 //For FLT_MAX on *nix platforms.
 #include <cfloat>
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 PageData::PageData( const RangeMode rangeMode )
-  : osg::Object(),
-    _rangeMode( rangeMode ),
-    _parent( NULL )
+    : osg::Object(),
+      _rangeMode( rangeMode ),
+      _parent( NULL )
 {
 }
 PageData::PageData( const PageData& rhs, const osg::CopyOp& copyOp )
-  : osg::Object( rhs, copyOp ),
-    _rangeMode( rhs._rangeMode ),
-    _rangeDataMap( rhs._rangeDataMap ),
-    _parent( rhs._parent )
+    : osg::Object( rhs, copyOp ),
+      _rangeMode( rhs._rangeMode ),
+      _rangeDataMap( rhs._rangeDataMap ),
+      _parent( rhs._parent )
 {
 }
 PageData::~PageData()
@@ -75,14 +77,18 @@ PageData::RangeData* PageData::getRangeData( const unsigned int childIndex )
 {
     RangeDataMap::iterator it( _rangeDataMap.find( childIndex ) );
     if( it != _rangeDataMap.end() )
+    {
         return( &( it->second ) );
+    }
     return( NULL );
 }
 const PageData::RangeData* PageData::getRangeData( const unsigned int childIndex ) const
 {
     RangeDataMap::const_iterator it( _rangeDataMap.find( childIndex ) );
     if( it != _rangeDataMap.end() )
+    {
         return( &( it->second ) );
+    }
     return( NULL );
 }
 PageData::RangeDataMap& PageData::getRangeDataMap()
@@ -102,18 +108,18 @@ osg::Group* PageData::getParent()
 
 
 PageData::RangeData::RangeData()
-  : _rangeValues( RangeValues( 0., FLT_MAX ) ),
-    _status( UNLOADED )
+    : _rangeValues( RangeValues( 0., FLT_MAX ) ),
+      _status( UNLOADED )
 {
 }
 PageData::RangeData::RangeData( RangeValues rangeValues, const DBKey& dbKey )
-  : _rangeValues( rangeValues ),
-    _status( UNLOADED )
+    : _rangeValues( rangeValues ),
+      _status( UNLOADED )
 {
 }
 PageData::RangeData::RangeData( double minVal, double maxVal, const DBKey& dbKey )
-  : _rangeValues( RangeValues( minVal, maxVal ) ),
-    _status( UNLOADED )
+    : _rangeValues( RangeValues( minVal, maxVal ) ),
+      _status( UNLOADED )
 {
 }
 

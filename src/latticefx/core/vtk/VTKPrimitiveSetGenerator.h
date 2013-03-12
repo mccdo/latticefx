@@ -26,11 +26,14 @@
 
 class vtkCellArray;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKPrimitiveSetGenerator VTKPrimitiveSetGenerator.h <latticefx/core/vtk/VTKPrimitiveSetGenerator.h>
  \brief Base class for VTK based operations to create primitives from VTK primitives.
@@ -40,16 +43,16 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT VTKPrimitiveSetGenerator : public lfx::core::PrimitiveSetGenerator
 {
 public:
-    
+
     ///Default constructor
     VTKPrimitiveSetGenerator( vtkCellArray* const strips )
-        : 
+        :
         lfx::core::PrimitiveSetGenerator(),
         m_triStrips( strips )
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKPrimitiveSetGenerator()
     {
@@ -61,7 +64,7 @@ public:
 
     virtual void operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom );
 
-protected:    
+protected:
     ///The triangle strips from vtkPolyData
     vtkCellArray* m_triStrips;
 };

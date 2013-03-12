@@ -42,25 +42,27 @@
 #include <sstream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 SpatialVolume::SpatialVolume()
-  : _volumeDims( osg::Vec3f( 1., 1., 1. ) ),
-    _volumeOrigin( osg::Vec3f( 0., 0., 0. ) )
+    : _volumeDims( osg::Vec3f( 1., 1., 1. ) ),
+      _volumeOrigin( osg::Vec3f( 0., 0., 0. ) )
 {
 }
 SpatialVolume::SpatialVolume( const SpatialVolume& rhs )
-  : _volumeDims( rhs._volumeDims ),
-    _volumeOrigin( rhs._volumeOrigin )
+    : _volumeDims( rhs._volumeDims ),
+      _volumeOrigin( rhs._volumeOrigin )
 {
 }
 SpatialVolume::~SpatialVolume()
 {
 }
 
-void SpatialVolume::setVolumeDims( const osg::Vec3& volDims)
+void SpatialVolume::setVolumeDims( const osg::Vec3& volDims )
 {
     _volumeDims = volDims;
 }
@@ -69,7 +71,7 @@ osg::Vec3 SpatialVolume::getVolumeDims() const
     return( _volumeDims );
 }
 
-void SpatialVolume::setVolumeOrigin( const osg::Vec3& volOrigin)
+void SpatialVolume::setVolumeOrigin( const osg::Vec3& volOrigin )
 {
     _volumeOrigin = volOrigin;
 }
@@ -82,12 +84,12 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 
 
 VolumeRenderer::VolumeRenderer()
-  : Renderer( "vol" ),
-    _renderMode( SLICES ),
-    _numPlanes( 100.f ),
-    _maxSamples( 100.f ),
-    _transparencyScalar( 1.f ),
-    _transparencyEnable( true )
+    : Renderer( "vol" ),
+      _renderMode( SLICES ),
+      _numPlanes( 100.f ),
+      _maxSamples( 100.f ),
+      _transparencyScalar( 1.f ),
+      _transparencyEnable( true )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VOLUME_DATA, "volumedata" );
@@ -134,12 +136,12 @@ VolumeRenderer::VolumeRenderer()
     registerUniform( info );
 }
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
-  : Renderer( rhs ),
-    _renderMode( rhs._renderMode ),
-    _numPlanes( rhs._numPlanes ),
-    _maxSamples( rhs._maxSamples ),
-    _transparencyScalar( rhs._transparencyScalar ),
-    _transparencyEnable( rhs._transparencyEnable )
+    : Renderer( rhs ),
+      _renderMode( rhs._renderMode ),
+      _numPlanes( rhs._numPlanes ),
+      _maxSamples( rhs._maxSamples ),
+      _transparencyScalar( rhs._transparencyScalar ),
+      _transparencyEnable( rhs._transparencyEnable )
 {
 }
 VolumeRenderer::~VolumeRenderer()
@@ -161,10 +163,10 @@ osg::Geometry* VolumeRenderer::createDAIGeometry( int nInstances )
     geom->setVertexArray( v );
 
     // Geometry for a single quad.
-    (*v)[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
-    (*v)[ 1 ] = osg::Vec3( halfDimX, -halfDimZ, 0. );
-    (*v)[ 2 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
-    (*v)[ 3 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
+    ( *v )[ 0 ] = osg::Vec3( -halfDimX, -halfDimZ, 0. );
+    ( *v )[ 1 ] = osg::Vec3( halfDimX, -halfDimZ, 0. );
+    ( *v )[ 2 ] = osg::Vec3( -halfDimX, halfDimZ, 0. );
+    ( *v )[ 3 ] = osg::Vec3( halfDimX, halfDimZ, 0. );
 
     // Use the DrawArraysInstanced PrimitiveSet and tell it to draw nInstances instances.
     geom->addPrimitiveSet( new osg::DrawArrays( GL_TRIANGLE_STRIP, 0, 4, nInstances ) );
@@ -186,29 +188,30 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     v->resize( 8 );
     geom->setVertexArray( v );
 
-    (*v)[0].set( -hd.x()+c.x(), -hd.y()+c.y(), -hd.z()+c.z() );
-    (*v)[1].set( hd.x()+c.x(), -hd.y()+c.y(), -hd.z()+c.z() );
-    (*v)[2].set( -hd.x()+c.x(), hd.y()+c.y(), -hd.z()+c.z() );
-    (*v)[3].set( hd.x()+c.x(), hd.y()+c.y(), -hd.z()+c.z() );
-    (*v)[4].set( -hd.x()+c.x(), -hd.y()+c.y(), hd.z()+c.z() );
-    (*v)[5].set( hd.x()+c.x(), -hd.y()+c.y(), hd.z()+c.z() );
-    (*v)[6].set( -hd.x()+c.x(), hd.y()+c.y(), hd.z()+c.z() );
-    (*v)[7].set( hd.x()+c.x(), hd.y()+c.y(), hd.z()+c.z() );
+    ( *v )[0].set( -hd.x() + c.x(), -hd.y() + c.y(), -hd.z() + c.z() );
+    ( *v )[1].set( hd.x() + c.x(), -hd.y() + c.y(), -hd.z() + c.z() );
+    ( *v )[2].set( -hd.x() + c.x(), hd.y() + c.y(), -hd.z() + c.z() );
+    ( *v )[3].set( hd.x() + c.x(), hd.y() + c.y(), -hd.z() + c.z() );
+    ( *v )[4].set( -hd.x() + c.x(), -hd.y() + c.y(), hd.z() + c.z() );
+    ( *v )[5].set( hd.x() + c.x(), -hd.y() + c.y(), hd.z() + c.z() );
+    ( *v )[6].set( -hd.x() + c.x(), hd.y() + c.y(), hd.z() + c.z() );
+    ( *v )[7].set( hd.x() + c.x(), hd.y() + c.y(), hd.z() + c.z() );
 
     osg::Vec3Array* tc( new osg::Vec3Array );
     tc->resize( 8 );
     geom->setTexCoordArray( 0, tc );
 
-    (*tc)[0].set( 0.f, 0.f, 0.f );
-    (*tc)[1].set( 1.f, 0.f, 0.f );
-    (*tc)[2].set( 0.f, 1.f, 0.f );
-    (*tc)[3].set( 1.f, 1.f, 0.f );
-    (*tc)[4].set( 0.f, 0.f, 1.f );
-    (*tc)[5].set( 1.f, 0.f, 1.f );
-    (*tc)[6].set( 0.f, 1.f, 1.f );
-    (*tc)[7].set( 1.f, 1.f, 1.f );
+    ( *tc )[0].set( 0.f, 0.f, 0.f );
+    ( *tc )[1].set( 1.f, 0.f, 0.f );
+    ( *tc )[2].set( 0.f, 1.f, 0.f );
+    ( *tc )[3].set( 1.f, 1.f, 0.f );
+    ( *tc )[4].set( 0.f, 0.f, 1.f );
+    ( *tc )[5].set( 1.f, 0.f, 1.f );
+    ( *tc )[6].set( 0.f, 1.f, 1.f );
+    ( *tc )[7].set( 1.f, 1.f, 1.f );
 
-    GLushort indices[] = {
+    GLushort indices[] =
+    {
         2, 0, 6, 6, 0, 4, // -x face
         1, 3, 5, 5, 3, 7,   // +x face
         0, 1, 4, 4, 1, 5, // -y face
@@ -230,14 +233,18 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     osg::Geometry* geom;
     if( _renderMode == SLICES )
+    {
         geom = createDAIGeometry( _numPlanes );
+    }
     else
+    {
         geom = createCubeGeometry();
+    }
     geode->addDrawable( geom );
 
     // OSG has no clue where our vertex shader will place the geometric data,
     // so specify an initial bound to allow proper culling and near/far computation.
-    osg::BoundingBox bb( (_volumeDims * -.5) + _volumeOrigin, (_volumeDims * .5) + _volumeOrigin);
+    osg::BoundingBox bb( ( _volumeDims * -.5 ) + _volumeOrigin, ( _volumeDims * .5 ) + _volumeOrigin );
     geom->setInitialBound( bb );
 
 
@@ -249,8 +256,8 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         LFX_WARNING( "getSceneGraph(): Unable to find required VOLUME_DATA ChannelData." );
         return( NULL );
     }
-    ChannelDataOSGImage* dataImagePtr( static_cast<
-        ChannelDataOSGImage* >( dataPtr.get() ) );
+    ChannelDataOSGImage* dataImagePtr( static_cast <
+                                       ChannelDataOSGImage* >( dataPtr.get() ) );
 
 
     // Create empty stub texture, to be paged in at run-time.
@@ -264,12 +271,14 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     {
         UniformInfo& info( getUniform( "volumeResolution" ) );
         unsigned int x, y, z;
-        dataImagePtr->getDimensions( x, y, z);
+        dataImagePtr->getDimensions( x, y, z );
         osg::Vec3 res( x, y, z );
         if( res.length2() == 0. )
             // Must be a paged texture and we don't have the data yet.?
             // Add a bogus resolution, just so we have something.
+        {
             res.set( 100., 100., 100. );
+        }
         info._prototype->set( res );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
@@ -293,7 +302,7 @@ osg::StateSet* VolumeRenderer::getRootState()
     }
 
     if( ( getTransferFunction() != NULL ) &&
-        !( getTransferFunctionInput().empty() ) )
+            !( getTransferFunctionInput().empty() ) )
     {
         LFX_WARNING( "getRootState(): Transfer function input is not supported and will be ignored." );
     }
@@ -336,7 +345,7 @@ osg::StateSet* VolumeRenderer::getRootState()
         stateSet->addUniform( createUniform( info ) );
     }
 
-    for( unsigned int idx=0; idx<6; idx++ )
+    for( unsigned int idx = 0; idx < 6; idx++ )
     {
         std::ostringstream ostr;
         ostr << "volumeClipPlaneEnable" << idx;
@@ -345,8 +354,8 @@ osg::StateSet* VolumeRenderer::getRootState()
         stateSet->addUniform( createUniform( info ) );
     }
 
-    osg::BlendFunc *fn = new osg::BlendFunc();
-    fn->setFunction(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    osg::BlendFunc* fn = new osg::BlendFunc();
+    fn->setFunction( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
     stateSet->setAttributeAndModes( fn, osg::StateAttribute::ON );
 
     if( _renderMode == SLICES )
@@ -392,7 +401,9 @@ void VolumeRenderer::setNumPlanes( const float& numPlanes )
         _numPlanes = 100.;
     }
     else
+    {
         _numPlanes = numPlanes;
+    }
 }
 float VolumeRenderer::getNumPlanes() const
 {

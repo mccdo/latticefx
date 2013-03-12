@@ -52,9 +52,9 @@ using namespace lfx::core;
 class ImageProcess : public Preprocess
 {
 public:
-    ImageProcess( unsigned int depth=3 )
-      : Preprocess(),
-        _depth( depth )
+    ImageProcess( unsigned int depth = 3 )
+        : Preprocess(),
+          _depth( depth )
     {
         setActionType( Preprocess::REPLACE_DATA );
     }
@@ -88,7 +88,9 @@ protected:
         const std::string channelName( "texture" );
 
         if( depth == _depth )
+        {
             return( generateImageData( baseName, depth, channelName ) );
+        }
 
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( channelName ) );
@@ -103,7 +105,7 @@ protected:
 
         ChannelDataImageSetPtr cdImageSet( new ChannelDataImageSet( channelName ) );
 
-        ChannelDataPtr brick;            
+        ChannelDataPtr brick;
         brick = recurseBuildTree( nextDepth, 0., nextMax );
         channelIdx = cdImageSet->addChannel( brick );
         cdImageSet->setOffset( channelIdx, osg::Vec3( -1., -1., -1. ) );
@@ -157,10 +159,10 @@ public:
         osg::ref_ptr< osg::Image > image( cdi->getImage() );
         osg::Image* stubImage( new osg::Image() );
         stubImage->setImage( image->s(), image->t(), image->r(),
-            image->getInternalTextureFormat(), image->getPixelFormat(),
-            image->getDataType(),
-            (unsigned char*) NULL,
-            osg::Image::NO_DELETE, image->getPacking() );
+                             image->getInternalTextureFormat(), image->getPixelFormat(),
+                             image->getDataType(),
+                             ( unsigned char* ) NULL,
+                             osg::Image::NO_DELETE, image->getPacking() );
         stubImage->setFileName( image->getFileName() );
 
         osg::Geode* geode( new osg::Geode() );
@@ -168,7 +170,7 @@ public:
         stateSet->setTextureAttributeAndModes( 0, new osg::Texture2D( stubImage ) );
 
         osg::Geometry* geom( osgwTools::makeBox( osg::Matrix::translate( getVolumeOrigin() ),
-            getVolumeDims() * .5 ) );
+                             getVolumeDims() * .5 ) );
         geom->setColorBinding( osg::Geometry::BIND_OVERALL );
         geode->addDrawable( geom );
 
@@ -241,21 +243,21 @@ void assemble()
     AssembleHierarchy ah( depth, 25000. );
 
     ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), "" );
-    for( unsigned int mIdx=0; mIdx<8; ++mIdx )
+    for( unsigned int mIdx = 0; mIdx < 8; ++mIdx )
     {
         std::string string1( 1, '0' + mIdx );
         ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 );
 
         if( depth >= 3 )
         {
-            for( unsigned int nIdx=0; nIdx<8; ++nIdx )
+            for( unsigned int nIdx = 0; nIdx < 8; ++nIdx )
             {
                 std::string string2( 1, '0' + nIdx );
                 ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 + string2 );
 
                 if( depth >= 4 )
                 {
-                    for( unsigned int oIdx=0; oIdx<8; ++oIdx )
+                    for( unsigned int oIdx = 0; oIdx < 8; ++oIdx )
                     {
                         std::string string3( 1, '0' + oIdx );
                         ah.addChannelData( ChannelDataPtr( new ChannelData( intToString( counter++ ) ) ), string1 + string2 + string3 );

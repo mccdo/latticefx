@@ -43,101 +43,101 @@
 #include <vtkDoubleArray.h>
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name, then use it.
-   // Otherwise, get it from the user...
-   std::string inFileName;
-   if ( argc > 1 )
-   {
-      inFileName.assign( argv[ 1 ] );
-   }
-   else  // then get filename from user...
-   {
-      char tempText[ 100 ]; 
-      strcpy( tempText, "the file to add a vector to" );
-      inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
-   }
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name, then use it.
+    // Otherwise, get it from the user...
+    std::string inFileName;
+    if( argc > 1 )
+    {
+        inFileName.assign( argv[ 1 ] );
+    }
+    else  // then get filename from user...
+    {
+        char tempText[ 100 ];
+        strcpy( tempText, "the file to add a vector to" );
+        inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
+    }
 
-   // read the data set ("1" means print info to screen)
-   vtkDataSet* dataset = dynamic_cast<vtkDataSet*>(readVtkThing( inFileName, 1 ));
-   ///need to check for cell data...if present convert to point data first!!!
-   std::string input;
-   std::string tempText;
-   std::string response;
-   std::vector< std::string > vectorNames;
-   do
-   {
-      tempText.assign( "the scalar to create a vector from" ); 
-      tempText = fileIO::getFilenameFromDefault( tempText, "X_VELOCITY" );
-      
-      do 
-      {
-         std::cout << "\nSo you want to add " << tempText << " as a component of the vector? (y/n): ";
-         std::cin >> response;
-         std::cin.ignore();
-      } 
-      while ( response != "y" && response != "Y" && 
-               response != "n" && response != "N" );
-      
-      if ( response == "y" || response == "Y" )
-      {
-          if ( dataset->GetPointData() )
-         {   
-            if ( dataset->GetPointData()->GetArray( tempText.c_str() ) )
-            {   
-               vectorNames.push_back( tempText );
+    // read the data set ("1" means print info to screen)
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( inFileName, 1 ) );
+    ///need to check for cell data...if present convert to point data first!!!
+    std::string input;
+    std::string tempText;
+    std::string response;
+    std::vector< std::string > vectorNames;
+    do
+    {
+        tempText.assign( "the scalar to create a vector from" );
+        tempText = fileIO::getFilenameFromDefault( tempText, "X_VELOCITY" );
+
+        do
+        {
+            std::cout << "\nSo you want to add " << tempText << " as a component of the vector? (y/n): ";
+            std::cin >> response;
+            std::cin.ignore();
+        }
+        while( response != "y" && response != "Y" &&
+                response != "n" && response != "N" );
+
+        if( response == "y" || response == "Y" )
+        {
+            if( dataset->GetPointData() )
+            {
+                if( dataset->GetPointData()->GetArray( tempText.c_str() ) )
+                {
+                    vectorNames.push_back( tempText );
+                }
+                else
+                {
+                    std::cout << " scalar is not in dataset" << std::endl;
+                }
             }
             else
-            {   
-               std::cout << " scalar is not in dataset" << std::endl;
+            {
+                std::cout << "no data in dataset" << std::endl;
             }
-         }
-         else
-         {   
-            std::cout << "no data in dataset" << std::endl;
-         }
-      }
-   }
-   while ( vectorNames.size() < 3 );
+        }
+    }
+    while( vectorNames.size() < 3 );
 
-   vtkDataArray* uVectorArray = 0;
-   vtkDataArray* vVectorArray = 0;
-   vtkDataArray* wVectorArray = 0;
+    vtkDataArray* uVectorArray = 0;
+    vtkDataArray* vVectorArray = 0;
+    vtkDataArray* wVectorArray = 0;
 
-   if ( dataset->GetPointData() )
-   {
-      uVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 0 ).c_str() );
-      vVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 1 ).c_str() );
-      wVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 2 ).c_str() );
-   }
-   vtkDoubleArray* vectorArray = vtkDoubleArray::New();
-   vectorArray->SetName( "Velocity" );
-   vectorArray->SetNumberOfComponents( 3 );
-   
+    if( dataset->GetPointData() )
+    {
+        uVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 0 ).c_str() );
+        vVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 1 ).c_str() );
+        wVectorArray = dataset->GetPointData()->GetArray( vectorNames.at( 2 ).c_str() );
+    }
+    vtkDoubleArray* vectorArray = vtkDoubleArray::New();
+    vectorArray->SetName( "Velocity" );
+    vectorArray->SetNumberOfComponents( 3 );
+
     int numTuples = uVectorArray->GetNumberOfTuples();
-   vectorArray->SetNumberOfTuples( numTuples );
+    vectorArray->SetNumberOfTuples( numTuples );
 
-   for ( int i = 0; i < numTuples; ++i )
-   {
-      vectorArray->SetTuple3( i, uVectorArray->GetTuple1( i ), vVectorArray->GetTuple1( i ), wVectorArray->GetTuple1( i ) );
-   }
-   
-   if ( dataset->GetCellData() )
-   {
-      dataset->GetCellData()->AddArray( vectorArray );
-   }
-   else if ( dataset->GetPointData() )
-   {
-      dataset->GetPointData()->AddArray( vectorArray );
-   }
-   vectorArray->Delete();
-   
-   // write vti file
-   ves::xplorer::util::writeVtkThing( dataset, inFileName, 1 );
+    for( int i = 0; i < numTuples; ++i )
+    {
+        vectorArray->SetTuple3( i, uVectorArray->GetTuple1( i ), vVectorArray->GetTuple1( i ), wVectorArray->GetTuple1( i ) );
+    }
 
-   dataset->Delete();
+    if( dataset->GetCellData() )
+    {
+        dataset->GetCellData()->AddArray( vectorArray );
+    }
+    else if( dataset->GetPointData() )
+    {
+        dataset->GetPointData()->AddArray( vectorArray );
+    }
+    vectorArray->Delete();
 
-   return 0;
+    // write vti file
+    ves::xplorer::util::writeVtkThing( dataset, inFileName, 1 );
+
+    dataset->Delete();
+
+    return 0;
 }
 

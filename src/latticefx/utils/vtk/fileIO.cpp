@@ -73,10 +73,10 @@ int fileIO::DirectoryExists( std::string const& dirName )
     {
 #if (BOOST_VERSION >= 104600) && (BOOST_FILESYSTEM_VERSION == 3)
         std::cout << "\nDirectory not found: "
-        << pathName.string() << std::endl;
+                  << pathName.string() << std::endl;
 #else
         std::cout << "\nDirectory not found: "
-        << pathName.native_file_string() << std::endl;
+                  << pathName.native_file_string() << std::endl;
 #endif
         return 0;
     }
@@ -116,7 +116,7 @@ const std::string fileIO::getWritableDir()
             break;
         }
         std::cerr << "\nERROR: Can't write to \"" << dir_name
-        << "\" directory" << std::endl;
+                  << "\" directory" << std::endl;
     }
     while( 1 );
     return dir_name;
@@ -130,9 +130,9 @@ std::string fileIO::getFilenameFromDefault( std::string fileContents, std::strin
     if( ! defaultName.empty() )
     {
         std::cout << "\nThe default name for " << fileContents
-        << " is \"" << defaultName << "\"" << std::endl;
+                  << " is \"" << defaultName << "\"" << std::endl;
         std::cout << "Do you want to change it ? (0) Use default (1) Change"
-        << std::endl;
+                  << std::endl;
         answer = getIntegerBetween( 0, 1 );
     }
 
@@ -152,14 +152,18 @@ std::string fileIO::getFilenameFromDefault( std::string fileContents, std::strin
 }
 
 std::string fileIO::getReadableFileFromDefault( std::string stringDescribingfileContents,
-                                                const std::string defaultName )
+        const std::string defaultName )
 {
     // initialize return name with default name, and if not readable set to null
     std::string validDefaultName;
     if( ! isFileReadable( defaultName ) )
+    {
         validDefaultName = "";
+    }
     else
+    {
         validDefaultName.assign( defaultName );
+    }
 
     std::string filename;
     do
@@ -170,7 +174,7 @@ std::string fileIO::getReadableFileFromDefault( std::string stringDescribingfile
         if( ! isFileReadable( filename ) )
         {
             std::cerr << "\n\"" << filename << "\" is not readable."
-            << std::endl;
+                      << std::endl;
         }
     }
     while( filename.empty() );
@@ -197,32 +201,40 @@ std::string fileIO::getWritableFile( std::string defaultName )
     return filename;
 }
 
-int fileIO::readNByteBlockFromFile( void *ptr, const unsigned int nByte,
-                                    const unsigned int num, FILE *stream,
+int fileIO::readNByteBlockFromFile( void* ptr, const unsigned int nByte,
+                                    const unsigned int num, FILE* stream,
                                     const bool endian_flip )
 {
-    if( feof( stream ) ) return 1;
+    if( feof( stream ) )
+    {
+        return 1;
+    }
 
     // num is the number of nByte byte blocks to be read
-    if( fread( ptr, nByte, num, stream ) != num ) return 1;
+    if( fread( ptr, nByte, num, stream ) != num )
+    {
+        return 1;
+    }
 
     if( endian_flip )
     {
-        char * buf = new char [nByte];
-        for( unsigned int i = 0; i < num*nByte; i += nByte )
+        char* buf = new char [nByte];
+        for( unsigned int i = 0; i < num * nByte; i += nByte )
         {
             for( unsigned int j = 0; j < nByte; j++ )
-                buf[nByte-1-j] = * ((( char* )ptr ) + i + j );
+            {
+                buf[nByte - 1 - j] = * ( ( ( char* )ptr ) + i + j );
+            }
 
-            memcpy((( char* )ptr ) + i, buf, nByte );
+            memcpy( ( ( char* )ptr ) + i, buf, nByte );
         }
         delete [] buf;
     }
     return 0;  //success
 }
 ////////////////////////////////////////////////////////////////////////////////
-void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string verb,
-                                     std::string & inFileName, std::string & outFileName )
+void fileIO::processCommandLineArgs( int argc, char* argv[], const std::string verb,
+                                     std::string& inFileName, std::string& outFileName )
 {
     if( argc > 1 )
     {
@@ -235,7 +247,9 @@ void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string v
         else
         {
             if( outFileName.empty() )
+            {
                 outFileName = fileIO::getWritableFile( "outFile.vtk" );
+            }
             else
             {
                 std::string defaultName;
@@ -247,13 +261,15 @@ void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string v
         // if more than three arguments are on the commandline,
         // then assume that a shell script is in use and don't ask to verify
         if( argc > 3 )
+        {
             return;
+        }
 
         char response;
         do
         {
             std::cout << "\nSo you want to " << verb << " " << inFileName
-            << " and save to " << outFileName << "? (y/n/q): ";
+                      << " and save to " << outFileName << "? (y/n/q): ";
             std::cin >> response;
             std::cin.ignore();
         }
@@ -271,7 +287,9 @@ void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string v
         // if anything other than y/Y was input then reset argc to get
         // filenames from user...
         if( response != 'y' && response != 'Y' )
+        {
             argc = 1;
+        }
     }
 
     if( argc == 1 ) // then get filenames from user...
@@ -286,7 +304,7 @@ void fileIO::processCommandLineArgs( int argc, char *argv[], const std::string v
 
 std::string fileIO::getExtension( std::string filename )
 {
-    int len = (int)( filename.size() );
+    int len = ( int )( filename.size() );
     int i, foundPeriod = 0;
     std::string extension;
     for( i = len - 1; i >= 0; i-- )
@@ -308,7 +326,7 @@ std::string fileIO::getExtension( std::string filename )
     return extension;
 }
 
-void fileIO::readToFileEnd( FILE *inputFile )
+void fileIO::readToFileEnd( FILE* inputFile )
 {
     // read to file end
     float junk2;
@@ -317,18 +335,24 @@ void fileIO::readToFileEnd( FILE *inputFile )
         if( fileIO::readNByteBlockFromFile( &junk2, sizeof( float ), 1, inputFile ) )
         {
             std::cout << "end of file found after reading " << i
-            << " more floats" << std::endl;
+                      << " more floats" << std::endl;
             break;
         }
-        else std::cout << "junk2 = " << junk2 << std::endl;
+        else
+        {
+            std::cout << "junk2 = " << junk2 << std::endl;
+        }
     }
 }
 
 void fileIO::StripTrailingSpaces( std::string line )
 {
-    for( int i = (int)( line.size() ) - 1; i >= 0; i-- )
+    for( int i = ( int )( line.size() ) - 1; i >= 0; i-- )
     {
-        if( line[i] != ' ' ) break;
+        if( line[i] != ' ' )
+        {
+            break;
+        }
         line[i] = '\0';
     }
 }
@@ -435,7 +459,7 @@ int fileIO::getIntegerBetween( const int min, const int max )
             else if( ! finishedNumber )
             {
                 // check if key entered is between 0 - 9.
-                if (( c - '0' >= 0 ) && ( c - '0' <= 9 ) )
+                if( ( c - '0' >= 0 ) && ( c - '0' <= 9 ) )
                 {
                     string[index] = c;
                     index++;
@@ -463,9 +487,13 @@ int fileIO::getIntegerBetween( const int min, const int max )
             std::string shortString = StripLeadingSpaces( string );
             shortString.assign( string );
             if( !strcmp( string, "" ) ) // if all spaces
-                index = 0;                 // force a new loop
+            {
+                index = 0;    // force a new loop
+            }
             else if( !strcmp( string, "-" ) ) // if only neg sign
-                index = 0;                       // force a new loop
+            {
+                index = 0;    // force a new loop
+            }
             else
             {
                 // convert array of chars to integer
@@ -557,14 +585,14 @@ std::vector<std::string> fileIO::GetFilesInDirectory( std::string dir, std::stri
                         filesInDir.push_back( pathAndFileName );
                     }
                 }
-                catch ( const std::exception& ex )
+                catch( const std::exception& ex )
                 {
                     std::cout << ex.what() << std::endl;
                 }
             }
         }
     }
-    catch ( const std::exception& ex )
+    catch( const std::exception& ex )
     {
         std::cout << ex.what() << std::endl;
     }

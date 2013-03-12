@@ -28,8 +28,10 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 typedef boost::shared_ptr< Poco::LogStream > PocoLogStreamPtr;
@@ -53,14 +55,14 @@ class LogBase
 public:
     LogBase( const std::string& loggerName )
 #ifdef LFX_DISABLE_LOGGING
-      : _logStream( PocoLogStreamPtr( NULL ) )
+        : _logStream( PocoLogStreamPtr( NULL ) )
 #else
-      : _logger( Poco::Logger::get( loggerName ) ),
-        _logStream( PocoLogStreamPtr( new Poco::LogStream( _logger ) ) )
+        : _logger( Poco::Logger::get( loggerName ) ),
+          _logStream( PocoLogStreamPtr( new Poco::LogStream( _logger ) ) )
 #endif
     {}
     LogBase( const LogBase& rhs )
-      :
+        :
 #ifndef LFX_DISABLE_LOGGING
         _logger( rhs._logger ),
 #endif

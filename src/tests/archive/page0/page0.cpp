@@ -44,7 +44,7 @@ void generateDataFiles( osg::Group* root )
 
     osg::Geode* geode( new osg::Geode );
     osg::Geometry* geom( osgwTools::makePlane( osg::Vec3( -1., 0., -1. ),
-        osg::Vec3( 2., 0., 0. ), osg::Vec3( 0., 0., 2. ) ) );
+                         osg::Vec3( 2., 0., 0. ), osg::Vec3( 0., 0., 2. ) ) );
     geode->addDrawable( geom );
     geom->setColorArray( color0 );
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );
@@ -57,7 +57,7 @@ void generateDataFiles( osg::Group* root )
 
     geode = new osg::Geode;
     geom = osgwTools::makePlane( osg::Vec3( -1., 0., -1. ),
-        osg::Vec3( 2., 0., 0. ), osg::Vec3( 0., 0., 2. ) );
+                                 osg::Vec3( 2., 0., 0. ), osg::Vec3( 0., 0., 2. ) );
     geode->addDrawable( geom );
     geom->setColorArray( color1 );
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );

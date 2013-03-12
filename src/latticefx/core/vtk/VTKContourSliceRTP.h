@@ -26,11 +26,14 @@
 
 #include <latticefx/core/vtk/CuttingPlane.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKContourSliceRTP VTKContourSliceRTP.h <latticefx/core/vtk/VTKContourSliceRTP.h>
  \brief Class the creates a vector field polydata from a vtk dataset.
@@ -40,24 +43,24 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT VTKContourSliceRTP : public VTKBaseRTP
 {
 public:
-    
+
     ///Default constructor
     ///\note Since this is a channel operation we pass the enum for a Channel
     ///operation when we construct the VTKVectorFieldRTP.
     VTKContourSliceRTP( CuttingPlane::SliceDirection slice = CuttingPlane::X_PLANE )
-        : 
+        :
         VTKBaseRTP( lfx::core::RTPOperation::Channel )
     {
         m_planeDirection = slice;
     }
-    
+
     ///Destructor
     virtual ~VTKContourSliceRTP()
     {
         ;
     }
-    
-    ///We are going to be creating a ChannelDatavtkPolyData so we override the 
+
+    ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 

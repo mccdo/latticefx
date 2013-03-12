@@ -34,8 +34,10 @@
 #include <vector>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup PagingSupport */
@@ -63,14 +65,15 @@ public:
     \details All children must page the same way, either based on their pixel size (derived
     from transform matrices and viewport) or their current time in a time series data set.
     */
-    typedef enum {
+    typedef enum
+    {
         UNSPECIFIED_RANGE,
         PIXEL_SIZE_RANGE,
         TIME_RANGE
     } RangeMode;
 
-    PageData( const RangeMode rangeMode=UNSPECIFIED_RANGE );
-    PageData( const PageData& rhs, const osg::CopyOp& copyOp=osg::CopyOp::SHALLOW_COPY );
+    PageData( const RangeMode rangeMode = UNSPECIFIED_RANGE );
+    PageData( const PageData& rhs, const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY );
     META_Object( latticefx_core, PageData );
 
     /** \brief set the RangeMode for the owning Group parent.
@@ -88,14 +91,15 @@ public:
     /** \brief Data for each pageable child.
     \details Contains information required for paging. Client code should add one
     of these per pageable child using PageData::setRangeData().
-    
+
     Stored information includes the child index, range values for which this child is
     valie, and a database key to load the child. Also contains an enum that describes
     the current page status of the child. */
-    struct LATTICEFX_EXPORT RangeData {
+    struct LATTICEFX_EXPORT RangeData
+    {
         RangeData();
-        RangeData( RangeValues rangeValues, const DBKey& dbKey=DBKey( "" ) );
-        RangeData( double minVal, double maxVal, const DBKey& dbKey=DBKey( "" ) );
+        RangeData( RangeValues rangeValues, const DBKey& dbKey = DBKey( "" ) );
+        RangeData( double minVal, double maxVal, const DBKey& dbKey = DBKey( "" ) );
 
         RangeValues _rangeValues;
 
@@ -108,7 +112,8 @@ public:
         of a cancellation or child expiration, in which case LOAD_REQUESTED and ACTIVE
         can change to UNLOADED. (LOADED never changes directly to UNLOADED, it always
         goes to ACTIVE first.) */
-        typedef enum {
+        typedef enum
+        {
             UNLOADED,
             LOAD_REQUESTED,
             LOADED,

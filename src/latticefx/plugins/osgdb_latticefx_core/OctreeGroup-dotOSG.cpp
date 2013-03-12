@@ -66,7 +66,10 @@ bool OctreeGroup_readLocalData( osg::Object& obj, osgDB::Input& fr )
                 fr += 3;
                 offsets->push_back( v );
             }
-            else ++fr;
+            else
+            {
+                ++fr;
+            }
         }
         og.setOffsets( offsets.get() );
         ++fr; // For closing brace.
@@ -84,7 +87,7 @@ bool OctreeGroup_readLocalData( osg::Object& obj, osgDB::Input& fr )
             advance = true;
         }
     }
-    
+
     return( advance );
 }
 

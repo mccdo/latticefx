@@ -35,8 +35,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
@@ -62,11 +64,17 @@ public:
     };
 
     /** Constructor */
-    TraverseHierarchy( ChannelDataPtr root=ChannelDataPtr((ChannelData*)NULL) );
+    TraverseHierarchy( ChannelDataPtr root = ChannelDataPtr( ( ChannelData* )NULL ) );
     TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb );
 
-    void setRoot( ChannelDataPtr root ) { _root = root; }
-    void setCallback( HierarchyCallback& cb ) { _cb = cb; }
+    void setRoot( ChannelDataPtr root )
+    {
+        _root = root;
+    }
+    void setCallback( HierarchyCallback& cb )
+    {
+        _cb = cb;
+    }
     void execute();
 
 protected:
@@ -148,7 +156,7 @@ public:
     \param maxDepth The maximum depth achieved by the bricked textures
     \param baseRange The switch distance between the lowest LOD and one detail level higher.
     */
-    AssembleHierarchy( unsigned int maxDepth, double baseRange=25000. );
+    AssembleHierarchy( unsigned int maxDepth, double baseRange = 25000. );
     ///Copy constructor
     AssembleHierarchy( const AssembleHierarchy& rhs );
     ///Destructor
@@ -157,7 +165,7 @@ public:
     ///In this method if an \ref offset  is not provided the name string will be
     ///used to decide which octant a channel belongs to. This is done as follows:
     /// 0 = -1., -1., -1.
-    /// 1 =  1., -1., -1. 
+    /// 1 =  1., -1., -1.
     /// 2 = -1.,  1., -1.
     /// 3 =  1.,  1., -1.
     /// 4 = -1., -1.,  1.
@@ -170,11 +178,11 @@ public:
     /// - 000
     /// - 017
     /// - 701
-    ///\param offset The offset for a brick in normalized coordinate space. An 
+    ///\param offset The offset for a brick in normalized coordinate space. An
     ///example of these values is listed above.
     ///\param depth Do not use this value. It is for internal processing only.
     void addChannelData( ChannelDataPtr cdp, const std::string nameString,
-            const osg::Vec3& offset=osg::Vec3( 0., 0., 0. ), const unsigned int depth=0 );
+                         const osg::Vec3& offset = osg::Vec3( 0., 0., 0. ), const unsigned int depth = 0 );
 
     /** \brief Prune empty branches from the hierarchy.
     \detauls Call this function after adding all ChannelData objects, and just
@@ -184,7 +192,10 @@ public:
 
     /** \brief Retrieve the created hierarchy.
     \details Call this function after adding all ChannelDraw objects. */
-    ChannelDataPtr getRoot() const { return( _root ); }
+    ChannelDataPtr getRoot() const
+    {
+        return( _root );
+    }
 
 protected:
     void recurseInit( ChannelDataPtr cdp, unsigned int depth );
@@ -238,7 +249,7 @@ return NULL. (However, see Downsampler for implementation details.) */
 class LATTICEFX_EXPORT VolumeBrickData
 {
 public:
-    VolumeBrickData( const bool prune=false );
+    VolumeBrickData( const bool prune = false );
     virtual ~VolumeBrickData();
 
     void setNumBricks( const osg::Vec3s& numBricks );
@@ -250,7 +261,7 @@ public:
     by an application or any derived class. However, for derived classes
     that load bricks from secondary storage, or generate bricks
     procedurally, this function is generally not used.
-    
+
     Note that the added brick does not account for brick overlap. */
     void addBrick( const osg::Vec3s& brickNum, osg::Image* image );
 
@@ -286,7 +297,7 @@ protected:
     \details Using \c proto as a base Image, this function creates a new image with
     dimensions equal to \c proto plus \c overlap. The new image has the same format and
     type as \c proto. The function allocates pixel data initialized to 0. */
-    osg::Image* newBrick( const osg::Image* proto, const osg::Vec3s& overlap=osg::Vec3s(1,1,1) ) const;
+    osg::Image* newBrick( const osg::Image* proto, const osg::Vec3s& overlap = osg::Vec3s( 1, 1, 1 ) ) const;
 
     osg::Vec3s _numBricks;
     bool _prune;
@@ -328,7 +339,7 @@ public:
 
 protected:
     osg::Image* sample( const osg::Image* i0, const osg::Image* i1, const osg::Image* i2, const osg::Image* i3,
-        const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const;
+                        const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const;
 
     const VolumeBrickData* _hi;
     mutable VolumeBrickData* _low;

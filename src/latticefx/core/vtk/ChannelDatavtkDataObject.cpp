@@ -27,15 +27,18 @@
 
 #include <vtkDataObject.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
-    
+namespace vtk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const std::string& name )
-    : 
+    :
     ChannelData( name ),
     m_dobj( dobj )
 {
@@ -48,7 +51,7 @@ ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const s
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkDataObject::ChannelDatavtkDataObject( const ChannelDatavtkDataObject& rhs )
-    : 
+    :
     ChannelData( rhs ),
     m_dobj( rhs.m_dobj )
 {
@@ -72,7 +75,7 @@ vtkDataObject* ChannelDatavtkDataObject::GetDataObject()
 unsigned int ChannelDatavtkDataObject::GetNumberOfPoints()
 {
     lfx::vtk_utils::DataObjectHandler dataObjectHandler;
-    lfx::vtk_utils::GetNumberOfPointsCallback* numberOfPointsCallback = 
+    lfx::vtk_utils::GetNumberOfPointsCallback* numberOfPointsCallback =
         new lfx::vtk_utils::GetNumberOfPointsCallback();
     dataObjectHandler.SetDatasetOperatorCallback( numberOfPointsCallback );
     dataObjectHandler.OperateOnAllDatasetsInObject( m_dobj );

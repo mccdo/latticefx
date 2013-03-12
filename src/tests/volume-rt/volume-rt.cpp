@@ -53,8 +53,8 @@ class MyKeyHandler : public osgGA::GUIEventHandler
 {
 public:
     MyKeyHandler( osg::StateSet* stateSet )
-      : _stateSet( stateSet ),
-        _mode( false )
+        : _stateSet( stateSet ),
+          _mode( false )
     {
         osg::Uniform* u = new osg::Uniform( "toggle", _mode );
         _stateSet->addUniform( u );
@@ -131,9 +131,9 @@ public:
         traverse( node, nv );
     }
 
-    void setDirty( const bool dirty=true )
+    void setDirty( const bool dirty = true )
     {
-        BOOST_FOREACH( DirtyMap::value_type& val, _dirty )
+        BOOST_FOREACH( DirtyMap::value_type & val, _dirty )
         {
             val.second = dirty;
         }
@@ -159,13 +159,15 @@ class ResizeHandler : public osgGA::GUIEventHandler
 {
 public:
     ResizeHandler( osg::Node* node )
-      : _node( node )
+        : _node( node )
     {
     }
     virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* )
     {
         if( ea.getEventType() != osgGA::GUIEventAdapter::RESIZE )
+        {
             return( false );
+        }
 
         winSize.x() = ea.getWindowWidth();
         winSize.y() = ea.getWindowHeight();
@@ -175,8 +177,8 @@ public:
         // TBD disable for now
         //colorTexA->dirtyTextureObject();
         //depthTexA->dirtyTextureObject();
-        splatCam->setViewport( 0, 0, (int)winSize.x(), (int)winSize.y() );
-        rootCam->setProjectionMatrixAsPerspective( 30., winSize.x()/winSize.y(), 1., 199. );
+        splatCam->setViewport( 0, 0, ( int )winSize.x(), ( int )winSize.y() );
+        rootCam->setProjectionMatrixAsPerspective( 30., winSize.x() / winSize.y(), 1., 199. );
 
         resetCamera( _node.get() );
         return( false );
@@ -222,7 +224,7 @@ osg::Camera* createDisplaySceneCamera()
 {
     splatCam = new osg::Camera;
     splatCam->setName( "splatCam" );
-    
+
     splatCam->setClearMask( 0 );
     splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
 
@@ -231,7 +233,7 @@ osg::Camera* createDisplaySceneCamera()
 
     osg::Geode* geode( new osg::Geode );
     geode->addDrawable( osgwTools::makePlane(
-        osg::Vec3( -1,-1,0 ), osg::Vec3( 2,0,0 ), osg::Vec3( 0,2,0 ) ) );
+                            osg::Vec3( -1, -1, 0 ), osg::Vec3( 2, 0, 0 ), osg::Vec3( 0, 2, 0 ) ) );
     geode->getOrCreateStateSet()->setTextureAttributeAndModes(
         0, colorTexA.get(), osg::StateAttribute::ON );
     geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
@@ -246,7 +248,8 @@ osg::Node* createClipSubgraph()
 {
     // Test hardware clip planes
     osg::ClipNode* cn( new osg::ClipNode() );
-    osg::Vec3 n( .9, .8, 0. ); n.normalize();
+    osg::Vec3 n( .9, .8, 0. );
+    n.normalize();
     cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
 
     return( cn );
@@ -283,7 +286,8 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
         stateSet->addUniform( windowSize.get() );
 
         stateSet->setTextureAttributeAndModes( 1, depthTexA.get() );
-        osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+        osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" );
+        uniform->set( 1 );
         stateSet->addUniform( uniform );
 
         if( clip )
@@ -301,7 +305,7 @@ osg::Camera* createLfxCamera( osg::Node* node, const bool clip )
 }
 
 DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims,
-        const bool useIso, const float isoVal )
+                          const bool useIso, const float isoVal )
 {
     osg::ref_ptr< osg::Image > image( new osg::Image() );
     image->setFileName( fileName );
@@ -333,15 +337,17 @@ DataSetPtr prepareVolume( const std::string& fileName, const osg::Vec3& dims,
     renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( isoVal );
     if( useIso )
+    {
         renderOp->setHardwareMaskEpsilon( 0.1 );
+    }
 
     return( dsp );
 }
 
-osg::Node* createScene( const bool clip, const osg::Vec3& dims=osg::Vec3(0.,0.,0.) )
+osg::Node* createScene( const bool clip, const osg::Vec3& dims = osg::Vec3( 0., 0., 0. ) )
 {
     osg::Geometry* geom( osgwTools::makeClosedCylinder(
-        osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s(1,16) ) );
+                             osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s( 1, 16 ) ) );
     osg::Vec4Array* c( new osg::Vec4Array() );
     c->push_back( osg::Vec4( 1., .5, 0., 1. ) );
     geom->setColorArray( c );
@@ -393,7 +399,7 @@ int main( int argc, char** argv )
     arguments.read( "-f", fileName );
 
     osg::Vec3 dims( 50., 50., 50. );
-    arguments.read( "-d", dims[0],dims[1],dims[2] );
+    arguments.read( "-d", dims[0], dims[1], dims[2] );
 
     const bool clip( arguments.find( "-clip" ) > 0 );
     const bool cyl( arguments.find( "-cyl" ) > 0 );
@@ -413,14 +419,14 @@ int main( int argc, char** argv )
         // the translate will occur in the unscaled units, and the scaling will occur around the new origin.
         // A is just translate and nominal scale
         const osg::Matrix transformA = osg::Matrixd::scale( .5, .5, .5 ) *
-                osg::Matrixd::translate(-75.0, -75.0, -75.0);
+                                       osg::Matrixd::translate( -75.0, -75.0, -75.0 );
         osg::MatrixTransform* mtA( new osg::MatrixTransform( transformA ) );
         mtA->addChild( dsp->getSceneData() );
         volume->addChild( mtA );
 
         // B: scale and rotate but no translate
         const osg::Matrix transformB = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 0.0, 1.0, 0.0 ) *
-                osg::Matrixd::scale( 2.0, 2.0, 2.0 );
+                                       osg::Matrixd::scale( 2.0, 2.0, 2.0 );
         osg::MatrixTransform* mtB( new osg::MatrixTransform( transformB ) );
         mtB->addChild( dsp->getSceneData() );
         volume->addChild( mtB );
@@ -429,8 +435,8 @@ int main( int argc, char** argv )
         // Note this is a non-uniform scale, performed after the rotation,
         // so the volume will be skewed.
         const osg::Matrix transformC = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 1.0, 0.0, 0.0 ) *
-                osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
-                osg::Matrixd::translate( 100.0, 0.0, 0.0 );
+                                       osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
+                                       osg::Matrixd::translate( 100.0, 0.0, 0.0 );
         osg::MatrixTransform* mtC( new osg::MatrixTransform( transformC ) );
         mtC->addChild( dsp->getSceneData() );
         volume->addChild( mtC );
@@ -448,9 +454,11 @@ int main( int argc, char** argv )
         volume->getOrCreateStateSet()->setRenderingHint( osg::StateSet::TRANSPARENT_BIN );
     }
     else
+    {
         volume->addChild( dsp->getSceneData() );
+    }
 
-    
+
     osgViewer::Viewer viewer;
     viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
@@ -461,7 +469,9 @@ int main( int argc, char** argv )
 
     osg::Node* scene( NULL );
     if( cyl )
+    {
         scene = createScene( clip, dims );
+    }
 
     // Assemble camera RTT and scene hierarchy.
     // viewerCamera (renders to both color and depth textures)
@@ -476,7 +486,9 @@ int main( int argc, char** argv )
     prepareSceneCamera( viewer );
     osg::Group* rootGroup( new osg::Group );
     if( scene != NULL )
+    {
         rootGroup->addChild( scene );
+    }
     rootGroup->addChild( createDisplaySceneCamera() );
     rootGroup->addChild( createLfxCamera( volume, clip ) );
     viewer.setSceneData( rootGroup );

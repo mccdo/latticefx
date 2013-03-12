@@ -28,12 +28,14 @@
 #include <iostream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 osg::Image* loadImageFromDat( const std::string& fileName,
-    const unsigned int alphaPolicy, float alpha )
+                              const unsigned int alphaPolicy, float alpha )
 {
     std::string fullName( osgDB::findDataFile( fileName ) );
     if( fullName.empty() )
@@ -51,33 +53,41 @@ osg::Image* loadImageFromDat( const std::string& fileName,
         osg::Vec3 rgb;
         istr >> index;
         if( istr.fail() )
+        {
             break;
+        }
         istr >> rgb[0] >> rgb[1] >> rgb[2];
-        rgb *= 1.f/255.f;
-        
-        if( index+1 > array->size() )
-            array->resize( index+1 );
-        (*array)[ index ] = osg::Vec4( rgb, alpha );
+        rgb *= 1.f / 255.f;
+
+        if( index + 1 > array->size() )
+        {
+            array->resize( index + 1 );
+        }
+        ( *array )[ index ] = osg::Vec4( rgb, alpha );
     }
     istr.close();
 
     if( alphaPolicy != LFX_ALPHA_CONSTANT )
     {
         unsigned int idx, numIndices( array->size() );
-        for( idx=0; idx<numIndices; ++idx )
+        for( idx = 0; idx < numIndices; ++idx )
         {
             float rampAlpha;
             if( alphaPolicy == LFX_ALPHA_RAMP_0_TO_1 )
-                rampAlpha = (float)idx / (float)( numIndices-1 );
+            {
+                rampAlpha = ( float )idx / ( float )( numIndices - 1 );
+            }
             else // LFX_ALPHA_RAMP_1_TO_0
-                rampAlpha = 1.f - (float)idx / (float)( numIndices-1 );
-            (*array)[ idx ][ 3 ] = rampAlpha;
+            {
+                rampAlpha = 1.f - ( float )idx / ( float )( numIndices - 1 );
+            }
+            ( *array )[ idx ][ 3 ] = rampAlpha;
         }
     }
 
     osg::ref_ptr< osg::Image > image( new osg::Image );
     image->setImage( array->size(), 1, 1, GL_RGBA, GL_RGBA, GL_FLOAT,
-        (unsigned char*)( &((*array)[0]) ), osg::Image::USE_NEW_DELETE );
+                     ( unsigned char* )( &( ( *array )[0] ) ), osg::Image::USE_NEW_DELETE );
 
 
     return( image.release() );

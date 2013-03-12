@@ -37,8 +37,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class Preprocess Preprocess.h <latticefx/core/Preprocess.h>
@@ -60,7 +62,8 @@ public:
     multiple inputs, the first input is replaced. Useful when creating a ChannelDataComposite.
     \li IGNORE_DATA Ignore the new ChannelData. This is useful if the Preprocess is simply storing
     the new data into the DB. */
-    typedef enum {
+    typedef enum
+    {
         ADD_DATA,
         REPLACE_DATA,
         IGNORE_DATA
@@ -80,7 +83,7 @@ public:
     example.) */
     virtual ChannelDataPtr operator()()
     {
-        return( ChannelDataPtr( (ChannelData*)NULL ) );
+        return( ChannelDataPtr( ( ChannelData* )NULL ) );
     }
 
 protected:
@@ -93,8 +96,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
-        ar & BOOST_SERIALIZATION_NVP( _action );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
+        ar& BOOST_SERIALIZATION_NVP( _action );
     }
 };
 

@@ -48,8 +48,10 @@ bool performTests( DBBasePtr db )
     {
         const DBKey localKey( "floats-test" + arraySuffix );
         osg::ref_ptr< osg::FloatArray > floatsOrig( new osg::FloatArray() );
-        for( unsigned int idx=0; idx<100; ++idx )
-            floatsOrig->push_back( (float)idx );
+        for( unsigned int idx = 0; idx < 100; ++idx )
+        {
+            floatsOrig->push_back( ( float )idx );
+        }
         bool result = db->storeArray( floatsOrig.get(), localKey );
         if( !result )
         {
@@ -70,9 +72,9 @@ bool performTests( DBBasePtr db )
             LFX_CRITICAL_STATIC( logstr, "osg::FloatArray size mismatch." );
             return( false );
         }
-        for( unsigned int idx=0; idx<floatsOrig->size(); ++idx )
+        for( unsigned int idx = 0; idx < floatsOrig->size(); ++idx )
         {
-            if( (*floatsOrig)[ idx ] != (*floatsLoad)[ idx ] )
+            if( ( *floatsOrig )[ idx ] != ( *floatsLoad )[ idx ] )
             {
                 LFX_CRITICAL_STATIC( logstr, "osg::FloatArray element mismatch." );
                 return( false );
@@ -121,7 +123,9 @@ int main( int argc, char** argv )
 
 
     if( !performTests( db ) )
+    {
         return( 1 );
+    }
 
 
     // Delete the DB.

@@ -23,23 +23,25 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 OperationBase::OperationBase( const OperationType opType )
-  : _opType( opType ),
-    _enable( true )
+    : _opType( opType ),
+      _enable( true )
 {
 }
 OperationBase::OperationBase( const OperationBase& rhs )
-  : _inputs( rhs._inputs ),
-    _inputNames( rhs._inputNames ),
-    _inputTypeMap( rhs._inputTypeMap ),
-    _opType( rhs._opType ),
-    _enable( rhs._enable ),
-    _nameValueMap( rhs._nameValueMap ),
-    _db( rhs._db )
+    : _inputs( rhs._inputs ),
+      _inputNames( rhs._inputNames ),
+      _inputTypeMap( rhs._inputTypeMap ),
+      _opType( rhs._opType ),
+      _enable( rhs._enable ),
+      _nameValueMap( rhs._nameValueMap ),
+      _db( rhs._db )
 {
 }
 OperationBase::~OperationBase()
@@ -71,10 +73,12 @@ ChannelDataPtr OperationBase::getInput( const std::string& name )
     BOOST_FOREACH( ChannelDataPtr cdp, _inputs )
     {
         if( ( cdp != NULL ) && ( cdp->getName() == name ) )
+        {
             return( cdp );
+        }
     }
     // Didn't find a match. Return a pointer to NULL.
-    return( ChannelDataPtr( (ChannelData*)NULL ) );
+    return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 const ChannelDataPtr OperationBase::getInput( const std::string& name ) const
 {
@@ -103,10 +107,14 @@ std::string OperationBase::getInputNameAlias( const int inputType ) const
     InputTypeMap::const_iterator it( _inputTypeMap.find( inputType ) );
     if( it != _inputTypeMap.end() )
         // Found it.
+    {
         return( it->second );
+    }
     else
         // Should never happen, as the derived-classes'constructors assigns defaults.
+    {
         return( "" );
+    }
 }
 
 
@@ -131,10 +139,14 @@ const OperationValue* OperationBase::getValue( const std::string& name ) const
 {
     // Return the value associated with the name.
     if( hasValue( name ) )
+    {
         return( &( _nameValueMap.find( name )->second ) );
+    }
     else
         // Didn't find it.
+    {
         return( NULL );
+    }
 }
 
 

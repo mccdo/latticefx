@@ -39,30 +39,33 @@
 #include <vtkDataObject.h>
 using namespace lfx::vtk_utils;
 
-int main( int argc, char *argv[] )
-{    
-   int printInfoToScreen = 0; // "1" means print info to screen
+int main( int argc, char* argv[] )
+{
+    int printInfoToScreen = 0; // "1" means print info to screen
 
-   // If the command line contains an input vtk file name and an output file,
-   // set them up.  Otherwise, get them from the user...
+    // If the command line contains an input vtk file name and an output file,
+    // set them up.  Otherwise, get them from the user...
     std::string inFileName;// = NULL;
     std::string outFileName;// = NULL;
-   fileIO::processCommandLineArgs( argc, argv, "convert ascii", 
-                                   inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
-   vtkDataObject * dataset = (readVtkThing( inFileName, 1 ));
-   if ( printInfoToScreen )
-   {
-      std::cout << "\nback in main..." << std::endl; 
-      printWhatItIs( dataset );
-   }
+    fileIO::processCommandLineArgs( argc, argv, "convert ascii",
+                                    inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
+    vtkDataObject* dataset = ( readVtkThing( inFileName, 1 ) );
+    if( printInfoToScreen )
+    {
+        std::cout << "\nback in main..." << std::endl;
+        printWhatItIs( dataset );
+    }
 
-   writeVtkThing( dataset, outFileName, 1 );   // "1" means write binary
+    writeVtkThing( dataset, outFileName, 1 );   // "1" means write binary
 
-   dataset->Delete();
-   inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-   outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+    dataset->Delete();
+    inFileName.erase();//delete [] inFileName;   inFileName = NULL;
+    outFileName.erase();//delete [] outFileName;  outFileName = NULL;
 
-   return 0;
+    return 0;
 }
 

@@ -90,7 +90,7 @@ int main( int argc, char** argv )
 
     std::cout << "-d <x> <y> <z>\tDefault is 1 1 1." << std::endl;
     osg::Vec3 dims( 50., 50., 50. );
-    arguments.read( "-d", dims[0],dims[1],dims[2] );
+    arguments.read( "-d", dims[0], dims[1], dims[2] );
 
     std::cout << "-clip\tTest clip plane." << std::endl;
 
@@ -98,7 +98,7 @@ int main( int argc, char** argv )
     std::cout << std::endl;
 
     // Create an example data set.
-    osg::Group* root (new osg::Group);
+    osg::Group* root( new osg::Group );
 
     DataSetPtr dsp( prepareVolume( fileName, dims ) );
 
@@ -107,14 +107,14 @@ int main( int argc, char** argv )
         // the translate will occur in the unscaled units, and the scaling will occur around the new origin.
         // A is just translate and nominal scale
         const osg::Matrix transformA = osg::Matrixd::scale( .5, .5, .5 ) *
-                osg::Matrixd::translate(-75.0, -75.0, -75.0);
+                                       osg::Matrixd::translate( -75.0, -75.0, -75.0 );
         osg::MatrixTransform* mtA( new osg::MatrixTransform( transformA ) );
         mtA->addChild( dsp->getSceneData() );
         root->addChild( mtA );
 
         // B: scale and rotate but no translate
         const osg::Matrix transformB = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 0.0, 1.0, 0.0 ) *
-                osg::Matrixd::scale( 2.0, 2.0, 2.0 );
+                                       osg::Matrixd::scale( 2.0, 2.0, 2.0 );
         osg::MatrixTransform* mtB( new osg::MatrixTransform( transformB ) );
         mtB->addChild( dsp->getSceneData() );
         root->addChild( mtB );
@@ -123,8 +123,8 @@ int main( int argc, char** argv )
         // Note this is a non-uniform scale, performed after the rotation,
         // so the volume will be skewed.
         const osg::Matrix transformC = osg::Matrixd::rotate( osg::DegreesToRadians( 45.0 ), 1.0, 0.0, 0.0 ) *
-                osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
-                osg::Matrixd::translate( 100.0, 0.0, 0.0 );
+                                       osg::Matrixd::scale( 2.0, 2.0, 1.0 ) *
+                                       osg::Matrixd::translate( 100.0, 0.0, 0.0 );
         osg::MatrixTransform* mtC( new osg::MatrixTransform( transformC ) );
         mtC->addChild( dsp->getSceneData() );
         root->addChild( mtC );
@@ -140,13 +140,16 @@ int main( int argc, char** argv )
         }
     }
     else
+    {
         root->addChild( dsp->getSceneData() );
+    }
 
     if( arguments.find( "-clip" ) > 0 )
     {
         // Test hardware clip planes
         osg::ClipNode* cn( new osg::ClipNode() );
-        osg::Vec3 n( .9, .8, 0. ); n.normalize();
+        osg::Vec3 n( .9, .8, 0. );
+        n.normalize();
         cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
         root->addChild( cn );
 
@@ -158,7 +161,7 @@ int main( int argc, char** argv )
         osg::Uniform* clipPlaneEnables( new osg::Uniform( "volumeClipPlaneEnable0", 1 ) );
         stateSet->addUniform( clipPlaneEnables, osg::StateAttribute::OVERRIDE );
     }
-    
+
     osgViewer::Viewer viewer;
     viewer.getCamera()->setClearColor( osg::Vec4( 0., 0., 0., 1. ) );
     viewer.setUpViewInWindow( 10, 30, 1200, 690 );

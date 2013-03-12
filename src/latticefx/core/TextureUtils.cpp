@@ -29,8 +29,10 @@
 #include <cmath>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 // ceilPower2 - Originally in OpenGL Distilled example source code.
@@ -40,58 +42,82 @@ namespace core {
 static unsigned short ceilPower2( unsigned short x )
 {
     if( x == 0 )
+    {
         return( 1 );
+    }
 
-    if( (x & (x-1)) == 0 )
+    if( ( x & ( x - 1 ) ) == 0 )
         // x is a power of 2.
+    {
         return( x );
+    }
 
     x |= x >> 1;
     x |= x >> 2;
     x |= x >> 4;
     x |= x >> 8;
-    return( x+1 );
+    return( x + 1 );
 }
 
 osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags )
 {
     if( numElements == 0 )
         // Crap. Can't have a zero-sized texture...
+    {
         return( osg::Vec3( 1., 1., 1. ) );
+    }
 
-    double dim( pow( (double)numElements, 1./3. ) );
-    if( (double)( (int)dim ) != dim )
+    double dim( pow( ( double )numElements, 1. / 3. ) );
+    if( ( double )( ( int )dim ) != dim )
+    {
         dim = ceil( dim );
+    }
 
     if( flags == LFX_TEXUTILS_FORCE_UNIFORM )
         // Not using power of 2, but want uniform dimensions.
+    {
         return( osg::Vec3( dim, dim, dim ) );
+    }
 
     if( flags == 0 )
     {
         // Not using power of 2, and don't require uniform dimensions.
-        if( dim*(dim-1.)*(dim-1.) >= numElements )
-            return( osg::Vec3( dim, dim-1., dim-1. ) );
-        else if( dim*dim*(dim-1.) >= numElements )
-            return( osg::Vec3( dim, dim, dim-1. ) );
+        if( dim * ( dim - 1. ) * ( dim - 1. ) >= numElements )
+        {
+            return( osg::Vec3( dim, dim - 1., dim - 1. ) );
+        }
+        else if( dim * dim * ( dim - 1. ) >= numElements )
+        {
+            return( osg::Vec3( dim, dim, dim - 1. ) );
+        }
         else
+        {
             return( osg::Vec3( dim, dim, dim ) );
+        }
     }
 
     // Must have a power of 2.
 
-    unsigned int dimPO2( ceilPower2( (unsigned short)dim ) );
+    unsigned int dimPO2( ceilPower2( ( unsigned short )dim ) );
     if( ( flags & LFX_TEXUTILS_FORCE_UNIFORM ) != 0 )
         // Must have uniform dimensions.
+    {
         return( osg::Vec3( dimPO2, dimPO2, dimPO2 ) );
+    }
 
     // Don't require uniform dimensions.
-    if( dimPO2*(dimPO2>>1)*(dimPO2>>1) >= numElements )
-        return( osg::Vec3( dimPO2, dimPO2>>1, dimPO2>>1 ) );
-    else if( dimPO2*dimPO2*(dimPO2>>1) >= numElements )
-        return( osg::Vec3( dimPO2, dimPO2, dimPO2>>1 ) );
+    if( dimPO2 * ( dimPO2 >> 1 ) * ( dimPO2 >> 1 ) >= numElements )
+    {
+        return( osg::Vec3( dimPO2, dimPO2 >> 1, dimPO2 >> 1 ) );
+    }
+    else if( dimPO2 * dimPO2 * ( dimPO2 >> 1 ) >= numElements )
+    {
+        return( osg::Vec3( dimPO2, dimPO2, dimPO2 >> 1 ) );
+    }
     else
+    {
         return( osg::Vec3( dimPO2, dimPO2, dimPO2 ) );
+    }
 }
 
 
@@ -99,7 +125,9 @@ osg::Texture3D* createTexture3DForInstancedRenderer( const ChannelDataPtr source
 {
     osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( source ) );
     if( image == NULL )
+    {
         return( NULL );
+    }
 
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D( image.get() ) );
     tex->setResizeNonPowerOfTwoHint( false );
@@ -127,7 +155,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
         if( sourceArray->getNumElements() > 0 )
         {
             const osg::Vec3Array* v3Array( dynamic_cast< const osg::Vec3Array* >( sourceArray ) );
-            sourceData = const_cast< osg::Vec3* >( &( (*v3Array)[ 0 ] ) );
+            sourceData = const_cast< osg::Vec3* >( &( ( *v3Array )[ 0 ] ) );
         }
         intFormat = GL_RGB32F_ARB;
         dataFormat = GL_RGB;
@@ -139,7 +167,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
         if( sourceArray->getNumElements() > 0 )
         {
             const osg::Vec2Array* v2Array( dynamic_cast< const osg::Vec2Array* >( sourceArray ) );
-            sourceData = const_cast< osg::Vec2* >( &( (*v2Array)[ 0 ] ) );
+            sourceData = const_cast< osg::Vec2* >( &( ( *v2Array )[ 0 ] ) );
         }
         // Shader retrieves values from the 'ba' components.
         intFormat = GL_LUMINANCE_ALPHA32F_ARB;
@@ -152,7 +180,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
         if( sourceArray->getNumElements() > 0 )
         {
             const osg::FloatArray* fArray( dynamic_cast< const osg::FloatArray* >( sourceArray ) );
-            sourceData = const_cast< GLfloat* >( &( (*fArray)[ 0 ] ) );
+            sourceData = const_cast< GLfloat* >( &( ( *fArray )[ 0 ] ) );
         }
         // Shader retrieves values from the 'a' component.
         intFormat = GL_ALPHA32F_ARB;
@@ -172,7 +200,9 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     osg::ref_ptr< osg::Image > image( new osg::Image );
     image->allocateImage( texDim[ 0 ], texDim[ 1 ], texDim[ 2 ], dataFormat, dataType );
     if( sourceData != NULL )
+    {
         memcpy( image->data(), sourceData, sourceArray->getTotalDataSize() );
+    }
     image->setInternalTextureFormat( intFormat );
     image->setDataType( dataType );
 

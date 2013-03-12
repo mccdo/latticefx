@@ -29,11 +29,14 @@
 class vtkPolyDataMapper;
 class vtkAlgorithmOutput;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
-    
-namespace vtk {
+namespace core
+{
+
+namespace vtk
+{
 
 /** \class ChannelDatavtkPolyDataMapper ChannelDatavtkPolyDataMapper.h <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 \brief Container for ChannelDatavtkPolyDataMapper objects
@@ -42,12 +45,12 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkPolyDataMapper : public lfx::core:
 {
 public:
 
-    ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* const pd, const std::string& name=std::string( "" ) );
+    ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* const pd, const std::string& name = std::string( "" ) );
     ChannelDatavtkPolyDataMapper( const ChannelDatavtkPolyDataMapper& rhs );
     virtual ~ChannelDatavtkPolyDataMapper();
 
     vtkPolyDataMapper* GetPolyDataMapper();
-    
+
 protected:
     vtkPolyDataMapper* m_pdm;
 };

@@ -29,12 +29,15 @@
 
 class vtkDataObject;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
-    
-namespace vtk {
-    
+namespace core
+{
+
+namespace vtk
+{
+
 /** \class ChannelDataComposite ChannelDataComposite.h <latticefx/core/ChannelDataComposite.h>
 \brief Composite pattern container for ChannelData objects
 \details This class allows multiple ChannelData objects and is used for level of detail
@@ -54,12 +57,12 @@ ChannelData. */
 class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObject : public lfx::core::ChannelData
 {
 public:
-    ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name=std::string( "" ) );
+    ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name = std::string( "" ) );
     ChannelDatavtkDataObject( const ChannelDatavtkDataObject& rhs );
     virtual ~ChannelDatavtkDataObject();
 
     vtkDataObject* GetDataObject();
-    
+
     unsigned int GetNumberOfPoints();
     double* GetBounds();
     void GetBounds( double* bounds );

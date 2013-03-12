@@ -22,15 +22,18 @@
 
 #include <vtkPolyDataMapper.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
-    
+namespace vtk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* ao, const std::string& name )
-    : 
+    :
     ChannelData( name ),
     m_pdm( vtkPolyDataMapper::New() )
 {
@@ -45,7 +48,7 @@ ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* 
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( const ChannelDatavtkPolyDataMapper& rhs )
-    : 
+    :
     ChannelData( rhs ),
     m_pdm( rhs.m_pdm )
 {

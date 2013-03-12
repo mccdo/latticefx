@@ -29,8 +29,10 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class DBCrunchStore DBCrunchStore.h <latticefx/core/DBCrunchStore.h>

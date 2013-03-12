@@ -34,7 +34,7 @@ namespace vtk_utils
 {
 // function declarations
 ///Reads in a grid (vtkDataSet) and returns it as a surface (vtkPolyData).
-LATTICEFX_VTK_UTILS_EXPORT vtkPolyData * Grid2Surface( vtkDataObject *dataSet, float deciVal );
+LATTICEFX_VTK_UTILS_EXPORT vtkPolyData* Grid2Surface( vtkDataObject* dataSet, float deciVal );
 }// end of util namesapce
 }// end of xplorer namesapce
 #endif

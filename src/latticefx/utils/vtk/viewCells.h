@@ -42,7 +42,7 @@ extractExteriorCellsOnly( vtkUnstructuredGrid* output );
 ///\param *output pointer to the data set to be rendered.
 ///\param shrinkFactor scaling factor for the rendering.
 LATTICEFX_VTK_UTILS_EXPORT void viewCells( vtkDataSet* output,
-                                const float shrinkFactor = 0.95 );
+        const float shrinkFactor = 0.95 );
 ///Renders a cross section of the model halfway along the x-axis.
 ///\param *output pointer to the data set to be rendered.
 LATTICEFX_VTK_UTILS_EXPORT void viewXSectionOfRectilinearGrid(
@@ -56,13 +56,13 @@ LATTICEFX_VTK_UTILS_EXPORT void GetAxesSymbol( vtkActor* axesActor );
 ///\param *yActor The y-axis label.
 ///\param *zActor The z-axis label.
 LATTICEFX_VTK_UTILS_EXPORT void GetAxesLabels( vtkFollower* xActor,
-                                    vtkFollower* yActor, vtkFollower* zActor );
+        vtkFollower* yActor, vtkFollower* zActor );
 ///Generates a new actor and adds it to the renderer.
 ///\param dataset pointer to the dataset from which the new actor will be extracted.
 ///\param ren1 (????)The renderer.
 ///\param shrinkFactor Scaling factor for the new actor
 LATTICEFX_VTK_UTILS_EXPORT void AddToRenderer( vtkDataSet* dataset,
-                                    vtkRenderer* ren1, const float shrinkFactor = 1.0 );
+        vtkRenderer* ren1, const float shrinkFactor = 1.0 );
 }// end of util namesapce
 }// end of xplorer namesapce
 #endif    // VIEWCELLS_H

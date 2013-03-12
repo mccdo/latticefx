@@ -66,15 +66,16 @@ osg::Node* createClipSubgraph()
 {
     // Test hardware clip planes
     osg::ClipNode* cn( new osg::ClipNode() );
-    osg::Vec3 n( -.9, .8, 0. ); n.normalize();
+    osg::Vec3 n( -.9, .8, 0. );
+    n.normalize();
     cn->addClipPlane( new osg::ClipPlane( 0, n[0], n[1], n[2], 7.75 ) );
 
     return( cn );
 }
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
-        const std::string& csFile, const std::string& diskPath,
-        const bool useIso, const float isoVal )
+                          const std::string& csFile, const std::string& diskPath,
+                          const bool useIso, const float isoVal )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -92,30 +93,32 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
         crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
         sqstore->SetStorePath( csFile );
         manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
-        try {
+        try
+        {
             cs->setDataManager( manager );
         }
-        catch( std::exception exc ) {
-            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+        catch( std::exception exc )
+        {
+            LFX_FATAL_STATIC( logstr, std::string( exc.what() ) );
             LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
             exit( 1 );
         }
 
-        dbBase = (DBBasePtr)cs;
+        dbBase = ( DBBasePtr )cs;
     }
 #endif
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
         disk->setRootPath( diskPath );
-        dbBase = (DBBasePtr)disk;
+        dbBase = ( DBBasePtr )disk;
     }
     dsp->setDB( dbBase );
 
 
     LoadHierarchy* loader( new LoadHierarchy() );
     loader->setDB( dbBase );
-    dsp->addPreprocess( PreprocessPtr( (Preprocess*)loader ) );
+    dsp->addPreprocess( PreprocessPtr( ( Preprocess* )loader ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
@@ -135,19 +138,21 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     renderOp->setHardwareMaskOperator( useIso ? Renderer::HM_OP_EQ : Renderer::HM_OP_GT );
     renderOp->setHardwareMaskReference( isoVal );
     if( useIso )
+    {
         renderOp->setHardwareMaskEpsilon( 0.02 );
+    }
 
     return( dsp );
 }
 
 
-osg::Node* createScene( const bool clip, const std::string fileName=std::string("") )
+osg::Node* createScene( const bool clip, const std::string fileName = std::string( "" ) )
 {
     osg::Group* root( new osg::Group );
     if( fileName.empty() )
     {
         osg::Geometry* geom( osgwTools::makeClosedCylinder(
-            osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s(1,16) ) );
+                                 osg::Matrix::translate( 0., 0., -30. ), 60., 8., 8., true, true, osg::Vec2s( 1, 16 ) ) );
         osg::Vec4Array* c( new osg::Vec4Array() );
         c->push_back( osg::Vec4( 1., .5, 0., 1. ) );
         geom->setColorArray( c );
@@ -158,7 +163,9 @@ osg::Node* createScene( const bool clip, const std::string fileName=std::string(
         root->addChild( geode );
     }
     else
+    {
         root->addChild( osgDB::readNodeFile( fileName ) );
+    }
 
     if( clip )
     {
@@ -172,9 +179,10 @@ osg::Node* createScene( const bool clip, const std::string fileName=std::string(
 }
 
 
-struct RTTInfo {
+struct RTTInfo
+{
     RTTInfo( const float w, const float h )
-      : winSize( osg::Vec2f( w, h ) )
+        : winSize( osg::Vec2f( w, h ) )
     {
         windowSize = new osg::Uniform( "windowSize", winSize );
     }
@@ -222,7 +230,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     // Step 2: Create splat cam to display color texture to window
     //
     osg::Camera* splatCam = new osg::Camera;
-    
+
     splatCam->setClearMask( 0 );
     splatCam->setRenderTargetImplementation( osg::Camera::FRAME_BUFFER, osg::Camera::FRAME_BUFFER );
 
@@ -231,7 +239,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 
     osg::Geode* geode( new osg::Geode );
     geode->addDrawable( osgwTools::makePlane(
-        osg::Vec3( -1,-1,0 ), osg::Vec3( 2,0,0 ), osg::Vec3( 0,2,0 ) ) );
+                            osg::Vec3( -1, -1, 0 ), osg::Vec3( 2, 0, 0 ), osg::Vec3( 0, 2, 0 ) ) );
     geode->getOrCreateStateSet()->setTextureAttributeAndModes(
         0, colorTex, osg::StateAttribute::ON );
     geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
@@ -245,7 +253,9 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
     //
     osg::Group* rootGroup( new osg::Group );
     if( scene != NULL )
+    {
         rootGroup->addChild( scene );
+    }
     rootGroup->addChild( splatCam );
     viewer.setSceneData( rootGroup );
 
@@ -254,7 +264,7 @@ RTTInfo setupStandardRTTRendering( osgViewer::Viewer& viewer, osg::Node* scene )
 }
 
 void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
-    osgViewer::Viewer& viewer, osg::Node* volume, const bool clip )
+                                osgViewer::Viewer& viewer, osg::Node* volume, const bool clip )
 {
     // Get the root Group node attached to the osgViewer::Viewer.
     osg::Node* sceneRootNode( viewer.getSceneData() );
@@ -313,7 +323,8 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
     stateSet->addUniform( rttInfo.windowSize.get() );
 
     stateSet->setTextureAttributeAndModes( 1, rttInfo.depthTex.get() );
-    osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" ); uniform->set( 1 );
+    osg::Uniform* uniform = new osg::Uniform( osg::Uniform::SAMPLER_2D, "sceneDepth" );
+    uniform->set( 1 );
     stateSet->addUniform( uniform );
 }
 
@@ -368,7 +379,7 @@ int main( int argc, char** argv )
     }
 
     osg::Vec3 dims( 50., 50., 50. );
-    arguments.read( "-d", dims[0],dims[1],dims[2] );
+    arguments.read( "-d", dims[0], dims[1], dims[2] );
 
     const bool cyl( arguments.find( "-cyl" ) > 0 );
 

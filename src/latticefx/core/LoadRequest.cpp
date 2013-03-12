@@ -27,26 +27,28 @@
 #include <iostream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 LoadRequest::LoadRequest()
-  : _path(),
-    _keys()
+    : _path(),
+      _keys()
 {
 }
 LoadRequest::LoadRequest( const osg::NodePath& path, const DBKeyList& keys, DBBasePtr db )
-  : _path( path ),
-    _keys( keys ),
-    _db( db )
+    : _path( path ),
+      _keys( keys ),
+      _db( db )
 {
 }
 LoadRequest::LoadRequest( const LoadRequest& rhs )
-  : _path( rhs._path ),
-    _keys( rhs._keys ),
-    _db( rhs._db ),
-    _results( rhs._results )
+    : _path( rhs._path ),
+      _keys( rhs._keys ),
+      _db( rhs._db ),
+      _results( rhs._results )
 {
 }
 LoadRequest::~LoadRequest()
@@ -57,9 +59,13 @@ osg::Object* LoadRequest::find( const DBKey& dbKey )
 {
     ResultsMap::iterator it( _results.find( dbKey ) );
     if( it != _results.end() )
+    {
         return( it->second.get() );
+    }
     else
+    {
         return( NULL );
+    }
 }
 
 
@@ -76,7 +82,9 @@ bool LoadRequestImage::load()
     {
         osg::Image* image( _db->loadImage( key ) );
         if( image == NULL )
+        {
             result = false;
+        }
         _results[ key ] = image;
     }
     return( result );

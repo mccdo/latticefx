@@ -54,7 +54,7 @@ using namespace lfx::core;
 
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
-        const std::string& csFile, const std::string& diskPath )
+                          const std::string& csFile, const std::string& diskPath )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -72,30 +72,32 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
         crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
         sqstore->SetStorePath( csFile );
         manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
-        try {
+        try
+        {
             cs->setDataManager( manager );
         }
-        catch( std::exception exc ) {
-            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+        catch( std::exception exc )
+        {
+            LFX_FATAL_STATIC( logstr, std::string( exc.what() ) );
             LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
             exit( 1 );
         }
 
-        dbBase = (DBBasePtr)cs;
+        dbBase = ( DBBasePtr )cs;
     }
 #endif
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
         disk->setRootPath( diskPath );
-        dbBase = (DBBasePtr)disk;
+        dbBase = ( DBBasePtr )disk;
     }
     dsp->setDB( dbBase );
 
 
     LoadHierarchy* loader( new LoadHierarchy() );
     loader->setDB( dbBase );
-    dsp->addPreprocess( PreprocessPtr( (Preprocess*)loader ) );
+    dsp->addPreprocess( PreprocessPtr( ( Preprocess* )loader ) );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     renderOp->setVolumeDims( dims );
@@ -143,10 +145,10 @@ int main( int argc, char** argv )
     }
 
     osg::Vec3 dims( 50., 50., 50. );
-    arguments.read( "-d", dims[0],dims[1],dims[2] );
+    arguments.read( "-d", dims[0], dims[1], dims[2] );
 
     // Create the lfx data set.
-    osg::Group* root (new osg::Group);
+    osg::Group* root( new osg::Group );
 
     DataSetPtr dsp( prepareVolume( dims, csFile, diskPath ) );
     root->addChild( dsp->getSceneData() );

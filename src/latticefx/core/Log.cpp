@@ -28,8 +28,10 @@
 #include <Poco/FileChannel.h>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 Log* Log::instance()
@@ -41,13 +43,15 @@ Log* Log::instance()
 
 
 Log::Log()
-  : _logFileName( "lfx.log" ),
-    _console( NULL ),
-    _file( NULL )
+    : _logFileName( "lfx.log" ),
+      _console( NULL ),
+      _file( NULL )
 {
     char* logFileName = getenv( "LFX_LOG_FILE_NAME" );
     if( logFileName != NULL )
+    {
         _logFileName = logFileName;
+    }
 }
 Log::~Log()
 {
@@ -76,9 +80,9 @@ void Log::setPriority( int prio, const DestinationType dest, const std::string& 
     {
         if( _console == NULL )
         {
-            _console = new Poco::FormattingChannel( new Poco::PatternFormatter("%s: %t") );
-	        _console->setChannel( new Poco::ConsoleChannel );
-	        _console->open();
+            _console = new Poco::FormattingChannel( new Poco::PatternFormatter( "%s: %t" ) );
+            _console->setChannel( new Poco::ConsoleChannel );
+            _console->open();
         }
         logger.setChannel( _console );
     }
@@ -86,7 +90,7 @@ void Log::setPriority( int prio, const DestinationType dest, const std::string& 
     {
         if( _file == NULL )
         {
-            _file = new Poco::FormattingChannel( new Poco::PatternFormatter("%Y-%m-%d %H:%M:%S.%c %N[%P]:%s:%q:%t") );
+            _file = new Poco::FormattingChannel( new Poco::PatternFormatter( "%Y-%m-%d %H:%M:%S.%c %N[%P]:%s:%q:%t" ) );
             _file->setChannel( new Poco::FileChannel( _logFileName ) );
             _file->open();
         }

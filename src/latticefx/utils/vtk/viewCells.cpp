@@ -48,15 +48,15 @@
 
 using namespace lfx::vtk_utils;
 
-vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGrid *output )
+vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGrid* output )
 {
     int pt, npts, ptId;
-    vtkIdList *pts = vtkIdList::New();
-    vtkPoints *extCellPoints = vtkPoints::New();
-    vtkIdList *cellIds = vtkIdList::New();
-    vtkGenericCell *cell = vtkGenericCell::New();
-    vtkUnstructuredGrid *exteriorCells = vtkUnstructuredGrid::New();
-    double *x;
+    vtkIdList* pts = vtkIdList::New();
+    vtkPoints* extCellPoints = vtkPoints::New();
+    vtkIdList* cellIds = vtkIdList::New();
+    vtkGenericCell* cell = vtkGenericCell::New();
+    vtkUnstructuredGrid* exteriorCells = vtkUnstructuredGrid::New();
+    double* x;
     //    exteriorCells->DebugOn();
 
     int numCells = output->GetNumberOfCells();
@@ -69,13 +69,13 @@ vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGr
         int thisIsExteriorCell = 0;
         output->GetCell( cellId, cell );
 
-        vtkCell *face = NULL;
+        vtkCell* face = NULL;
         for( int j = 0; j < cell->GetNumberOfFaces(); j++ )
         {
             face = cell->GetFace( j );
             output->GetCellNeighbors( cellId, face->PointIds, cellIds );
             //face->Delete();
-//              std::cout << "cellId=" << cellId << ", face " << j << ", cellIds->GetNumberOfIds()=" << cellIds->GetNumberOfIds() << std::endl;
+            //              std::cout << "cellId=" << cellId << ", face " << j << ", cellIds->GetNumberOfIds()=" << cellIds->GetNumberOfIds() << std::endl;
             if( cellIds->GetNumberOfIds() <= 0 ) // exterior faces have a zero here
             {
                 thisIsExteriorCell = 1;
@@ -94,16 +94,16 @@ vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGr
                 x = output->GetPoint( ptId );
                 pt = extCellPoints->InsertNextPoint( x );
                 pts->InsertId( i, pt );
-//                std::cout << "   Inserted point pt=" << pt << std::endl;
+                //                std::cout << "   Inserted point pt=" << pt << std::endl;
             }
-//            std::cout << " cell->GetCellType()=" <<  cell->GetCellType() << std::endl;
+            //            std::cout << " cell->GetCellType()=" <<  cell->GetCellType() << std::endl;
             exteriorCells->InsertNextCell( cell->GetCellType(), pts );
         }
     }//for all cells
 
     exteriorCells->SetPoints( extCellPoints );
     //exteriorCells->Squeeze();    // Reclaim any extra memory used to store data. vtk says: THIS METHOD IS NOT THREAD SAFE
-//    exteriorCells->Print( std::cout );
+    //    exteriorCells->Print( std::cout );
 
     //numCells = exteriorCells->GetNumberOfCells();
     //std::cout << "     After removing interior cells, the number of cells is " << numCells << std::endl;
@@ -115,7 +115,7 @@ vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGr
     return exteriorCells;
 }
 
-void lfx::vtk_utils::viewCells( vtkDataSet *dataset, const float shrinkFactor )
+void lfx::vtk_utils::viewCells( vtkDataSet* dataset, const float shrinkFactor )
 {
     std::cout << "\nviewCells: Preparing to view mesh..." << std::endl;
     int numCells = dataset->GetNumberOfCells();
@@ -123,7 +123,10 @@ void lfx::vtk_utils::viewCells( vtkDataSet *dataset, const float shrinkFactor )
     int numPts = dataset->GetNumberOfPoints();
     std::cout << "     The number of points is " << numPts << std::endl;
 
-    if( numCells == 0 ) return;
+    if( numCells == 0 )
+    {
+        return;
+    }
 
     //Create one-time graphics stuff
     vtkRenderer* ren1 = vtkRenderer::New();
@@ -135,21 +138,21 @@ void lfx::vtk_utils::viewCells( vtkDataSet *dataset, const float shrinkFactor )
     //Create actor from dataset and add to the renderer
     AddToRenderer( dataset, ren1, shrinkFactor );
 
-    vtkActor * axesActor = NULL;
-    vtkFollower * xActor = NULL;
-    vtkFollower * yActor = NULL;
-    vtkFollower * zActor = NULL;
-    vtkActor * C6Actor = NULL;
+    vtkActor* axesActor = NULL;
+    vtkFollower* xActor = NULL;
+    vtkFollower* yActor = NULL;
+    vtkFollower* zActor = NULL;
+    vtkActor* C6Actor = NULL;
 
     int hasCaveCorners = 1;
     if( hasCaveCorners )
     {
         // Create the cube corners and the associated mapper and actor.
-        vtkCubeSource * C6 = vtkCubeSource::New();
+        vtkCubeSource* C6 = vtkCubeSource::New();
         C6->SetBounds( -5, 5, -5, 5, 0, 10 );
-        vtkOutlineCornerFilter * C6CornerFilter = vtkOutlineCornerFilter::New();
+        vtkOutlineCornerFilter* C6CornerFilter = vtkOutlineCornerFilter::New();
         C6CornerFilter->SetInput( C6->GetOutput() );
-        vtkPolyDataMapper * C6Mapper = vtkPolyDataMapper::New();
+        vtkPolyDataMapper* C6Mapper = vtkPolyDataMapper::New();
         C6Mapper->SetInput( C6CornerFilter->GetOutput() );
 
         C6Actor = vtkActor::New();
@@ -226,7 +229,7 @@ void lfx::vtk_utils::viewCells( vtkDataSet *dataset, const float shrinkFactor )
     iren->Delete();
 }
 
-void lfx::vtk_utils::viewXSectionOfRectilinearGrid( vtkRectilinearGrid *output )
+void lfx::vtk_utils::viewXSectionOfRectilinearGrid( vtkRectilinearGrid* output )
 {
     std::cout << "\nPreparing to view mesh..." << std::endl;
     int numCells = output->GetNumberOfCells();
@@ -240,19 +243,19 @@ void lfx::vtk_utils::viewXSectionOfRectilinearGrid( vtkRectilinearGrid *output )
     std::cout << "nx = " << nx << ", ny = " << ny << ", nz = " << nz << std::endl;
 
     //view a cross-section parallel to y-z axes, at half-way point of model
-    vtkRectilinearGridGeometryFilter *plane = vtkRectilinearGridGeometryFilter::New();
+    vtkRectilinearGridGeometryFilter* plane = vtkRectilinearGridGeometryFilter::New();
     plane->SetInput( output );
     plane->SetExtent( nx / 2, nx / 2, 0, ny, 0, nz );
     plane->Update();
 
-    vtkPolyDataMapper *rgridMapper = vtkPolyDataMapper::New();
+    vtkPolyDataMapper* rgridMapper = vtkPolyDataMapper::New();
     rgridMapper->SetInput( plane->GetOutput() );
 
-//    vtkPolyDataMapper *rgridMapper = vtkPolyDataMapper::New();
-//    rgridMapper->SetInput(rgrid);
-    vtkActor *wireActor = vtkActor::New();
+    //    vtkPolyDataMapper *rgridMapper = vtkPolyDataMapper::New();
+    //    rgridMapper->SetInput(rgrid);
+    vtkActor* wireActor = vtkActor::New();
     wireActor->SetMapper( rgridMapper );
-//    wireActor->GetProperty()->SetRepresentationToWireframe();
+    //    wireActor->GetProperty()->SetRepresentationToWireframe();
     wireActor->GetProperty()->SetColor( 0, 0, 0 );
 
     //Create graphics stuff
@@ -266,7 +269,7 @@ void lfx::vtk_utils::viewXSectionOfRectilinearGrid( vtkRectilinearGrid *output )
     ren1->AddActor( wireActor );
     ren1->SetBackground( 1, 1, 1 );
 
-    vtkCamera *cam1 = ren1->GetActiveCamera();
+    vtkCamera* cam1 = ren1->GetActiveCamera();
     cam1->Zoom( 1.5 );
     cam1->SetParallelProjection( 1 );  // no perspective
 
@@ -351,13 +354,13 @@ void viewXSection( vtkDataObject *output )
 }
 */
 
-void lfx::vtk_utils::GetAxesSymbol( vtkActor * axesActor )
+void lfx::vtk_utils::GetAxesSymbol( vtkActor* axesActor )
 {
     // Create the axes and the associated mapper and actor.
-    vtkPoints *newPts = vtkPoints::New();
+    vtkPoints* newPts = vtkPoints::New();
     newPts->Allocate( 6 );
 
-    vtkCellArray *newLines = vtkCellArray::New();
+    vtkCellArray* newLines = vtkCellArray::New();
     newLines->Allocate( 3 );
 
     float x[3];
@@ -402,14 +405,14 @@ void lfx::vtk_utils::GetAxesSymbol( vtkActor * axesActor )
     newPts->InsertPoint( pts[1], x );
     newLines->InsertNextCell( 2, pts );
 
-    vtkPolyData *output = vtkPolyData::New();
+    vtkPolyData* output = vtkPolyData::New();
     output->SetPoints( newPts );
     newPts->Delete();
 
     output->SetLines( newLines );
     newLines->Delete();
 
-    vtkPolyDataMapper * axesMapper = vtkPolyDataMapper::New();
+    vtkPolyDataMapper* axesMapper = vtkPolyDataMapper::New();
     axesMapper->SetInput( output );
 
     axesActor->SetMapper( axesMapper );
@@ -418,33 +421,33 @@ void lfx::vtk_utils::GetAxesSymbol( vtkActor * axesActor )
     axesMapper->Delete();
 }
 
-void lfx::vtk_utils::GetAxesLabels( vtkFollower * xActor,
-                                        vtkFollower * yActor,
-                                        vtkFollower * zActor )
+void lfx::vtk_utils::GetAxesLabels( vtkFollower* xActor,
+                                    vtkFollower* yActor,
+                                    vtkFollower* zActor )
 {
     // Create the 3D text and the associated mapper and follower
-    vtkVectorText * xText = vtkVectorText::New();
+    vtkVectorText* xText = vtkVectorText::New();
     xText->SetText( "X" );
-    vtkVectorText * yText = vtkVectorText::New();
+    vtkVectorText* yText = vtkVectorText::New();
     yText->SetText( "Y" );
-    vtkVectorText * zText = vtkVectorText::New();
+    vtkVectorText* zText = vtkVectorText::New();
     zText->SetText( "Z" );
 
-    vtkPolyDataMapper * xMapper = vtkPolyDataMapper::New();
+    vtkPolyDataMapper* xMapper = vtkPolyDataMapper::New();
     xMapper->SetInput( xText->GetOutput() );
 
     xActor->SetMapper( xMapper );
     xActor->SetScale( 0.2, 0.2, 0.2 );
     xActor->AddPosition( 1, -0.1, 0 );
 
-    vtkPolyDataMapper * yMapper = vtkPolyDataMapper::New();
+    vtkPolyDataMapper* yMapper = vtkPolyDataMapper::New();
     yMapper->SetInput( yText->GetOutput() );
 
     yActor->SetMapper( yMapper );
     yActor->SetScale( 0.2, 0.2, 0.2 );
     yActor->AddPosition( 0, 1 - 0.1, 0 );
 
-    vtkPolyDataMapper * zMapper = vtkPolyDataMapper::New();
+    vtkPolyDataMapper* zMapper = vtkPolyDataMapper::New();
     zMapper->SetInput( zText->GetOutput() );
 
     zActor->SetMapper( zMapper );
@@ -460,7 +463,7 @@ void lfx::vtk_utils::GetAxesLabels( vtkFollower * xActor,
     zMapper->Delete();
 }
 
-void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, const float shrinkFactor )
+void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, const float shrinkFactor )
 {
     //std::cout << "\nPreparing to view mesh..." << std::endl;
     int numCells = dataset->GetNumberOfCells();
@@ -477,15 +480,15 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, cons
     }
     //else    std::cout << "\tAddToRenderer: The number of cells is " << numCells << std::endl;
 
-    vtkDataSetMapper *map = vtkDataSetMapper::New();
-//    By default, VTK uses OpenGL display lists which results in another copy of the data being stored
-//    in memory. For most large datasets you will be better off saving memory by not using display lists.
-//    You can turn off display lists by turning on ImmediateModeRendering.
+    vtkDataSetMapper* map = vtkDataSetMapper::New();
+    //    By default, VTK uses OpenGL display lists which results in another copy of the data being stored
+    //    in memory. For most large datasets you will be better off saving memory by not using display lists.
+    //    You can turn off display lists by turning on ImmediateModeRendering.
     map->ImmediateModeRenderingOn();
 
     //std::cout << "Using shrinkFactor = " << shrinkFactor << std::endl;
 
-    vtkShrinkFilter *shrink = NULL;
+    vtkShrinkFilter* shrink = NULL;
     if( shrinkFactor < 1.0 )
     {
         shrink = vtkShrinkFilter::New();
@@ -495,7 +498,9 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, cons
         map->SetInput( shrink->GetOutput() );
     }
     else
+    {
         map->SetInput( dataset );
+    }
 
     /*
     //    extract geometry from data (or convert data to polygonal type)...
@@ -528,17 +533,19 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, cons
     */
 
     if( shrink )
+    {
         shrink->Delete();
+    }
 
-    vtkActor * actor = vtkActor::New();
+    vtkActor* actor = vtkActor::New();
 
     if( dataset->GetPointData()->GetScalars() )
     {
-        vtkLookupTable *lut = vtkLookupTable::New();
+        vtkLookupTable* lut = vtkLookupTable::New();
         lut->SetNumberOfColors( 256 ); //default is 256
 
         std::cout << "dataset->GetPointData()->GetScalars()->GetName() = "
-        << dataset->GetPointData()->GetScalars()->GetName() << std::endl;
+                  << dataset->GetPointData()->GetScalars()->GetName() << std::endl;
         //std::cout << "dataset->GetPointData()->GetScalars()->GetLookupTable() = " << dataset->GetPointData()->GetScalars()->GetLookupTable() << std::endl;
 
         double minMax[ 2 ];
@@ -562,7 +569,9 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet *dataset, vtkRenderer* ren1, cons
         lut->Delete();
     }
     else
+    {
         actor->GetProperty()->SetColor( 1, 0, 0 );
+    }
 
     actor->SetMapper( map );
     actor->GetProperty()->SetRepresentationToWireframe();

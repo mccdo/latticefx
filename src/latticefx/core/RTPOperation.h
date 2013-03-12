@@ -37,8 +37,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class RTPOperation RTPOperation.h <latticefx/core/RTPOperation.h>
@@ -53,14 +55,18 @@ required inputs using the addInput() function. */
 class LATTICEFX_EXPORT RTPOperation : public OperationBase
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         Undefined,
         Mask,
         Filter,
         Channel
     } RTPOpType;
     /** \brief */
-    RTPOpType getRTPOpType() const { return( _rtpOpType ); }
+    RTPOpType getRTPOpType() const
+    {
+        return( _rtpOpType );
+    }
 
 
     // This is to remove compile errors caused by boost serializers requiring
@@ -72,17 +78,26 @@ public:
 
 
     /** \brief Override to implement a mask operation. */
-    virtual ChannelDataPtr mask( const ChannelDataPtr ) { return( ChannelDataPtr() ); }
+    virtual ChannelDataPtr mask( const ChannelDataPtr )
+    {
+        return( ChannelDataPtr() );
+    }
 
     /** \brief Override to implement a filter operation. */
-    virtual void filter( const ChannelDataPtr ) { return; }
+    virtual void filter( const ChannelDataPtr )
+    {
+        return;
+    }
 
     /** \brief Override to implement a channel creation operation. */
-    virtual ChannelDataPtr channel( const ChannelDataPtr ) { return( ChannelDataPtr() ); }
+    virtual ChannelDataPtr channel( const ChannelDataPtr )
+    {
+        return( ChannelDataPtr() );
+    }
 
 
     // 'public' required for plugin access?? TBD.
-//protected:
+    //protected:
     virtual ~RTPOperation();
 
 protected:
@@ -95,8 +110,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
-        ar & BOOST_SERIALIZATION_NVP( _rtpOpType );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
+        ar& BOOST_SERIALIZATION_NVP( _rtpOpType );
     }
 };
 

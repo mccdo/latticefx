@@ -34,18 +34,21 @@
 #include <vtkCutter.h>
 #include <vtkPlane.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) );
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
+            getInput( "vtkDataObject" ) );
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
 
     double* bounds = cddoPtr->GetBounds();
@@ -58,46 +61,46 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     vtkCutter* cutter = vtkCutter::New();
     cutter->SetInput( tempVtkDO );
     cutter->SetCutFunction( cuttingPlane->GetPlane() );
-    
+
     //cutter->Update();
     delete cuttingPlane;
     cuttingPlane = NULL;
-    
+
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInputConnection( cutter->GetOutputPort() );
     //c2p->Update();
     cutter->Delete();
-    
+
     vtkTriangleFilter* tris = vtkTriangleFilter::New();
 
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
             vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
         //return m_multiGroupGeomFilter->GetOutputPort(0);
-        tris->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+        tris->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
         m_multiGroupGeomFilter->Delete();
     }
     else
     {
         //m_geometryFilter->SetInputConnection( input );
         //return m_geometryFilter->GetOutputPort();
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+        vtkDataSetSurfaceFilter* m_surfaceFilter =
             vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
         //return m_surfaceFilter->GetOutputPort();
         tris->SetInputConnection( m_surfaceFilter->GetOutputPort() );
         m_surfaceFilter->Delete();
     }
-    
+
     //mC2p->SetInputConnection( polydata );
     //mC2p->Update();
-    
+
     //tris->SetInputConnection( polydata );//mC2p->GetOutputPort() );
     //tris->Update();
     //tris->GetOutput()->ReleaseDataFlagOn();
-    
+
     // decimate points is used for lod control of contours
     /*deci->SetInputConnection( tris->GetOutputPort() );
      deci->PreserveTopologyOn();
@@ -108,7 +111,7 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     strip->SetInputConnection( tris->GetOutputPort() );
     //strip->Update();
     //strip->GetOutput()->ReleaseDataFlagOn();
-    
+
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
     //if( fillType == 0 )
     {
@@ -132,7 +135,7 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         bfilter->SetInputArrayToProcess( 0, 0, 0,
                                         vtkDataObject::FIELD_ASSOCIATION_POINTS,
                                         GetActiveDataSet()->GetActiveScalarName().c_str() );
-        
+
         //bfilter->GetOutput()->ReleaseDataFlagOn();
         normals->SetInputConnection( bfilter->GetOutputPort() );
         normals->SetFeatureAngle( 130.0f );
@@ -161,23 +164,23 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     }*/
     lfx::core::ChannelDataPtr cdpd;
     if( 1 )
-    {        
+    {
         normals->Update();
         cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
-            new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
+                   new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
     }
     else
-    {        
+    {
         normals->Update();
-        cdpd = ChannelDatavtkPolyDataPtr( 
-            new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
+        cdpd = ChannelDatavtkPolyDataPtr(
+                   new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
     }
 
     normals->Delete();
     c2p->Delete();
     strip->Delete();
     tris->Delete();
-    
+
     return( cdpd );
 }
 ////////////////////////////////////////////////////////////////////////////////

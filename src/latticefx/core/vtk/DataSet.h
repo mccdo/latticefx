@@ -304,9 +304,9 @@ public:
     void SetTransientDataSetsList( std::vector< DataSetPtr >& tempTransientData );
 
 protected:
-//#ifdef QT_ON
+    //#ifdef QT_ON
     void WriteDatabaseEntry();
-//#endif // QT_ON
+    //#endif // QT_ON
 
 private:
     ///Load a VTK Temporal data set

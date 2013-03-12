@@ -40,11 +40,14 @@
 #include <osg/CopyOp>
 #include <osgUtil/Optimizer>
 
-namespace lfx {
-    
-namespace core {
+namespace lfx
+{
 
-namespace vtk {
+namespace core
+{
+
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 void VTKActorRenderer::SetActiveVector( const std::string& activeVector )
@@ -59,9 +62,9 @@ void VTKActorRenderer::SetActiveScalar( const std::string& activeScalar )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
-    vtkPolyDataMapper* tempVtkPD = 
+    vtkPolyDataMapper* tempVtkPD =
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper();
-    
+
     //Setup the vtkActor and Mapper for the vtkActorToOSG utility
     double definedRange[ 2 ] = { 0.1, 1.0 };
     vtkLookupTable* lut = vtkLookupTable::New();
@@ -80,7 +83,7 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     lut->SetValueRange( 1.0f , 1.0f );
     lut->SetTableRange( definedRange );
     lut->ForceBuild();
-    
+
     vtkPolyDataMapper* mapper = tempVtkPD;
     mapper->SelectColorArray( m_activeScalar.c_str() );
     mapper->SetLookupTable( lut );
@@ -89,10 +92,10 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     vtkActor* actor = vtkActor::New();
     actor->SetMapper( mapper );
     actor->GetProperty()->SetSpecularPower( 20.0f );
-    
+
     lut->Delete();
     //Complete
-    
+
     osg::ref_ptr< osg::Geode > tempGeode = vtkActorToOSG( actor, 0, 0 );
     actor->Delete();
 
@@ -102,23 +105,23 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
         lightModel.get(), osg::StateAttribute::ON );
     osgUtil::Optimizer geodeOpti;
     geodeOpti.optimize( tempGeode.get(),
-                       //osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS |
-                       //osgUtil::Optimizer::REMOVE_REDUNDANT_NODES |
-                       //osgUtil::Optimizer::REMOVE_LOADED_PROXY_NODES |
-                       //osgUtil::Optimizer::COMBINE_ADJACENT_LODS |
-                       //osgUtil::Optimizer::SHARE_DUPLICATE_STATE |
-                       osgUtil::Optimizer::MERGE_GEOMETRY |
-                       osgUtil::Optimizer::CHECK_GEOMETRY |
-                       //osgUtil::Optimizer::SPATIALIZE_GROUPS |
-                       osgUtil::Optimizer::TRISTRIP_GEOMETRY |
-                       //osgUtil::Optimizer::OPTIMIZE_TEXTURE_SETTINGS |
-                       osgUtil::Optimizer::MERGE_GEODES );
-                       //osgUtil::Optimizer::STATIC_OBJECT_DETECTION );
-    
-    
+                        //osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS |
+                        //osgUtil::Optimizer::REMOVE_REDUNDANT_NODES |
+                        //osgUtil::Optimizer::REMOVE_LOADED_PROXY_NODES |
+                        //osgUtil::Optimizer::COMBINE_ADJACENT_LODS |
+                        //osgUtil::Optimizer::SHARE_DUPLICATE_STATE |
+                        osgUtil::Optimizer::MERGE_GEOMETRY |
+                        osgUtil::Optimizer::CHECK_GEOMETRY |
+                        //osgUtil::Optimizer::SPATIALIZE_GROUPS |
+                        osgUtil::Optimizer::TRISTRIP_GEOMETRY |
+                        //osgUtil::Optimizer::OPTIMIZE_TEXTURE_SETTINGS |
+                        osgUtil::Optimizer::MERGE_GEODES );
+    //osgUtil::Optimizer::STATIC_OBJECT_DETECTION );
+
+
     return( tempGeode.release() );
 }
-////////////////////////////////////////////////////////////////////////////////    
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

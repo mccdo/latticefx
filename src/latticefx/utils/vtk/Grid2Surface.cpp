@@ -34,9 +34,9 @@
 
 using namespace lfx::vtk_utils;
 
-vtkPolyData* lfx::vtk_utils::Grid2Surface( vtkDataObject *dataSet, float deciVal )
+vtkPolyData* lfx::vtk_utils::Grid2Surface( vtkDataObject* dataSet, float deciVal )
 {
-    vtkPolyDataAlgorithm* geometryFilter = 0; 
+    vtkPolyDataAlgorithm* geometryFilter = 0;
 
     if( dataSet->IsA( "vtkCompositeDataSet" ) )
     {
@@ -59,18 +59,18 @@ vtkPolyData* lfx::vtk_utils::Grid2Surface( vtkDataObject *dataSet, float deciVal
     //cFilter->MergingOff();
 
     // generate triangles from input polygons
-    vtkTriangleFilter *tFilter = vtkTriangleFilter::New();
+    vtkTriangleFilter* tFilter = vtkTriangleFilter::New();
     //tFilter->SetInput( cFilter->GetOutput() );
     tFilter->SetInput( geometryFilter->GetOutput() );
 
     // reduce the number of triangles...
-    vtkDecimatePro *deci = vtkDecimatePro::New();
+    vtkDecimatePro* deci = vtkDecimatePro::New();
     deci->SetInput( tFilter->GetOutput() );
     deci->SetTargetReduction( deciVal );
     deci->PreserveTopologyOn();
 
     // smooth the vertex coordinates
-    vtkSmoothPolyDataFilter *smoother = vtkSmoothPolyDataFilter::New();
+    vtkSmoothPolyDataFilter* smoother = vtkSmoothPolyDataFilter::New();
     smoother->SetInput( deci->GetOutput() );
     smoother->SetNumberOfIterations( 0 );   //was set to one
 
@@ -92,11 +92,11 @@ vtkPolyData* lfx::vtk_utils::Grid2Surface( vtkDataObject *dataSet, float deciVal
     smoother->GetOutput()->Update();
 
     // add normals and vertices (and corresponding scalar/vector data)
-    vtkPolyDataNormals *cNormal = vtkPolyDataNormals::New();
+    vtkPolyDataNormals* cNormal = vtkPolyDataNormals::New();
     cNormal->SetInput( smoother->GetOutput() );
     cNormal->ConsistencyOn();  //Enforce consistent polygon ordering
 
-    vtkPolyData * uGrid = vtkPolyData::New();
+    vtkPolyData* uGrid = vtkPolyData::New();
     cNormal->GetOutput()->Update();
     uGrid->ShallowCopy( cNormal->GetOutput() );
     /*

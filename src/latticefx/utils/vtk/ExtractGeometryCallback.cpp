@@ -83,15 +83,15 @@ void ExtractGeometryCallback::OperateOnDataset( vtkDataSet* dataset )
     {
         m_dataset = vtkMultiBlockDataSet::New();
     }
-    
+
     extractGrid->Update();
-    
+
     if( extractGrid->GetOutput() )
     {
         m_dataset->SetBlock( m_dataCounter, extractGrid->GetOutput() );
         m_dataCounter += 1;
     }
-    
+
     bbox->Delete();
     extractGrid->Delete();
 }

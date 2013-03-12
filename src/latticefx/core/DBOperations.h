@@ -31,8 +31,10 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class DBLoad DBOperations.h <latticefx/core/DBOperations.h>

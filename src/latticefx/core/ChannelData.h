@@ -33,13 +33,16 @@
 #include <vector>
 
 
-namespace osg {
-    class Array;
-    class Image;
+namespace osg
+{
+class Array;
+class Image;
 }
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 class ChannelData;
@@ -60,10 +63,10 @@ Currently, ChannelData is just a wrapper around an osg::Array
 and only osg::ByteArray (for masking) and osg::Vec3Array (for
 vertices) are supported. */
 class LATTICEFX_EXPORT ChannelData : protected LogBase,
-            public boost::enable_shared_from_this< ChannelData >
+    public boost::enable_shared_from_this< ChannelData >
 {
 public:
-    ChannelData( const std::string& name=std::string( "" ) );
+    ChannelData( const std::string& name = std::string( "" ) );
     ChannelData( const ChannelData& rhs );
     virtual ~ChannelData();
 
@@ -101,21 +104,39 @@ public:
     See the derived class documentation for any special notes.
     \returns NULL if the operation is unsupported, memory is exhausted, or the
     operation fails for any reason. */
-    virtual char* asCharPtr() { return( NULL ); }
+    virtual char* asCharPtr()
+    {
+        return( NULL );
+    }
     /** \overload char* ChannelData::asCharPtr(); */
-    virtual const char* asCharPtr() const { return( NULL ); }
+    virtual const char* asCharPtr() const
+    {
+        return( NULL );
+    }
 
     /** \brief
     \details */
-    virtual osg::Array* asOSGArray() { return( NULL ); }
+    virtual osg::Array* asOSGArray()
+    {
+        return( NULL );
+    }
     /** \overload osg::Array* ChannelData::asOSGArray(); */
-    virtual const osg::Array* asOSGArray() const { return( NULL ); }
+    virtual const osg::Array* asOSGArray() const
+    {
+        return( NULL );
+    }
 
     /** \brief
     \details */
-    virtual osg::Image* asOSGImage() { return( NULL ); }
+    virtual osg::Image* asOSGImage()
+    {
+        return( NULL );
+    }
     /** \overload osg::Image* ChannelData::asOSGImage(); */
-    virtual const osg::Image* asOSGImage() const { return( NULL ); }
+    virtual const osg::Image* asOSGImage() const
+    {
+        return( NULL );
+    }
 
     /** \brief Return this ChannelData with the specified mask applied.
     \detailt If \maskIn indicates no masking (no zero values), getMaskedChannel()

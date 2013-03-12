@@ -44,142 +44,150 @@
 #include <vtkSetGet.h> // defines data object types
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   int printInfoToScreen = 0; // "1" means print info to screen
+int main( int argc, char* argv[] )
+{
+    int printInfoToScreen = 0; // "1" means print info to screen
 
-   // If the command line contains an input vtk file name and an output file,
-   // set them up.  Otherwise, get them from the user...
+    // If the command line contains an input vtk file name and an output file,
+    // set them up.  Otherwise, get them from the user...
     std::string inFileName;// = NULL;
     std::string outFileName;// = NULL;
-   fileIO::processCommandLineArgs( argc, argv, 
-               "scale geometry AND vector data in", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
-   int arg = 3;
+    fileIO::processCommandLineArgs( argc, argv,
+                                    "scale geometry AND vector data in", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
+    int arg = 3;
 
-      ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-   vtkDataSet * dataset = dynamic_cast<vtkDataSet*>(readVtkThing( inFileName, printInfoToScreen ));
-   if ( printInfoToScreen )
-   {
-      std::cout << "\nback in main..." << std::endl; 
-      printWhatItIs( dataset );
-   }
- 
-/*
-   std::cout << "\nprinting dataset..." << std::endl;
-   dataset->Print( cout );
-*/
+    ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( inFileName, printInfoToScreen ) );
+    if( printInfoToScreen )
+    {
+        std::cout << "\nback in main..." << std::endl;
+        printWhatItIs( dataset );
+    }
 
-   // Determine scale method
-   int velSCALE;
-   if ( argc > 3 )
-   {   
-      std::cout << "Using commandline-set extents..." << std::endl;
-      velSCALE = atoi( argv[ arg++ ] );
-      std::cout << "\tvelSCALE: " << velSCALE << std::endl;
-   }
-   else
-   {
-      std::cout << "\nSelect the geometry scaling:" << std::endl;
-      std::cout << "(0) No scaling" << std::endl;
-      std::cout << "(1) Custom scaling" << std::endl;
-      std::cout << "(2) meters to feet" << std::endl;
-      std::cin >> velSCALE;
-   }
+    /*
+       std::cout << "\nprinting dataset..." << std::endl;
+       dataset->Print( cout );
+    */
 
-   // Get factor to scale the geometry
-   float geomScale [3] = {1.0f, 1.0f, 1.0f};    // default
-   if      ( velSCALE == 0 ) {;}
-   else if ( velSCALE == 1 )
-   {
-      for (int i=0; i<3; i++)
-      {
-         if ( argc > 3 )
-         {   
-            geomScale[i] = (float)atof( argv[ arg++ ] );
-            std::cout << "\tgeomScale[" << i << "]: " << geomScale[i] << std::endl;
-         }
-         else
-         {
-            std::cout << "input the geometry scale factor for axis " << i << ": ";
-            std::cin >> geomScale[i];
-         }
-      }
-   }
-   else if ( velSCALE == 2 )
-   {
-      geomScale[0] = 3.28083989501f;
-      geomScale[1] = 3.28083989501f;
-      geomScale[2] = 3.28083989501f;
-   }
-   else
-      std::cout << "Invalid entry: will not scale geometry" << std::endl;
+    // Determine scale method
+    int velSCALE;
+    if( argc > 3 )
+    {
+        std::cout << "Using commandline-set extents..." << std::endl;
+        velSCALE = atoi( argv[ arg++ ] );
+        std::cout << "\tvelSCALE: " << velSCALE << std::endl;
+    }
+    else
+    {
+        std::cout << "\nSelect the geometry scaling:" << std::endl;
+        std::cout << "(0) No scaling" << std::endl;
+        std::cout << "(1) Custom scaling" << std::endl;
+        std::cout << "(2) meters to feet" << std::endl;
+        std::cin >> velSCALE;
+    }
 
-   // Transform the geometry 
-   vtkTransform * transform = NULL;
-   vtkTransformFilter * transFilter = NULL;
-   //vtkPointSet * pointset = NULL;
+    // Get factor to scale the geometry
+    float geomScale [3] = {1.0f, 1.0f, 1.0f};    // default
+    if( velSCALE == 0 )
+    {
+        ;
+    }
+    else if( velSCALE == 1 )
+    {
+        for( int i = 0; i < 3; i++ )
+        {
+            if( argc > 3 )
+            {
+                geomScale[i] = ( float )atof( argv[ arg++ ] );
+                std::cout << "\tgeomScale[" << i << "]: " << geomScale[i] << std::endl;
+            }
+            else
+            {
+                std::cout << "input the geometry scale factor for axis " << i << ": ";
+                std::cin >> geomScale[i];
+            }
+        }
+    }
+    else if( velSCALE == 2 )
+    {
+        geomScale[0] = 3.28083989501f;
+        geomScale[1] = 3.28083989501f;
+        geomScale[2] = 3.28083989501f;
+    }
+    else
+    {
+        std::cout << "Invalid entry: will not scale geometry" << std::endl;
+    }
 
-   if ( dataset->IsA("vtkPointSet") )
-   {
-      //pointset = vtkPointSet::SafeDownCast( dataset );
-      //if ( pointset == NULL ) cout << "SafeDownCast to a pointset failed";
+    // Transform the geometry
+    vtkTransform* transform = NULL;
+    vtkTransformFilter* transFilter = NULL;
+    //vtkPointSet * pointset = NULL;
 
-      transform = vtkTransform::New();
-      transform->Scale( geomScale[0], geomScale[1], geomScale[2] );
+    if( dataset->IsA( "vtkPointSet" ) )
+    {
+        //pointset = vtkPointSet::SafeDownCast( dataset );
+        //if ( pointset == NULL ) cout << "SafeDownCast to a pointset failed";
 
-      //std::cout << "\nprinting pointset..." << std::endl;
-      //pointset->Print( cout );
+        transform = vtkTransform::New();
+        transform->Scale( geomScale[0], geomScale[1], geomScale[2] );
 
-      transFilter = vtkTransformFilter::New();
-      //transFilter->SetInput( pointset );
-      transFilter->SetInput( (vtkPointSet*)dataset );
-      transFilter->SetTransform( transform );
+        //std::cout << "\nprinting pointset..." << std::endl;
+        //pointset->Print( cout );
 
-      //std::cout << "\nprinting transFilter->GetOutput()..." << std::endl;
-      //transFilter->GetOutput()->Update();
-      //transFilter->GetOutput()->Print( cout );
+        transFilter = vtkTransformFilter::New();
+        //transFilter->SetInput( pointset );
+        transFilter->SetInput( ( vtkPointSet* )dataset );
+        transFilter->SetTransform( transform );
 
-      if ( dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID )
-      {
-         //std::cout << "\nprinting transFilter->GetUnstructuredGridOutput()..." << std::endl;
-         //transFilter->GetUnstructuredGridOutput()->Update();
-         //transFilter->GetUnstructuredGridOutput()->Print( cout );
-         writeVtkThing( transFilter->GetUnstructuredGridOutput(), outFileName, 1 ); // one is for binary
-      }
-      else if ( dataset->GetDataObjectType() == VTK_STRUCTURED_GRID )
-      {
-         std::cout << "doing nothing for VTK_STRUCTURED_GRID" << std::endl;
-      }
-      else if ( dataset->GetDataObjectType() == VTK_POLY_DATA )
-      {
-         //std::cout << "\nprinting transFilter->GetPolyDataOutput()..." << std::endl;
-         //transFilter->GetPolyDataOutput()->Print( cout );
-         writeVtkThing( transFilter->GetPolyDataOutput(), outFileName, 1 ); // one is for binary
-      }
-      else
-      {
-         std::cout <<"\nERROR - Unsupported vtk object type: "
-              << dataset->GetDataObjectType() << std::endl;
-         return 1;
-      }
-      //pointset->Delete();
-      transform->Delete();
-      transFilter->Delete();
-   }
-   else
-   {
-      std::cout <<"\nERROR - can only scale vtkPointSets" << std::endl;
-      dataset->Delete();
-      inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-      outFileName.erase();//delete [] outFileName;  outFileName = NULL;
-      return 1;
-   }
+        //std::cout << "\nprinting transFilter->GetOutput()..." << std::endl;
+        //transFilter->GetOutput()->Update();
+        //transFilter->GetOutput()->Print( cout );
 
-   dataset->Delete();
-   inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-   outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+        if( dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID )
+        {
+            //std::cout << "\nprinting transFilter->GetUnstructuredGridOutput()..." << std::endl;
+            //transFilter->GetUnstructuredGridOutput()->Update();
+            //transFilter->GetUnstructuredGridOutput()->Print( cout );
+            writeVtkThing( transFilter->GetUnstructuredGridOutput(), outFileName, 1 ); // one is for binary
+        }
+        else if( dataset->GetDataObjectType() == VTK_STRUCTURED_GRID )
+        {
+            std::cout << "doing nothing for VTK_STRUCTURED_GRID" << std::endl;
+        }
+        else if( dataset->GetDataObjectType() == VTK_POLY_DATA )
+        {
+            //std::cout << "\nprinting transFilter->GetPolyDataOutput()..." << std::endl;
+            //transFilter->GetPolyDataOutput()->Print( cout );
+            writeVtkThing( transFilter->GetPolyDataOutput(), outFileName, 1 ); // one is for binary
+        }
+        else
+        {
+            std::cout << "\nERROR - Unsupported vtk object type: "
+                      << dataset->GetDataObjectType() << std::endl;
+            return 1;
+        }
+        //pointset->Delete();
+        transform->Delete();
+        transFilter->Delete();
+    }
+    else
+    {
+        std::cout << "\nERROR - can only scale vtkPointSets" << std::endl;
+        dataset->Delete();
+        inFileName.erase();//delete [] inFileName;   inFileName = NULL;
+        outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+        return 1;
+    }
 
-   return 0;
+    dataset->Delete();
+    inFileName.erase();//delete [] inFileName;   inFileName = NULL;
+    outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+
+    return 0;
 }
 

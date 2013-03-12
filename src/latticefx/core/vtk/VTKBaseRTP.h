@@ -27,11 +27,14 @@
 
 #include <latticefx/core/vtk/CuttingPlane.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKBaseRTP VTKBaseRTP.h <latticefx/core/vtk/VTKBaseRTP.h>
  \brief Base class for VTK based RTP operations.
@@ -41,7 +44,7 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : protected lfx::core::LogBase, public lfx::core::RTPOperation
 {
 public:
-    
+
     ///Default constructor
     VTKBaseRTP( const RTPOpType rtpOpType )
         :
@@ -55,13 +58,13 @@ public:
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKBaseRTP()
     {
         ;
     }
-        
+
     ///Set the value for a plane location or scalar value for an isosurface
     void SetRequestedValue( double const value );
 
@@ -70,7 +73,7 @@ public:
 
     ///Set the active scalar to use for this pipeline
     void SetActiveScalar( std::string const scalarName );
-    
+
     ///Set the active vector to use for this pipeline
     void SetActiceVector( std::string const vectorName );
 
@@ -84,20 +87,20 @@ public:
 protected:
     ///Value for setting the position or value for an iso surface
     double m_requestedValue;
-    
+
     ///Values for setting color ranges on full VTK pipelines
     double m_minScalarValue;
     double m_maxScalarValue;
-    
+
     ///The active scalar name
     std::string m_activeScalar;
-    
+
     ///The active vector name
     std::string m_activeVector;
-    
+
     ///Number of points to be masked
     double m_mask;
-    
+
     ///Plane direction
     CuttingPlane::SliceDirection m_planeDirection;
 };

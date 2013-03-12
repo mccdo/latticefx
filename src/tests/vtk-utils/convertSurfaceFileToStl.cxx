@@ -42,40 +42,43 @@
 
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name and an output file set them up.
-   // Otherwise, get them from the user...
-   std::string inFileName;// = NULL;
-   std::string outFileName;// = new char [20];
-   outFileName.assign( "surface.stl" );//strcpy( outFileName, "surface.stl" );  //default name
-   fileIO::processCommandLineArgs( argc, argv, "convert geometry to STL format in", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
-   ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-   vtkDataSet * dataset = dynamic_cast<vtkDataSet*>(readVtkThing( inFileName, 1 ));
-   // convert to vtkPolyData    
-   vtkGeometryFilter *cFilter = vtkGeometryFilter::New();
-      cFilter->SetInput( dataset );
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name and an output file set them up.
+    // Otherwise, get them from the user...
+    std::string inFileName;// = NULL;
+    std::string outFileName;// = new char [20];
+    outFileName.assign( "surface.stl" );//strcpy( outFileName, "surface.stl" );  //default name
+    fileIO::processCommandLineArgs( argc, argv, "convert geometry to STL format in", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
+    ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( inFileName, 1 ) );
+    // convert to vtkPolyData
+    vtkGeometryFilter* cFilter = vtkGeometryFilter::New();
+    cFilter->SetInput( dataset );
 
-   vtkTriangleFilter *tFilter = vtkTriangleFilter::New();
-      tFilter->SetInput( cFilter->GetOutput() );
+    vtkTriangleFilter* tFilter = vtkTriangleFilter::New();
+    tFilter->SetInput( cFilter->GetOutput() );
 
-   std::cout << "Writing \"" << outFileName << "\"... ";
-   std::cout.flush();
-   vtkSTLWriter *writer = vtkSTLWriter::New();
-      writer->SetInput( tFilter->GetOutput() );
-      writer->SetFileName( outFileName.c_str() );
-      writer->SetFileTypeToBinary();
-      writer->Write();
-      writer->Delete();
-   std::cout << "... done\n" << std::endl;
+    std::cout << "Writing \"" << outFileName << "\"... ";
+    std::cout.flush();
+    vtkSTLWriter* writer = vtkSTLWriter::New();
+    writer->SetInput( tFilter->GetOutput() );
+    writer->SetFileName( outFileName.c_str() );
+    writer->SetFileTypeToBinary();
+    writer->Write();
+    writer->Delete();
+    std::cout << "... done\n" << std::endl;
 
-   cFilter->Delete();
-   tFilter->Delete();
-   dataset->Delete();
-   inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-   outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+    cFilter->Delete();
+    tFilter->Delete();
+    dataset->Delete();
+    inFileName.erase();//delete [] inFileName;   inFileName = NULL;
+    outFileName.erase();//delete [] outFileName;  outFileName = NULL;
 
-   return 0;
+    return 0;
 }
 

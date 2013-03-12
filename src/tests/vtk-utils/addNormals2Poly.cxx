@@ -40,35 +40,38 @@
 
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name and an output file set them up.
-   // Otherwise, get them from the user...
-   std::string inFileName;// = NULL;
-   std::string outFileName;// = NULL;
-   fileIO::processCommandLineArgs( argc, argv, "add normals to", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name and an output file set them up.
+    // Otherwise, get them from the user...
+    std::string inFileName;// = NULL;
+    std::string outFileName;// = NULL;
+    fileIO::processCommandLineArgs( argc, argv, "add normals to", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
 
-   vtkDataObject* dataset= (readVtkThing( inFileName, 1 ));
-   
-   // convert vtkUnstructuredGrid to vtkPolyData    
-   vtkGeometryFilter *gFilter = vtkGeometryFilter::New();
-      gFilter->SetInput( dataset );
+    vtkDataObject* dataset = ( readVtkThing( inFileName, 1 ) );
 
-   vtkPolyDataNormals * pdWithNormals = vtkPolyDataNormals::New();
-      pdWithNormals->SetInput( gFilter->GetOutput() );
-      //Specify the angle that defines a sharp edge. If the difference in angle across neighboring
-      //polygons is greater than this value, the shared edge is considered "sharp".    
-      pdWithNormals->SetFeatureAngle( 60 );
+    // convert vtkUnstructuredGrid to vtkPolyData
+    vtkGeometryFilter* gFilter = vtkGeometryFilter::New();
+    gFilter->SetInput( dataset );
 
-   writeVtkThing( pdWithNormals->GetOutput(), outFileName );
+    vtkPolyDataNormals* pdWithNormals = vtkPolyDataNormals::New();
+    pdWithNormals->SetInput( gFilter->GetOutput() );
+    //Specify the angle that defines a sharp edge. If the difference in angle across neighboring
+    //polygons is greater than this value, the shared edge is considered "sharp".
+    pdWithNormals->SetFeatureAngle( 60 );
 
-   dataset->Delete();
-   gFilter->Delete();
-   pdWithNormals->Delete();
-   inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-   outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+    writeVtkThing( pdWithNormals->GetOutput(), outFileName );
 
-   return 0;
+    dataset->Delete();
+    gFilter->Delete();
+    pdWithNormals->Delete();
+    inFileName.erase();//delete [] inFileName;   inFileName = NULL;
+    outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+
+    return 0;
 }
 

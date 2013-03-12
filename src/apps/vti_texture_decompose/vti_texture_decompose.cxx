@@ -16,7 +16,7 @@
 #include <vtkFloatArray.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-void writeFlowTexture( vtkImageData* currentFile, std::string const& fileName, std::string const& scalarName)
+void writeFlowTexture( vtkImageData* currentFile, std::string const& fileName, std::string const& scalarName )
 {
     vtkImageData* flowImage = vtkImageData::New();
     // used to determine texture size
@@ -51,7 +51,7 @@ void writeFlowTexture( vtkImageData* currentFile, std::string const& fileName, s
                     double data[ 4 ];
                     for ( unsigned int i = 0; i < 4; ++i )
                         data[ i ] = _pointData[ pixelNum ].data( i );
-                    
+
                     flowData->SetTuple( pixelNum, data );
                 }
             }
@@ -67,7 +67,7 @@ void writeFlowTexture( vtkImageData* currentFile, std::string const& fileName, s
 void writeScalarTexture( vtkImageData* flowImage, std::string const& directory, std::string const& newFilename, std::string const& dataName )
 {
     boost::filesystem::path scalarPath( directory );
-    scalarPath/=std::string("tbet_data");
+    scalarPath /= std::string( "tbet_data" );
     try
     {
         if( !boost::filesystem::is_directory( scalarPath ) )
@@ -75,14 +75,14 @@ void writeScalarTexture( vtkImageData* flowImage, std::string const& directory, 
             boost::filesystem::create_directory( scalarPath );
         }
     }
-    catch ( const std::exception& ex )
+    catch( const std::exception& ex )
     {
         std::cout << ex.what() << std::endl;
         boost::filesystem::create_directory( scalarPath );
         std::cout << "...so we made it for you..." << std::endl;
     }
 
-    scalarPath/=std::string("scalars");
+    scalarPath /= std::string( "scalars" );
     try
     {
         if( !boost::filesystem::is_directory( scalarPath ) )
@@ -90,14 +90,14 @@ void writeScalarTexture( vtkImageData* flowImage, std::string const& directory, 
             boost::filesystem::create_directory( scalarPath );
         }
     }
-    catch ( const std::exception& ex )
+    catch( const std::exception& ex )
     {
         std::cout << ex.what() << std::endl;
         boost::filesystem::create_directory( scalarPath );
         std::cout << "...so we made it for you..." << std::endl;
     }
-    
-    scalarPath/=(dataName);
+
+    scalarPath /= ( dataName );
     try
     {
         if( !boost::filesystem::is_directory( scalarPath ) )
@@ -105,20 +105,20 @@ void writeScalarTexture( vtkImageData* flowImage, std::string const& directory, 
             boost::filesystem::create_directory( scalarPath );
         }
     }
-    catch ( const std::exception& ex )
+    catch( const std::exception& ex )
     {
         std::cout << ex.what() << std::endl;
         boost::filesystem::create_directory( scalarPath );
         std::cout << "...so we made it for you..." << std::endl;
-    }   
-    
+    }
+
     std::string nameString;
-    nameString.append(scalarPath.string());
+    nameString.append( scalarPath.string() );
     nameString.append( "/" );
     nameString.append( newFilename );
     nameString.append( ".vti" );
-    
-    writeFlowTexture( flowImage, nameString, dataName );  
+
+    writeFlowTexture( flowImage, nameString, dataName );
 }
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char* argv[] )
@@ -128,10 +128,10 @@ int main( int argc, char* argv[] )
         std::cout << "Please specify a vti file to decompose." << std::endl;
     }
     std::string vtiFilename( argv[ 1 ] );
-    
+
     std::cout << "Decomposing vti file " << vtiFilename << std::endl;
- 
-    vtkImageData* flowImage = 
+
+    vtkImageData* flowImage =
         dynamic_cast< vtkImageData* >( lfx::vtk_utils::readVtkThing( vtiFilename, 0 ) );
     if( !flowImage )
     {
@@ -140,11 +140,11 @@ int main( int argc, char* argv[] )
 
     if( flowImage->GetPointData()->GetNumberOfArrays() == 1 )
     {
-        std::cout 
-            << " Warning : There need to be multiple scalars in this vti file " 
-            << std::endl;
+        std::cout
+                << " Warning : There need to be multiple scalars in this vti file "
+                << std::endl;
     }
-    
+
     vtkIdType numArrays = flowImage->GetPointData()->GetNumberOfArrays();
     for( vtkIdType i = 0; i < numArrays; ++i )
     {
@@ -152,13 +152,13 @@ int main( int argc, char* argv[] )
         std::string dataName = flowData->GetName();
         std::cout << "This vti file has scalar " << dataName << std::endl;
     }
-    
+
     //Get base file name from vtiFilename
     boost::filesystem::path scalarPath( vtiFilename );
     std::string newFilename = scalarPath.filename().string();
     //Get base directory name from vtiFilename
     std::string const directory = scalarPath.remove_filename().string();
-    
+
     for( vtkIdType i = 0; i < numArrays; ++i )
     {
         vtkDataArray* flowData = flowImage->GetPointData()->GetArray( i );

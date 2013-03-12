@@ -85,8 +85,8 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     else
     {
         std::cout << "|\tData is loaded for file "
-            << tempDataSetFilename
-            << std::endl;
+                  << tempDataSetFilename
+                  << std::endl;
         //if( lastDataAdded->GetParent() == lastDataAdded )
         //{
         //_activeModel->GetDCS()->
@@ -110,14 +110,14 @@ int main( int argc, char** argv )
 
     //Load the VTK data
     lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
-    
+
     //Create the DataSet for this visualization with VTK
     lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-    
+
     //1st Step
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     dsp->addChannel( dobjPtr );
-    
+
     lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
     vectorRTP->SetRequestedValue( 50.0 );
     vectorRTP->addInput( "vtkDataObject" );
@@ -127,7 +127,7 @@ int main( int argc, char** argv )
     //lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
     //vectorRTP->addInput( "vtkDataObject" );
     //dsp->addOperation( vectorRTP );
-    
+
     //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
     /*lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
@@ -141,7 +141,7 @@ int main( int argc, char** argv )
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyDataMapper" );
     dsp->setRenderer( renderOp );
-    
+
     std::cout << "lfx...creating data..." << std::endl;
     osg::Node* sceneNode = dsp->getSceneData();
     std::cout << "...finished creating data. " << std::endl;

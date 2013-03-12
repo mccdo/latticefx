@@ -33,11 +33,14 @@
 #include <vtkPolyDataNormals.h>
 #include <vtkPolyDataMapper.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDataPtr maskIn )
@@ -48,8 +51,8 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     }
 
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) );
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
+            getInput( "vtkDataObject" ) );
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
 
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
@@ -62,15 +65,15 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     contourFilter->SetValue( 0, m_requestedValue );
     contourFilter->ComputeNormalsOff();
     contourFilter->SetInputArrayToProcess( 0, 0, 0,
-        vtkDataObject::FIELD_ASSOCIATION_POINTS,
-        m_activeScalar.c_str() );
+                                           vtkDataObject::FIELD_ASSOCIATION_POINTS,
+                                           m_activeScalar.c_str() );
     //contourFilter->Update();
 
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
-    
+
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
             vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
         normals->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
@@ -78,7 +81,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     }
     else
     {
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+        vtkDataSetSurfaceFilter* m_surfaceFilter =
             vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( contourFilter->GetOutputPort( 0 ) );
 
@@ -86,7 +89,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
 
         m_surfaceFilter->Delete();
     }
-    
+
     normals->Update();
 
     lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
@@ -98,7 +101,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
     normals->Delete();
     c2p->Delete();
     contourFilter->Delete();
-    
+
     return( cdpd );
 }
 ////////////////////////////////////////////////////////////////////////////////

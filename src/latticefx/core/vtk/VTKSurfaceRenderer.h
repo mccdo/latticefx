@@ -26,11 +26,14 @@
 
 class vtkPolyData;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKSurfaceRenderer VTKSurfaceRenderer.h <latticefx/core/vtk/VTKSurfaceRenderer.h>
  \brief This class converts a vtkPolyData to OSG arrays for rendering.
@@ -43,24 +46,24 @@ class LATTICEFX_CORE_VTK_EXPORT VTKSurfaceRenderer : public lfx::core::SurfaceRe
 public:
     ///Default constructor
     ///We are really a fancy lfx::core::VectorRenderer specific to VTK data
-    VTKSurfaceRenderer() 
-        : 
+    VTKSurfaceRenderer()
+        :
         lfx::core::SurfaceRenderer(),
         m_pd( 0 )
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKSurfaceRenderer()
     {
         ;
     }
-    
+
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use
     void SetActiveVector( const std::string& activeVector );
-    
+
     ///Set the active scalar name to tell the render what to put in the textures
     ///\param activeScalar The active scalar name to use
     void SetActiveScalar( const std::string& activeScalar );

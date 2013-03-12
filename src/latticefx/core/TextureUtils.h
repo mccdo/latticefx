@@ -26,16 +26,19 @@
 #include <latticefx/core/ChannelData.h>
 #include <osg/Vec3>
 
-namespace osg {
-    class Image;
-    class Texture;
-    class Texture2D;
-    class Texture3D;
+namespace osg
+{
+class Image;
+class Texture;
+class Texture2D;
+class Texture3D;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \defgroup TextureUtils Utilities for creating and working with texture-based data
@@ -51,7 +54,7 @@ namespace core {
 \details Control flag for computeTexture3DDimensions(). */
 #define LFX_TEXUTILS_USE_PO2        ( 0x1 << 0 )
 #define LFX_TEXUTILS_FORCE_UNIFORM  ( 0x1 << 1 )
-    
+
 /** \brief Computes optimal  dimensions for a Texture3D
 \details Useful for instanced rendering of \c numElements instances. Returns a Vec3
 of dimensions for a texture large enough to hold \c numElements elements.
@@ -63,7 +66,7 @@ using the \c flags parameter.
 It is assumed that shader code will convert the gl_InstanceIDARB into a texture
 coordinate that will index into a texture with these dimensions. See
 data/lfx-pointsphere.vert for code that does this. */
-LATTICEFX_EXPORT osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags=0 );
+LATTICEFX_EXPORT osg::Vec3 computeTexture3DDimensions( const unsigned int numElements, const int flags = 0 );
 
 /** \brief Create a Texture3D from ChannelData for instanced rendering.
 \details Currently, \c source must be a ChannelDataOSGArray.

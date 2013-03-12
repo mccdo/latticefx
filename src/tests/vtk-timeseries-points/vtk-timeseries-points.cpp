@@ -83,9 +83,9 @@ double conversionFactor = 0.00328084;
 #endif
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSetPtr >& transData,
-                                                                   const std::string& activeScalar,
-                                                                   const std::string& activeVector,
-                                                                   lfx::core::DBBasePtr dbBase )
+                                       const std::string& activeScalar,
+                                       const std::string& activeVector,
+                                       lfx::core::DBBasePtr dbBase )
 {
     std::vector< std::vector< std::pair< vtkIdType, double* > > >  m_pointCollection;
     ///The raw data for the respective points
@@ -94,26 +94,26 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     std::vector< std::vector< std::pair< std::string, std::vector< double > > > >  m_lineDataCollection;
 
     m_pointCollection.clear();
-    
+
     std::vector< lfx::core::vtk::DataSetPtr > m_transientDataSet;
     m_transientDataSet = transData;
     std::string m_activeVector = activeVector;
     std::string m_activeScalar = activeScalar;
-    
+
     lfx::vtk_utils::FindVertexCellsCallback* findVertexCellsCbk =
         new lfx::vtk_utils::FindVertexCellsCallback();
     lfx::vtk_utils::DataObjectHandler* dataObjectHandler =
         new lfx::vtk_utils::DataObjectHandler();
     dataObjectHandler->SetDatasetOperatorCallback( findVertexCellsCbk );
-    
+
     size_t maxNumPoints = 0;
     for( size_t i = 0; i < m_transientDataSet.size(); ++i )
     {
         vtkDataObject* tempDataSet = m_transientDataSet.at( i )->GetDataSet();
-        
+
         dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
         std::vector< std::pair< vtkIdType, double* > > tempCellGroups =
-        findVertexCellsCbk->GetVertexCells();
+            findVertexCellsCbk->GetVertexCells();
         m_pointCollection.push_back( tempCellGroups );
         findVertexCellsCbk->ResetPointGroup();
         if( maxNumPoints < tempCellGroups.size() )
@@ -129,7 +129,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     for( size_t i = 0; i < m_transientDataSet.size(); ++i )
     {
         vtkDataObject* tempDataSet = m_transientDataSet.at( i )->GetDataSet();
-        
+
         dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
     }
     std::vector< std::string > scalarNames = getNumParamsCbk->GetParameterNames( false );
@@ -142,14 +142,14 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         new lfx::vtk_utils::ProcessScalarRangeCallback();
     double* diamRange = new double[ 2 ];
     double* vmagRange = new double[ 2 ];
-    double diamRangeF[ 2 ] = {10000000.,-10000000.};
-    double vmagRangeF[ 2 ] = {10000000.,-10000000.};
+    double diamRangeF[ 2 ] = {10000000., -10000000.};
+    double vmagRangeF[ 2 ] = {10000000., -10000000.};
     for( size_t j = 0; j < m_transientDataSet.size(); ++j )
     {
         dataObjectHandler->SetDatasetOperatorCallback( processScalarRangeCbk );
         vtkDataObject* tempDataSet = m_transientDataSet.at( j )->GetDataSet();
         dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
-        processScalarRangeCbk->GetScalarRange( diameterNameString, diamRange ); 
+        processScalarRangeCbk->GetScalarRange( diameterNameString, diamRange );
         processScalarRangeCbk->GetScalarRange( vmagNameString, vmagRange );
         if( diamRange[ 0 ] < diamRangeF[ 0 ] )
         {
@@ -170,7 +170,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         {
             vmagRangeF[ 1 ] = vmagRange[ 1 ];
         }
-    }    
+    }
     delete [] diamRange;
     diamRange = 0;
     delete [] vmagRange;
@@ -186,20 +186,20 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     for( size_t i = 0; i < m_transientDataSet.size(); ++i )
     {
         vtkDataObject* tempDataSet = m_transientDataSet.at( i )->GetDataSet();
-        
+
         dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
         std::vector< std::pair< std::string, std::vector< double > > > tempCellGroups =
-        getScalarDataArrayCbk->GetCellData();
+            getScalarDataArrayCbk->GetCellData();
         m_dataCollection.push_back( tempCellGroups );
         getScalarDataArrayCbk->ResetPointGroup();
     }
-    
+
     delete getScalarDataArrayCbk;
     delete dataObjectHandler;
     delete getNumParamsCbk;
     delete processScalarRangeCbk;
 
-    lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );    
+    lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
     for( size_t i = 0; i < transData.size(); ++i )
     {
         std::vector< std::pair< std::string, std::vector< double > > >* tempScalarData = &m_dataCollection.at( i );
@@ -226,10 +226,10 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         }
 
 
-        std::vector< std::pair< vtkIdType, double* > >* tempCellGroups = 
+        std::vector< std::pair< vtkIdType, double* > >* tempCellGroups =
             &m_pointCollection.at( i );
-        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array ); 
-        double val=0;
+        osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
+        double val = 0;
         for( size_t j = 0; j < tempCellGroups->size(); ++j )
         {
             //std::cout << tempCellGroups->size() << std::endl;
@@ -251,7 +251,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             {
                 std::cout << " no diameter " << j << std::endl;
             }
-            
+
             //depthArray->push_back( float(j%6)/5. );
             if( vmagArray )
             {
@@ -279,29 +279,29 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     renderOp->addInput( "positions" );
     renderOp->addInput( "radii" );
     renderOp->addInput( "depth" ); // From DepthComputation channel creator
-    
+
     // Configure transfer function.
     renderOp->setTransferFunctionInput( "depth" );
     renderOp->setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
-    
+
     // Configure hardware mask.
     renderOp->setHardwareMaskInputSource( lfx::core::Renderer::HM_SOURCE_RED );
     renderOp->setHardwareMaskOperator( lfx::core::Renderer::HM_OP_OFF );
     renderOp->setHardwareMaskReference( 0.f );
-    
+
     renderOp->setDB( dbBase );
-    
+
     dsp->setRenderer( renderOp );
     dsp->setDB( dbBase );
-   
+
     /*m_bb[0] = 1000000;
     m_bb[1] = -1000000;
     m_bb[2] = 1000000;
     m_bb[3] = -1000000;
     m_bb[4] = 1000000;
     m_bb[5] = -1000000;*/
-    
+
     /*ves::xplorer::scenegraph::VTKParticleTextureCreator::Point tempPoint;
     for( size_t i = 0; i < maxNumPoints; ++i )
     {
@@ -314,14 +314,14 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
             std::vector< double > tempVec;
             tempLineData.push_back( std::make_pair< std::string, std::vector< double > >( m_dataCollection.at( 0 ).at( k ).first, tempVec ) );
         }
-        
+
         for( size_t j = 0; j < m_transientDataSet.size(); ++j )
         {
             std::vector< std::pair< vtkIdType, double* > >* activeCellGroups =
             &m_pointCollection.at( j );
             std::vector< std::pair< std::string, std::vector< double > > >* dataCollection =
             &m_dataCollection.at( j );
-            
+
             if( i < activeCellGroups->size() )
             {
                 vtkIdType cellid = activeCellGroups->at( i ).first;
@@ -386,7 +386,7 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
         //std::cout << std::endl;
         //std::cout << std::endl;
     }*/
-    
+
     /*for( size_t i = 0; i < m_pointCollection.size(); ++i )
      {
      std::vector< std::pair< vtkIdType, double* > >* activeCellGroups =
@@ -401,12 +401,12 @@ lfx::core::DataSetPtr createInstanced( const std::vector< lfx::core::vtk::DataSe
     m_pointCollection.clear();
     m_dataCollection.clear();
     //osg::Geode* geode = new osg::Geode();
-    
+
     //createStreamLines( geode );
-    
+
     //m_streamlineList.clear();
     m_lineDataCollection.clear();
-    
+
     return dsp;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -465,7 +465,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
         transientSeries =
             tempDataSet->GetTransientDataSets();
     }
-    
+
     vtkDataObject* tempVtkDataSet = tempDataSet->GetDataSet();
     //If the data load failed
     if( !tempVtkDataSet )
@@ -476,8 +476,8 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     else
     {
         std::cout << "|\tData is loaded for file "
-            << tempDataSetFilename
-            << std::endl;
+                  << tempDataSetFilename
+                  << std::endl;
         //if( lastDataAdded->GetParent() == lastDataAdded )
         //{
         //_activeModel->GetDCS()->
@@ -493,38 +493,38 @@ int main( int argc, char** argv )
 {
     lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
     lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
-    
+
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
     vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
     prototype->Delete();
 
 
     lfx::core::DBBasePtr dbBase;
-/*#ifdef LFX_USE_CRUNCHSTORE
-    if( !( csFile.empty() ) )
-    {
-        DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+    /*#ifdef LFX_USE_CRUNCHSTORE
+        if( !( csFile.empty() ) )
+        {
+            DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
 
-        crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
-        crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
-        crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
-        manager->SetCache( cache );
-        manager->SetBuffer( buffer );
-        crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
-        sqstore->SetStorePath( csFile );
-        manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
-        try {
-            cs->setDataManager( manager );
-        }
-        catch( std::exception exc ) {
-            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
-            LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
-            exit( 1 );
-        }
+            crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+            crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+            crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+            manager->SetCache( cache );
+            manager->SetBuffer( buffer );
+            crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+            sqstore->SetStorePath( csFile );
+            manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+            try {
+                cs->setDataManager( manager );
+            }
+            catch( std::exception exc ) {
+                LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+                LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
+                exit( 1 );
+            }
 
-        dbBase = (DBBasePtr)cs;
-    }
-#endif*/
+            dbBase = (DBBasePtr)cs;
+        }
+    #endif*/
     //if( csFile.empty() )
     {
         lfx::core::DBDiskPtr disk( lfx::core::DBDiskPtr( new lfx::core::DBDisk() ) );
@@ -555,7 +555,7 @@ int main( int argc, char** argv )
 
         lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
         dsp2->addChannel( dobjPtr );
-        
+
         lfx::core::vtk::VTKSurfaceWrapRTPPtr surfaceRTP( new lfx::core::vtk::VTKSurfaceWrapRTP() );
         surfaceRTP->addInput( "vtkDataObject" );
         dsp2->addOperation( surfaceRTP );
@@ -575,7 +575,7 @@ int main( int argc, char** argv )
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     // add the window size toggle handler
-    viewer.addEventHandler(new osgViewer::WindowSizeHandler);
+    viewer.addEventHandler( new osgViewer::WindowSizeHandler );
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( rootGroup.get() );
 

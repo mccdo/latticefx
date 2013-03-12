@@ -33,10 +33,10 @@ namespace vtk_utils
 {
 // function declarations
 ///Takes in a vtkPointSet and removes vertices not used by a cell.
-LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet * );
+LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet* );
 ///Takes in a vtkPointSet and removes vertices not used by a cell and writes it back out.
 ///param vtkFileName The name of the file to be written out.
-LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet *, std::string vtkFileName );
+LATTICEFX_VTK_UTILS_EXPORT void dumpVerticesNotUsedByCells( vtkPointSet*, std::string vtkFileName );
 }// end of util namesapce
 }// end of xplorer namesapce
 #endif

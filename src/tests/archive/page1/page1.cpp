@@ -48,7 +48,7 @@ class ImageProcess : public Preprocess
 {
 public:
     ImageProcess()
-      : Preprocess()
+        : Preprocess()
     {
         setActionType( Preprocess::REPLACE_DATA );
     }
@@ -66,9 +66,9 @@ public:
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( newImage ),
-            RangeValues( 0., 100000. ) );
+                         RangeValues( 0., 100000. ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
-            RangeValues( 100000., FLT_MAX ) );
+                         RangeValues( 100000., FLT_MAX ) );
         return( cdLOD );
     }
 };
@@ -82,10 +82,10 @@ public:
         osg::ref_ptr< osg::Image > image( cdi->getImage() );
         osg::Image* stubImage( new osg::Image() );
         stubImage->setImage( image->s(), image->t(), image->r(),
-            image->getInternalTextureFormat(), image->getPixelFormat(),
-            image->getDataType(),
-            (unsigned char*) NULL,
-            osg::Image::NO_DELETE, image->getPacking() );
+                             image->getInternalTextureFormat(), image->getPixelFormat(),
+                             image->getDataType(),
+                             ( unsigned char* ) NULL,
+                             osg::Image::NO_DELETE, image->getPacking() );
         stubImage->setFileName( image->getFileName() );
 
         osg::Geode* geode( new osg::Geode() );

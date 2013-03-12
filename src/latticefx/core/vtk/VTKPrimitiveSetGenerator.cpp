@@ -23,15 +23,18 @@
 
 #include <osg/Geometry>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 VTKPrimitiveSetGenerator::VTKPrimitiveSetGenerator( const VTKPrimitiveSetGenerator& rhs )
-    : 
+    :
     lfx::core::PrimitiveSetGenerator( rhs )
 {
     ;
@@ -50,16 +53,16 @@ void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer* /* surfaceRend
         {
             continue;
         }
-        
+
         osg::ref_ptr< osg::DrawElementsUInt > deui = new osg::DrawElementsUInt( GL_TRIANGLE_STRIP, 0 );
-        
+
         for( int i = 0; i < cStripNp; ++i )
         {
             deui->push_back( ( unsigned int )( startVertexIdx + i ) );
         }
-        
+
         startVertexIdx += cStripNp;
-        
+
         geom->addPrimitiveSet( deui.get() );
     }
     //osg::DrawArrays* da( new osg::DrawArrays( GL_TRIANGLES, 0,

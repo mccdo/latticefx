@@ -35,8 +35,10 @@
 #include <vector>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup PagingSupport Support for threaded data loading
@@ -123,7 +125,7 @@ public:
     loading data. The paging thread ignores any pending load requests.
     Loaded data not retrieved by client code remains referenced by the
     PagingThread class. (TBD need a singleton destructor.)
-    
+
     Thread safe. */
     void halt();
 
@@ -135,7 +137,7 @@ public:
 
     /** \brief Adds a request to load data in the PagingThread.
     \details Pushes \c request onto the end of the \c _requestList.
-    
+
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
     void addLoadRequest( LoadRequestPtr request );
@@ -144,7 +146,7 @@ public:
     /** \brief Attempt to retrieve the result of a previous load request.
     \details Returns a pointer to the LoadRequest identified by \c path, or
     a pointer to NULL of the LoadRequest can't be found or is not yet complete.
-    
+
     Thread safe. In typical usage, client code calls this during the update
     traversal. */
     LoadRequestPtr retrieveLoadRequest( const osg::NodePath& path );
@@ -168,9 +170,9 @@ public:
     void setTransforms( const osg::Vec3& wcEyePosition );
     void setTransforms( const osg::Matrix& proj, const osg::Viewport* vp );
     void setTransforms( const osg::Vec3& wcEyePosition, const osg::Matrix& proj,
-        const osg::Viewport* vp );
+                        const osg::Viewport* vp );
     void getTransforms( osg::Vec3& wcEyePosition, osg::Matrix& proj,
-        osg::ref_ptr< const osg::Viewport >& vp ) const;
+                        osg::ref_ptr< const osg::Viewport >& vp ) const;
 
 protected:
     /** \brief Process pending canceled LoadRequests.

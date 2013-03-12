@@ -22,15 +22,18 @@
 
 #include <vtkPolyData.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
-    
+namespace vtk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyData::ChannelDatavtkPolyData( vtkPolyData* pd, const std::string& name )
-    : 
+    :
     ChannelData( name ),
     m_pd( 0 )
 {
@@ -39,7 +42,7 @@ ChannelDatavtkPolyData::ChannelDatavtkPolyData( vtkPolyData* pd, const std::stri
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyData::ChannelDatavtkPolyData( const ChannelDatavtkPolyData& rhs )
-    : 
+    :
     ChannelData( rhs ),
     m_pd( rhs.m_pd )
 {

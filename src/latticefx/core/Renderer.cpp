@@ -32,22 +32,24 @@
 #include <Poco/Platform.h>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 Renderer::Renderer( const std::string logNameSuffix )
-  : OperationBase( OperationBase::RendererType ),
-    LogBase( "lfx.core." + logNameSuffix ),
-    _baseUnit( 4 ),
-    _unitAssignmentCounter( 8 ),
-    _tfRange( 0.f, 1.f ),
-    _tfDest( TF_ALPHA ),
-    _tfDestMask( 0., 0., 0., 1. ),
-    _hmSource( HM_SOURCE_ALPHA ),
-    _hmReference( 0.f ),
-    _hmEpsilon( 0.f ),
-    _hmOperator( HM_OP_OFF )
+    : OperationBase( OperationBase::RendererType ),
+      LogBase( "lfx.core." + logNameSuffix ),
+      _baseUnit( 4 ),
+      _unitAssignmentCounter( 8 ),
+      _tfRange( 0.f, 1.f ),
+      _tfDest( TF_ALPHA ),
+      _tfDestMask( 0., 0., 0., 1. ),
+      _hmSource( HM_SOURCE_ALPHA ),
+      _hmReference( 0.f ),
+      _hmEpsilon( 0.f ),
+      _hmOperator( HM_OP_OFF )
 {
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -80,20 +82,20 @@ Renderer::Renderer( const std::string logNameSuffix )
     registerUniform( info );
 }
 Renderer::Renderer( const Renderer& rhs )
-  : OperationBase( rhs ),
-    LogBase( rhs ),
-    _uniformInfo( rhs._uniformInfo ),
-    _baseUnit( rhs._baseUnit ),
-    _unitAssignmentCounter( rhs._unitAssignmentCounter ),
-    _unitAssignmentMap( rhs._unitAssignmentMap ),
-    _tfImage( rhs._tfImage ),
-    _tfInputName( rhs._tfInputName ),
-    _tfDest( rhs._tfDest ),
-    _tfDestMask( rhs._tfDestMask ),
-    _hmSource( rhs._hmSource ),
-    _hmInputName( rhs._hmInputName ),
-    _hmReference( rhs._hmReference ),
-    _hmOperator( rhs._hmOperator )
+    : OperationBase( rhs ),
+      LogBase( rhs ),
+      _uniformInfo( rhs._uniformInfo ),
+      _baseUnit( rhs._baseUnit ),
+      _unitAssignmentCounter( rhs._unitAssignmentCounter ),
+      _unitAssignmentMap( rhs._unitAssignmentMap ),
+      _tfImage( rhs._tfImage ),
+      _tfInputName( rhs._tfInputName ),
+      _tfDest( rhs._tfDest ),
+      _tfDestMask( rhs._tfDestMask ),
+      _hmSource( rhs._hmSource ),
+      _hmInputName( rhs._hmInputName ),
+      _hmReference( rhs._hmReference ),
+      _hmOperator( rhs._hmOperator )
 {
 }
 Renderer::~Renderer()
@@ -103,16 +105,16 @@ Renderer::~Renderer()
 
 
 Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description,
-        const AccessType access, const int numElements )
-  : _description( description ),
-    _access( access )
+                                    const AccessType access, const int numElements )
+    : _description( description ),
+      _access( access )
 {
     _prototype = new osg::Uniform( type, name, numElements );
 }
 Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
-  : _description( rhs._description ),
-    _access( rhs._access ),
-    _prototype( rhs._prototype )
+    : _description( rhs._description ),
+      _access( rhs._access ),
+      _prototype( rhs._prototype )
 {
 }
 Renderer::UniformInfo::~UniformInfo()
@@ -129,10 +131,12 @@ const Renderer::UniformInfoVector& Renderer::getUniforms() const
 }
 Renderer::UniformInfo& Renderer::getUniform( const std::string& name )
 {
-    BOOST_FOREACH( UniformInfo& info, _uniformInfo )
+    BOOST_FOREACH( UniformInfo & info, _uniformInfo )
     {
         if( info._prototype->getName() == name )
+        {
             return( info );
+        }
     }
     LFX_WARNING( "getUniform(name): Can't find uniform \"" + name + "\"." );
     return( _uniformInfo[ 0 ] );
@@ -150,13 +154,13 @@ void Renderer::dumpUniformInfo( std::ostream& ostr, const bool publicOnly )
 {
     ostr << "Available uniforms:" << std::endl;
 
-    BOOST_FOREACH( const Renderer::UniformInfo& info, _uniformInfo )
+    BOOST_FOREACH( const Renderer::UniformInfo & info, _uniformInfo )
     {
         if( !publicOnly || ( info._access == Renderer::UniformInfo::PUBLIC ) )
         {
             ostr << info._prototype->getName() + "\t" +
-                Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
-                info._description << std::endl;
+                 Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
+                 info._description << std::endl;
 
             // Display the default value.
             ostr << "\tDefault: ";
@@ -164,31 +168,36 @@ void Renderer::dumpUniformInfo( std::ostream& ostr, const bool publicOnly )
             {
             case osg::Uniform::FLOAT_MAT4:
             {
-                osg::Matrix mat; info._prototype->get( mat );
+                osg::Matrix mat;
+                info._prototype->get( mat );
                 ostr << mat;
                 break;
             }
             case osg::Uniform::FLOAT_VEC2:
             {
-                osg::Vec2f vec2; info._prototype->get( vec2 );
+                osg::Vec2f vec2;
+                info._prototype->get( vec2 );
                 ostr << vec2;
                 break;
             }
             case osg::Uniform::FLOAT_VEC3:
             {
-                osg::Vec3f vec3; info._prototype->get( vec3 );
+                osg::Vec3f vec3;
+                info._prototype->get( vec3 );
                 ostr << vec3;
                 break;
             }
             case osg::Uniform::FLOAT_VEC4:
             {
-                osg::Vec4f vec4; info._prototype->get( vec4 );
+                osg::Vec4f vec4;
+                info._prototype->get( vec4 );
                 ostr << vec4;
                 break;
             }
             case osg::Uniform::FLOAT:
             {
-                float f; info._prototype->get( f );
+                float f;
+                info._prototype->get( f );
                 ostr << f;
                 break;
             }
@@ -197,13 +206,15 @@ void Renderer::dumpUniformInfo( std::ostream& ostr, const bool publicOnly )
             case osg::Uniform::SAMPLER_3D:
             case osg::Uniform::INT:
             {
-                int i; info._prototype->get( i );
+                int i;
+                info._prototype->get( i );
                 ostr << i;
                 break;
             }
             case osg::Uniform::BOOL:
             {
-                bool b; info._prototype->get( b );
+                bool b;
+                info._prototype->get( b );
                 ostr << b;
                 break;
             }
@@ -414,7 +425,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tf1dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf1d" ), tf1dTex,
-            osg::StateAttribute::OFF );
+                                               osg::StateAttribute::OFF );
     }
     else if( function->r() == 1 )
     {
@@ -427,7 +438,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
         tf2dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf2d" ), tf2dTex,
-            osg::StateAttribute::OFF );
+                                               osg::StateAttribute::OFF );
     }
     else
     {
@@ -441,7 +452,7 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE );
         tf3dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf3d" ), tf3dTex,
-            osg::StateAttribute::OFF );
+                                               osg::StateAttribute::OFF );
     }
 
     // Assign transfer function texture sampler uniform, based on texture dimension.
@@ -506,18 +517,30 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
     if( _hmOperator != HM_OP_OFF )
     {
         if( _hmSource == HM_SOURCE_ALPHA )
+        {
             maskParams[ 0 ] = 0.f;
+        }
         else if( _hmSource == HM_SOURCE_RED )
+        {
             maskParams[ 0 ] = 1.f;
+        }
         else if( _hmSource == HM_SOURCE_SCALAR )
+        {
             maskParams[ 0 ] = 2.f;
+        }
 
         if( ( _hmOperator & HM_OP_EQ ) != 0 )
+        {
             maskParams[ 1 ] = 0.f;
+        }
         else if( ( _hmOperator & HM_OP_LT ) != 0 )
+        {
             maskParams[ 1 ] = -1.f;
+        }
         else if( ( _hmOperator & HM_OP_GT ) != 0 )
+        {
             maskParams[ 1 ] = 1.f;
+        }
 
         maskParams[ 2 ] = ( ( _hmOperator & HM_OP_NOT ) != 0 ) ? -1.f : 1.;
     }

@@ -37,453 +37,486 @@ namespace vtk
 {
 
 
-VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, 
-									   bool prune, 
-									   int dataNum, 
-									   bool isScalar, 
-									   osg::Vec3s brickRes, 
-									   osg::Vec3s totalNumBricks, 
-									   int threadCount)
-: VolumeBrickData(prune)
+VTKVolumeBrickData::VTKVolumeBrickData( DataSetPtr dataSet,
+                                        bool prune,
+                                        int dataNum,
+                                        bool isScalar,
+                                        osg::Vec3s brickRes,
+                                        osg::Vec3s totalNumBricks,
+                                        int threadCount )
+    : VolumeBrickData( prune )
 {
-	m_dataSet = dataSet;
-	m_pds = NULL; 
-	m_dataNum = dataNum;
-	m_isScalar = isScalar;
-	m_brickRes = brickRes;
-	m_nPtDataArrays = 0;
-	m_maxPts = 0;
-	m_cellCache = -1;
+    m_dataSet = dataSet;
+    m_pds = NULL;
+    m_dataNum = dataNum;
+    m_isScalar = isScalar;
+    m_brickRes = brickRes;
+    m_nPtDataArrays = 0;
+    m_maxPts = 0;
+    m_cellCache = -1;
 
-	m_threadCount = threadCount;
-	if (m_threadCount <= 0) m_threadCount = 1;
+    m_threadCount = threadCount;
+    if( m_threadCount <= 0 )
+    {
+        m_threadCount = 1;
+    }
 
-	setNumBricks(totalNumBricks);
+    setNumBricks( totalNumBricks );
 
-	// get the low level vtkDataSet that we need
-	if (!m_dataSet.get() || !m_dataSet->GetDataSet()) return;
-	m_pds = vtkDataSet::SafeDownCast(m_dataSet->GetDataSet());
-	if (!m_pds) return;
+    // get the low level vtkDataSet that we need
+    if( !m_dataSet.get() || !m_dataSet->GetDataSet() )
+    {
+        return;
+    }
+    m_pds = vtkDataSet::SafeDownCast( m_dataSet->GetDataSet() );
+    if( !m_pds )
+    {
+        return;
+    }
 
-	m_cellLocator = vtkSmartPointer<vtkCellTreeLocator>::New();
-	m_cellLocator->SetDataSet(m_pds);
-	m_cellLocator->BuildLocator();
+    m_cellLocator = vtkSmartPointer<vtkCellTreeLocator>::New();
+    m_cellLocator->SetDataSet( m_pds );
+    m_cellLocator->BuildLocator();
 
-	// can get rid of this
-	m_nPtDataArrays = m_pds->GetPointData()->GetNumberOfArrays();
+    // can get rid of this
+    m_nPtDataArrays = m_pds->GetPointData()->GetNumberOfArrays();
 
-	initMaxPts();
-	initDataArrays();
+    initMaxPts();
+    initDataArrays();
 }
 
 bool VTKVolumeBrickData::isValid()
 {
-	if (!m_pds) return false;
+    if( !m_pds )
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
-	if (!m_pds) return NULL;
+    if( !m_pds )
+    {
+        return NULL;
+    }
 
-	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
-	// 
-	GLint textureFrmt = GL_LUMINANCE;
-	int bytesPerPixel = 1;
-	if (!m_isScalar) 
-	{
-		textureFrmt = GL_RGBA;
-		bytesPerPixel = 4;
-	}
-	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
-	unsigned char* ptr( data );
+    // NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
+    //
+    GLint textureFrmt = GL_LUMINANCE;
+    int bytesPerPixel = 1;
+    if( !m_isScalar )
+    {
+        textureFrmt = GL_RGBA;
+        bytesPerPixel = 4;
+    }
+    unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
+    unsigned char* ptr( data );
 
-	// 0,0,0 is the left, top, front cube and we have 8x8x8 boxes
-	// or whatever m_totalNumBoxes is set to
-		
-	//a bounding box
-	double bbox[6] = {0,0,0,0,0,0};
-	m_pds->GetBounds(bbox);
+    // 0,0,0 is the left, top, front cube and we have 8x8x8 boxes
+    // or whatever m_totalNumBoxes is set to
 
-	// vtkBrickSize - the size of our brick in vtk coordniates
-	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
-	//
-	osg::Vec3d vtkBrickSize, vtkDelta;
-	vtkBrickSize.x() = fabs(bbox[1] - bbox[0]) / _numBricks.x();
-	vtkBrickSize.y() = fabs(bbox[3] - bbox[2]) / _numBricks.y();
-	vtkBrickSize.z() = fabs(bbox[5] - bbox[4]) / _numBricks.z();
-	vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
-	vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
-	vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
+    //a bounding box
+    double bbox[6] = {0, 0, 0, 0, 0, 0};
+    m_pds->GetBounds( bbox );
 
-	// need to compute the bounding box for this brick in the vtk dataset coordinate space
-	osg::Vec3d min, max;
-	min[0] = bbox[0] + brickNum[0] * vtkBrickSize[0];
-	min[1] = bbox[2] + brickNum[1] * vtkBrickSize[1];
-	min[2] = bbox[4] + brickNum[2] * vtkBrickSize[2];
-	max = min + vtkBrickSize;
+    // vtkBrickSize - the size of our brick in vtk coordniates
+    // vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
+    //
+    osg::Vec3d vtkBrickSize, vtkDelta;
+    vtkBrickSize.x() = fabs( bbox[1] - bbox[0] ) / _numBricks.x();
+    vtkBrickSize.y() = fabs( bbox[3] - bbox[2] ) / _numBricks.y();
+    vtkBrickSize.z() = fabs( bbox[5] - bbox[4] ) / _numBricks.z();
+    vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
+    vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
+    vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
 
-	// compute brick delta for each thread (how much of the brick will each thread work on
-	double brickThreadDeltaX = (double)m_brickRes[0] / (double)m_threadCount;	
-	double curBrickEndX = 0;
-	boost::thread_group group;
+    // need to compute the bounding box for this brick in the vtk dataset coordinate space
+    osg::Vec3d min, max;
+    min[0] = bbox[0] + brickNum[0] * vtkBrickSize[0];
+    min[1] = bbox[2] + brickNum[1] * vtkBrickSize[1];
+    min[2] = bbox[4] + brickNum[2] * vtkBrickSize[2];
+    max = min + vtkBrickSize;
 
-	for (int i=0; i<m_threadCount; i++)
-	{
-		SThreadDataPtr pData = SThreadDataPtr( new SThreadData() );
-        
-		pData->pVBD = this;
-		pData->ptrPixels = ptr;
-		pData->bytesPerPixel = bytesPerPixel;
+    // compute brick delta for each thread (how much of the brick will each thread work on
+    double brickThreadDeltaX = ( double )m_brickRes[0] / ( double )m_threadCount;
+    double curBrickEndX = 0;
+    boost::thread_group group;
 
-		// update brick coordinates
-		pData->brickStart[0] = curBrickEndX;
-		pData->brickStart[1] = 0;
-		pData->brickStart[2] = 0;
-		curBrickEndX += brickThreadDeltaX;
-		pData->brickEnd[0] = curBrickEndX;
-		pData->brickEnd[1] = m_brickRes[1];
-		pData->brickEnd[2] = m_brickRes[2];
+    for( int i = 0; i < m_threadCount; i++ )
+    {
+        SThreadDataPtr pData = SThreadDataPtr( new SThreadData() );
 
-		// avoid a round off error, make sure to cover the last x location with the last thread
-		if (i == (m_threadCount - 1))
-		{
-			pData->brickEnd[0] = m_brickRes[0];
-		}
+        pData->pVBD = this;
+        pData->ptrPixels = ptr;
+        pData->bytesPerPixel = bytesPerPixel;
 
-		// update vtk coordinates
-		pData->vtkDelta = vtkDelta;
-		pData->vtkMin[0] = min[0];
-		pData->vtkMin[1] = min[1];
-		pData->vtkMin[2] = min[2];
+        // update brick coordinates
+        pData->brickStart[0] = curBrickEndX;
+        pData->brickStart[1] = 0;
+        pData->brickStart[2] = 0;
+        curBrickEndX += brickThreadDeltaX;
+        pData->brickEnd[0] = curBrickEndX;
+        pData->brickEnd[1] = m_brickRes[1];
+        pData->brickEnd[2] = m_brickRes[2];
 
-		group.create_thread(BrickThread(pData));
-	}
+        // avoid a round off error, make sure to cover the last x location with the last thread
+        if( i == ( m_threadCount - 1 ) )
+        {
+            pData->brickEnd[0] = m_brickRes[0];
+        }
 
-	group.join_all();
+        // update vtk coordinates
+        pData->vtkDelta = vtkDelta;
+        pData->vtkMin[0] = min[0];
+        pData->vtkMin[1] = min[1];
+        pData->vtkMin[2] = min[2];
 
-	// create an image with our data and return it
-	osg::ref_ptr< osg::Image > image( new osg::Image() );
-        image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
-            textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
-            (unsigned char*) data, osg::Image::USE_NEW_DELETE );
-        return( image.release() );
+        group.create_thread( BrickThread( pData ) );
+    }
+
+    group.join_all();
+
+    // create an image with our data and return it
+    osg::ref_ptr< osg::Image > image( new osg::Image() );
+    image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
+                     textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
+                     ( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
+    return( image.release() );
 }
 
 void VTKVolumeBrickData::BrickThread::operator()()
 {
-	if (!m_pData.get()) return;
+    if( !m_pData.get() )
+    {
+        return;
+    }
 
-	vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
-	vtkIdType cellId;
-	double pcoords[3], curPos[3];
-	std::vector<double> weights(m_pData->pVBD->m_maxPts); // need to find out max points in a cell for the whole dataset
-	int subId = 0;
-	osg::Vec4ub value;
-	int debugNumPts = 0;
-	bool haveCache = false;
+    vtkSmartPointer<vtkGenericCell> cell = vtkSmartPointer<vtkGenericCell>::New();
+    vtkIdType cellId;
+    double pcoords[3], curPos[3];
+    std::vector<double> weights( m_pData->pVBD->m_maxPts ); // need to find out max points in a cell for the whole dataset
+    int subId = 0;
+    osg::Vec4ub value;
+    int debugNumPts = 0;
+    bool haveCache = false;
 
-	unsigned char* ptr = NULL;
+    unsigned char* ptr = NULL;
 
-	// start at left, bottom, back
-	curPos[2] = m_pData->vtkMin.z() + (m_pData->vtkDelta.z() * m_pData->brickStart.z());
-	for (int z = m_pData->brickStart.z(); z < m_pData->brickEnd.z(); z++)
-	{
-		// new depth slice so start at the bottom most point
-		curPos[1] = m_pData->vtkMin.y() + (m_pData->vtkDelta.y() * m_pData->brickStart.y());
-
-
-		for (int y = m_pData->brickStart.y(); y < m_pData->brickEnd.y(); y++)
-		{
-			// new scanline start back at left most point;
-			curPos[0] = m_pData->vtkMin.x() + (m_pData->vtkDelta.x() * m_pData->brickStart.x());
-
-			// get the correct line
-			ptr = m_pData->ptrPixels + (z * m_pData->pVBD->m_brickRes[0]*m_pData->pVBD->m_brickRes[1] * m_pData->bytesPerPixel); // get to the correct slice;
-			ptr += y * m_pData->pVBD->m_brickRes[0] * m_pData->bytesPerPixel; // get to the correct line in the slice
-			ptr += m_pData->brickStart.x() * m_pData->bytesPerPixel; // get to the correct x starting position;
+    // start at left, bottom, back
+    curPos[2] = m_pData->vtkMin.z() + ( m_pData->vtkDelta.z() * m_pData->brickStart.z() );
+    for( int z = m_pData->brickStart.z(); z < m_pData->brickEnd.z(); z++ )
+    {
+        // new depth slice so start at the bottom most point
+        curPos[1] = m_pData->vtkMin.y() + ( m_pData->vtkDelta.y() * m_pData->brickStart.y() );
 
 
-			for (int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++)
-			{
-				cellId = m_pData->pVBD->m_cellLocator->FindCell(curPos, 0, cell, pcoords, &weights[0]);
+        for( int y = m_pData->brickStart.y(); y < m_pData->brickEnd.y(); y++ )
+        {
+            // new scanline start back at left most point;
+            curPos[0] = m_pData->vtkMin.x() + ( m_pData->vtkDelta.x() * m_pData->brickStart.x() );
 
-				if (cellId < 0)
-				{
-					value = m_pData->pVBD->getOutSideCellValue(); 
-				}
-				else
-				{
-					// cell cache is not showing any signs of a speed up
-					//if (m_cellCache == cellId) haveCache = false;
-					value = m_pData->pVBD->lerpDataInCell(cell, &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, haveCache); 
-				}
+            // get the correct line
+            ptr = m_pData->ptrPixels + ( z * m_pData->pVBD->m_brickRes[0] * m_pData->pVBD->m_brickRes[1] * m_pData->bytesPerPixel ); // get to the correct slice;
+            ptr += y * m_pData->pVBD->m_brickRes[0] * m_pData->bytesPerPixel; // get to the correct line in the slice
+            ptr += m_pData->brickStart.x() * m_pData->bytesPerPixel; // get to the correct x starting position;
 
-				// copy values into the image buffer
-				*ptr = value[0];
-				ptr++;
 
-				if (!m_pData->pVBD->m_isScalar)
-				{
-					*ptr = value[1];
-					ptr++;
-					*ptr = value[2];
-					ptr++;
-					*ptr = value[3];
-					ptr++;
-				}
+            for( int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++ )
+            {
+                cellId = m_pData->pVBD->m_cellLocator->FindCell( curPos, 0, cell, pcoords, &weights[0] );
 
-				curPos[0] += m_pData->vtkDelta[0];
-				debugNumPts++;
-			}
+                if( cellId < 0 )
+                {
+                    value = m_pData->pVBD->getOutSideCellValue();
+                }
+                else
+                {
+                    // cell cache is not showing any signs of a speed up
+                    //if (m_cellCache == cellId) haveCache = false;
+                    value = m_pData->pVBD->lerpDataInCell( cell, &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, haveCache );
+                }
 
-			// jump to next vertical scanline
-			curPos[1] += m_pData->vtkDelta[1];
-			
-		}
+                // copy values into the image buffer
+                *ptr = value[0];
+                ptr++;
 
-		// jump to next depth slice
-		curPos[2] += m_pData->vtkDelta[2];
-	}
+                if( !m_pData->pVBD->m_isScalar )
+                {
+                    *ptr = value[1];
+                    ptr++;
+                    *ptr = value[2];
+                    ptr++;
+                    *ptr = value[3];
+                    ptr++;
+                }
+
+                curPos[0] += m_pData->vtkDelta[0];
+                debugNumPts++;
+            }
+
+            // jump to next vertical scanline
+            curPos[1] += m_pData->vtkDelta[1];
+
+        }
+
+        // jump to next depth slice
+        curPos[2] += m_pData->vtkDelta[2];
+    }
 }
 
-osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache) const
+osg::Vec4ub VTKVolumeBrickData::lerpDataInCell( vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache ) const
 {
-	osg::Vec4ub value;
+    osg::Vec4ub value;
 
-	//list of point ids in cell
-	vtkIdList* pointIds = cell->GetPointIds();
-   
-	//number of verts in the cell
-	int nCellPts = cell->GetNumberOfPoints();
-   
-	if (isScalar)
-	{
-		if (!haveCache)
-		{
-			if (tuples->GetNumberOfComponents() != 1)
-			{
-				tuples->SetNumberOfComponents(1);
-				tuples->SetNumberOfTuples(nCellPts);
-			}
-			else if (tuples->GetNumberOfTuples() != nCellPts)
-			{
-				tuples->SetNumberOfTuples(nCellPts);
-			}
+    //list of point ids in cell
+    vtkIdList* pointIds = cell->GetPointIds();
 
-			extractTuplesForScalar2(pointIds, tuples, whichValue);
-		}
-		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
-	}
-	else
-	{
-		if (tuples->GetNumberOfComponents() != 3)
-		{
-			tuples->SetNumberOfComponents(3);
-			tuples->SetNumberOfTuples(nCellPts);
-		}
-		else if (tuples->GetNumberOfTuples() != nCellPts)
-		{
-			tuples->SetNumberOfTuples(nCellPts);
-		}
+    //number of verts in the cell
+    int nCellPts = cell->GetNumberOfPoints();
 
-		extractTuplesForVector2(pointIds, tuples, whichValue);
-		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
-   }
+    if( isScalar )
+    {
+        if( !haveCache )
+        {
+            if( tuples->GetNumberOfComponents() != 1 )
+            {
+                tuples->SetNumberOfComponents( 1 );
+                tuples->SetNumberOfTuples( nCellPts );
+            }
+            else if( tuples->GetNumberOfTuples() != nCellPts )
+            {
+                tuples->SetNumberOfTuples( nCellPts );
+            }
 
-   return value;
+            extractTuplesForScalar2( pointIds, tuples, whichValue );
+        }
+        value = lerpPixelData( tuples, weights, nCellPts, whichValue, isScalar );
+    }
+    else
+    {
+        if( tuples->GetNumberOfComponents() != 3 )
+        {
+            tuples->SetNumberOfComponents( 3 );
+            tuples->SetNumberOfTuples( nCellPts );
+        }
+        else if( tuples->GetNumberOfTuples() != nCellPts )
+        {
+            tuples->SetNumberOfTuples( nCellPts );
+        }
+
+        extractTuplesForVector2( pointIds, tuples, whichValue );
+        value = lerpPixelData( tuples, weights, nCellPts, whichValue, isScalar );
+    }
+
+    return value;
 }
 
-osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* tuples, double* weights, int npts, int whichValue, bool isScalar) const
+osg::Vec4ub VTKVolumeBrickData::lerpPixelData( vtkDataArray* tuples, double* weights, int npts, int whichValue, bool isScalar ) const
 {
-	osg::Vec4ub data(0,0,0,0);
+    osg::Vec4ub data( 0, 0, 0, 0 );
 
-	// vector data
-   if (!isScalar) 
-   {
-      double vector[4];
-      vector[0] = 0;
-      vector[1] = 0;
-      vector[2] = 0;
-      double vectorData[3];
-      for(int j = 0; j < npts; j++)
-	  {
-         tuples->GetTuple(j, vectorData);
-         //the weighted sum of the velocities
-         vector[0] += vectorData[0]*weights[j];
-         vector[1] += vectorData[1]*weights[j];
-         vector[2] += vectorData[2]*weights[j];
-      }
-      //calulate the magnitude
-      double vMag = 0;
-      double iMag = 0;
-      vMag = sqrt(vector[0]*vector[0]
-                +vector[1]*vector[1]
-                +vector[2]*vector[2]);
-         
-      //inverse magnitude 
-      if(vMag >= 1e-6){
-         iMag = 1.0/vMag;
-      }else{
-         iMag = 0;
-      }
-      
-      //normaliz e data
-      vector[0] *= iMag;
-      vector[1] *= iMag;
-      vector[2] *= iMag;
-      vector[3] = vMag;
+    // vector data
+    if( !isScalar )
+    {
+        double vector[4];
+        vector[0] = 0;
+        vector[1] = 0;
+        vector[2] = 0;
+        double vectorData[3];
+        for( int j = 0; j < npts; j++ )
+        {
+            tuples->GetTuple( j, vectorData );
+            //the weighted sum of the velocities
+            vector[0] += vectorData[0] * weights[j];
+            vector[1] += vectorData[1] * weights[j];
+            vector[2] += vectorData[2] * weights[j];
+        }
+        //calulate the magnitude
+        double vMag = 0;
+        double iMag = 0;
+        vMag = sqrt( vector[0] * vector[0]
+                     + vector[1] * vector[1]
+                     + vector[2] * vector[2] );
 
-      //quantize data
-      vector[0] = 255*((vector[0] + 1)*.5);
-      vector[1] = 255*((vector[1] + 1)*.5);
-      vector[2] = 255*((vector[2] + 1)*.5);
-      
-	  data[0] = vector[0];
-	  data[1] = vector[1];
-	  data[2] = vector[2];
-	  data[3] = vector[3];
-   }
-   else // scalar data
-   {
-      double scalarData;
-      double scalar = 0;
-      for(int j = 0; j < npts; j++)
-	  {
-         tuples->GetTuple(j,&scalarData);
-         scalar += scalarData*weights[j];
-      }
+        //inverse magnitude
+        if( vMag >= 1e-6 )
+        {
+            iMag = 1.0 / vMag;
+        }
+        else
+        {
+            iMag = 0;
+        }
 
-	  if (scalar > 1)
-	  {
-		  scalar = 1;
-	  }
-	  else if (scalar < 0)
-	  {
-		  scalar = 0;
-	  }
+        //normaliz e data
+        vector[0] *= iMag;
+        vector[1] *= iMag;
+        vector[2] *= iMag;
+        vector[3] = vMag;
 
-	  if (scalar > 0.01)
-	  {
-		  int idebug = 1;
-	  }
+        //quantize data
+        vector[0] = 255 * ( ( vector[0] + 1 ) * .5 );
+        vector[1] = 255 * ( ( vector[1] + 1 ) * .5 );
+        vector[2] = 255 * ( ( vector[2] + 1 ) * .5 );
 
-	  data[0] = (unsigned char) (255.0 * scalar);
-   }
+        data[0] = vector[0];
+        data[1] = vector[1];
+        data[2] = vector[2];
+        data[3] = vector[3];
+    }
+    else // scalar data
+    {
+        double scalarData;
+        double scalar = 0;
+        for( int j = 0; j < npts; j++ )
+        {
+            tuples->GetTuple( j, &scalarData );
+            scalar += scalarData * weights[j];
+        }
 
-   return data;
+        if( scalar > 1 )
+        {
+            scalar = 1;
+        }
+        else if( scalar < 0 )
+        {
+            scalar = 0;
+        }
+
+        if( scalar > 0.01 )
+        {
+            int idebug = 1;
+        }
+
+        data[0] = ( unsigned char )( 255.0 * scalar );
+    }
+
+    return data;
 }
 
-void VTKVolumeBrickData::extractTuplesForScalar2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const
+void VTKVolumeBrickData::extractTuplesForScalar2( vtkIdList* ptIds, vtkDataArray* tuples, int num ) const
 {
-	if (m_dataArraysScalar.size() <= num) return;
-	m_dataArraysScalar[num]->GetTuples(ptIds, tuples);
+    if( m_dataArraysScalar.size() <= num )
+    {
+        return;
+    }
+    m_dataArraysScalar[num]->GetTuples( ptIds, tuples );
 }
 
-void VTKVolumeBrickData::extractTuplesForVector2(vtkIdList* ptIds, vtkDataArray* tuples, int num) const
+void VTKVolumeBrickData::extractTuplesForVector2( vtkIdList* ptIds, vtkDataArray* tuples, int num ) const
 {
-	if (m_dataArraysVector.size() <= num) return;
-	m_dataArraysVector[num]->GetTuples(ptIds, tuples);
+    if( m_dataArraysVector.size() <= num )
+    {
+        return;
+    }
+    m_dataArraysVector[num]->GetTuples( ptIds, tuples );
 }
 
 void VTKVolumeBrickData::initMaxPts()
 {
-	m_maxPts = 0;
-	if (!m_pds) return;
+    m_maxPts = 0;
+    if( !m_pds )
+    {
+        return;
+    }
 
-	for (int i=0; i<m_pds->GetNumberOfCells(); i++)
-	{
-		vtkCell *pCell = m_pds->GetCell(i);
-		if (pCell->GetNumberOfPoints() > m_maxPts)
-		{
-			m_maxPts = pCell->GetNumberOfPoints();
-		}
-	}
+    for( int i = 0; i < m_pds->GetNumberOfCells(); i++ )
+    {
+        vtkCell* pCell = m_pds->GetCell( i );
+        if( pCell->GetNumberOfPoints() > m_maxPts )
+        {
+            m_maxPts = pCell->GetNumberOfPoints();
+        }
+    }
 }
 
 void VTKVolumeBrickData::initDataArrays()
 {
-	m_dataArraysScalar.clear();
-	m_dataArraysVector.clear();
-	if (!m_pds) return;
+    m_dataArraysScalar.clear();
+    m_dataArraysVector.clear();
+    if( !m_pds )
+    {
+        return;
+    }
 
-	int count = m_pds->GetPointData()->GetNumberOfArrays();
-	for (int i = 0; i < count; i++)
-	{
-		vtkDataArray *ptArray = m_pds->GetPointData()->GetArray(i);
-		if (ptArray->GetNumberOfComponents() == 1)
-		{
-			m_dataArraysScalar.push_back(ptArray);
-			continue;
-		}
+    int count = m_pds->GetPointData()->GetNumberOfArrays();
+    for( int i = 0; i < count; i++ )
+    {
+        vtkDataArray* ptArray = m_pds->GetPointData()->GetArray( i );
+        if( ptArray->GetNumberOfComponents() == 1 )
+        {
+            m_dataArraysScalar.push_back( ptArray );
+            continue;
+        }
 
-		if (ptArray->GetNumberOfComponents() == 3 && strcmp(ptArray->GetName(), "normals"))
-		{
-			m_dataArraysVector.push_back(ptArray);
-		}
-	}
+        if( ptArray->GetNumberOfComponents() == 3 && strcmp( ptArray->GetName(), "normals" ) )
+        {
+            m_dataArraysVector.push_back( ptArray );
+        }
+    }
 }
 
-void VTKVolumeBrickData::extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* vector, int whichVector) const
+void VTKVolumeBrickData::extractTuplesForVector( vtkIdList* ptIds, vtkDataArray* vector, int whichVector ) const
 {
-   int vecNumber = 0;
-   for (int i = 0; i < m_nPtDataArrays; i++)
-   {
-      vtkDataArray * ptArray = m_pds->GetPointData()->GetArray(i);
+    int vecNumber = 0;
+    for( int i = 0; i < m_nPtDataArrays; i++ )
+    {
+        vtkDataArray* ptArray = m_pds->GetPointData()->GetArray( i );
 
-      if (ptArray->GetNumberOfComponents() != 3)
-	  {
-         continue;
-      }
+        if( ptArray->GetNumberOfComponents() != 3 )
+        {
+            continue;
+        }
 
-      // also, ignore arrays of normals...
-      if (ptArray->GetNumberOfComponents() == 3  && (!strcmp(ptArray->GetName(),"normals")))
-	  {
-         continue; 
-      }
+        // also, ignore arrays of normals...
+        if( ptArray->GetNumberOfComponents() == 3  && ( !strcmp( ptArray->GetName(), "normals" ) ) )
+        {
+            continue;
+        }
 
-      if(vecNumber != whichVector)
-	  {
-         vecNumber++;
-         continue;
-      }
-	  else
-	  {
-         ptArray->GetTuples(ptIds,vector);
-         vecNumber++;
-		 break; // should be done now..
-      }
-   }
+        if( vecNumber != whichVector )
+        {
+            vecNumber++;
+            continue;
+        }
+        else
+        {
+            ptArray->GetTuples( ptIds, vector );
+            vecNumber++;
+            break; // should be done now..
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////
-void VTKVolumeBrickData::extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar) const
+void VTKVolumeBrickData::extractTuplesForScalar( vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar ) const
 {
-   int scaleNum = 0;
-   for (int i = 0; i < m_nPtDataArrays; i++)
-   {
-      vtkDataArray * ptArray = m_pds->GetPointData()->GetArray(i);
+    int scaleNum = 0;
+    for( int i = 0; i < m_nPtDataArrays; i++ )
+    {
+        vtkDataArray* ptArray = m_pds->GetPointData()->GetArray( i );
 
-      if (ptArray->GetNumberOfComponents() != 1)
-	  {
-         continue;
-      }
+        if( ptArray->GetNumberOfComponents() != 1 )
+        {
+            continue;
+        }
 
-      if (scaleNum != whichScalar)
-	  {
-         scaleNum++;
-         continue;
-      }
-	  else
-	  {
-         ptArray->GetTuples(ptIds,scalar);
-         scaleNum++;
+        if( scaleNum != whichScalar )
+        {
+            scaleNum++;
+            continue;
+        }
+        else
+        {
+            ptArray->GetTuples( ptIds, scalar );
+            scaleNum++;
 
-		 // should be done now.. 
-		 break;
-      }
-   }
+            // should be done now..
+            break;
+        }
+    }
 }
 
 //
@@ -491,12 +524,12 @@ void VTKVolumeBrickData::extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* 
 //
 osg::Vec4ub VTKVolumeBrickData::getOutSideCellValue() const//(int index)
 {
-	if (m_isScalar)
-	{
-		return osg::Vec4ub(127, 0,0,0);
-	}
+    if( m_isScalar )
+    {
+        return osg::Vec4ub( 127, 0, 0, 0 );
+    }
 
-	return osg::Vec4ub(127, 127, 127, 0);
+    return osg::Vec4ub( 127, 127, 127, 0 );
 }
 
 

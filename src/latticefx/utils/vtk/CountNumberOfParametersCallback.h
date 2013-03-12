@@ -38,7 +38,7 @@ namespace lfx
 namespace vtk_utils
 {
 class LATTICEFX_VTK_UTILS_EXPORT CountNumberOfParametersCallback:
-            public DataObjectHandler::DatasetOperatorCallback
+    public DataObjectHandler::DatasetOperatorCallback
 {
 public:
     ///Constructor

@@ -21,14 +21,17 @@
 
 #include <vtkPlane.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 CuttingPlane::CuttingPlane( const double bounds[6], SliceDirection xyz,
-                      const int numSteps )
+                            const int numSteps )
     :
     type( xyz )
 {

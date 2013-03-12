@@ -41,52 +41,55 @@
 #include <vtkExtractUnstructuredGrid.h>
 using namespace ves::xplorer::util;
 
-int main( int argc, char *argv[] )
-{    
-   // If the command line contains an input vtk file name and an output file set them up.
-   // Otherwise, get them from the user...
-   std::string inFileName;// = NULL;
-   std::string outFileName;// = NULL;
-   fileIO::processCommandLineArgs( argc, argv, "merge cell vertices in", inFileName, outFileName );
-   if ( ! inFileName.c_str() ) return 1;
-   ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-   vtkDataSet * dataset = dynamic_cast<vtkDataSet*>(readVtkThing( inFileName, 1 ));
-   //std::cout << "\nprinting dataset..." << std::endl;
-   //dataset->Print( cout );
+int main( int argc, char* argv[] )
+{
+    // If the command line contains an input vtk file name and an output file set them up.
+    // Otherwise, get them from the user...
+    std::string inFileName;// = NULL;
+    std::string outFileName;// = NULL;
+    fileIO::processCommandLineArgs( argc, argv, "merge cell vertices in", inFileName, outFileName );
+    if( ! inFileName.c_str() )
+    {
+        return 1;
+    }
+    ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( inFileName, 1 ) );
+    //std::cout << "\nprinting dataset..." << std::endl;
+    //dataset->Print( cout );
 
-   if ( dataset->IsA("vtkUnstructuredGrid") )
-   {
-      vtkExtractUnstructuredGrid *extunsgrid = vtkExtractUnstructuredGrid::New();
-      //extunsgrid->DebugOn();
-      extunsgrid->BreakOnError();
-      extunsgrid->PointClippingOn();
-      extunsgrid->CellClippingOff();
-      extunsgrid->ExtentClippingOff();
-      extunsgrid->MergingOn();
+    if( dataset->IsA( "vtkUnstructuredGrid" ) )
+    {
+        vtkExtractUnstructuredGrid* extunsgrid = vtkExtractUnstructuredGrid::New();
+        //extunsgrid->DebugOn();
+        extunsgrid->BreakOnError();
+        extunsgrid->PointClippingOn();
+        extunsgrid->CellClippingOff();
+        extunsgrid->ExtentClippingOff();
+        extunsgrid->MergingOn();
 
-      int numPoints = dataset->GetNumberOfPoints();
-      std::cout << "numPoints = " << numPoints << std::endl;
-      extunsgrid->SetInput( ( vtkUnstructuredGrid * ) dataset );
-      extunsgrid->SetPointMinimum( 0 );
-      extunsgrid->SetPointMaximum( numPoints );
-      extunsgrid->Update();
+        int numPoints = dataset->GetNumberOfPoints();
+        std::cout << "numPoints = " << numPoints << std::endl;
+        extunsgrid->SetInput( ( vtkUnstructuredGrid* ) dataset );
+        extunsgrid->SetPointMinimum( 0 );
+        extunsgrid->SetPointMaximum( numPoints );
+        extunsgrid->Update();
 
-      writeVtkThing( extunsgrid->GetOutput(), outFileName, 1 ); // 1 means print binary
-      extunsgrid->Delete();
-   }
-   else
-   {
-      std::cout <<"\nERROR - can only merge points for vtkUnstructuredGrids" << std::endl;
-      dataset->Delete();
-      //delete [] inFileName;   inFileName = NULL;
-      //delete [] outFileName;  outFileName = NULL;
-      return 1;
-   }
+        writeVtkThing( extunsgrid->GetOutput(), outFileName, 1 ); // 1 means print binary
+        extunsgrid->Delete();
+    }
+    else
+    {
+        std::cout << "\nERROR - can only merge points for vtkUnstructuredGrids" << std::endl;
+        dataset->Delete();
+        //delete [] inFileName;   inFileName = NULL;
+        //delete [] outFileName;  outFileName = NULL;
+        return 1;
+    }
 
-   dataset->Delete();
-   //delete [] inFileName;   inFileName = NULL;
-   //delete [] outFileName;  outFileName = NULL;
+    dataset->Delete();
+    //delete [] inFileName;   inFileName = NULL;
+    //delete [] outFileName;  outFileName = NULL;
 
-   return 0;
+    return 0;
 }
 

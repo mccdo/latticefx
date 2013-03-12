@@ -33,7 +33,7 @@ class MyMask : public RTPOperation
 {
 public:
     MyMask()
-      : RTPOperation( RTPOperation::Mask )
+        : RTPOperation( RTPOperation::Mask )
     {}
     virtual ~MyMask()
     {}
@@ -93,6 +93,6 @@ REGISTER_OPERATION(
 // Poco ClassLibrary manifest registration. Add a POCO_EXPORT_CLASS
 // for each class (operation) in the plugin.
 POCO_BEGIN_MANIFEST( OperationBase )
-    POCO_EXPORT_CLASS( MyMask )
-    POCO_EXPORT_CLASS( MyPreprocess )
+POCO_EXPORT_CLASS( MyMask )
+POCO_EXPORT_CLASS( MyPreprocess )
 POCO_END_MANIFEST

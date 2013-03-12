@@ -39,8 +39,8 @@
 using namespace lfx::vtk_utils;
 
 DataObjectHandler::DataObjectHandler()
-        : m_numberOfPointDataArrays( 0 ),
-        m_numberOfCellDataArrays( 0 )
+    : m_numberOfPointDataArrays( 0 ),
+      m_numberOfCellDataArrays( 0 )
 {
     m_datasetOperator = 0;
 }
@@ -61,7 +61,7 @@ void DataObjectHandler::OperateOnAllDatasetsInObject( vtkDataObject* dataObject 
             ///For traversal of nested multigroupdatasets
             mgdIterator->VisitOnlyLeavesOn();
             mgdIterator->GoToFirstItem();
-          
+
             while( !mgdIterator->IsDoneWithTraversal() )
             {
                 currentDataset = dynamic_cast<vtkDataSet*>( mgdIterator->GetCurrentDataObject() );
@@ -72,7 +72,7 @@ void DataObjectHandler::OperateOnAllDatasetsInObject( vtkDataObject* dataObject 
                     m_datasetOperator->OperateOnDataset( currentDataset );
                 }
                 UpdateNumberOfPDArrays( currentDataset );
-                
+
                 mgdIterator->GoToNextItem();
             }
 
@@ -82,10 +82,10 @@ void DataObjectHandler::OperateOnAllDatasetsInObject( vtkDataObject* dataObject 
                 mgdIterator = 0;
             }
         }
-        catch ( ... )
+        catch( ... )
         {
-            std::cout << "*********** Invalid Dataset: " 
-                << dataObject->GetClassName() << " ***********" << std::endl;
+            std::cout << "*********** Invalid Dataset: "
+                      << dataObject->GetClassName() << " ***********" << std::endl;
         }
     }
     else //Assume this is a regular vtkdataset
@@ -108,7 +108,7 @@ void DataObjectHandler::_convertCellDataToPointData( vtkDataSet* dataSet )
     if( dataSet->GetCellData()->GetNumberOfArrays() > 0 ) //&& m_numberOfPointDataArrays  == 0 )
     {
         std::cout << "|\tThe dataset has no point data -- "
-            << "will try to convert cell data to point data" << std::endl;
+                  << "will try to convert cell data to point data" << std::endl;
 
         vtkCellDataToPointData* converter = vtkCellDataToPointData::New();
         converter->SetInput( 0, dataSet );
@@ -138,7 +138,7 @@ void DataObjectHandler::_convertCellDataToPointData( vtkDataSet* dataSet )
             dataSet->DeepCopy( converter->GetStructuredPointsOutput() );
             converter->Delete();
         }
-        else if( dataSet->GetDataObjectType() == VTK_STRUCTURED_GRID  )
+        else if( dataSet->GetDataObjectType() == VTK_STRUCTURED_GRID )
         {
             dataSet->DeepCopy( converter->GetStructuredGridOutput() );
             converter->Delete();
@@ -147,8 +147,8 @@ void DataObjectHandler::_convertCellDataToPointData( vtkDataSet* dataSet )
         {
             converter->Delete();
             std::cout << "\nAttempt failed: can not currently handle "
-                << "this type of data - " 
-                << "DataObjectHandler::_convertCellDataToPointData" << std::endl;
+                      << "this type of data - "
+                      << "DataObjectHandler::_convertCellDataToPointData" << std::endl;
             exit( 1 );
         }
     }

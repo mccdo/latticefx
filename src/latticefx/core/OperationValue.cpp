@@ -23,8 +23,10 @@
 #include <boost/concept_check.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,22 +116,22 @@ bool OperationValue::IsVectorized() const
 ////////////////////////////////////////////////////////////////////////////////
 bool OperationValue::IsBool( const boost::any& value ) const
 {
-    return value.type() == typeid ( bool );
+    return value.type() == typeid( bool );
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool OperationValue::IsInt( const boost::any& value ) const
 {
-    return value.type() == typeid ( int );
+    return value.type() == typeid( int );
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool OperationValue::IsFloat( const boost::any& value ) const
 {
-    return value.type() == typeid ( float );
+    return value.type() == typeid( float );
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool OperationValue::IsDouble( const boost::any& value ) const
 {
-    return value.type() == typeid ( double );
+    return value.type() == typeid( double );
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool OperationValue::IsString( const boost::any& value ) const
@@ -160,9 +162,9 @@ bool OperationValue::IsStringVector( const boost::any& value ) const
 bool OperationValue::IsBLOB( const boost::any& value ) const
 {
     // If it's not any of our known types, it's a BLOB.
-    if( !( (IsBool( value)) || (IsInt( value )) || (IsFloat( value )) ||
-           (IsDouble( value )) || (IsString( value )) || (IsVectorized( value ))
-        ) )
+    if( !( ( IsBool( value ) ) || ( IsInt( value ) ) || ( IsFloat( value ) ) ||
+            ( IsDouble( value ) ) || ( IsString( value ) ) || ( IsVectorized( value ) )
+         ) )
     {
         return true;
     }
@@ -178,7 +180,7 @@ bool OperationValue::IsVectorized( const boost::any& value ) const
             ( IsFloatVector( value ) ) ||
             ( IsDoubleVector( value ) ) ||
             ( IsStringVector( value ) )
-            )
+      )
     {
         return true;
     }

@@ -27,13 +27,16 @@
 #include <string>
 
 
-namespace Poco {
-    class FormattingChannel;
+namespace Poco
+{
+class FormattingChannel;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup lfxCoreLogging Message Logging Utilities */
@@ -61,7 +64,8 @@ public:
     LogBase that uses LogFile as a destination.) */
     void setLogFileName( const std::string& logFileName );
 
-    enum {
+    enum
+    {
         PrioSilent = 0,
         PrioFatal = Poco::Message::PRIO_FATAL,
         PrioCritical = Poco::Message::PRIO_CRITICAL,
@@ -77,12 +81,13 @@ public:
     \details TBD
     \param prio Logging verbosity. 0 is silent, 8 is verbose. These values
     map directly to the Poco logging priorities in Poco/Message.h. */
-    void setPriority( int prio, const std::string& logName="lfx" );
+    void setPriority( int prio, const std::string& logName = "lfx" );
 
     /** \brief TBD
     \details TBD
     */
-    typedef enum {
+    typedef enum
+    {
         Console,
         LogFile
     } DestinationType;
@@ -91,7 +96,7 @@ public:
     \details TBD
     \param prio Logging verbosity. 0 is silent, 8 is verbose. These values
     map directly to the Poco logging priorities in Poco/Message.h. */
-    void setPriority( int prio, const DestinationType dest, const std::string& logName="lfx" );
+    void setPriority( int prio, const DestinationType dest, const std::string& logName = "lfx" );
 
 protected:
     Log();

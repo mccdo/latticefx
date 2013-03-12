@@ -31,8 +31,10 @@
 #include <set>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup PluginSupport Plugin Support
@@ -49,7 +51,7 @@ singleton, using PluginManager::addOperation().
 struct LATTICEFX_EXPORT OperationInfo
 {
     OperationInfo( OperationBasePtr instance, const std::string& className,
-            const std::string& baseClassName, const std::string& description );
+                   const std::string& baseClassName, const std::string& description );
 
     std::string _pluginName;
     std::string _className, _baseClassName, _description;
@@ -106,7 +108,8 @@ capability can be added as future work. */
 class LATTICEFX_EXPORT PluginManager : protected LogBase
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         NO_PATHS                    = 0,
         USE_CURRENT_DIRECTORY       = ( 1 << 0x0 ),
         USE_LFX_PLUGIN_PATN_ENV_VAR = ( 1 << 0x1 ),
@@ -117,7 +120,7 @@ public:
     /** \brief Create the PluginManager singleton instance.
     \param initFlags specifies default plugin search paths.
     */
-    static PluginManager* instance( const int initFlags=( USE_CURRENT_DIRECTORY | USE_LFX_PLUGIN_PATN_ENV_VAR ) );
+    static PluginManager* instance( const int initFlags = ( USE_CURRENT_DIRECTORY | USE_LFX_PLUGIN_PATN_ENV_VAR ) );
     virtual ~PluginManager();
 
     /** \brief Add a single plugin search path.
@@ -127,11 +130,11 @@ public:
     multiple times. If false, loadConfigFiles() is not called; the calling code
     is responsible for calling this function to search for plugin config files.
     */
-    void addPath( const std::string& path, const bool loadConfigs=true );
+    void addPath( const std::string& path, const bool loadConfigs = true );
     /** \brief Like addPath, but loads multiple paths.
     \details \c paths is a colon (on Unix) or semi-colon (on Windows) separated
     list of paths to add. */
-    void addPaths( const std::string& paths, const bool loadConfigs=true );
+    void addPaths( const std::string& paths, const bool loadConfigs = true );
     /** \brief Clear the list of plugin search paths. */
     void clearPaths();
     /** \brief Find plugin config files in all plugin search paths.
@@ -172,15 +175,18 @@ public:
     for easy access by the OperationInfo class.
 
     The actively loading plugin name is set by the loadPlugin() and loadPlugins()
-    functions immediately prior to actually loading the plugin. When the load occurs, 
+    functions immediately prior to actually loading the plugin. When the load occurs,
     plugin static initializers invoke addOperation(), which calls getActivelyLoadingPlugin()
     and associates all newly registered plugin operations with the actively loading plugin. */
-    std::string getActivelyLoadingPlugin() { return( _activelyLoadingPlugin ); }
+    std::string getActivelyLoadingPlugin()
+    {
+        return( _activelyLoadingPlugin );
+    }
 
 
     struct PluginInfo
     {
-        PluginInfo( const std::string& name=std::string( "" ) ) : _name( name ) {}
+        PluginInfo( const std::string& name = std::string( "" ) ) : _name( name ) {}
 
         Poco::Path _path;         /**< Full path and name to plugin shared library. */
         std::string _name;        /**< Taken from plugin .ini file */

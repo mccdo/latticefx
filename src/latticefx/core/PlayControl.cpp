@@ -25,18 +25,20 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 PlayControl::PlayControl( osg::Node* scene )
-  : LogBase( "lfx.core.play" ),
-    _time( 0. ),
-    _playRate( 1. ),
-    _minTime( 0. ),
-    _maxTime( 1. ),
-    _lastFrameHold( 0. ),
-    _holdCount( 0. )
+    : LogBase( "lfx.core.play" ),
+      _time( 0. ),
+      _playRate( 1. ),
+      _minTime( 0. ),
+      _maxTime( 1. ),
+      _lastFrameHold( 0. ),
+      _holdCount( 0. )
 {
     PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
@@ -47,14 +49,14 @@ PlayControl::PlayControl( osg::Node* scene )
     _scenes[ scene ] = rootcb;
 }
 PlayControl::PlayControl( const PlayControl& rhs )
-  : LogBase( rhs ),
-    _scenes( rhs._scenes ),
-    _time( rhs._time ),
-    _playRate( rhs._playRate ),
-    _minTime( rhs._minTime ),
-    _maxTime( rhs._maxTime ),
-    _lastFrameHold( rhs._lastFrameHold ),
-    _holdCount( 0. )
+    : LogBase( rhs ),
+      _scenes( rhs._scenes ),
+      _time( rhs._time ),
+      _playRate( rhs._playRate ),
+      _minTime( rhs._minTime ),
+      _maxTime( rhs._maxTime ),
+      _lastFrameHold( rhs._lastFrameHold ),
+      _holdCount( 0. )
 {
 }
 PlayControl::~PlayControl()
@@ -108,7 +110,9 @@ void PlayControl::elapsedClockTick( TimeValue elapsed )
         }
     }
     else
+    {
         _time += delta;
+    }
 
 
     // PlayControl can manage several scene graphs. Each scene registers itself

@@ -28,11 +28,14 @@
 
 class vtkAlgorithmOutput;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
-    
-namespace vtk {
+namespace core
+{
+
+namespace vtk
+{
 
 /** \class ChannelDatavtkAlgorithmOutput ChannelDatavtkAlgorithmOutput.h <latticefx/core/vtk/ChannelDatavtkAlgorithmOutput.h>
 \brief Container for ChannelDatavtkAlgorithmOutput objects
@@ -41,12 +44,12 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkAlgorithmOutput : public lfx::core
 {
 public:
 
-    ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* const pd, const std::string& name=std::string( "" ) );
+    ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* const pd, const std::string& name = std::string( "" ) );
     ChannelDatavtkAlgorithmOutput( const ChannelDatavtkAlgorithmOutput& rhs );
     virtual ~ChannelDatavtkAlgorithmOutput();
 
     vtkAlgorithmOutput* GetAlgorithmOutput();
-    
+
 protected:
     vtkAlgorithmOutput* m_ao;
 };

@@ -31,8 +31,10 @@
 #include <string>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class ChannelDataLOD ChannelDataLOD.h <latticefx/core/ChannelDataLOD.h>
@@ -41,12 +43,15 @@ namespace core {
 class LATTICEFX_EXPORT ChannelDataLOD : public ChannelDataComposite
 {
 public:
-    ChannelDataLOD( const std::string& name=std::string( "" ) );
+    ChannelDataLOD( const std::string& name = std::string( "" ) );
     ChannelDataLOD( const ChannelDataLOD& rhs );
     virtual ~ChannelDataLOD();
 
 
-    virtual ChannelDataLOD* getAsLOD() { return( this ); }
+    virtual ChannelDataLOD* getAsLOD()
+    {
+        return( this );
+    }
 
 
     /** \brief TBD

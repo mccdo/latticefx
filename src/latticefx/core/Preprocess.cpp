@@ -21,18 +21,20 @@
 #include <latticefx/core/Preprocess.h>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 Preprocess::Preprocess()
-  : OperationBase( OperationBase::PreprocessCacheType ),
-    _action( IGNORE_DATA )
+    : OperationBase( OperationBase::PreprocessCacheType ),
+      _action( IGNORE_DATA )
 {
 }
 Preprocess::Preprocess( const Preprocess& rhs )
-  : OperationBase( rhs ),
-    _action( rhs._action )
+    : OperationBase( rhs ),
+      _action( rhs._action )
 {
 }
 Preprocess::~Preprocess()

@@ -68,20 +68,20 @@ public:
     ///\param defaultName Default name of file to be written.
     static std::string getWritableFile( std::string defaultName );
     ///(????)This reads in file from different forms
-    static int readNByteBlockFromFile( void *ptr, const unsigned int nByte,
-                                       const unsigned int num, FILE *stream,
+    static int readNByteBlockFromFile( void* ptr, const unsigned int nByte,
+                                       const unsigned int num, FILE* stream,
                                        const bool endian_flip = 1 );
     ///Sets up the file names by taking in command line arguments and using either those or default values.
     ///\param inFileName The name of the input file passed in.
     ///\param outFileName The name of the output file passed in.
-    static void processCommandLineArgs( int argc, char *argv[], const std::string verb,
-                                        std::string & inFileName, std::string & outFileName );
+    static void processCommandLineArgs( int argc, char* argv[], const std::string verb,
+                                        std::string& inFileName, std::string& outFileName );
     ///Returns the file extension of the file passed in.
     ///\param filename The file passed into the function.
     static std::string getExtension( std::string filename );
     ///Reports how many floats were read before the end of file was reached.
     ///\param *inputFile pointer to the input file to be read
-    static void readToFileEnd( FILE *inputFile );
+    static void readToFileEnd( FILE* inputFile );
     ///Removes trailing spaces from the passed in line.
     ///\param line The line to have spaces removed from.
     static void StripTrailingSpaces( std::string line );

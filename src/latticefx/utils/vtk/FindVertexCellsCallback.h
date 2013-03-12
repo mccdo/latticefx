@@ -40,20 +40,22 @@ namespace lfx
 namespace vtk_utils
 {
 class LATTICEFX_VTK_UTILS_EXPORT FindVertexCellsCallback:
-            public DataObjectHandler::DatasetOperatorCallback
+    public DataObjectHandler::DatasetOperatorCallback
 {
 public:
     ///Constructor
     FindVertexCellsCallback();
     ///Destructor
     virtual ~FindVertexCellsCallback()
-    {;}
+    {
+        ;
+    }
     ///The operation to do on each vtkDataSet in the vtkDataObject
     ///\param dataset The vtkDataSet to operate on
     virtual void OperateOnDataset( vtkDataSet* dataset );
 
     ///Get the vertex cells from this dataset
-    ///\return The vector with the points for this dataset, the first id is 
+    ///\return The vector with the points for this dataset, the first id is
     ///the cell id and the second id is the point id
     //std::vector< std::pair< vtkIdType, vtkIdType > > GetVertexCells();
     std::vector< std::pair< vtkIdType, double* > > GetVertexCells();

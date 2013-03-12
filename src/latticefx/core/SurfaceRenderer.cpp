@@ -35,12 +35,14 @@
 // Note: GeForce 9800M supports only 0 .. 15.
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 SurfaceRenderer::SurfaceRenderer()
-  : Renderer( "surf" )
+    : Renderer( "surf" )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VERTEX, "positions" );
@@ -61,7 +63,7 @@ SurfaceRenderer::SurfaceRenderer()
     registerUniform( info );
 }
 SurfaceRenderer::SurfaceRenderer( const SurfaceRenderer& rhs )
-  : Renderer( rhs )
+    : Renderer( rhs )
 {
 }
 SurfaceRenderer::~SurfaceRenderer()
@@ -139,7 +141,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         if( tfInputByName == NULL )
         {
             LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                getTransferFunctionInput() + "\"." );
+                         getTransferFunctionInput() + "\"." );
             return( NULL );
         }
         const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -151,11 +153,15 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     }
 
     if( _primitiveSetGenerator == NULL )
+    {
         _primitiveSetGenerator = PrimitiveSetGeneratorPtr( new SimpleTrianglePrimitiveSetGenerator() );
-    (*_primitiveSetGenerator)( this, geom.get() );
+    }
+    ( *_primitiveSetGenerator )( this, geom.get() );
 
     if( geom->getNumPrimitiveSets() > 0 )
+    {
         geode->addDrawable( geom.get() );
+    }
     return( geode.release() );
 }
 
@@ -183,7 +189,9 @@ osg::StateSet* SurfaceRenderer::getRootState()
     stateSet->setAttribute( program );
 
     if( warpEnabled )
+    {
         stateSet->addUniform( createUniform( getUniform( "warpScale" ) ) );
+    }
 
     return( stateSet.release() );
 }
@@ -213,11 +221,11 @@ PrimitiveSetGenerator::~PrimitiveSetGenerator()
 }
 
 SimpleTrianglePrimitiveSetGenerator::SimpleTrianglePrimitiveSetGenerator()
-  : PrimitiveSetGenerator()
+    : PrimitiveSetGenerator()
 {
 }
 SimpleTrianglePrimitiveSetGenerator::SimpleTrianglePrimitiveSetGenerator( const SimpleTrianglePrimitiveSetGenerator& rhs )
-  : PrimitiveSetGenerator( rhs )
+    : PrimitiveSetGenerator( rhs )
 {
 }
 SimpleTrianglePrimitiveSetGenerator::~SimpleTrianglePrimitiveSetGenerator()
@@ -227,7 +235,7 @@ SimpleTrianglePrimitiveSetGenerator::~SimpleTrianglePrimitiveSetGenerator()
 void SimpleTrianglePrimitiveSetGenerator::operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom )
 {
     osg::DrawArrays* da( new osg::DrawArrays( GL_TRIANGLES, 0,
-        geom->getVertexArray()->getNumElements() ) );
+                         geom->getVertexArray()->getNumElements() ) );
     geom->addPrimitiveSet( da );
 }
 

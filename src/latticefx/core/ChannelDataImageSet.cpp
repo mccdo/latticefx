@@ -26,18 +26,20 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ChannelDataImageSet::ChannelDataImageSet( const std::string& name )
-  : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name ),
-    _offsets( new osg::Vec3Array )
+    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name ),
+      _offsets( new osg::Vec3Array )
 {
 }
 ChannelDataImageSet::ChannelDataImageSet( const ChannelDataImageSet& rhs )
-  : ChannelDataComposite( rhs ),
-    _offsets( rhs._offsets )
+    : ChannelDataComposite( rhs ),
+      _offsets( rhs._offsets )
 {
 }
 ChannelDataImageSet::~ChannelDataImageSet()
@@ -52,9 +54,11 @@ void ChannelDataImageSet::removeChannel( const unsigned int index )
         LFX_WARNING( "removeChannel: 'index' out of renag." );
         return;
     }
-    for( unsigned int idx=index; idx<_offsets->size()-1; ++idx )
-        (*_offsets)[ idx ] = (*_offsets)[ idx+1 ];
-    _offsets->resize( _offsets->size()-1 );
+    for( unsigned int idx = index; idx < _offsets->size() - 1; ++idx )
+    {
+        ( *_offsets )[ idx ] = ( *_offsets )[ idx + 1 ];
+    }
+    _offsets->resize( _offsets->size() - 1 );
 
     ChannelDataComposite::removeChannel( index );
 }
@@ -67,16 +71,18 @@ void ChannelDataImageSet::reserveChannels( const unsigned int count )
 void ChannelDataImageSet::setOffset( const unsigned int index, const osg::Vec3& value )
 {
     if( index >= _offsets->size() )
-        _offsets->resize( index+1 );
-    (*_offsets)[ index ] = value;
+    {
+        _offsets->resize( index + 1 );
+    }
+    ( *_offsets )[ index ] = value;
 }
 osg::Vec3& ChannelDataImageSet::getOffset( const unsigned int index )
 {
-    return( (*_offsets)[ index ] );
+    return( ( *_offsets )[ index ] );
 }
 const osg::Vec3& ChannelDataImageSet::getOffset( const unsigned int index ) const
 {
-    return( (*_offsets)[ index ] );
+    return( ( *_offsets )[ index ] );
 }
 
 
@@ -86,7 +92,9 @@ bool ChannelDataImageSet::allImageSetData( const ChannelDataList& data )
     BOOST_FOREACH( const ChannelDataPtr cdp, data )
     {
         if( dynamic_cast< ChannelDataImageSet* >( cdp.get() ) == NULL )
+        {
             return( false );
+        }
     }
     return( true );
 }

@@ -57,7 +57,7 @@ DataSetPtr preprocess( const std::string& fileName )
     if( !( plug->loadPlugins( pluginName ) ) )
     {
         LFX_WARNING_STATIC( "lfx.demo", "Couldn't load \"OSGVolume\"." );
-        return( DataSetPtr( (DataSet*)NULL ) );
+        return( DataSetPtr( ( DataSet* )NULL ) );
     }
 
     // Create an instance of the Downsample preprocess operation.
@@ -66,7 +66,7 @@ DataSetPtr preprocess( const std::string& fileName )
     if( op == NULL )
     {
         LFX_WARNING_STATIC( "lfx.demo", opName + ": createOperation() returned NULL." );
-        return( DataSetPtr( (DataSet*)NULL ) );
+        return( DataSetPtr( ( DataSet* )NULL ) );
     }
 
 

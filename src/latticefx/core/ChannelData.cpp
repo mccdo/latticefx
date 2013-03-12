@@ -26,21 +26,23 @@
 #include <sstream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ChannelData::ChannelData( const std::string& name )
-  : LogBase( "lfx.core.channel" ),
-    _name( name ),
-    _dbKey( "" )
+    : LogBase( "lfx.core.channel" ),
+      _name( name ),
+      _dbKey( "" )
 {
     memset( _dimensions, 0, sizeof( _dimensions ) );
 }
 ChannelData::ChannelData( const ChannelData& rhs )
-  : LogBase( rhs ),
-    _name( rhs._name ),
-    _dbKey( rhs._dbKey )
+    : LogBase( rhs ),
+      _name( rhs._name ),
+      _dbKey( rhs._dbKey )
 {
     memcpy( _dimensions, rhs._dimensions, sizeof( _dimensions ) );
 }
@@ -83,11 +85,11 @@ void ChannelData::setDimensions( const unsigned int x, const unsigned int y, con
 
 
 ChannelDataList::ChannelDataList()
-  : ChannelDataListBase()
+    : ChannelDataListBase()
 {
 }
 ChannelDataList::ChannelDataList( const ChannelDataList& rhs )
-  : ChannelDataListBase( rhs )
+    : ChannelDataListBase( rhs )
 {
 }
 ChannelDataList::~ChannelDataList()
@@ -99,7 +101,9 @@ ChannelDataPtr ChannelDataList::findData( const std::string& name )
     BOOST_FOREACH( ChannelDataPtr cdp, *this )
     {
         if( ( cdp != NULL ) && ( cdp->getName() == name ) )
+        {
             return( cdp );
+        }
     }
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
@@ -111,9 +115,9 @@ void ChannelDataList::replaceData( const ChannelDataPtr channel )
     size_t index( 0 );
     while( index < size() )
     {
-        if( (*this)[ index ]->getName() == name )
+        if( ( *this )[ index ]->getName() == name )
         {
-            (*this)[ index ] = channel;
+            ( *this )[ index ] = channel;
             return;
         }
         ++index;

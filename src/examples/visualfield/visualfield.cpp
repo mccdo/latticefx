@@ -50,9 +50,9 @@ const std::string logstr( "lfx.demo" );
 class ChannelDataVisualFieldSample : public ChannelData
 {
 public:
-    ChannelDataVisualFieldSample( const std::string& name=std::string( "" ) )
-      : ChannelData( name ),
-        _timeValid( false )
+    ChannelDataVisualFieldSample( const std::string& name = std::string( "" ) )
+        : ChannelData( name ),
+          _timeValid( false )
     {}
     ~ChannelDataVisualFieldSample()
     {}
@@ -67,7 +67,7 @@ public:
             istr >> year >> hyphen >> month >> hyphen >> day;
 
             // This formula gives us 1 second per month.
-            _time = ( (year - 2011) * 12. ) + ( month - 1. ) + ( day / 31. );
+            _time = ( ( year - 2011 ) * 12. ) + ( month - 1. ) + ( day / 31. );
 
             _timeValid = true;
         }
@@ -89,8 +89,8 @@ class VisualFieldRenderer : public Renderer
 {
 public:
     VisualFieldRenderer( const bool swap )
-      : Renderer( "vf" ),
-        _swap( swap )
+        : Renderer( "vf" ),
+          _swap( swap )
     {}
     ~VisualFieldRenderer()
     {}
@@ -107,15 +107,15 @@ public:
         const osg::Vec3 leftPos( -1., -.5, 0. );
         const osg::Vec3 rightPos( 0., -.5, 0. );
         geode->addDrawable( createEye( cdvf->_baseString,
-            cdvf->_leftScale, cdvf->_leftTrans,
-            _swap ? rightPos : leftPos, "-left.jpg" ) );
+                                       cdvf->_leftScale, cdvf->_leftTrans,
+                                       _swap ? rightPos : leftPos, "-left.jpg" ) );
         geode->addDrawable( createEye( cdvf->_baseString,
-            cdvf->_rightScale, cdvf->_rightTrans,
-            _swap ? leftPos : rightPos, "-right.jpg" ) );
+                                       cdvf->_rightScale, cdvf->_rightTrans,
+                                       _swap ? leftPos : rightPos, "-right.jpg" ) );
 
         osg::Camera* camera( new osg::Camera );
         root->addChild( camera );
-        
+
         // Add HUD Camera and test
         camera->setClearMask( 0 );
         camera->setProjectionMatrix( osg::Matrix::ortho( -1., 1., -.5, .5, -1., 1. ) );
@@ -164,17 +164,17 @@ public:
 
 protected:
     osg::Drawable* createEye( const std::string& baseName,
-        const osg::Vec2& scale, const osg::Vec2& trans,
-        const osg::Vec3& corner, const std::string& suffix )
+                              const osg::Vec2& scale, const osg::Vec2& trans,
+                              const osg::Vec3& corner, const std::string& suffix )
     {
         osg::ref_ptr< osg::Geometry > geom( osgwTools::makePlane( corner, osg::Vec3( 1., 0., 0. ), osg::Vec3( 0., 1., 0. ) ) );
         {
             osg::Vec2Array* v( new osg::Vec2Array );
             v->resize( 4 );
-            osg::Vec2& v0( (*v)[ 0 ] );
-            osg::Vec2& v1( (*v)[ 1 ] );
-            osg::Vec2& v2( (*v)[ 2 ] );
-            osg::Vec2& v3( (*v)[ 3 ] );
+            osg::Vec2& v0( ( *v )[ 0 ] );
+            osg::Vec2& v1( ( *v )[ 1 ] );
+            osg::Vec2& v2( ( *v )[ 2 ] );
+            osg::Vec2& v3( ( *v )[ 3 ] );
 
             // Set scales
             v1[ 0 ] = scale[ 0 ];
@@ -222,7 +222,7 @@ DataSetPtr prepareDataSet( const bool swap )
     if( ifs.bad() )
     {
         LFX_FATAL_STATIC( logstr, "Can't open \"vf-registration.txt\"." );
-        return( DataSetPtr( (DataSet*)NULL ) );
+        return( DataSetPtr( ( DataSet* )NULL ) );
     }
     while( !ifs.eof() )
     {
@@ -230,13 +230,15 @@ DataSetPtr prepareDataSet( const bool swap )
         std::string name;
         ifs >> name;
         if( name.empty() )
+        {
             continue;
+        }
 
         const bool isLeft( name.find( "left" ) != name.npos );
 
         // Remove leading "vf-"
         std::string::size_type loc( name.find_first_of( '-' ) );
-        name = name.substr( loc+1 );
+        name = name.substr( loc + 1 );
         // Remove trailing "-left" ir "-right"
         loc = name.find_last_of( '-' );
         name = name.substr( 0, loc );
@@ -251,7 +253,9 @@ DataSetPtr prepareDataSet( const bool swap )
             addData = true;
         }
         else
+        {
             cdvf = cdmap[ name ];
+        }
 
         std::string scratch;
         if( isLeft )
@@ -266,7 +270,9 @@ DataSetPtr prepareDataSet( const bool swap )
         }
 
         if( addData )
+        {
             dsp->addChannel( cdvf, cdvf->getTime() );
+        }
     }
 
 
@@ -312,9 +318,9 @@ int main( int argc, char** argv )
     const float yPad( ( bb._max[1] - bb._min[1] ) * .1 );
 
     viewer.getCamera()->setProjectionMatrix( osg::Matrix::ortho(
-        bb._min[0] - xPad, bb._max[0] + xPad, bb._min[1] - yPad, bb._max[1] + yPad, -1., 1. ) );
+                bb._min[0] - xPad, bb._max[0] + xPad, bb._min[1] - yPad, bb._max[1] + yPad, -1., 1. ) );
     viewer.getCamera()->setViewMatrix( osg::Matrix::lookAt(
-        osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 0. ), osg::Vec3( 0., 1., 0. ) ) );
+                                           osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 0. ), osg::Vec3( 0., 1., 0. ) ) );
 
     // Clear color only, no depth (painter's algorithm).
     viewer.getCamera()->setClearColor( osg::Vec4( 1., 1., 1., 1. ) );

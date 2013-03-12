@@ -104,14 +104,14 @@ class ByRef
 public:
     ByRef( T& v ) : value_( v )
     {}
-    operator T&()
+    operator T& ()
     {
         return value_;
     }
     // gcc doesn't like this:
     // operator const T&() const { return value_; }
 private:
-    ByRef& operator=( const ByRef & );
+    ByRef& operator=( const ByRef& );
     T& value_;
 };
 
@@ -203,14 +203,14 @@ class RefCounted
 {
 public:
     RefCounted()
-            : pCount_( 0 )
+        : pCount_( 0 )
     {
         pCount_ = new unsigned int;
         *pCount_ = 1;
     }
 
     RefCounted( const RefCounted& rhs )
-            : pCount_( rhs.pCount_ )
+        : pCount_( rhs.pCount_ )
     {}
 
     P Clone( const P& val )
@@ -351,16 +351,16 @@ struct AssertCheck
 template
 <
 typename T,
-class StoragePolicy = VTKStoragePolicy<T>,
-class OwnershipPolicy = RefCounted< typename VTKStoragePolicy<T>::PointerType > ,
-class ConversionPolicy = AllowConversion,
-class CheckingPolicy = AssertCheck< typename VTKStoragePolicy<T>::StoredType >
->
+         class StoragePolicy = VTKStoragePolicy<T>,
+         class OwnershipPolicy = RefCounted< typename VTKStoragePolicy<T>::PointerType > ,
+         class ConversionPolicy = AllowConversion,
+         class CheckingPolicy = AssertCheck< typename VTKStoragePolicy<T>::StoredType >
+         >
 class vtkSmartPtr
-            : public StoragePolicy
-            , public OwnershipPolicy
-            , public CheckingPolicy
-            , public ConversionPolicy
+    : public StoragePolicy
+    , public OwnershipPolicy
+    , public CheckingPolicy
+    , public ConversionPolicy
 {
     typedef StoragePolicy SP;
     typedef OwnershipPolicy OP;
@@ -373,8 +373,8 @@ public:
     typedef typename SP::ReferenceType ReferenceType;
 
     typedef typename Select < OP::destructiveCopy,
-    vtkSmartPtr, const vtkSmartPtr >::Result
-    CopyArg;
+            vtkSmartPtr, const vtkSmartPtr >::Result
+            CopyArg;
 
     vtkSmartPtr()
     {
@@ -387,7 +387,7 @@ public:
     }
 
     vtkSmartPtr( CopyArg& rhs )
-            : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
+        : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
     {
         GetImplRef( *this ) = OP::Clone( GetImplRef( rhs ) );
     }
@@ -395,13 +395,13 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     vtkSmartPtr( const vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs )
-            : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
+        : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
     {
         GetImplRef( *this ) = OP::Clone( GetImplRef( rhs ) );
     }
@@ -409,19 +409,19 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     vtkSmartPtr( vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs )
-            : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
+        : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
     {
         GetImplRef( *this ) = OP::Clone( GetImplRef( rhs ) );
     }
 
     vtkSmartPtr( ByRef<vtkSmartPtr> rhs )
-            : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
+        : SP( rhs ), OP( rhs ), KP( rhs ), CP( rhs )
     {}
 
     operator ByRef<vtkSmartPtr>()
@@ -439,11 +439,11 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     vtkSmartPtr& operator=( const vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs )
     {
         vtkSmartPtr temp( rhs );
@@ -454,11 +454,11 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     vtkSmartPtr& operator=( vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs )
     {
         vtkSmartPtr temp( rhs );
@@ -550,11 +550,11 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     bool operator==( const vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs ) const
     {
         return *this == GetImpl( rhs );
@@ -564,11 +564,11 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     bool operator!=( const vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs ) const
     {
         return !( *this == rhs );
@@ -578,11 +578,11 @@ public:
     template
     <
     typename T1,
-    class OP1,
-    class CP1,
-    class KP1,
-    class SP1
-    >
+             class OP1,
+             class CP1,
+             class KP1,
+             class SP1
+             >
     bool operator<( const vtkSmartPtr<T1, OP1, CP1, KP1, SP1>& rhs ) const
     {
         return *this < GetImpl( rhs );
@@ -594,15 +594,18 @@ private:
     {
         Tester()
         {}
-private:
+    private:
         void operator delete( void* );
     };
 
 public:
     // enable 'if (sp)'
-    operator Tester*() const
+    operator Tester* () const
     {
-        if( !*this ) return 0;
+        if( !*this )
+        {
+            return 0;
+        }
         static Tester t;
         return &t;
     }

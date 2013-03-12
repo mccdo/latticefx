@@ -79,7 +79,7 @@ void ComputeDataObjectBoundsCallback::GetDataObjectBounds( double* bounds )
 ///////////////////////////////////////////////////////////////////
 double ComputeDataObjectBoundsCallback::GetDataObjectBoundsDiagonal()
 {
-    return sqrt(( m_bounds[1] - m_bounds[0] )*( m_bounds[1] - m_bounds[0] ) +
-                ( m_bounds[3] - m_bounds[2] )*( m_bounds[3] - m_bounds[2] ) +
-                ( m_bounds[5] - m_bounds[4] )*( m_bounds[5] - m_bounds[4] ) );
+    return sqrt( ( m_bounds[1] - m_bounds[0] ) * ( m_bounds[1] - m_bounds[0] ) +
+                 ( m_bounds[3] - m_bounds[2] ) * ( m_bounds[3] - m_bounds[2] ) +
+                 ( m_bounds[5] - m_bounds[4] ) * ( m_bounds[5] - m_bounds[4] ) );
 }

@@ -71,7 +71,7 @@ public:
         // Depth value is the z value. Create an array of the z values.
         osg::FloatArray* depth( new osg::FloatArray );
         osg::Vec3Array::const_iterator it;
-        for( it=posArray->begin(); it != posArray->end(); ++it )
+        for( it = posArray->begin(); it != posArray->end(); ++it )
         {
             const float z( it->z() );
             depth->push_back( z );
@@ -83,21 +83,21 @@ public:
 
 
 unsigned int computeDynamicPositions( osg::Vec3Array* a,
-        const unsigned int w, const unsigned int h, const unsigned int d, const double t )
+                                      const unsigned int w, const unsigned int h, const unsigned int d, const double t )
 {
-    a->resize( w*h*d );
+    a->resize( w * h * d );
     unsigned int index( 0 );
     unsigned int wIdx, hIdx, dIdx;
-    for( wIdx=0; wIdx<w; ++wIdx )
+    for( wIdx = 0; wIdx < w; ++wIdx )
     {
-        for( hIdx=0; hIdx<h; ++hIdx )
+        for( hIdx = 0; hIdx < h; ++hIdx )
         {
-            for( dIdx=0; dIdx<d; ++dIdx )
+            for( dIdx = 0; dIdx < d; ++dIdx )
             {
-                const double x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
-                const double y( ((double)hIdx)/(h-1.) * (double)h - (h*.5) );
-                const double z( ((double)dIdx)/(d-1.) * (double)d - (d*.5) );
-                (*a)[ index ].set( x + sin( (x+y+t)*.8 ), y + sin( (x+y+t) ), z + sin( (x+y+t)*1.2 ) );
+                const double x( ( ( double )wIdx ) / ( w - 1. ) * ( double )w - ( w * .5 ) );
+                const double y( ( ( double )hIdx ) / ( h - 1. ) * ( double )h - ( h * .5 ) );
+                const double z( ( ( double )dIdx ) / ( d - 1. ) * ( double )d - ( d * .5 ) );
+                ( *a )[ index ].set( x + sin( ( x + y + t )*.8 ), y + sin( ( x + y + t ) ), z + sin( ( x + y + t ) * 1.2 ) );
                 ++index;
             }
         }
@@ -126,7 +126,7 @@ DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
 
     unsigned int totalSamples( 0 );
     double time;
-    for( time=0.; time<maxTime; time += 1./sampleRate )
+    for( time = 0.; time < maxTime; time += 1. / sampleRate )
     {
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
@@ -165,13 +165,13 @@ DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
 }
 DataSetPtr preparePointSprites()
 {
-    DataSetPtr dsp( (DataSet*) NULL );
+    DataSetPtr dsp( ( DataSet* ) NULL );
     return( dsp );
 }
 DataSetPtr prepareSpheres( DBBasePtr dbBase )
 {
     const unsigned int w( 15 ), h( 12 ), d( 9 );
-    const unsigned int samplesPerTime( w*h*d );
+    const unsigned int samplesPerTime( w * h * d );
     {
         std::ostringstream ostr;
         ostr << "Creating data set. Dimensions: " << w << " x " << h << " x " << d;
@@ -190,7 +190,7 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
     }
 
     double time;
-    for( time=0.; time<maxTime; time += 1./sampleRate )
+    for( time = 0.; time < maxTime; time += 1. / sampleRate )
     {
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
         unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
@@ -202,16 +202,16 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
         osg::ref_ptr< osg::FloatArray > radArray( new osg::FloatArray );
         radArray->resize( samplesPerTime );
         unsigned int wIdx, hIdx, dIdx, index( 0 );
-        for( wIdx=0; wIdx<w; ++wIdx )
+        for( wIdx = 0; wIdx < w; ++wIdx )
         {
-            for( hIdx=0; hIdx<h; ++hIdx )
+            for( hIdx = 0; hIdx < h; ++hIdx )
             {
-                for( dIdx=0; dIdx<d; ++dIdx )
+                for( dIdx = 0; dIdx < d; ++dIdx )
                 {
-                    const double x( ((double)wIdx)/(w-1.) );
-                    const double y( ((double)hIdx)/(h-1.) );
-                    const double rad( osg::absolute( sin( x+y+time ) ) ); 
-                    (*radArray)[ index ] = rad * .33;
+                    const double x( ( ( double )wIdx ) / ( w - 1. ) );
+                    const double y( ( ( double )hIdx ) / ( h - 1. ) );
+                    const double rad( osg::absolute( sin( x + y + time ) ) );
+                    ( *radArray )[ index ] = rad * .33;
                     ++index;
                 }
             }
@@ -263,19 +263,19 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
         LFX_INFO_STATIC( logstr, ostr.str() );
     }
 
-    unsigned int samplesPerTime( w*h*d );
+    unsigned int samplesPerTime( w * h * d );
     vertArray->resize( samplesPerTime );
     unsigned int wIdx, hIdx, dIdx, index( 0 );
-    for( wIdx=0; wIdx<w; ++wIdx )
+    for( wIdx = 0; wIdx < w; ++wIdx )
     {
-        for( hIdx=0; hIdx<h; ++hIdx )
+        for( hIdx = 0; hIdx < h; ++hIdx )
         {
-            for( dIdx=0; dIdx<d; ++dIdx )
+            for( dIdx = 0; dIdx < d; ++dIdx )
             {
-                const float x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
-                const float y( ((double)hIdx)/(h-1.) * (double)h - (h*.5) );
-                const float z( ((double)dIdx)/(d-1.) * (double)d - (d*.5) );
-                (*vertArray)[ index ].set( x, y, z );
+                const float x( ( ( double )wIdx ) / ( w - 1. ) * ( double )w - ( w * .5 ) );
+                const float y( ( ( double )hIdx ) / ( h - 1. ) * ( double )h - ( h * .5 ) );
+                const float z( ( ( double )dIdx ) / ( d - 1. ) * ( double )d - ( d * .5 ) );
+                ( *vertArray )[ index ].set( x, y, z );
                 ++index;
             }
         }
@@ -295,20 +295,20 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
 
     int count( 0 );
     double time;
-    for( time=0.; time<maxTime; time += 1./sampleRate )
+    for( time = 0.; time < maxTime; time += 1. / sampleRate )
     {
         osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
-        dirArray->resize( w*h*d );
+        dirArray->resize( w * h * d );
         index = 0;
-        for( wIdx=0; wIdx<w; ++wIdx )
+        for( wIdx = 0; wIdx < w; ++wIdx )
         {
-            for( hIdx=0; hIdx<h; ++hIdx )
+            for( hIdx = 0; hIdx < h; ++hIdx )
             {
-                for( dIdx=0; dIdx<d; ++dIdx )
+                for( dIdx = 0; dIdx < d; ++dIdx )
                 {
-                    const float x( ((double)wIdx)/(w-1.) * (double)w - (w*.5) );
-                    const float y( ((double)hIdx)/(h-1.) * (double)h - (h*.5) );
-                    (*dirArray)[ index ].set( sin( x+y+time ), sin( (x+y+time)*1.2 ), .5 );
+                    const float x( ( ( double )wIdx ) / ( w - 1. ) * ( double )w - ( w * .5 ) );
+                    const float y( ( ( double )hIdx ) / ( h - 1. ) * ( double )h - ( h * .5 ) );
+                    ( *dirArray )[ index ].set( sin( x + y + time ), sin( ( x + y + time ) * 1.2 ), .5 );
                     ++index;
                     ++count;
                 }
@@ -348,7 +348,7 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
 }
 
 DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
-        const std::string& csFile, const std::string& diskPath, const bool createDB )
+                           const std::string& csFile, const std::string& diskPath, const bool createDB )
 {
     DataSetPtr dataSet;
 
@@ -366,23 +366,25 @@ DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
         crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
         sqstore->SetStorePath( csFile );
         manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
-        try {
+        try
+        {
             cs->setDataManager( manager );
         }
-        catch( std::exception exc ) {
-            LFX_FATAL_STATIC( logstr, std::string(exc.what()) );
+        catch( std::exception exc )
+        {
+            LFX_FATAL_STATIC( logstr, std::string( exc.what() ) );
             LFX_FATAL_STATIC( logstr, "Unable to set DataManager." );
             exit( 1 );
         }
 
-        dbBase = (DBBasePtr)cs;
+        dbBase = ( DBBasePtr )cs;
     }
 #endif
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
         disk->setRootPath( diskPath );
-        dbBase = (DBBasePtr)disk;
+        dbBase = ( DBBasePtr )disk;
     }
 
     switch( style )
@@ -393,9 +395,9 @@ DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
     case VectorRenderer::SIMPLE_POINTS:
         dataSet = prepareSimplePoints( dbBase );
         break;
-//    case VectorRenderer::POINT_SPRITES:
-//        dataSet = preparePointSprites();
-//        break;
+        //    case VectorRenderer::POINT_SPRITES:
+        //        dataSet = preparePointSprites();
+        //        break;
     case VectorRenderer::SPHERES:
         dataSet = prepareSpheres( dbBase );
         break;
@@ -424,9 +426,18 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
     VectorRenderer::PointStyle style( VectorRenderer::SIMPLE_POINTS );
-    if( arguments.find( "-ps" ) > 0 ) style = VectorRenderer::POINT_SPRITES;
-    if( arguments.find( "-s" ) > 0 ) style = VectorRenderer::SPHERES;
-    if( arguments.find( "-d" ) > 0 ) style = VectorRenderer::DIRECTION_VECTORS;
+    if( arguments.find( "-ps" ) > 0 )
+    {
+        style = VectorRenderer::POINT_SPRITES;
+    }
+    if( arguments.find( "-s" ) > 0 )
+    {
+        style = VectorRenderer::SPHERES;
+    }
+    if( arguments.find( "-d" ) > 0 )
+    {
+        style = VectorRenderer::DIRECTION_VECTORS;
+    }
 
     int lightConfig( 0 );
     arguments.read( "-l", lightConfig );
@@ -466,7 +477,7 @@ int main( int argc, char** argv )
 
         // Add uniform to control transfer function min/max range.
         stateSet->addUniform( new osg::Uniform( "tfRange", osg::Vec2f( -3.f, 2.f ) ),
-            osg::StateAttribute::OVERRIDE );
+                              osg::StateAttribute::OVERRIDE );
 
         if( lightConfig != 0 )
         {
@@ -487,7 +498,8 @@ int main( int argc, char** argv )
         // Test lighting
         osg::ref_ptr< osg::LightSource > lightNode( NULL );
         osg::Light* light( NULL );
-        switch( lightConfig ) {
+        switch( lightConfig )
+        {
         case 0:
             // Use osgViewer default.
             break;
@@ -511,7 +523,7 @@ int main( int argc, char** argv )
             root->addChild( lightNode.get() );
         }
     }
-    
+
     // Play the time series animation
     PlayControlPtr playControl( new PlayControl( dsp->getSceneData() ) );
     playControl->setTimeRange( dsp->getTimeRange() );

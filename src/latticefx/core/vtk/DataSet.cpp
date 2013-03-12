@@ -194,8 +194,8 @@ DataSet::~DataSet()
         this->vectorMagRange = NULL;
     }
 
-    for( std::map<std::string, lfx::vtk_utils::DataObjectHandler::DatasetOperatorCallback* >::const_iterator 
-        iter = m_dataObjectOps.begin(); iter != m_dataObjectOps.end(); ++iter )
+    for( std::map<std::string, lfx::vtk_utils::DataObjectHandler::DatasetOperatorCallback* >::const_iterator
+            iter = m_dataObjectOps.begin(); iter != m_dataObjectOps.end(); ++iter )
     {
         delete iter->second;
     }
@@ -2069,6 +2069,6 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
 }
 ////////////////////////////////////////////////////////////////////////////////
 } // end xplorer
-} // end ves    
+} // end ves
 }
 

@@ -22,15 +22,18 @@
 
 #include <vtkAlgorithmOutput.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
-    
+namespace vtk
+{
+
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkAlgorithmOutput::ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* ao, const std::string& name )
-    : 
+    :
     ChannelData( name ),
     m_ao( ao )
 {
@@ -39,7 +42,7 @@ ChannelDatavtkAlgorithmOutput::ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput
 }
 ////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkAlgorithmOutput::ChannelDatavtkAlgorithmOutput( const ChannelDatavtkAlgorithmOutput& rhs )
-    : 
+    :
     ChannelData( rhs ),
     m_ao( rhs.m_ao )
 {

@@ -32,8 +32,10 @@
 #include <map>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \addtogroup TimeSeriesSupport Support for time series animations
@@ -71,7 +73,7 @@ range limit: loop, stop, reverse, etc.
 class LATTICEFX_EXPORT PlayControl : protected LogBase
 {
 public:
-    PlayControl( osg::Node* scene=NULL );
+    PlayControl( osg::Node* scene = NULL );
     PlayControl( const PlayControl& rhs );
     ~PlayControl();
 
@@ -96,7 +98,10 @@ public:
     /** \brief Get the current animation time.
     \details Apps don't typically call this function, as elapsedClockTick() updates the
     registered subgraph. */
-    TimeValue getAnimationTime() const { return( _time ); }
+    TimeValue getAnimationTime() const
+    {
+        return( _time );
+    }
 
     /** \brief Set the play rate.
     \details The default play rate is 1.0, which plays the animation in sync with the time

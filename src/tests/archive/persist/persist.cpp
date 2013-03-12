@@ -55,15 +55,18 @@ public:
 
     // rebind allocator to type U
     template <class U>
-    struct rebind {
+    struct rebind
+    {
         typedef RefPtrAllocator<U> other;
     };
 
     // return address of values
-    pointer address (reference value) const {
+    pointer address( reference value ) const
+    {
         return &value;
     }
-    const_pointer address (const_reference value) const {
+    const_pointer address( const_reference value ) const
+    {
         return &value;
     }
 
@@ -72,19 +75,19 @@ public:
 
     /* constructors and destructor
     */
-    RefPtrAllocator( RefPtr refAddress=NULL, const size_type size=0 )
-      : _refAddress( refAddress ),
-        _size( size )
+    RefPtrAllocator( RefPtr refAddress = NULL, const size_type size = 0 )
+        : _refAddress( refAddress ),
+          _size( size )
     {
     }
     RefPtrAllocator( const RefPtrAllocator& rhs )
-      : _refAddress( rhs._refAddress ),
-        _size( rhs._size )
+        : _refAddress( rhs._refAddress ),
+          _size( rhs._size )
     {
     }
     template <class U>
     RefPtrAllocator( const RefPtrAllocator<U>& rhs )
-      : _size( 0 )
+        : _size( 0 )
     {
     }
     ~RefPtrAllocator()
@@ -92,45 +95,57 @@ public:
     }
 
     // return maximum number of elements that can be allocated
-    size_type max_size () const throw() {
+    size_type max_size() const throw()
+    {
         return( _size );
     }
 
     // allocate but don't initialize num elements of type T
-    pointer allocate (size_type num, const void* = 0)
+    pointer allocate( size_type num, const void* = 0 )
     {
         // print message and allocate memory with global new
         //std::cerr << "allocate " << num << " element(s)" << " of size " << sizeof(T) << std::endl;
         //std::cerr << "  _refAddress " << (void*)_refAddress.get() << std::endl;
         pointer ret;
         if( _refAddress == NULL )
-            ret = (pointer)(::operator new(num*sizeof(T)));
+        {
+            ret = ( pointer )( ::operator new( num * sizeof( T ) ) );
+        }
         else
-            ret = (pointer)(_refAddress.get());
+        {
+            ret = ( pointer )( _refAddress.get() );
+        }
         //std::cerr << " allocated at: " << (void*)ret << std::endl;
         return ret;
     }
 
     // initialize elements of allocated storage p with value value
-    void construct (pointer p, const T& value) {
+    void construct( pointer p, const T& value )
+    {
         // initialize memory with placement new
-        if( ( p < (pointer)(_refAddress.get()) ) || ( p >= (pointer)(_refAddress.get()) + _size ) )
-            new((void*)p)T(value);
+        if( ( p < ( pointer )( _refAddress.get() ) ) || ( p >= ( pointer )( _refAddress.get() ) + _size ) )
+        {
+            new( ( void* )p )T( value );
+        }
     }
 
     // destroy elements of initialized storage p
-    void destroy (pointer p) {
+    void destroy( pointer p )
+    {
         // destroy objects by calling their destructor
         p->~T();
     }
 
     // deallocate storage p of deleted elements
-    void deallocate (pointer p, size_type num) {
+    void deallocate( pointer p, size_type num )
+    {
         // print message and deallocate memory with global delete
         //std::cerr << "deallocate " << num << " element(s)" << " of size " << sizeof(T) << " at: " << (void*)p << std::endl;
         //std::cerr << "  _refAddress " << (void*)_refAddress.get() << std::endl;
-        if( p != (pointer)(_refAddress.get()) )
-            ::operator delete((void*)p);
+        if( p != ( pointer )( _refAddress.get() ) )
+        {
+            ::operator delete( ( void* )p );
+        }
     }
 
 
@@ -147,14 +162,16 @@ protected:
 
 // return that all specializations of this allocator are interchangeable
 template <class T1, class T2>
-bool operator== (const RefPtrAllocator<T1>&,
-    const RefPtrAllocator<T2>&) throw() {
-        return true;
+bool operator== ( const RefPtrAllocator<T1>&,
+                  const RefPtrAllocator<T2>& ) throw()
+{
+    return true;
 }
 template <class T1, class T2>
-bool operator!= (const RefPtrAllocator<T1>&,
-    const RefPtrAllocator<T2>&) throw() {
-        return false;
+bool operator!= ( const RefPtrAllocator<T1>&,
+                  const RefPtrAllocator<T2>& ) throw()
+{
+    return false;
 }
 
 
@@ -179,10 +196,12 @@ int main( int argc, char** argv )
         CharVec cv( localAllocator );
         cv.resize( sz );
 
-        osg::ref_ptr< osg::FloatArray > a2( (osg::FloatArray*)&cv[0] );
+        osg::ref_ptr< osg::FloatArray > a2( ( osg::FloatArray* )&cv[0] );
 
-        for( unsigned int idx=0; idx<array->size(); ++idx )
-            std::cout << (*a2)[ idx ] << std::endl;
+        for( unsigned int idx = 0; idx < array->size(); ++idx )
+        {
+            std::cout << ( *a2 )[ idx ] << std::endl;
+        }
     }
 
 
@@ -212,10 +231,12 @@ int main( int argc, char** argv )
             const CharVec& scv( persist->GetDatumValue< CharVec >( "array" ) );
 
             const size_t sz( scv.size() );
-            osg::ref_ptr< osg::FloatArray > array( (osg::FloatArray*)&scv[0] );
+            osg::ref_ptr< osg::FloatArray > array( ( osg::FloatArray* )&scv[0] );
 
-            for( unsigned int idx=0; idx<array->size(); ++idx )
-                std::cout << (*array)[ idx ] << std::endl;
+            for( unsigned int idx = 0; idx < array->size(); ++idx )
+            {
+                std::cout << ( *array )[ idx ] << std::endl;
+            }
         }
     }
 
@@ -247,10 +268,12 @@ int main( int argc, char** argv )
             const CharVec& scv( persist->GetDatumValue< CharVec >( "v3array" ) );
 
             const size_t sz( scv.size() );
-            osg::ref_ptr< osg::Vec3Array > array( (osg::Vec3Array*)&scv[0] );
+            osg::ref_ptr< osg::Vec3Array > array( ( osg::Vec3Array* )&scv[0] );
 
-            for( unsigned int idx=0; idx<array->size(); ++idx )
-                std::cout << (*array)[ idx ] << std::endl;
+            for( unsigned int idx = 0; idx < array->size(); ++idx )
+            {
+                std::cout << ( *array )[ idx ] << std::endl;
+            }
         }
     }
 
@@ -263,7 +286,9 @@ int main( int argc, char** argv )
         const std::string dbName( "SaveLoadTest.db" );
         Poco::File pocoFile( dbName );
         if( pocoFile.exists() )
+        {
             pocoFile.remove();
+        }
 
         csdb::DataManager manager;
         csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
@@ -284,11 +309,13 @@ int main( int argc, char** argv )
             q.SetTypeName( "TestType" );
 
             IntVec iv;
-            iv.push_back( 13 ); iv.push_back( 42 ); iv.push_back( 77 );
-            const char* start( (char*)&(*iv.begin()) );
-            CharVec cv( start, start + iv.size() * sizeof(int) );
+            iv.push_back( 13 );
+            iv.push_back( 42 );
+            iv.push_back( 77 );
+            const char* start( ( char* ) & ( *iv.begin() ) );
+            CharVec cv( start, start + iv.size() * sizeof( int ) );
 
-            q.AddDatum( "header", (int)cv.size() );
+            q.AddDatum( "header", ( int )cv.size() );
             q.AddDatum( "data", cv );
             manager.Save( q );
         }
@@ -299,8 +326,8 @@ int main( int argc, char** argv )
             q.SetTypeName( "TestType" );
 
             // Add datums to load
-            q.AddDatum( "header", (int)0 );
-            q.AddDatum( "data", (char*)NULL );
+            q.AddDatum( "header", ( int )0 );
+            q.AddDatum( "data", ( char* )NULL );
             // Load the Persistable from the SQLiteStore.
             manager.Load( q );
             // Prove that we loaded the data.
@@ -310,8 +337,8 @@ int main( int argc, char** argv )
                 std::cout << "Found header: " << d << std::endl;;
 
                 CharVec cv( q.GetDatumValue<CharVec>( "data" ) );
-                const int* start( (int*)&(*cv.begin()) );
-                IntVec iv( start, start + cv.size() / sizeof(int) );
+                const int* start( ( int* ) & ( *cv.begin() ) );
+                IntVec iv( start, start + cv.size() / sizeof( int ) );
                 std::cout << "  iv[0]: " << iv[0] << std::endl;;
                 std::cout << "  iv[1]: " << iv[1] << std::endl;;
                 std::cout << "  iv[2]: " << iv[2] << std::endl;;
@@ -328,7 +355,9 @@ int main( int argc, char** argv )
         const std::string dbName( "NonExisting.db" );
         Poco::File pocoFile( dbName );
         if( pocoFile.exists() )
+        {
             pocoFile.remove();
+        }
 
         csdb::DataManager manager;
         csdb::DataAbstractionLayerPtr cache( new csdb::NullCache );
@@ -340,9 +369,13 @@ int main( int argc, char** argv )
         manager.AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
 
         if( !manager.HasIDForTypename( boost::uuids::random_generator()(), "DummyTypeName" ) )
+        {
             std::cout << "Correct results: Can't find DummyTypeName" << std::endl;
+        }
         else
+        {
             std::cout << "Failed." << std::endl;
+        }
     }
 
 
@@ -383,16 +416,20 @@ int main( int argc, char** argv )
             boost::uuids::string_generator strGen;
             boost::uuids::uuid knownUUID( strGen( knownID ) );
             if( manager.HasIDForTypename( knownUUID, genericTypeName ) )
+            {
                 std::cout << "Correct results: Found ID/TypeName." << std::endl;
+            }
             else
+            {
                 std::cout << "Failed: HasIDForTypename returned false." << std::endl;
+            }
         }
     }
 
 
     std::cout << "--- Image save / restore test ---" << std::endl;
 
-    for( unsigned int testNum=0; testNum<2; ++testNum )
+    for( unsigned int testNum = 0; testNum < 2; ++testNum )
     {
         using namespace lfx::core;
         namespace csdb = crunchstore;
@@ -425,10 +462,12 @@ int main( int argc, char** argv )
             manager->AttachStore( sqstore, csdb::Store::BACKINGSTORE_ROLE );
 
             DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
-            try {
+            try
+            {
                 cs->setDataManager( manager );
             }
-            catch( std::exception exc ) {
+            catch( std::exception exc )
+            {
                 std::cout << "Test# " << testNum << ": setDataManager() throws exception." << std::endl;
                 break;
             }
@@ -441,16 +480,16 @@ int main( int argc, char** argv )
         if( !dbExists )
         {
             osg::ref_ptr< osg::Image > image( new osg::Image() );
-            float* data = (float*) malloc( width * height * sizeof( float ) * 3 );
-            float* ptr=data;
+            float* data = ( float* ) malloc( width * height * sizeof( float ) * 3 );
+            float* ptr = data;
             float red[3] = { 1., 0., 0. };
-            for( unsigned int idx=0; idx<width*height; ++idx )
+            for( unsigned int idx = 0; idx < width * height; ++idx )
             {
-                memcpy( ptr, (void*)&red[0], sizeof(float)*3 );
+                memcpy( ptr, ( void* )&red[0], sizeof( float ) * 3 );
                 ptr += 3;
             }
             image->setImage( width, height, 1, GL_RGB, GL_RGB, GL_FLOAT,
-                (unsigned char*)data, osg::Image::USE_MALLOC_FREE );
+                             ( unsigned char* )data, osg::Image::USE_MALLOC_FREE );
 
             dbBase->storeImage( image.get(), key );
 

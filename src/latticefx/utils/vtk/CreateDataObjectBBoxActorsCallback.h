@@ -39,7 +39,7 @@ namespace lfx
 namespace vtk_utils
 {
 class LATTICEFX_VTK_UTILS_EXPORT CreateDataObjectBBoxActorsCallback:
-            public DataObjectHandler::DatasetOperatorCallback
+    public DataObjectHandler::DatasetOperatorCallback
 {
 public:
     ///Constructor

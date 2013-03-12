@@ -56,13 +56,13 @@ int main( int argc, char** argv )
     ( "filename,f", po::value< std::string >( &raw_filename ), "The raw filename" );
 
     po::positional_options_description p;
-    p.add("filename", -1);
-    
+    p.add( "filename", -1 );
+
     po::variables_map vm;
     //po::store( po::parse_command_line( argc, argv, desc ), vm );
-    po::store( po::command_line_parser( argc, argv ).options(desc).positional(p).run(), vm );
+    po::store( po::command_line_parser( argc, argv ).options( desc ).positional( p ).run(), vm );
     po::notify( vm );
-    
+
     if( vm.count( "help" ) || !vm.count( "filename" ) )
     {
         std::cout << "To us this tool: " << argv[ 0 ] << " -x <x res> -y <y res> -z <z res> <filename>.raw" << std::endl;
@@ -77,39 +77,39 @@ int main( int argc, char** argv )
         return 1;
     }
 
-    std::ifstream rawStream(raw_filename.c_str(), std::ifstream::binary);    
-    
+    std::ifstream rawStream( raw_filename.c_str(), std::ifstream::binary );
+
     // get length of file:
-    rawStream.seekg(0, std::ios::end);
+    rawStream.seekg( 0, std::ios::end );
     size_t length = rawStream.tellg();
-    rawStream.seekg(0, std::ios::beg);
-    
+    rawStream.seekg( 0, std::ios::beg );
+
     char* buffer = new char[ length ];
-    
+
     // read data as a block:
-    rawStream.read(buffer,length);
+    rawStream.read( buffer, length );
     rawStream.close();
-    
+
     size_t numPixels = xSize * ySize * zSize;
     unsigned char* pixels( new unsigned char[ numPixels ] );
     unsigned char* pixelPtr( pixels );
-    
+
     BOOST_ASSERT_MSG( length == numPixels, "The length of the file is different than the size specified on the command line." );
-    for( size_t i=0; i < length; ++i ) 
-    { 
+    for( size_t i = 0; i < length; ++i )
+    {
         *pixelPtr++ = buffer[ i ];
-    } 
+    }
     delete [] buffer;
     buffer = 0;
 
     osg::ref_ptr< osg::Image > image = new osg::Image();
     //We will let osg manage the raw image data
-    image->setImage( xSize, ySize, zSize, 
-                    GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                    pixels, osg::Image::USE_NEW_DELETE );
-    
+    image->setImage( xSize, ySize, zSize,
+                     GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                     pixels, osg::Image::USE_NEW_DELETE );
+
     pathName.replace_extension( ".ive" );
     osgDB::writeImageFile( *image, pathName.string() );
-    
+
     return 0;
 }

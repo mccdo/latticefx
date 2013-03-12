@@ -49,13 +49,16 @@
 
 
 // Forwards
-namespace osg {
-    class Group;
+namespace osg
+{
+class Group;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** An ordered set of time values. */
@@ -87,21 +90,21 @@ public:
 
     /** \name Data Section
     \details TBD */
-    
+
     ///\{
     /** \brief Add a data channel to the ChannelDataList for a specific time value \c time. */
-    void addChannel( const ChannelDataPtr channel, const TimeValue time=0. );
+    void addChannel( const ChannelDataPtr channel, const TimeValue time = 0. );
 
     /** \brief Replaces a ChannelData with the same name as \c channel.
     \details If no ChannelData can be found with the same name as \c channel, this function
     behaves the same as addChannel. */
-    void replaceChannel( const ChannelDataPtr channel, const TimeValue time=0. );
+    void replaceChannel( const ChannelDataPtr channel, const TimeValue time = 0. );
 
     /** \brief Get a named channel for a specific time value \c time.
     \returns NULL if the named channel doesn't exist at the specified time. */
-    ChannelDataPtr getChannel( const std::string& name, const TimeValue time=0. );
+    ChannelDataPtr getChannel( const std::string& name, const TimeValue time = 0. );
     /** \overload ChannelDataPtr getChannel(const std::string&,const TimeValue) */
-    const ChannelDataPtr getChannel( const std::string& name, const TimeValue time=0. ) const;
+    const ChannelDataPtr getChannel( const std::string& name, const TimeValue time = 0. ) const;
 
 
 
@@ -117,10 +120,16 @@ public:
     ///\{
     /** \brief TBD
     \details TBD */
-    void setDB( DBBasePtr db ) { _db = db; }
+    void setDB( DBBasePtr db )
+    {
+        _db = db;
+    }
     /** \brief TBD
     \details TBD */
-    DBBasePtr getDB() const { return( _db ); }
+    DBBasePtr getDB() const
+    {
+        return( _db );
+    }
     ///\}
 
 
@@ -250,7 +259,7 @@ public:
     ( setDirty(true) ). WARNING: Apps that remove objects from the
     ChannelData, Preprocess, and RTPOperation vectors must manually
     call setDirty(). */
-    void setDirty( const bool dirty=true );
+    void setDirty( const bool dirty = true );
     /** \brief Get the pipeline dirty flag. */
     bool getDirty() const;
 
@@ -272,7 +281,7 @@ protected:
     ChannelDataList getCompositeChannels( ChannelDataList data, const unsigned int index );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 
-    ChannelDataOSGArrayPtr createSizedMask(  const ChannelDataList& dataList );
+    ChannelDataOSGArrayPtr createSizedMask( const ChannelDataList& dataList );
 
 
     typedef std::map< TimeValue, ChannelDataList > ChannelDataTimeMap;
@@ -301,9 +310,9 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_NVP( _preprocess );
-        ar & BOOST_SERIALIZATION_NVP( _ops );
-        ar & BOOST_SERIALIZATION_NVP( _renderer );
+        ar& BOOST_SERIALIZATION_NVP( _preprocess );
+        ar& BOOST_SERIALIZATION_NVP( _ops );
+        ar& BOOST_SERIALIZATION_NVP( _renderer );
     }
 };
 

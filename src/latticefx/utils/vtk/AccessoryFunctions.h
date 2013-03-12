@@ -45,10 +45,10 @@ public:
     ///Find the range of the magnitude of the vector for vector-based
     ///visualization when "scale by vector magnitude" is selected.
     ///\param dataArray The vector to be measured
-    static double * ComputeVectorMagnitudeRange( vtkDataArray * dataArray );
+    static double* ComputeVectorMagnitudeRange( vtkDataArray* dataArray );
     ///Find the Mean Cell Bounding Box (????) Length
     ///\param dataSet The values for the grid that is being analyzed.
-    static double ComputeMeanCellBBLength( vtkDataSet * dataSet );
+    static double ComputeMeanCellBBLength( vtkDataSet* dataSet );
 
 
 private:

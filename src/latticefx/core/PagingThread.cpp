@@ -31,13 +31,15 @@
 #include <sstream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 PagingThread::PagingThread()
-  : LogBase( "lfx.core.page.thread" ),
-    _haltRequest( false )
+    : LogBase( "lfx.core.page.thread" ),
+      _haltRequest( false )
 {
     _thread = new boost::thread( boost::ref( *this ) );
 }
@@ -78,13 +80,15 @@ LoadRequestPtr PagingThread::retrieveLoadRequest( const osg::NodePath& path )
         _availableList.erase( it );
         return( result );
     }
-    return( LoadRequestPtr( (LoadRequest*)NULL ) );
+    return( LoadRequestPtr( ( LoadRequest* )NULL ) );
 }
 
 void PagingThread::dump( const std::string& header, const LoadRequestList& requests )
 {
     if( !( LFX_LOG_CRITICAL ) )
+    {
         return;
+    }
 
     LFX_CRITICAL( header );
     BOOST_FOREACH( const LoadRequestPtr req, requests )
@@ -113,7 +117,7 @@ void PagingThread::operator()()
                 {
                     std::ostringstream ostr;
                     ostr << "  queues: " << _requestList.size() << " " << _completedList.size() <<
-                        " " << _availableList.size();
+                         " " << _availableList.size();
                     LFX_TRACE( ostr.str() );
                 }
             }
@@ -152,7 +156,7 @@ void PagingThread::operator()()
         int numReturnsAvailable;
         {
             boost::mutex::scoped_lock availableLock( _availableMutex );
-            numReturnsAvailable = 16 - (int)( _availableList.size() );
+            numReturnsAvailable = 16 - ( int )( _availableList.size() );
         }
         if( numReturnsAvailable > 0 )
         {
@@ -175,22 +179,30 @@ void PagingThread::processCancellations()
 {
     boost::mutex::scoped_lock cancelLock( _cancelMutex );
     if( _cancelList.empty() )
+    {
         return;
+    }
 
     // Calling code must lock the _requestMutex.
     //boost::mutex::scoped_lock requestLock( _requestMutex );
 
     boost::mutex::scoped_lock availableLock( _availableMutex );
 
-    BOOST_FOREACH( const osg::NodePath& path, _cancelList )
+    BOOST_FOREACH( const osg::NodePath & path, _cancelList )
     {
         LoadRequestList::iterator it;
         if( ( it = find( _requestList, path ) ) != _requestList.end() )
+        {
             _requestList.erase( it );
+        }
         else if( ( it = find( _completedList, path ) ) != _completedList.end() )
+        {
             _completedList.erase( it );
+        }
         else if( ( it = find( _availableList, path ) ) != _availableList.end() )
+        {
             _availableList.erase( it );
+        }
         else
         {
             // Couldn't find the specified path. This is an error. It means the client code
@@ -214,7 +226,7 @@ void PagingThread::setTransforms( const osg::Matrix& proj, const osg::Viewport* 
     _vp = vp;
 }
 void PagingThread::setTransforms( const osg::Vec3& wcEyePosition, const osg::Matrix& proj,
-        const osg::Viewport* vp )
+                                  const osg::Viewport* vp )
 {
     boost::mutex::scoped_lock transformLock( _transformMutex );
     _wcEyePosition = wcEyePosition;
@@ -222,7 +234,7 @@ void PagingThread::setTransforms( const osg::Vec3& wcEyePosition, const osg::Mat
     _vp = vp;
 }
 void PagingThread::getTransforms( osg::Vec3& wcEyePosition, osg::Matrix& proj,
-    osg::ref_ptr< const osg::Viewport >& vp ) const
+                                  osg::ref_ptr< const osg::Viewport >& vp ) const
 {
     boost::mutex::scoped_lock transformLock( _transformMutex );
     wcEyePosition = _wcEyePosition;
@@ -238,8 +250,10 @@ LoadRequestList::iterator PagingThread::find( LoadRequestList& requestList, cons
     LoadRequestList::iterator it;
     for( it = requestList.begin(); it != requestList.end(); ++it )
     {
-        if( (*it)->_path == path )
+        if( ( *it )->_path == path )
+        {
             break;
+        }
     }
     return( it );
 }

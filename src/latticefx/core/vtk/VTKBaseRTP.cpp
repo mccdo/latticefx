@@ -19,11 +19,14 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/VTKBaseRTP.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetMinMaxScalarRangeValue( double const minVal, double const maxVal )

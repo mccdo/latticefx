@@ -35,13 +35,16 @@
 
 
 // Forward
-namespace osg {
-    class Geometry;
-    class Texture3D;
+namespace osg
+{
+class Geometry;
+class Texture3D;
 }
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class SpatialVolume VolumeRenderer.h <latticefx/core/VolumeRenderer.h>
@@ -60,13 +63,13 @@ public:
     // volume dims and origin
     /** \brief Set dimensions (in world units) of the volume box.
     \details This can be varied on every draw. */
-    void setVolumeDims( const osg::Vec3f& volDims);
+    void setVolumeDims( const osg::Vec3f& volDims );
     /** \brief Get dimensions (in world units) of the volume box. */
     osg::Vec3f getVolumeDims() const;
 
     /** \brief Set location (in world units) of the center of the volume box.
     \details This can be varied on every draw. */
-    void setVolumeOrigin( const osg::Vec3f& volOrigin);
+    void setVolumeOrigin( const osg::Vec3f& volOrigin );
     /** \brief Get the location (in world units) of the center of the volume box. */
     osg::Vec3f getVolumeOrigin() const;
 
@@ -79,8 +82,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_NVP( _volumeDims );
-        ar & BOOST_SERIALIZATION_NVP( _volumeOrigin );
+        ar& BOOST_SERIALIZATION_NVP( _volumeDims );
+        ar& BOOST_SERIALIZATION_NVP( _volumeOrigin );
     }
 };
 
@@ -102,7 +105,8 @@ public:
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
-    typedef enum {
+    typedef enum
+    {
         VOLUME_DATA,  /**< "volumedata" */
     } InputType;
 
@@ -120,14 +124,15 @@ public:
 
     /** \brief Volume rendering algorithm
     \details Enum for supported rendering algorithms. */
-    typedef enum {
+    typedef enum
+    {
         SLICES,
         RAY_TRACED,
     } RenderMode;
 
     /** \brief Set the rendering style.
     \details The default is SLICES.
-    
+
     RAY_TRACED mode requies special configuration steps on the part of the
     application. See the test volume-rt for an example.
 
@@ -145,9 +150,15 @@ public:
         - 4th child: the actual Lfx scene graph, to render the ray traced volume data into the window.
       - "Stub lfx scene": The ray tracing shader compares computed depth values against the depth buffer from your opaque scene. This means the 1st child and 4th child need to use the same projection matrix so that the depth values are compatible. But this can be problematic when using auto-compute near & far. To make a long story short, the "stub lfx scene" ensures that the auto-compute takes the lfx scene into account when computing the near & far planes for your opaque scene.
     */
-    void setRenderMode( const RenderMode& renderMode ) { _renderMode = renderMode; }
+    void setRenderMode( const RenderMode& renderMode )
+    {
+        _renderMode = renderMode;
+    }
     /** \brief Get the rendering algorithm. */
-    RenderMode getRenderMode() const { return( _renderMode ); }
+    RenderMode getRenderMode() const
+    {
+        return( _renderMode );
+    }
 
 
     /** \brief Specify the number of slices for RenderMode SLICES.
@@ -161,9 +172,15 @@ public:
     Analogous to setNumPlanes (for RenderMode SLICES). This is the number of
     volume sample points per pixel for a worst-case rendering (view vector
     aligned with volume diagonal). The default is 100.f samples. */
-    void setMaxSamples( const float maxSamples ) { _maxSamples = maxSamples; }
+    void setMaxSamples( const float maxSamples )
+    {
+        _maxSamples = maxSamples;
+    }
     /** \brief Get the max ray samples for RenderMode RAY_TRACED. */
-    float getMaxSamples() const { return( _maxSamples ); }
+    float getMaxSamples() const
+    {
+        return( _maxSamples );
+    }
 
     /** \brief Transparancy scale value.
     \details After the shader computes an alpha value for the RGBA color,
@@ -175,17 +192,29 @@ public:
     scene graph root state enables blending by default.
 
     The default transparency scalar is 1.0. */
-    void setTransparency( const float trans ) { _transparencyScalar = trans; }
+    void setTransparency( const float trans )
+    {
+        _transparencyScalar = trans;
+    }
     /** \brief Get the transparency scalar. */
-    float getTransparency() const { return( _transparencyScalar ); }
+    float getTransparency() const
+    {
+        return( _transparencyScalar );
+    }
 
     /** \brief Enable or disable transparency.
     \detauls Transparency is enabled by default. To disable it, set this
     value to false. For maximum performance, the app should also disable GL_BLENDING
     above the latticefx scene graph using the OVERRIDE bit. */
-    void setTransparencyEnable( const bool enable=true ) { _transparencyEnable = enable; }
+    void setTransparencyEnable( const bool enable = true )
+    {
+        _transparencyEnable = enable;
+    }
     /** \brief Get the transparency enable flag. */
-    bool getTransparencyEnable() const { return( _transparencyEnable ); }
+    bool getTransparencyEnable() const
+    {
+        return( _transparencyEnable );
+    }
 
 protected:
     static osg::Texture3D* createStubTexture( const DBKey& key );
@@ -209,13 +238,13 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( SpatialVolume );
-        ar & BOOST_SERIALIZATION_NVP( _renderMode );
-        ar & BOOST_SERIALIZATION_NVP( _numPlanes );
-        ar & BOOST_SERIALIZATION_NVP( _maxSamples );
-        ar & BOOST_SERIALIZATION_NVP( _transparencyScalar );
-        ar & BOOST_SERIALIZATION_NVP( _transparencyEnable );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( SpatialVolume );
+        ar& BOOST_SERIALIZATION_NVP( _renderMode );
+        ar& BOOST_SERIALIZATION_NVP( _numPlanes );
+        ar& BOOST_SERIALIZATION_NVP( _maxSamples );
+        ar& BOOST_SERIALIZATION_NVP( _transparencyScalar );
+        ar& BOOST_SERIALIZATION_NVP( _transparencyEnable );
     }
 };
 

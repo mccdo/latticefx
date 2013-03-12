@@ -33,26 +33,28 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 DataSet::DataSet()
-  : LogBase( "lfx.core.dataset" ),
-    _sceneGraph( new osg::Group ),
-    _dirty( true )
+    : LogBase( "lfx.core.dataset" ),
+      _sceneGraph( new osg::Group ),
+      _dirty( true )
 {
 }
 DataSet::DataSet( const DataSet& rhs )
-  : LogBase( rhs ),
-    _data( rhs._data ),
-    _dataNames( rhs._dataNames ),
-    _db( rhs._db ),
-    _preprocess( rhs._preprocess ),
-    _ops( rhs._ops ),
-    _renderer( rhs._renderer ),
-    _maskList( rhs._maskList ),
-    _dirty( true )
+    : LogBase( rhs ),
+      _data( rhs._data ),
+      _dataNames( rhs._dataNames ),
+      _db( rhs._db ),
+      _preprocess( rhs._preprocess ),
+      _ops( rhs._ops ),
+      _renderer( rhs._renderer ),
+      _maskList( rhs._maskList ),
+      _dirty( true )
 {
 }
 DataSet::~DataSet()
@@ -85,7 +87,9 @@ ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue tim
     ChannelDataPtr cdp;
     ChannelDataTimeMap::iterator cdlIt( _data.find( time ) );
     if( cdlIt != _data.end() )
+    {
         cdp = cdlIt->second.findData( name );
+    }
 
     if( cdp == NULL )
     {
@@ -99,7 +103,9 @@ ChannelDataPtr DataSet::getChannel( const std::string& name, const TimeValue tim
                 // Found some data just before time.
                 cdp = crt->second.findData( name );
                 if( cdp != NULL )
+                {
                     break;
+                }
             }
             ++crt;
         }
@@ -120,7 +126,7 @@ osg::Vec2d DataSet::getTimeRange() const
     getTimeRange( minTime, maxTime );
     return( osg::Vec2d( minTime, maxTime ) );
 }
-void DataSet::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const 
+void DataSet::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const
 {
     TimeSet timeSet( getTimeSet() );
     if( timeSet.empty() )
@@ -176,10 +182,12 @@ PreprocessPtr DataSet::getPreprocess( const unsigned int index )
     BOOST_FOREACH( PreprocessPtr pre, _preprocess )
     {
         if( idx++ == index )
+        {
             return( pre );
+        }
     }
 
-    return( PreprocessPtr( (Preprocess*) NULL ) );
+    return( PreprocessPtr( ( Preprocess* ) NULL ) );
 }
 const PreprocessPtr DataSet::getPreprocess( const unsigned int index ) const
 {
@@ -239,10 +247,12 @@ RTPOperationPtr DataSet::getOperation( const unsigned int index )
     BOOST_FOREACH( RTPOperationPtr op, _ops )
     {
         if( idx++ == index )
+        {
             return( op );
+        }
     }
 
-    return( RTPOperationPtr( (RTPOperation*) NULL ) );
+    return( RTPOperationPtr( ( RTPOperation* ) NULL ) );
 }
 const RTPOperationPtr DataSet::getOperation( const unsigned int index ) const
 {
@@ -277,7 +287,9 @@ const RendererPtr DataSet::getRenderer() const
 osg::Node* DataSet::getSceneData()
 {
     if( _sceneGraph->getNumChildren() == 0 )
+    {
         updateAll();
+    }
 
     return( _sceneGraph.get() );
 }
@@ -285,7 +297,9 @@ osg::Node* DataSet::getSceneData()
 bool DataSet::updateAll()
 {
     if( !_dirty )
+    {
         return( true );
+    }
 
     // Reset all attached inputs. If a ChannelData instance needs to refresh
     // a working copy of data from the original source data, it does so here.
@@ -322,11 +336,15 @@ bool DataSet::updatePreprocessing()
         BOOST_FOREACH( PreprocessPtr prePtr, _preprocess )
         {
             if( !( prePtr->getEnable() ) )
+            {
                 continue;
+            }
 
-            ChannelDataPtr newData( (*prePtr)() );
+            ChannelDataPtr newData( ( *prePtr )() );
             if( newData == NULL )
+            {
                 continue;
+            }
 
             // The Proprocessor object tells us how to handle the new data
             // we just got back. This is so that apps can configure the Preprocessor
@@ -359,16 +377,22 @@ bool DataSet::updatePreprocessing()
         BOOST_FOREACH( PreprocessPtr prePtr, _preprocess )
         {
             if( !( prePtr->getEnable() ) )
+            {
                 continue;
+            }
 
             // Assign actual / current data to the prePtr OperationBase.
             setInputs( prePtr, currentData );
             if( !prePtr->validInputs() )
+            {
                 continue;
+            }
 
-            ChannelDataPtr newData( (*prePtr)() );
+            ChannelDataPtr newData( ( *prePtr )() );
             if( newData == NULL )
+            {
                 continue;
+            }
 
             // The Proprocessor object tells us how to handle the new data
             // we just got back. This is so that apps can configure the Preprocessor
@@ -415,19 +439,23 @@ bool DataSet::updateRunTimeProcessing()
 
         // Allocate a mask and initialize to all zeros.
         ChannelDataOSGArrayPtr mask( createSizedMask( currentData ) );
-        mask->setAll( (const char)1 ); // Enable all elements.
+        mask->setAll( ( const char )1 ); // Enable all elements.
         _maskList.push_back( mask );
 
         // Iterate over all attached run time operations.
         BOOST_FOREACH( RTPOperationPtr opPtr, _ops )
         {
             if( !( opPtr->getEnable() ) )
+            {
                 continue;
+            }
 
             // Assign actual / current data to the opPtr OperationBase.
             setInputs( opPtr, currentData );
             if( !opPtr->validInputs() )
+            {
                 continue;
+            }
 
             switch( opPtr->getRTPOpType() )
             {
@@ -462,10 +490,14 @@ bool DataSet::updateRunTimeProcessing()
 bool DataSet::updateRenderer()
 {
     if( _renderer == NULL )
+    {
         return( false );
+    }
 
     if( _maskList.empty() )
+    {
         createFallbackMaskList();
+    }
 
     TimeSet timeSet( getTimeSet() );
     if( timeSet.size() == 0 )
@@ -509,9 +541,13 @@ bool DataSet::updateRenderer()
         ++maskIt;
     }
     if( timeSet.size() > 1 )
+    {
         _sceneGraph->setName( "Lfx-TimePagingRoot" );
+    }
     else
+    {
         _sceneGraph->setName( "Lfx-Root" );
+    }
 
 
     _sceneGraph->setStateSet( _renderer->getRootState() );
@@ -544,7 +580,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
         osg::ref_ptr< OctreeGroup > parent( new OctreeGroup( spatial->getVolumeOrigin() ) );
         parent->setName( "Lfx-ImageSet" );
         unsigned int idx;
-        for( idx=0; idx < imageData->getNumChannels(); idx++ )
+        for( idx = 0; idx < imageData->getNumChannels(); idx++ )
         {
             ChannelDataList currentData( getCompositeChannels( data, idx ) );
             osg::Node* child( recurseGetSceneGraph( currentData, mask ) );
@@ -564,8 +600,8 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
                     negateOrigin = osg::Matrix::translate( spatial->getVolumeOrigin() );
                 }
                 const osg::Matrix trans( negateOrigin *
-                    osg::Matrix::translate( offset ) *
-                    osg::Matrix::scale( .5, .5, .5 ) );
+                                         osg::Matrix::translate( offset ) *
+                                         osg::Matrix::scale( .5, .5, .5 ) );
 
                 osg::MatrixTransform* mt( new osg::MatrixTransform( trans ) );
                 mt->addChild( child );
@@ -594,7 +630,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
         unsigned int childIndex( 0 );
         unsigned int idx;
-        for( idx=0; idx < lodData->getNumChannels(); idx++ )
+        for( idx = 0; idx < lodData->getNumChannels(); idx++ )
         {
             ChannelDataList currentData( getCompositeChannels( data, idx ) );
             osg::Node* child( recurseGetSceneGraph( currentData, mask ) );
@@ -615,7 +651,9 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     {
         setInputs( _renderer, data );
         if( _renderer->validInputs() )
+        {
             return( _renderer->getSceneGraph( mask ) );
+        }
     }
 
     return( NULL );
@@ -643,7 +681,7 @@ TimeSet DataSet::getTimeSet() const
 ChannelDataList DataSet::getDataAtTime( const TimeValue time )
 {
     ChannelDataList cdl;
-    BOOST_FOREACH( const std::string& name, _dataNames )
+    BOOST_FOREACH( const std::string & name, _dataNames )
     {
         /*
         ChannelDataPtr cdp( getChannel( name, time ) );
@@ -671,11 +709,13 @@ void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
 {
     ChannelDataList newList;
     const OperationBase::StringList& inputs( opPtr->getInputNames() );
-    BOOST_FOREACH( const std::string& inputName, inputs )
+    BOOST_FOREACH( const std::string & inputName, inputs )
     {
         ChannelDataPtr cdp( currentData.findData( inputName ) );
         if( cdp != NULL )
+        {
             newList.push_back( cdp );
+        }
     }
     opPtr->setInputs( newList );
 }
@@ -691,7 +731,7 @@ ChannelDataOSGArrayPtr DataSet::createSizedMask( const ChannelDataList& dataList
         //The default implementation of ChannelData::getDimensions does not
         //return a default value therefore we must set our x,y,z to 0.
         cdp->getDimensions( x, y, z );
-        const unsigned int total( x*y*z );
+        const unsigned int total( x * y * z );
         size = osg::maximum( size, total );
     }
 
@@ -705,7 +745,7 @@ void DataSet::createFallbackMaskList()
     osg::ByteArray* osgMask( new osg::ByteArray );
     osgMask->resize( 1 );
     ChannelDataOSGArrayPtr mask( new ChannelDataOSGArray( "DataSet-FallbackMask", osgMask ) );
-    mask->setAll( (char)1 );
+    mask->setAll( ( char )1 );
     _maskList.push_back( mask );
 }
 

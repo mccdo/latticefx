@@ -25,7 +25,7 @@ using namespace lfx::vtk_utils;
 
 //////////////////////////////////////////////////////////////////////
 ComputeMeanCellBBoxLengthCallback::ComputeMeanCellBBoxLengthCallback()
-        : m_meanCellBBLength( 0.0 )
+    : m_meanCellBBLength( 0.0 )
 {}
 //////////////////////////////////////////////////////////////
 double ComputeMeanCellBBoxLengthCallback::GetMeanCellBBLength()

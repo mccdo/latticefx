@@ -29,19 +29,21 @@
 #include <set>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 OctreeGroup::OctreeGroup( const osg::Vec3 center )
-  : Group(),
-    _center( center )
+    : Group(),
+      _center( center )
 {
 }
 OctreeGroup::OctreeGroup( const OctreeGroup& rhs, const osg::CopyOp& copyop )
-  : Group( rhs, copyop ),
-    _offsets( dynamic_cast< osg::Vec3Array* >( copyop( rhs._offsets.get() ) ) ),
-    _center( rhs._center )
+    : Group( rhs, copyop ),
+      _offsets( dynamic_cast< osg::Vec3Array* >( copyop( rhs._offsets.get() ) ) ),
+      _center( rhs._center )
 {
 }
 OctreeGroup::~OctreeGroup()
@@ -52,11 +54,11 @@ OctreeGroup::~OctreeGroup()
 struct DotSortedChild
 {
     DotSortedChild( const float sortValue, const unsigned int index )
-      : _sortValue( sortValue ), _index( index )
+        : _sortValue( sortValue ), _index( index )
     {
     }
     DotSortedChild( const DotSortedChild& rhs )
-      : _sortValue( rhs._sortValue ), _index( rhs._index )
+        : _sortValue( rhs._sortValue ), _index( rhs._index )
     {
     }
 
@@ -97,9 +99,9 @@ void OctreeGroup::traverse( osg::NodeVisitor& nv )
     SortedChildSet _sortedChildren;
     const osg::Vec3 ecNegCenter = -( _center * mv );
 
-    for( unsigned int idx=0; idx<_offsets->size(); ++idx )
+    for( unsigned int idx = 0; idx < _offsets->size(); ++idx )
     {
-        osg::Vec3 ecVec( mvInv * (*_offsets)[ idx ] ); // Post-multiply because mvInv was not transposed.
+        osg::Vec3 ecVec( mvInv * ( *_offsets )[ idx ] ); // Post-multiply because mvInv was not transposed.
         const float dot( ecVec * ecNegCenter );
         const DotSortedChild childInfo( dot, idx );
         _sortedChildren.insert( childInfo );
@@ -111,20 +113,26 @@ void OctreeGroup::traverse( osg::NodeVisitor& nv )
     }
 }
 
-bool OctreeGroup::addChild( Node *child, const osg::Vec3& offset )
+bool OctreeGroup::addChild( Node* child, const osg::Vec3& offset )
 {
     if( Group::addChild( child ) )
     {
         const unsigned int childIndex( getChildIndex( child ) );
         if( _offsets == NULL )
+        {
             _offsets = new osg::Vec3Array;
+        }
         if( _offsets->size() <= childIndex )
-            _offsets->resize( childIndex+1 );
-        (*_offsets)[ childIndex ] = offset;
+        {
+            _offsets->resize( childIndex + 1 );
+        }
+        ( *_offsets )[ childIndex ] = offset;
         return( true );
     }
     else
+    {
         return( false );
+    }
 }
 
 

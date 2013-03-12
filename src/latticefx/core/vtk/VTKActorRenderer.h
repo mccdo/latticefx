@@ -27,15 +27,19 @@
 
 #include <string>
 
-namespace osg {
-    class Node;
+namespace osg
+{
+class Node;
 }
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKActorRenderer VTKActorRenderer.h <latticefx/core/vtk/VTKActorRenderer.h>
  \brief This class converts a vtkPolyData to OSG arrays for rendering.
@@ -54,25 +58,25 @@ public:
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKActorRenderer()
     {
         ;
     }
-    
+
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use
     void SetActiveVector( const std::string& activeVector );
-    
+
     ///Set the active scalar name to tell the render what to put in the textures
     ///\param activeScalar The active scalar name to use
     void SetActiveScalar( const std::string& activeScalar );
-    
-    ///We are overriding the lfx::core::VectorRenderer method and then calling it 
+
+    ///We are overriding the lfx::core::VectorRenderer method and then calling it
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
-    
+
 protected:
     ///The active vector to set which vector to use for rendering
     std::string m_activeVector;

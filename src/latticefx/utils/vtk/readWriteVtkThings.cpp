@@ -46,7 +46,7 @@
 using namespace lfx::vtk_utils;
 
 ///////////////////////////////////////////////////////////////////////////////
-void lfx::vtk_utils::printWhatItIs( vtkDataObject * dataSet )
+void lfx::vtk_utils::printWhatItIs( vtkDataObject* dataSet )
 {
     if( dataSet == NULL )
     {
@@ -67,11 +67,11 @@ void lfx::vtk_utils::printBounds( vtkDataObject* dataObject )
     std::cout << "Geometry bounding box information..." << std::endl;
     boundsCallback->GetDataObjectBounds( bounds );
     std::cout << "\tx-min = \t" << bounds[0]
-    << "\tx-max = \t" << bounds[1] << std::endl;
+              << "\tx-max = \t" << bounds[1] << std::endl;
     std::cout << "\ty-min = \t" << bounds[2]
-    << "\ty-max = \t" << bounds[3] << std::endl;
+              << "\ty-max = \t" << bounds[3] << std::endl;
     std::cout << "\tz-min = \t" << bounds[4]
-    << "\tz-max = \t" << bounds[5] << std::endl;
+              << "\tz-max = \t" << bounds[5] << std::endl;
 
     if( boundsCallback )
     {
@@ -80,22 +80,22 @@ void lfx::vtk_utils::printBounds( vtkDataObject* dataObject )
     }
 }
 ///////////////////////////////////////////////////////////////////////////////
-vtkDataObject* lfx::vtk_utils::readVtkThing( 
+vtkDataObject* lfx::vtk_utils::readVtkThing(
     std::string vtkFilename, int printFlag )
 {
     try
     {
         if( !boost::filesystem::exists( vtkFilename ) )
         {
-            std::cout << "|\tFile " << vtkFilename 
-            << " does not exist." << std::endl;
+            std::cout << "|\tFile " << vtkFilename
+                      << " does not exist." << std::endl;
             return 0;
         }
     }
     catch( ... )
     {
-        std::cout << "|\tFile " << vtkFilename 
-            << " does not exist." << std::endl;
+        std::cout << "|\tFile " << vtkFilename
+                  << " does not exist." << std::endl;
         return 0;
     }
 
@@ -109,12 +109,14 @@ vtkDataObject* lfx::vtk_utils::readVtkThing(
     return temp;
 }
 ///////////////////////////////////////////////////////////////////////////////
-bool lfx::vtk_utils::writeVtkThing( 
+bool lfx::vtk_utils::writeVtkThing(
     vtkDataObject* vtkThing, std::string vtkFilename, int binaryFlag )
 {
     VTKFileHandler fileWriter;
     if( !binaryFlag )
+    {
         fileWriter.SetOutFileWriteMode( VTKFileHandler::CFD_ASCII );
+    }
     return fileWriter.WriteDataSet( vtkThing, vtkFilename );
 }
 

@@ -43,14 +43,15 @@ class MyMask : public RTPOperation
 {
 public:
     MyMask()
-      : RTPOperation( RTPOperation::Mask )
+        : RTPOperation( RTPOperation::Mask )
     {
         setInputNameAlias( POSITIONS, "vertices" );
     }
     virtual ~MyMask()
     {}
 
-    typedef enum {
+    typedef enum
+    {
         POSITIONS
     } InputType;
 
@@ -67,7 +68,9 @@ public:
         // setValue( "threshold", OperationValue( floatVal ) );
         float threshold( 0.f );
         if( hasValue( "threshold" ) )
+        {
             threshold = getValue( "threshold" )->extract< float >();
+        }
 
         osg::Vec3Array* xyz = static_cast< osg::Vec3Array* >( input->asOSGArray() );
         unsigned int size( xyz->getNumElements() );
@@ -76,15 +79,17 @@ public:
         maskData->resize( size );
 
         osg::ByteArray* maskInData = static_cast< osg::ByteArray* >( maskIn->asOSGArray() );
-        signed char* maskInPtr = &( (*maskInData)[ 0 ] );
+        signed char* maskInPtr = &( ( *maskInData )[ 0 ] );
         unsigned int idx;
-        for( idx=0; idx<size; ++idx, ++maskInPtr )
+        for( idx = 0; idx < size; ++idx, ++maskInPtr )
         {
             if( *maskInPtr == 0 )
+            {
                 continue;
+            }
 
-            signed char& maskValue( (*maskData)[ idx ] );
-            const osg::Vec3& v( (*xyz)[ idx ] );
+            signed char& maskValue( ( *maskData )[ idx ] );
+            const osg::Vec3& v( ( *xyz )[ idx ] );
             maskValue = ( v.z() + v.y() > threshold ) ? 0 : 1;
         }
 
@@ -105,7 +110,8 @@ public:
     virtual ~MyRenderer()
     {}
 
-    typedef enum {
+    typedef enum
+    {
         POSITIONS
     } InputType;
 
@@ -120,8 +126,10 @@ public:
 
         unsigned int idx, size = geom->getVertexArray()->getNumElements();
         osg::DrawElementsUInt* deui( new osg::DrawElementsUInt( GL_POINTS, size ) );
-        for( idx=0; idx<size; idx++ )
-            (*deui)[ idx ] = idx;
+        for( idx = 0; idx < size; idx++ )
+        {
+            ( *deui )[ idx ] = idx;
+        }
         geom->addPrimitiveSet( deui );
         geode->addDrawable( geom );
 
@@ -137,16 +145,16 @@ DataSetPtr prepareDataSet()
     // space ranging from -1 to 1 in both x and y.
     osg::ref_ptr< osg::Vec3Array > xyzData( new osg::Vec3Array );
     const unsigned int w( 400 ), h( 400 );
-    xyzData->resize( w*h );
+    xyzData->resize( w * h );
     unsigned int wIdx, hIdx;
-    for( wIdx=0; wIdx<w; ++wIdx )
+    for( wIdx = 0; wIdx < w; ++wIdx )
     {
-        for( hIdx=0; hIdx<h; ++hIdx )
+        for( hIdx = 0; hIdx < h; ++hIdx )
         {
-            const float x( ((float)wIdx)/w * 2. - 1. );
-            const float y( ((float)hIdx)/h * 2. - 1. );
-            (*xyzData)[ (wIdx*w) + hIdx ].set(
-                x, y, -( x*x + y*y ) );
+            const float x( ( ( float )wIdx ) / w * 2. - 1. );
+            const float y( ( ( float )hIdx ) / h * 2. - 1. );
+            ( *xyzData )[( wIdx * w ) + hIdx ].set(
+                x, y, -( x * x + y * y ) );
         }
     }
     ChannelDataOSGArrayPtr cdp( new ChannelDataOSGArray( "vertices", xyzData.get() ) );

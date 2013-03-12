@@ -27,13 +27,16 @@
 #include <string>
 
 
-namespace osg {
-    class Image;
+namespace osg
+{
+class Image;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \defgroup TransferFunctionUtils Utilities for transfer functions
@@ -63,7 +66,7 @@ comments. THIS IS NOT YET IMPLEMENTED.
 
 This function reads the .dat file into an osg::Image with one dimension. */
 LATTICEFX_EXPORT osg::Image* loadImageFromDat( const std::string& fileName,
-    const unsigned int alphaPolicy=LFX_ALPHA_CONSTANT, float alpha=1.f );
+        const unsigned int alphaPolicy = LFX_ALPHA_CONSTANT, float alpha = 1.f );
 
 
 /**@}*/

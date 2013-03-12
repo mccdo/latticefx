@@ -23,8 +23,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \def AS_CHAR_PTR
@@ -39,7 +41,7 @@ namespace core {
 
 
 ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* data )
-  : ChannelData( name )
+    : ChannelData( name )
 {
     if( data != NULL )
     {
@@ -48,11 +50,13 @@ ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* d
     }
 }
 ChannelDataOSGArray::ChannelDataOSGArray( const ChannelDataOSGArray& rhs )
-  : ChannelData( rhs ),
-    _data( rhs._data )
+    : ChannelData( rhs ),
+      _data( rhs._data )
 {
     if( _data != NULL )
+    {
         reset();
+    }
 }
 ChannelDataOSGArray::~ChannelDataOSGArray()
 {
@@ -64,9 +68,13 @@ void ChannelDataOSGArray::setOSGArray( osg::Array* data )
     _data = data;
 
     if( ( data != NULL ) && ( data->getNumElements() > 0 ) )
+    {
         setDimensions( data->getNumElements(), 1, 1 );
+    }
     else
+    {
         setDimensions( 0, 0, 0 );
+    }
 }
 
 
@@ -139,7 +147,9 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
     }
 
     if( maskIn == NULL )
+    {
         return( ChannelDataPtr( ( ChannelData* )( NULL ) ) );
+    }
 
     const osg::ByteArray* osgMask( static_cast< osg::ByteArray* >( maskIn->asOSGArray() ) );
     osg::ByteArray::const_iterator maskIt;
@@ -147,7 +157,7 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
     // Shortcut to avoid data copy. If all mask values are 1, just return
     // the input array. (Loop, looking for non-1 values.)
     bool masked( false );
-    for( maskIt=osgMask->begin(); maskIt != osgMask->end(); ++maskIt )
+    for( maskIt = osgMask->begin(); maskIt != osgMask->end(); ++maskIt )
     {
         if( *maskIt != 1 )
         {
@@ -157,7 +167,9 @@ ChannelDataPtr ChannelDataOSGArray::getMaskedChannel( const ChannelDataPtr maskI
     }
     if( !masked )
         // All mask values are 1. No masking. Return the input array.
+    {
         return( shared_from_this() );
+    }
 
     osg::Array* sourceArray( asOSGArray() );
     switch( sourceArray->getType() )
@@ -255,7 +267,9 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
 {
     const char* inPtr( rhs->asCharPtr() );
     if( inPtr == NULL )
+    {
         return;
+    }
 
     switch( _workingData->getType() )
     {
@@ -265,7 +279,7 @@ void ChannelDataOSGArray::andValues( const ChannelData* rhs )
         osg::ByteArray::iterator it;
         for( it = array->begin(); it != array->end(); ++it )
         {
-            *it = ( (*it != 0 ) && ( *inPtr++ != 0 ) )  ?  1 : 0;
+            *it = ( ( *it != 0 ) && ( *inPtr++ != 0 ) )  ?  1 : 0;
         }
         break;
     }
@@ -281,16 +295,20 @@ void ChannelDataOSGArray::reset()
 {
     if( _workingData == NULL )
         _workingData = dynamic_cast< osg::Array* >(
-                _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
+                           _data->clone( osg::CopyOp::DEEP_COPY_ALL ) );
     else if( _data->getNumElements() > 0 )
         // Only copy if there is data in the array.
+    {
         copyArray( _workingData.get(), _data.get() );
+    }
 }
 
 void ChannelDataOSGArray::resize( size_t size )
 {
     if( _workingData == NULL )
+    {
         reset();
+    }
 
     switch( _data->getType() )
     {
@@ -321,7 +339,7 @@ void ChannelDataOSGArray::resize( size_t size )
 void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
 {
     if( ( lhs->getType() != rhs->getType() ) ||
-        ( lhs->getTotalDataSize() < rhs->getTotalDataSize() ) )
+            ( lhs->getTotalDataSize() < rhs->getTotalDataSize() ) )
     {
         LFX_WARNING( "OSGArray::copyArray(): Array mismatch." );
         return;
@@ -334,25 +352,25 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     case osg::Array::ByteArrayType:
     {
         memcpy( AS_CHAR_PTR( osg::ByteArray, lhs ),
-            AS_CONST_CHAR_PTR( osg::ByteArray, rhs ), sizeBytes );
+                AS_CONST_CHAR_PTR( osg::ByteArray, rhs ), sizeBytes );
         break;
     }
     case osg::Array::FloatArrayType:
     {
         memcpy( AS_CHAR_PTR( osg::FloatArray, lhs ),
-            AS_CONST_CHAR_PTR( osg::FloatArray, rhs ), sizeBytes );
+                AS_CONST_CHAR_PTR( osg::FloatArray, rhs ), sizeBytes );
         break;
     }
     case osg::Array::Vec2ArrayType:
     {
         memcpy( AS_CHAR_PTR( osg::Vec2Array, lhs ),
-            AS_CONST_CHAR_PTR( osg::Vec2Array, rhs ), sizeBytes );
+                AS_CONST_CHAR_PTR( osg::Vec2Array, rhs ), sizeBytes );
         break;
     }
     case osg::Array::Vec3ArrayType:
     {
         memcpy( AS_CHAR_PTR( osg::Vec3Array, lhs ),
-            AS_CONST_CHAR_PTR( osg::Vec3Array, rhs ), sizeBytes );
+                AS_CONST_CHAR_PTR( osg::Vec3Array, rhs ), sizeBytes );
         break;
     }
     default:
@@ -366,7 +384,9 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
 osg::Vec3Array* ChannelDataOSGArray::convertToVec3Array( osg::Array* source )
 {
     if( source->getType() == osg::Array::Vec3ArrayType )
+    {
         return( static_cast< osg::Vec3Array* >( source ) );
+    }
 
     osg::Vec3Array* result( new osg::Vec3Array );
     result->resize( source->getNumElements() );
@@ -376,22 +396,28 @@ osg::Vec3Array* ChannelDataOSGArray::convertToVec3Array( osg::Array* source )
     case osg::Array::ByteArrayType:
     {
         osg::ByteArray* byteSource( static_cast< osg::ByteArray* >( source ) );
-        for( idx=0; idx<source->getNumElements(); ++idx )
-            (*result)[ idx ].set( (float)( (*byteSource)[ idx ] ), 0., 0. );
+        for( idx = 0; idx < source->getNumElements(); ++idx )
+        {
+            ( *result )[ idx ].set( ( float )( ( *byteSource )[ idx ] ), 0., 0. );
+        }
         break;
     }
     case osg::Array::FloatArrayType:
     {
         osg::FloatArray* floatSource( static_cast< osg::FloatArray* >( source ) );
-        for( idx=0; idx<source->getNumElements(); ++idx )
-            (*result)[ idx ].set( (*floatSource)[ idx ], 0., 0. );
+        for( idx = 0; idx < source->getNumElements(); ++idx )
+        {
+            ( *result )[ idx ].set( ( *floatSource )[ idx ], 0., 0. );
+        }
         break;
     }
     case osg::Array::Vec2ArrayType:
     {
         osg::Vec2Array* vec2Source( static_cast< osg::Vec2Array* >( source ) );
-        for( idx=0; idx<source->getNumElements(); ++idx )
-            (*result)[ idx ].set( (*vec2Source)[ idx ].x(), (*vec2Source)[ idx ].y(), 0. );
+        for( idx = 0; idx < source->getNumElements(); ++idx )
+        {
+            ( *result )[ idx ].set( ( *vec2Source )[ idx ].x(), ( *vec2Source )[ idx ].y(), 0. );
+        }
         break;
     }
     default:

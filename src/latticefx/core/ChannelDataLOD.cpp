@@ -25,8 +25,10 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ChannelDataLOD::ChannelDataLOD( const std::string& name )
@@ -34,8 +36,8 @@ ChannelDataLOD::ChannelDataLOD( const std::string& name )
 {
 }
 ChannelDataLOD::ChannelDataLOD( const ChannelDataLOD& rhs )
-  : ChannelDataComposite( rhs ),
-    _ranges( rhs._ranges )
+    : ChannelDataComposite( rhs ),
+      _ranges( rhs._ranges )
 {
 }
 ChannelDataLOD::~ChannelDataLOD()
@@ -45,7 +47,9 @@ ChannelDataLOD::~ChannelDataLOD()
 void ChannelDataLOD::setRange( const unsigned int index, const RangeValues& value )
 {
     if( index >= _ranges.size() )
-        _ranges.resize( index+1 );
+    {
+        _ranges.resize( index + 1 );
+    }
     _ranges[ index ] = value;
 }
 RangeValues& ChannelDataLOD::getRange( const unsigned int index )
@@ -64,7 +68,9 @@ bool ChannelDataLOD::allLODData( const ChannelDataList& data )
     BOOST_FOREACH( const ChannelDataPtr cdp, data )
     {
         if( dynamic_cast< ChannelDataLOD* >( cdp.get() ) == NULL )
+        {
             return( false );
+        }
     }
     return( true );
 }

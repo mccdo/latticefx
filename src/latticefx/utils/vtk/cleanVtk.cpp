@@ -34,7 +34,7 @@
 
 using namespace lfx::vtk_utils;
 
-void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
+void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet* grid )
 {
     if( grid == NULL )
     {
@@ -47,43 +47,58 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
 
     int j;
     int numVertices = grid->GetNumberOfPoints();
-    if( debug ) std::cout << "numVertices = " << numVertices << std::endl;
+    if( debug )
+    {
+        std::cout << "numVertices = " << numVertices << std::endl;
+    }
 
     // create index of needed points and initialize to "not needed"
-    int * isNeededPoint = new int [ numVertices ];
+    int* isNeededPoint = new int [ numVertices ];
     for( j = 0; j < numVertices; j++ )
+    {
         isNeededPoint[j] = 0;
+    }
 
     if( grid->IsA( "vtkUnstructuredGrid" ) )
     {
-        if( debug ) std::cout << "working on vtkUnstructuredGrid" << std::endl;
+        if( debug )
+        {
+            std::cout << "working on vtkUnstructuredGrid" << std::endl;
+        }
 
         // if points are referenced by cells, then they are "needed"
-        vtkIdType *pts, npts;
-        for ((( vtkUnstructuredGrid * )grid )->GetCells()->InitTraversal();
-                (( vtkUnstructuredGrid * )grid )->GetCells()->GetNextCell( npts, pts ); )
+        vtkIdType* pts, npts;
+        for( ( ( vtkUnstructuredGrid* )grid )->GetCells()->InitTraversal();
+                ( ( vtkUnstructuredGrid* )grid )->GetCells()->GetNextCell( npts, pts ); )
         {
             for( j = 0; j < npts; j++ )
+            {
                 isNeededPoint[( int )pts[j] ] = 1;
+            }
         }
     }
     else if( grid->IsA( "vtkPolyData" ) )
     {
-        if( debug ) std::cout << "working on a vtkPolyData" << std::endl;
+        if( debug )
+        {
+            std::cout << "working on a vtkPolyData" << std::endl;
+        }
 
         // if points are referenced by polygons, then they are "needed"
-        vtkIdType *pts, npts;
-        for ((( vtkPolyData* )grid )->GetPolys()->InitTraversal();
-                (( vtkPolyData* )grid )->GetPolys()->GetNextCell( npts, pts ); )
+        vtkIdType* pts, npts;
+        for( ( ( vtkPolyData* )grid )->GetPolys()->InitTraversal();
+                ( ( vtkPolyData* )grid )->GetPolys()->GetNextCell( npts, pts ); )
         {
             for( j = 0; j < npts; j++ )
+            {
                 isNeededPoint[( int )pts[j] ] = 1;
+            }
         }
     }
     else
     {
         std::cout << "NOTE: currently can only use 'dumpVerticesNotUsedByCells' "
-        << "on vtkUnstructuredGrid or vtkPolyData" << std::endl;
+                  << "on vtkUnstructuredGrid or vtkPolyData" << std::endl;
         delete [] isNeededPoint;
         return;
     }
@@ -93,16 +108,27 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
     for( j = 0; j < numVertices; j++ )
     {
         if( debug > 1 && isNeededPoint[j] )
+        {
             std::cout << "\tisNeededPoint[" << j << "] = " << isNeededPoint[j] << std::endl;
+        }
         numNeededVertices += isNeededPoint[j];
     }
-    if( debug ) std::cout << "numNeededVertices = " << numNeededVertices << std::endl;
+    if( debug )
+    {
+        std::cout << "numNeededVertices = " << numNeededVertices << std::endl;
+    }
 
-    int * old2NewVertexMapper = new int [ numVertices ];
-    for( j = 0; j < numVertices; j++ ) old2NewVertexMapper[j] = -1;
+    int* old2NewVertexMapper = new int [ numVertices ];
+    for( j = 0; j < numVertices; j++ )
+    {
+        old2NewVertexMapper[j] = -1;
+    }
 
-    if( debug > 1 ) std::cout << "Vertex relationship..." << std::endl;
-    vtkPoints *smallVertices = vtkPoints::New();
+    if( debug > 1 )
+    {
+        std::cout << "Vertex relationship..." << std::endl;
+    }
+    vtkPoints* smallVertices = vtkPoints::New();
     double vertex [3];
     int k = 0;
     for( j = 0; j < numVertices; j++ )
@@ -114,7 +140,10 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
             grid->GetPoints()->GetPoint( j, vertex );
             smallVertices->InsertPoint( k, vertex );
             old2NewVertexMapper[j] = k;
-            if( debug > 1 ) std::cout << "\told\t" << j << "\trevised\t" << k << std::endl;
+            if( debug > 1 )
+            {
+                std::cout << "\told\t" << j << "\trevised\t" << k << std::endl;
+            }
             k++;
         }
     }
@@ -122,29 +151,34 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
     // replace the vertex array if vertex array contains some extraneous data
     if( numNeededVertices < numVertices )
     {
-        vtkPointSet * smallGrid = NULL;
+        vtkPointSet* smallGrid = NULL;
 
         if( grid->IsA( "vtkUnstructuredGrid" ) )
         {
-            int numCells = (( vtkUnstructuredGrid * )grid )->GetNumberOfCells();
-            if( debug ) std::cout << "The number of cells is " << numCells << std::endl;
+            int numCells = ( ( vtkUnstructuredGrid* )grid )->GetNumberOfCells();
+            if( debug )
+            {
+                std::cout << "The number of cells is " << numCells << std::endl;
+            }
 
             smallGrid = vtkUnstructuredGrid::New();
-            (( vtkUnstructuredGrid * )smallGrid )->Allocate( numCells, numCells );
+            ( ( vtkUnstructuredGrid* )smallGrid )->Allocate( numCells, numCells );
 
             smallGrid->SetPoints( smallVertices );
             smallVertices->Delete();
 
             // Loop over the original cells and store revised definitions in smallGrid...
             int npts, ptId;
-            vtkIdList *ptIdList = vtkIdList::New();
-            vtkGenericCell *cell = vtkGenericCell::New();
+            vtkIdList* ptIdList = vtkIdList::New();
+            vtkGenericCell* cell = vtkGenericCell::New();
 
             for( int cellId = 0; cellId < numCells; cellId++ )
             {
-                (( vtkUnstructuredGrid * )grid )->GetCell( cellId, cell );
+                ( ( vtkUnstructuredGrid* )grid )->GetCell( cellId, cell );
                 if( debug > 1 )
+                {
                     std::cout << "\tcellType = " << cell->GetCellType() << std::endl;
+                }
 
                 npts = cell->GetNumberOfPoints();
                 ptIdList->Reset();
@@ -153,7 +187,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
                     ptId = cell->GetPointId( i );
                     ptIdList->InsertId( i, old2NewVertexMapper[ptId] );
                 }
-                (( vtkUnstructuredGrid * )smallGrid )->InsertNextCell(
+                ( ( vtkUnstructuredGrid* )smallGrid )->InsertNextCell(
                     cell->GetCellType(), ptIdList );
             }//for all cells
             ptIdList->Delete();
@@ -161,25 +195,30 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         }
         else if( grid->IsA( "vtkPolyData" ) )
         {
-            int numCells = (( vtkPolyData* )grid )->GetNumberOfCells();
-            if( debug ) std::cout << "The number of cells is " << numCells << std::endl;
+            int numCells = ( ( vtkPolyData* )grid )->GetNumberOfCells();
+            if( debug )
+            {
+                std::cout << "The number of cells is " << numCells << std::endl;
+            }
 
             smallGrid = vtkPolyData::New();
-            (( vtkPolyData* )smallGrid )->Allocate( numCells, numCells );
+            ( ( vtkPolyData* )smallGrid )->Allocate( numCells, numCells );
 
             smallGrid->SetPoints( smallVertices );
             smallVertices->Delete();
 
             // Loop over the original cells and store revised definitions in smallGrid...
             int npts, ptId;
-            vtkIdList *ptIdList = vtkIdList::New();
-            vtkGenericCell *cell = vtkGenericCell::New();
+            vtkIdList* ptIdList = vtkIdList::New();
+            vtkGenericCell* cell = vtkGenericCell::New();
 
             for( int cellId = 0; cellId < numCells; cellId++ )
             {
-                (( vtkPolyData* )grid )->GetCell( cellId, cell );
+                ( ( vtkPolyData* )grid )->GetCell( cellId, cell );
                 if( debug > 1 )
+                {
                     std::cout << "\tcellType = " << cell->GetCellType() << std::endl;
+                }
 
                 npts = cell->GetNumberOfPoints();
                 ptIdList->Reset();
@@ -188,7 +227,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
                     ptId = cell->GetPointId( i );
                     ptIdList->InsertId( i, old2NewVertexMapper[ptId] );
                 }
-                (( vtkPolyData* )smallGrid )->InsertNextCell(
+                ( ( vtkPolyData* )smallGrid )->InsertNextCell(
                     cell->GetCellType(), ptIdList );
             }//for all cells
             ptIdList->Delete();
@@ -199,7 +238,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         // if the data set has VECTORS data, then move over appropriate data...
         if( grid->GetPointData()->GetVectors() )
         {
-            vtkFloatArray *smallVectorSet = vtkFloatArray::New();
+            vtkFloatArray* smallVectorSet = vtkFloatArray::New();
             smallVectorSet->SetNumberOfComponents( 3 );
             smallVectorSet->SetName( grid->GetPointData()->GetVectors()->GetName() );
 
@@ -223,7 +262,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         // if the data set has SCALARS data, then move over appropriate data...
         if( grid->GetPointData()->GetScalars() )
         {
-            vtkFloatArray *smallScalarSet = vtkFloatArray::New();
+            vtkFloatArray* smallScalarSet = vtkFloatArray::New();
             smallScalarSet->SetNumberOfComponents( 1 );
             smallScalarSet->SetName( grid->GetPointData()->GetScalars()->GetName() );
 
@@ -247,7 +286,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         // if the data set has Normals data, then move over appropriate data...
         if( grid->GetPointData()->GetNormals() )
         {
-            vtkFloatArray *smallVectorSet = vtkFloatArray::New();
+            vtkFloatArray* smallVectorSet = vtkFloatArray::New();
             smallVectorSet->SetNumberOfComponents( 3 );
             smallVectorSet->SetName( grid->GetPointData()->GetNormals()->GetName() );
 
@@ -266,7 +305,10 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
 
         // if the data set has FIELD data, then move over all data...
         int numFieldArrays = grid->GetFieldData()->GetNumberOfArrays();
-        if( debug ) std::cout << "numFieldArrays = " << numFieldArrays << std::endl;
+        if( debug )
+        {
+            std::cout << "numFieldArrays = " << numFieldArrays << std::endl;
+        }
         if( numFieldArrays )
         {
             //smallGrid->SetFieldData( grid->GetFieldData() ); //does not work: vtkFloatArray memory leak
@@ -283,7 +325,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         if( debug )
         {
             std::cout << "numPointDataFieldArrays connected to the point data = "
-            << numPointDataFieldArrays << std::endl;
+                      << numPointDataFieldArrays << std::endl;
         }
 
         if( numPointDataFieldArrays )
@@ -292,12 +334,12 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
 
             for( int i = 0; i < numPointDataFieldArrays; i++ )
             {
-                vtkDataArray * dataArray = grid->GetPointData()->GetArray( i );
+                vtkDataArray* dataArray = grid->GetPointData()->GetArray( i );
                 int numComponents = dataArray->GetNumberOfComponents();
-                vtkFloatArray * tempArray = vtkFloatArray::New();
+                vtkFloatArray* tempArray = vtkFloatArray::New();
                 tempArray->SetNumberOfComponents( numComponents );
                 tempArray->SetName( dataArray->GetName() );
-                double * tuple = new double [ numComponents ];
+                double* tuple = new double [ numComponents ];
                 for( j = 0; j < dataArray->GetNumberOfTuples(); j++ )
                 {
                     if( isNeededPoint[j] )
@@ -320,13 +362,13 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
         if( grid->IsA( "vtkUnstructuredGrid" ) )
         {
             //grid->Delete();
-            grid->ShallowCopy(( vtkUnstructuredGrid* )smallGrid );
+            grid->ShallowCopy( ( vtkUnstructuredGrid* )smallGrid );
             //grid->DeepCopy( (vtkUnstructuredGrid*)smallGrid );
         }
         else if( grid->IsA( "vtkPolyData" ) )
         {
             //grid->Delete();
-            grid->ShallowCopy(( vtkPolyData* )smallGrid );
+            grid->ShallowCopy( ( vtkPolyData* )smallGrid );
             //grid->DeepCopy( (vtkPolyData*)smallGrid );
         }
 
@@ -335,14 +377,17 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid )
     }
     else
     {
-        if( debug ) std::cout << "Will NOT try to collapse the file" << std::endl;
+        if( debug )
+        {
+            std::cout << "Will NOT try to collapse the file" << std::endl;
+        }
         smallVertices->Delete();
     }
 
     delete [] isNeededPoint;
 }
 
-void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string vtkFileName )
+void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet* grid, std::string vtkFileName )
 {
     if( grid == NULL )
     {
@@ -358,26 +403,37 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
 
     int j;
     int numVertices = grid->GetNumberOfPoints();
-    if( debug ) std::cout << "numVertices = " << numVertices << std::endl;
+    if( debug )
+    {
+        std::cout << "numVertices = " << numVertices << std::endl;
+    }
 
     // create index of needed points and initialize to "not needed"
-    int * isNeededPoint = new int [ numVertices ];
+    int* isNeededPoint = new int [ numVertices ];
     for( j = 0; j < numVertices; j++ )
+    {
         isNeededPoint[j] = 0;
+    }
 
     if( grid->IsA( "vtkUnstructuredGrid" ) )
     {
-        if( debug ) std::cout << "working on vtkUnstructuredGrid" << std::endl;
+        if( debug )
+        {
+            std::cout << "working on vtkUnstructuredGrid" << std::endl;
+        }
 
-//      vtkUnstructuredGrid * uGrid = vtkUnstructuredGrid::SafeDownCast( grid );
-//      if(uGrid == NULL ) std::cout << "SafeDownCast to a vtkUnstructuredGrid failed";
+        //      vtkUnstructuredGrid * uGrid = vtkUnstructuredGrid::SafeDownCast( grid );
+        //      if(uGrid == NULL ) std::cout << "SafeDownCast to a vtkUnstructuredGrid failed";
 
         // if points are referenced by cells, then they are "needed"
-        vtkIdType *pts, npts;
-//      for(uGrid->GetCells()->InitTraversal(); uGrid->GetCells()->GetNextCell(npts,pts); )
-        for ((( vtkUnstructuredGrid * )grid )->GetCells()->InitTraversal();
-                (( vtkUnstructuredGrid * )grid )->GetCells()->GetNextCell( npts, pts ); )
-            for( j = 0; j < npts; j++ ) isNeededPoint[( int )pts[j] ] = 1;
+        vtkIdType* pts, npts;
+        //      for(uGrid->GetCells()->InitTraversal(); uGrid->GetCells()->GetNextCell(npts,pts); )
+        for( ( ( vtkUnstructuredGrid* )grid )->GetCells()->InitTraversal();
+                ( ( vtkUnstructuredGrid* )grid )->GetCells()->GetNextCell( npts, pts ); )
+            for( j = 0; j < npts; j++ )
+            {
+                isNeededPoint[( int )pts[j] ] = 1;
+            }
     }
     /*
        else if(grid->IsA("vtkPolyData") )
@@ -394,7 +450,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
     else
     {
         std::cout << "NOTE: currently can only use 'dumpVerticesNotUsedByCells' "
-        << "on vtkUnstructuredGrids" << std::endl;
+                  << "on vtkUnstructuredGrids" << std::endl;
         delete [] isNeededPoint;
         return;
     }
@@ -404,22 +460,36 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
     for( j = 0; j < numVertices; j++ )
     {
         if( debug > 1 && isNeededPoint[j] )
+        {
             std::cout << "\tisNeededPoint[" << j << "] = " << isNeededPoint[j] << std::endl;
+        }
         numNeededVertices += isNeededPoint[j];
     }
-    if( debug ) std::cout << "numNeededVertices = " << numNeededVertices << std::endl;
+    if( debug )
+    {
+        std::cout << "numNeededVertices = " << numNeededVertices << std::endl;
+    }
 
-    int * old2NewVertexMapper = new int [ numVertices ];
-    for( j = 0; j < numVertices; j++ ) old2NewVertexMapper[j] = -1;
+    int* old2NewVertexMapper = new int [ numVertices ];
+    for( j = 0; j < numVertices; j++ )
+    {
+        old2NewVertexMapper[j] = -1;
+    }
 
-    if( debug > 1 ) std::cout << "Vertex relationship..." << std::endl;
+    if( debug > 1 )
+    {
+        std::cout << "Vertex relationship..." << std::endl;
+    }
     int k = 0;
     for( j = 0; j < numVertices; j++ )
     {
         if( isNeededPoint[j] )
         {
             old2NewVertexMapper[j] = k;
-            if( debug > 1 ) std::cout << "\told\t" << j << "\trevised\t" << k << std::endl;
+            if( debug > 1 )
+            {
+                std::cout << "\told\t" << j << "\trevised\t" << k << std::endl;
+            }
             k++;
         }
     }
@@ -433,18 +503,21 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
 
     // if the data set has FIELD data, then output that...
     int numFieldArrays = grid->GetFieldData()->GetNumberOfArrays();
-    if( debug ) std::cout << "numFieldArrays = " << numFieldArrays << std::endl;
+    if( debug )
+    {
+        std::cout << "numFieldArrays = " << numFieldArrays << std::endl;
+    }
     if( numFieldArrays )
     {
         rpt << "FIELD FieldData " << numFieldArrays << std::endl;
 
         for( int i = 0; i < numFieldArrays; i++ )
         {
-            vtkDataArray * dataArray = grid->GetFieldData()->GetArray( i );
+            vtkDataArray* dataArray = grid->GetFieldData()->GetArray( i );
             int numTuples = dataArray->GetNumberOfTuples();
             int numComponents = dataArray->GetNumberOfComponents();
             rpt << dataArray->GetName() << " " << numTuples
-            << " " << numComponents << " float" << std::endl;
+                << " " << numComponents << " float" << std::endl;
             int counter = 0;
             for( int j = 0; j < numTuples; j++ )
             {
@@ -456,7 +529,9 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
                     rpt << dirStringStream.str();
                     counter++;
                     if( counter % 9 == 0 )
+                    {
                         rpt << "\n";
+                    }
                 }
                 rpt << "\n";
             }
@@ -468,7 +543,9 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
     for( j = 0; j < numVertices; j++ )
     {
         if( ! isNeededPoint[j] )
+        {
             continue;
+        }
 
         double vertex [3];
         grid->GetPoints()->GetPoint( j, vertex ); // get vertex coordinates
@@ -480,36 +557,40 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
             rpt << dirStringStream.str();
             counter++;
             if( counter % 9 == 0 )
+            {
                 rpt << "\n";
+            }
         }
     }
     rpt << "\n";
 
-    int numCells = (( vtkUnstructuredGrid * )grid )->GetCells()
+    int numCells = ( ( vtkUnstructuredGrid* )grid )->GetCells()
                    ->GetNumberOfCells();
 
-    int size = (( vtkUnstructuredGrid * )grid )->GetCells()
+    int size = ( ( vtkUnstructuredGrid* )grid )->GetCells()
                ->GetNumberOfConnectivityEntries();
 
     rpt << "CELLS " << numCells << " " << size << std::endl;
 
-    vtkIdType *pts = 0;
+    vtkIdType* pts = 0;
     vtkIdType npts = 0;
-    for ((( vtkUnstructuredGrid * )grid )->GetCells()->InitTraversal();
-            (( vtkUnstructuredGrid * )grid )->GetCells()->GetNextCell( npts, pts ); )
+    for( ( ( vtkUnstructuredGrid* )grid )->GetCells()->InitTraversal();
+            ( ( vtkUnstructuredGrid* )grid )->GetCells()->GetNextCell( npts, pts ); )
     {
         rpt << ( int )npts << " ";
         for( j = 0; j < npts; j++ )
+        {
             rpt << old2NewVertexMapper[( int )pts[j] ] << " ";
+        }
         rpt << "\n";
     }
     rpt << "\n";
 
     rpt << "CELL_TYPES " << numCells << "\n";
-    int * types = new int[numCells];
+    int* types = new int[numCells];
     for( int cellId = 0; cellId < numCells; cellId++ )
     {
-        types[cellId] = (( vtkUnstructuredGrid * )grid )->GetCellType( cellId );
+        types[cellId] = ( ( vtkUnstructuredGrid* )grid )->GetCellType( cellId );
         rpt << types[cellId] << "\n";
     }
     rpt << "\n";
@@ -523,7 +604,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
     {
         for( int i = 0; i < numPointDataFieldArrays; i++ )
         {
-            vtkDataArray * dataArray = grid->GetPointData()->GetArray( i );
+            vtkDataArray* dataArray = grid->GetPointData()->GetArray( i );
             int numComponents = dataArray->GetNumberOfComponents();
             if( numComponents > 1 )
             {
@@ -531,7 +612,9 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
 
                 // only NORMALS won't be written in field data
                 if( name.compare( "NORMALS" ) == 0 )// strcmp(name,"NORMALS") )
+                {
                     continue;
+                }
                 /*
                          //in vtk, transforming can cause loss of name...
                          const char * name = dataArray->GetName();
@@ -541,7 +624,7 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
                             rpt << "VECTORS " << name << " float" << std::endl;
                 */
                 rpt << "VECTORS " << name << " float" << std::endl;
-                double * tuple = new double [ numComponents ];
+                double* tuple = new double [ numComponents ];
                 counter = 0;
                 for( j = 0; j < dataArray->GetNumberOfTuples(); j++ )
                 {
@@ -553,7 +636,9 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
                             rpt << tuple[ k ] << " ";
                             counter++;
                             if( counter % 9 == 0 )
+                            {
                                 rpt << "\n";
+                            }
                         }
                     }
                 }
@@ -567,27 +652,29 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
         for( int i = 0; i < numPointDataFieldArrays; i++ )
         {
             counter = 0;
-            vtkDataArray * dataArray = grid->GetPointData()->GetArray( i );
+            vtkDataArray* dataArray = grid->GetPointData()->GetArray( i );
             std::string name = dataArray->GetName();
             int numComponents = dataArray->GetNumberOfComponents();
 
             // NORMALS won't be written in field data
             if( name.compare( "NORMALS" ) != 0 )// !strcmp(name,"NORMALS") )
+            {
                 continue;
+            }
 
             //in vtk, transforming can cause loss of name...
             if( name.compare( "" ) != 0 ) //! strcmp(name,"") )
             {
                 rpt << "lost_name "  << numComponents
-                << " " << numNeededVertices << " float" << std::endl;
+                    << " " << numNeededVertices << " float" << std::endl;
             }
             else
             {
                 rpt << name << " "  << numComponents << " "
-                << numNeededVertices << " float" << std::endl;
+                    << numNeededVertices << " float" << std::endl;
             }
 
-            double * tuple = new double [numComponents];
+            double* tuple = new double [numComponents];
             for( j = 0; j < dataArray->GetNumberOfTuples(); j++ )
             {
                 if( isNeededPoint[j] )
@@ -598,7 +685,9 @@ void lfx::vtk_utils::dumpVerticesNotUsedByCells( vtkPointSet * grid, std::string
                         rpt << tuple[ k ] << " ";
                         counter++;
                         if( counter % 9 == 0 )
+                        {
                             rpt << "\n";
+                        }
                     }
                 }
             }

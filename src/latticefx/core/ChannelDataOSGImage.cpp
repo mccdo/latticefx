@@ -24,12 +24,14 @@
 #include <boost/foreach.hpp>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* image )
-  : ChannelData( name )
+    : ChannelData( name )
 {
     if( image != NULL )
     {
@@ -38,11 +40,13 @@ ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* i
     }
 }
 ChannelDataOSGImage::ChannelDataOSGImage( const ChannelDataOSGImage& rhs )
-  : ChannelData( rhs ),
-    _image( rhs._image )
+    : ChannelData( rhs ),
+      _image( rhs._image )
 {
     if( _image != NULL )
+    {
         reset();
+    }
 }
 ChannelDataOSGImage::~ChannelDataOSGImage()
 {
@@ -58,9 +62,13 @@ void ChannelDataOSGImage::setDBKey( const DBKey dbKey )
 char* ChannelDataOSGImage::asCharPtr()
 {
     if( _workingImage != NULL )
-        return( const_cast< char* >( (const char*)( _workingImage->data() ) ) );
+    {
+        return( const_cast< char* >( ( const char* )( _workingImage->data() ) ) );
+    }
     else
+    {
         return( NULL );
+    }
 }
 const char* ChannelDataOSGImage::asCharPtr() const
 {
@@ -73,9 +81,13 @@ void ChannelDataOSGImage::setImage( osg::Image* image )
     _image = image;
 
     if( image != NULL )
+    {
         setDimensions( image->s(), image->t(), image->r() );
+    }
     else
+    {
         setDimensions( 0, 0, 0 );
+    }
 }
 osg::Image* ChannelDataOSGImage::getImage()
 {
@@ -104,7 +116,7 @@ void ChannelDataOSGImage::reset()
         // Only do the copy if _workingImage has data. It will not have any data
         // if the image has not yet been paged in.
         memcpy( _workingImage->data(), _image->data(),
-            _image->getTotalSizeInBytes() );
+                _image->getTotalSizeInBytes() );
     }
 }
 

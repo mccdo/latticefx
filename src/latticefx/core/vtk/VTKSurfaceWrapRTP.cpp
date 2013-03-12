@@ -29,32 +29,35 @@
 #include <vtkAlgorithmOutput.h>
 #include <vtkPolyDataNormals.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKSurfaceWrapRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) );
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
+            getInput( "vtkDataObject" ) );
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
 
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
             vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInput( tempVtkDO );
-        c2p->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+        c2p->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
         m_multiGroupGeomFilter->Delete();
     }
     else
     {
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+        vtkDataSetSurfaceFilter* m_surfaceFilter =
             vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInput( tempVtkDO );
         c2p->SetInputConnection( m_surfaceFilter->GetOutputPort() );
@@ -63,7 +66,7 @@ lfx::core::ChannelDataPtr VTKSurfaceWrapRTP::channel( const lfx::core::ChannelDa
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
     normals->SetInputConnection( c2p->GetOutputPort() );
 
-    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd( 
+    lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
         new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
 
     c2p->Delete();

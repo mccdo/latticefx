@@ -27,21 +27,23 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 DBLoad::DBLoad( const DBKeyList& keys )
-  : Preprocess(),
-    LogBase( "lfx.core.db.load" ),
-    _keys( keys )
+    : Preprocess(),
+      LogBase( "lfx.core.db.load" ),
+      _keys( keys )
 {
     setActionType( Preprocess::ADD_DATA );
 }
 DBLoad::DBLoad( const DBLoad& rhs )
-  : Preprocess( rhs ),
-    LogBase( rhs ),
-    _keys( rhs._keys )
+    : Preprocess( rhs ),
+      LogBase( rhs ),
+      _keys( rhs._keys )
 {
 }
 DBLoad::~DBLoad()
@@ -53,7 +55,7 @@ ChannelDataPtr DBLoad::operator()()
     if( _db == NULL )
     {
         LFX_WARNING( "DBLoad: NULL _db." );
-        return( ChannelDataPtr( (ChannelData*)NULL ) );
+        return( ChannelDataPtr( ( ChannelData* )NULL ) );
     }
 
     if( _keys.size() > 1 )
@@ -71,7 +73,9 @@ ChannelDataPtr DBLoad::operator()()
         {
             std::string nameString( key );
             if( !( array->getName().empty() ) )
+            {
                 nameString = array->getName();
+            }
             ChannelDataOSGArrayPtr cdap( new ChannelDataOSGArray( nameString, array.get() ) );
             cdap->setDBKey( key );
             return( cdap );
@@ -80,28 +84,30 @@ ChannelDataPtr DBLoad::operator()()
         {
             std::string nameString( key );
             if( !( image->getName().empty() ) )
+            {
                 nameString = image->getName();
+            }
             ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( nameString, image.get() ) );
             cdip->setDBKey( key );
             return( cdip );
         }
     }
-    return( ChannelDataPtr( (ChannelData*)NULL ) );
+    return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
 
 
 
 DBSave::DBSave( DBBasePtr db )
-  : RTPOperation( RTPOperation::Filter ),
-    LogBase( "lfx.core.db.save" ),
-    _db( db )
+    : RTPOperation( RTPOperation::Filter ),
+      LogBase( "lfx.core.db.save" ),
+      _db( db )
 {
 }
 DBSave::DBSave( const DBSave& rhs )
-  : RTPOperation( rhs ),
-    LogBase( rhs ),
-    _db( rhs._db )
+    : RTPOperation( rhs ),
+      LogBase( rhs ),
+      _db( rhs._db )
 {
 }
 DBSave::~DBSave()

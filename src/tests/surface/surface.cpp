@@ -56,7 +56,7 @@ public:
         // Create an array of the warp lengths.
         osg::FloatArray* scalar( new osg::FloatArray );
         osg::Vec3Array::const_iterator it;
-        for( it=warpArray->begin(); it != warpArray->end(); ++it )
+        for( it = warpArray->begin(); it != warpArray->end(); ++it )
         {
             const float l( it->length() );
             scalar->push_back( l );
@@ -72,19 +72,21 @@ const int triangleCount( 5 );
 
 void subtract( osg::Vec3Array* a, const osg::Vec3Array* b )
 {
-    for( unsigned int idx=0; idx<a->size(); ++idx )
-        (*a)[ idx ] -= (*b)[ idx ];
+    for( unsigned int idx = 0; idx < a->size(); ++idx )
+    {
+        ( *a )[ idx ] -= ( *b )[ idx ];
+    }
 }
 
 void createTriangles( osg::Vec3Array* verts, osg::Vec3Array* norms )
 {
     const float deltaX( 2.f / float( triangleCount ) );
 
-    for( int idx=0; idx<triangleCount; idx++ )
+    for( int idx = 0; idx < triangleCount; idx++ )
     {
         const float xVal( float( idx ) / float( triangleCount ) * 2.f - 1.f );
         verts->push_back( osg::Vec3( xVal, 0., 0. ) );
-        verts->push_back( osg::Vec3( xVal+deltaX, 0., 0. ) );
+        verts->push_back( osg::Vec3( xVal + deltaX, 0., 0. ) );
         verts->push_back( osg::Vec3( xVal, 0., deltaX ) );
         norms->push_back( osg::Vec3( 0., -1., 0. ) );
         norms->push_back( osg::Vec3( 0., -1., 0. ) );
@@ -95,11 +97,11 @@ void createWarpTriangles( osg::Vec3Array* verts, osg::Vec3Array* norms )
 {
     const float deltaX( 2.f / float( triangleCount ) );
 
-    for( int idx=0; idx<triangleCount; idx++ )
+    for( int idx = 0; idx < triangleCount; idx++ )
     {
         const float theta0( osg::PI * float( idx ) / float( triangleCount ) );
         const osg::Matrix m0( osg::Matrix::rotate( theta0, osg::Vec3( 0., 0., 1. ) ) );
-        const float theta1( osg::PI * float( idx+1 ) / float( triangleCount ) );
+        const float theta1( osg::PI * float( idx + 1 ) / float( triangleCount ) );
         const osg::Matrix m1( osg::Matrix::rotate( theta1, osg::Vec3( 0., 0., 1. ) ) );
 
         const osg::Vec3 baseVec( osg::Vec3( -1., 0., 0. ) );
@@ -182,7 +184,7 @@ int main( int argc, char** argv )
     osg::ref_ptr< osg::Uniform > warpScale( new osg::Uniform( "warpScale", 0.f ) );
     warpScale->setDataVariance( osg::Object::DYNAMIC );
     root->getOrCreateStateSet()->addUniform( warpScale.get(),
-        osg::StateAttribute::OVERRIDE );
+            osg::StateAttribute::OVERRIDE );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 20, 30, 800, 460 );
@@ -198,9 +200,11 @@ int main( int argc, char** argv )
 
         float scale;
         warpScale->get( scale );
-        scale += (float)elapsed;
+        scale += ( float )elapsed;
         if( scale > 1.f )
+        {
             scale -= 1.f;
+        }
         warpScale->set( scale );
 
         viewer.frame();

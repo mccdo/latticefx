@@ -24,11 +24,14 @@
 
 #include <latticefx/core/vtk/Export.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKVectorFieldGlyphRTP VTKVectorFieldGlyphRTP.h <latticefx/core/vtk/VTKVectorFieldGlyphRTP.h>
  \brief Class the creates a vector field polydata from a vtk dataset.
@@ -42,23 +45,23 @@ public:
     ///\note Since this is a channel operation we pass the enum for a Channel
     ///operation when we construct the VTKVectorFieldGlyphRTP.
     VTKVectorFieldGlyphRTP()
-        : 
+        :
         VTKBaseRTP( lfx::core::RTPOperation::Channel ),
         m_mask( 1.0 )
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKVectorFieldGlyphRTP()
     {
         ;
     }
-    
-    ///We are going to be creating a ChannelDatavtkPolyData so we override the 
+
+    ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
-    
+
     void SetMaskValue( double value );
 
 protected:

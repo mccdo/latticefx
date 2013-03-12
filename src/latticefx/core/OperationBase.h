@@ -39,8 +39,10 @@
 #include <map>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 // Forward declaration.
@@ -82,16 +84,20 @@ specify an aloas as follows:
 class LATTICEFX_EXPORT OperationBase
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         UnspecifiedType,
         PreprocessCacheType,
         RunTimeProcessingType,
         RendererType
     } OperationType;
     /** \brief */
-    OperationType getType() const { return( _opType ); }
+    OperationType getType() const
+    {
+        return( _opType );
+    }
 
-    OperationBase( const OperationType opType=UnspecifiedType );
+    OperationBase( const OperationType opType = UnspecifiedType );
     OperationBase( const OperationBase& rhs );
     virtual ~OperationBase();
 
@@ -100,7 +106,10 @@ public:
     \details Called by PluginManager to create an instance of classes
     defined in plugin libraries. All classes loaded by plugins must
     override and implement this method. */
-    virtual OperationBase* create() { return( NULL ); }
+    virtual OperationBase* create()
+    {
+        return( NULL );
+    }
 
 
     /**\name ChannelData input support.
@@ -140,7 +149,7 @@ public:
     /** \brief Enable or disable the operation.
     \details Derived classes should adhere to this parameter and disable
     processing if requested to do so. */
-    virtual void setEnable( const bool enable=true );
+    virtual void setEnable( const bool enable = true );
     /** \brief Get the enable/disable state. */
     virtual bool getEnable() const;
 
@@ -158,7 +167,7 @@ public:
     \details If \c _nameValueMap has a value for \c name, return true. Otherwise,
     return false. */
     bool hasValue( const std::string& name ) const;
-    /** \brief Get the value for a name. 
+    /** \brief Get the value for a name.
     \details Use \c name to look up a value in \c _nameValueMap and return the address
     of that value. If \c _nameValueMap doesn't contain \c name, return NULL. */
     const OperationValue* getValue( const std::string& name ) const;
@@ -172,9 +181,15 @@ public:
     /**@{*/
 
     /** \brief Set the DB */
-    void setDB( DBBasePtr db ) { _db = db; }
+    void setDB( DBBasePtr db )
+    {
+        _db = db;
+    }
     /** \brief Get the DB */
-    DBBasePtr getDB() const { return( _db ); }
+    DBBasePtr getDB() const
+    {
+        return( _db );
+    }
 
     /**@}*/
 
@@ -182,7 +197,10 @@ protected:
     friend class DataSet;
     virtual void addInput( ChannelDataPtr input );
     virtual void setInputs( ChannelDataList inputList );
-    virtual bool validInputs() const { return( true ); }
+    virtual bool validInputs() const
+    {
+        return( true );
+    }
     virtual ChannelDataList getInputs();
 
     /** List of actual inputs. During data processing, DataSet assigns ChannelData
@@ -209,8 +227,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_NVP( _opType );
-        ar & BOOST_SERIALIZATION_NVP( _enable );
+        ar& BOOST_SERIALIZATION_NVP( _opType );
+        ar& BOOST_SERIALIZATION_NVP( _enable );
         // TBD serialize - need to serialize OperationValue first.
         //ar & BOOST_SERIALIZATION_NVP( _nameValueMap );
     }

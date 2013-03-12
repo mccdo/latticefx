@@ -38,11 +38,14 @@
 
 //#include <vtkXMLPolyDataWriter.h>
 
-namespace lfx {
-    
-namespace core {
+namespace lfx
+{
 
-namespace vtk {
+namespace core
+{
+
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 void VTKSurfaceRenderer::SetActiveVector( const std::string& activeVector )
@@ -62,7 +65,7 @@ void VTKSurfaceRenderer::SetColorByScalar( std::string const scalarName )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
-    m_pd = 
+    m_pd =
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
     /*{
         vtkXMLPolyDataWriter* writer = vtkXMLPolyDataWriter::New();
@@ -106,7 +109,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     vtkPointData* pointData = m_pd->GetPointData();
     vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
     vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
-    
+
     double x[3];
     double val;
 
@@ -116,13 +119,13 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     dirArray->resize( dataSize );
     osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
     colorArray->resize( dataSize );
-    
+
     for( size_t i = 0; i < dataSize; ++i )
     {
         //Get Position data
         points->GetPoint( i, x );
         (*vertArray)[ i ].set( x[0], x[1], x[2] );
-        
+
         if( scalarArray )
         {
             //Setup the color array
@@ -134,7 +137,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
             //*scalarI++ = rgb[1];
             //*scalarI++ = rgb[2];
         }
-        
+
         if( vectorArray )
         {
             //Get Vector data
@@ -144,24 +147,24 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
             (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
         }
     }*/
-   
+
     //setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
-    
-    //by this stage of the game the render has already had setInputs called 
+
+    //by this stage of the game the render has already had setInputs called
     //on it by lfx::core::DataSet therefore we can modify the _inputs array
     /*lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( vertArray.get(), "positions" ) );
     addInput( vertData );
-    
+
     lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
     addInput( dirData );*/
-    
+
     //lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
     //addInput( colorData );
-    
+
     setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
     setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
-    
-#if WRITE_IMAGE_DATA            
+
+#if WRITE_IMAGE_DATA
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
 
@@ -171,42 +174,42 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 void VTKSurfaceRenderer::ExtractVTKPrimitives()
 {
     m_pd->Update();
-        
+
     vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();
     triangleFilter->SetInput( m_pd );
     triangleFilter->PassVertsOff();
     triangleFilter->PassLinesOff();
     //triangleFilter->Update();
-    
+
     vtkStripper* triangleStripper = vtkStripper::New();
     triangleStripper->SetInput( triangleFilter->GetOutput() );
     int stripLength = triangleStripper->GetMaximumLength();
     triangleStripper->SetMaximumLength( stripLength * 1000 );
     //triangleStripper->Update();
-    
+
     vtkPolyDataNormals* normalGen = vtkPolyDataNormals::New();
     normalGen->SetInput( triangleStripper->GetOutput() );
     normalGen->NonManifoldTraversalOn();
     normalGen->AutoOrientNormalsOn();
     normalGen->ConsistencyOn();
     normalGen->SplittingOn();
-    
+
     vtkStripper* reTriangleStripper = vtkStripper::New();
     reTriangleStripper->SetInput( normalGen->GetOutput() );
     reTriangleStripper->SetMaximumLength( stripLength * 1000 );
     reTriangleStripper->Update();
-    
+
     normalGen->Delete();
     triangleFilter->Delete();
     triangleStripper->Delete();
-    
+
     m_pd = reTriangleStripper->GetOutput();
-    
+
     vtkPointData* pointData = m_pd->GetPointData();
     vtkPoints* points = m_pd->GetPoints();
     vtkCellArray* strips = m_pd->GetStrips();
     vtkDataArray* normals = pointData->GetVectors( "Normals" );
-    vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
+    vtkDataArray* scalarArray = pointData->GetScalars( m_activeScalar.c_str() );
     //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
 
     osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
@@ -216,22 +219,22 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     //osg::Vec2Array* tc = new osg::Vec2Array;
 
     {
-        VTKPrimitiveSetGeneratorPtr primitiveGenerator = 
+        VTKPrimitiveSetGeneratorPtr primitiveGenerator =
             VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( strips ) );
         setPrimitiveSetGenerator( primitiveGenerator );
     }
-    
+
     //Number of vertex is potentially bigger than number of points,
     //Since the same points can appear in different triangle strip.
-    
+
     int numVetex = 0;
     vtkIdType* pts = 0;
     vtkIdType cStripNp;
     int stripNum = 0;
-    
+
     for( strips->InitTraversal();
-        ( strips->GetNextCell( cStripNp, pts ) );
-        ++stripNum )
+            ( strips->GetNextCell( cStripNp, pts ) );
+            ++stripNum )
     {
         numVetex += cStripNp;
     }
@@ -252,11 +255,11 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         osg::Vec3 startVec;
         osg::Vec3 normal;
         //osg::Vec2 coord;
-        
+
         stripNum = 0;
-        
+
         for( strips->InitTraversal(); ( strips->GetNextCell( cStripNp, pts ) );
-            stripNum++ )
+                stripNum++ )
         {
             for( int i = 0; i < cStripNp; ++i )
             {
@@ -267,7 +270,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
 
                 v->push_back( startVec );
                 n->push_back( normal );
- 
+
                 if( scalarArray )
                 {
                     scalarArray->GetTuple( pts[i], &val );
@@ -278,18 +281,18 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
                 //cVal = dataArray->GetTuple1( pts[i] );
                 //scalarArray.push_back( cVal );
                 //lut->GetColor(cVal,curColor);
-                
+
                 //ccolor.set(curColor[0],curColor[1],curColor[2]);
                 //colors->push_back( ccolor);
-                
+
                 //coord is the cord in the texture for strip x and vertex y in the "scale term" of s and t
-                
+
                 /*int xx = ( v->size() - 1 ) % s;
                 int yy = ( v->size() - 1 ) / s;
                 coord.set( ( ( float )( xx ) / s ), ( ( float )( yy ) / t ) );
-                
+
                 tc->push_back( coord );
-                
+
                 if( vectorArray )
                 {
                     vectorArray->GetTuple( pts[i], displacement );
@@ -305,24 +308,24 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
             }
         }
     }
-    
+
     ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
     addInput( cdv );
     ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
     addInput( cdn );
-    
+
     if( scalarArray )
     {
         lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( "scalar", colorArray.get() ) );
         addInput( colorData );
-        
+
         // Configure transfer function.
         setTransferFunctionInput( "scalar" );
         setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
 }
-            
+
 }
 }
 }

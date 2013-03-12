@@ -25,8 +25,10 @@
 #include <list>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 typedef double TimeValue;

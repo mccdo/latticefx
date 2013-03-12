@@ -32,8 +32,10 @@
 
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class OperationValue OperationValue.h <latticefx/core/OperationValue.h>
@@ -62,7 +64,7 @@ of the class interface (except that it derives from OperationBase). */
 /// Special Types of main value
 ///
 /// Strings: The main value can hold std::string values, but these must be
-/// passed in one of the following ways. 
+/// passed in one of the following ways.
 /// 1) As a pointer to an existing string (not recommended )
 /// 2) As a copyable reference to an existing string (recommended)
 /// 3) Via in-place construction of a new string object (recommended), eg.
@@ -108,17 +110,17 @@ public:
     template <typename T>
     T extract() const
     {
-        if( m_value.type() == typeid(T) )
+        if( m_value.type() == typeid( T ) )
         {
-            T result = boost::any_cast<T>(m_value);
+            T result = boost::any_cast<T>( m_value );
             return result;
         }
         else
         {
-            std::string e("Unable to cast ");
+            std::string e( "Unable to cast " );
             e.append( m_value.type().name() );
             e += " to ";
-            e.append( typeid(T).name() );
+            e.append( typeid( T ).name() );
             throw e.c_str();
         }
     }

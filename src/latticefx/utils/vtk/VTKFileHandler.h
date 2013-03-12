@@ -110,7 +110,7 @@ protected:
     ///Read old style(non-XML) vtk file
     void _readClassicVTKFile();
     ///Write old style(non-XML) vtk file
-    void _writeClassicVTKFile( vtkDataObject * vtkThing,
+    void _writeClassicVTKFile( vtkDataObject* vtkThing,
                                std::string vtkFilename, int binaryFlag = 0 );
     ///Update the xml reader with the active arrays
     void UpdateReaderActiveArrays( vtkXMLReader* reader );
@@ -120,7 +120,7 @@ protected:
 
     std::string _inFileName;///<input vtk file name
     std::string _outFileName;///<output vtk file name
-    
+
     vtkXMLFileReadTester* _xmlTester;///<Test if file is XML format
     vtkDataObject* _dataSet;///<The vtk data.
     ///Hold a pointer to the raw reader

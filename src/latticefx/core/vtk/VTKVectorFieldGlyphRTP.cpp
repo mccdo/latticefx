@@ -29,24 +29,27 @@
 #include <vtkAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKVectorFieldGlyphRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = 
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( 
-        getInput( "vtkDataObject" ) );
-    
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
+            getInput( "vtkDataObject" ) );
+
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDO );
     //c2p->Update();
-    
+
     vtkMaskPoints* ptmask = vtkMaskPoints::New();
     //This is required for use with VTK 5.10
     ptmask->SetMaximumNumberOfPoints( cddoPtr->GetNumberOfPoints() );
@@ -59,35 +62,35 @@ lfx::core::ChannelDataPtr VTKVectorFieldGlyphRTP::channel( const lfx::core::Chan
     // get every nth point from the dataSet data
     ptmask->SetOnRatio( m_mask );
 
-    
+
     vtkPolyData* tempPd = 0;
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
     {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter = 
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
             vtkCompositeDataGeometryFilter::New();
         m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
-        ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort(0) );
+        ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
         m_multiGroupGeomFilter->Delete();
     }
     else
     {
-        vtkDataSetSurfaceFilter* m_surfaceFilter = 
+        vtkDataSetSurfaceFilter* m_surfaceFilter =
             vtkDataSetSurfaceFilter::New();
         m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
         ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
         m_surfaceFilter->Delete();
     }
-    
+
     ptmask->Update();
-    
+
     //The rest of the pipeline goes here
-    
-    lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd( 
+
+    lfx::core::vtk::ChannelDatavtkPolyDataPtr cdpd(
         new lfx::core::vtk::ChannelDatavtkPolyData( ptmask->GetOutput(), "vtkPolyData" ) );
-    
+
     ptmask->Delete();
     c2p->Delete();
-    
+
     return( cdpd );
 }
 ////////////////////////////////////////////////////////////////////////////////

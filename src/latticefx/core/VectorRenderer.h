@@ -36,13 +36,16 @@
 
 
 // Forward
-namespace osg {
-    class Texture3D;
+namespace osg
+{
+class Texture3D;
 }
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 /** \class VectorRenderer VectorRenderer.h <latticefx/core/VectorRenderer.h>
@@ -105,7 +108,8 @@ public:
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
-    typedef enum {
+    typedef enum
+    {
         POSITION,    /**< "positions" */
         DIRECTION,   /**< "directions" */
         RADIUS       /**< "radii" */
@@ -126,7 +130,8 @@ public:
     /** \brief Rendering style
     \details Enum for supported rendering styles.
     NOTE: POINT_SPRITES is currently unsupported. */
-    typedef enum {
+    typedef enum
+    {
         SIMPLE_POINTS,
         POINT_SPRITES,
         SPHERES,
@@ -150,8 +155,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
-        ar & BOOST_SERIALIZATION_NVP( _pointStyle );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar& BOOST_SERIALIZATION_NVP( _pointStyle );
     }
 };
 

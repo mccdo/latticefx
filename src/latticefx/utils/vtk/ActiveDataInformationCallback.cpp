@@ -47,7 +47,7 @@ void ActiveDataInformationCallback::OperateOnDataset( vtkDataSet* dataset )
 }
 ////////////////////////////////////////////////////////////////////////////////
 void ActiveDataInformationCallback::SetActiveDataName( std::string name,
-                                                       bool isVector )
+        bool isVector )
 {
     ( isVector ) ? m_activeVector = name : m_activeScalar = name;
 }

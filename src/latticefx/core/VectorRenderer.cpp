@@ -46,13 +46,15 @@
 // Note: GeForce 9800M supports only 0 .. 15.
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 VectorRenderer::VectorRenderer()
-  : Renderer( "vec" ),
-    _pointStyle( SIMPLE_POINTS )
+    : Renderer( "vec" ),
+      _pointStyle( SIMPLE_POINTS )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
@@ -82,8 +84,8 @@ VectorRenderer::VectorRenderer()
     registerUniform( info );
 }
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
-  : Renderer( rhs ),
-    _pointStyle( rhs._pointStyle )
+    : Renderer( rhs ),
+      _pointStyle( rhs._pointStyle )
 {
 }
 VectorRenderer::~VectorRenderer()
@@ -132,7 +134,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( tfInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getTransferFunctionInput() + "\"." );
+                             getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -152,7 +154,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( hmInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getHardwareMaskInput() + "\"." );
+                             getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -183,8 +185,10 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
         // Set the number of instances.
         unsigned int idx;
-        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+        for( idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
+        {
             geom->getPrimitiveSet( idx )->setNumInstances( numElements );
+        }
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
@@ -235,7 +239,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( tfInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getTransferFunctionInput() + "\"." );
+                             getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -255,7 +259,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( hmInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getHardwareMaskInput() + "\"." );
+                             getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -278,8 +282,10 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
         // Set the number of instances.
         unsigned int idx;
-        for( idx=0; idx < geom->getNumPrimitiveSets(); ++idx )
+        for( idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
+        {
             geom->getPrimitiveSet( idx )->setNumInstances( numElements );
+        }
 
         osg::StateSet* stateSet( geode->getOrCreateStateSet() );
 
@@ -326,7 +332,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( tfInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getTransferFunctionInput() + "\"." );
+                             getTransferFunctionInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
@@ -344,7 +350,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             if( hmInputByName == NULL )
             {
                 LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                    getHardwareMaskInput() + "\"." );
+                             getHardwareMaskInput() + "\"." );
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
@@ -450,7 +456,8 @@ osg::StateSet* VectorRenderer::getRootState()
         if( getTransferFunction() != NULL )
         {
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) ); tfInputUni->set( (int)tfInputUnit );
+            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) );
+            tfInputUni->set( ( int )tfInputUnit );
             stateSet->addUniform( tfInputUni );
         }
 

@@ -27,18 +27,20 @@
 #include <sstream>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 ChannelDataComposite::ChannelDataComposite( const CompositeType compositeType, const std::string& name )
-  : ChannelData( name ),
-    _compositeType( compositeType )
+    : ChannelData( name ),
+      _compositeType( compositeType )
 {
 }
 ChannelDataComposite::ChannelDataComposite( const ChannelDataComposite& rhs )
-  : ChannelData( rhs ),
-    _compositeType( rhs._compositeType )
+    : ChannelData( rhs ),
+      _compositeType( rhs._compositeType )
 {
 }
 ChannelDataComposite::~ChannelDataComposite()
@@ -64,9 +66,11 @@ void ChannelDataComposite::removeChannel( const unsigned int index )
         LFX_WARNING( "removeChannel: 'index' out of renag." );
         return;
     }
-    for( unsigned int idx=index; idx<_data.size()-1; ++idx )
-        _data[ idx ] = _data[ idx+1 ];
-    _data.resize( _data.size()-1 );
+    for( unsigned int idx = index; idx < _data.size() - 1; ++idx )
+    {
+        _data[ idx ] = _data[ idx + 1 ];
+    }
+    _data.resize( _data.size() - 1 );
 }
 
 void ChannelDataComposite::setChannel( const unsigned int index, const ChannelDataPtr channel )
@@ -87,7 +91,9 @@ unsigned int ChannelDataComposite::getNumChannels() const
 ChannelDataPtr ChannelDataComposite::getChannel( const unsigned int index )
 {
     if( index < _data.size() )
+    {
         return( _data[ index ] );
+    }
 
     if( LFX_LOG_WARNING )
     {
@@ -110,7 +116,9 @@ void ChannelDataComposite::getDimensions( unsigned int& x, unsigned int& y, unsi
     BOOST_FOREACH( ChannelDataPtr cdp, _data )
     {
         if( cdp == NULL )
+        {
             continue;
+        }
 
         unsigned int lx, ly, lz;
         cdp->getDimensions( lx, ly, lz );

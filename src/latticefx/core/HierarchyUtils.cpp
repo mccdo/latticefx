@@ -40,18 +40,20 @@
 #include <string>
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb )
-  : _root( root ),
-    _cb( cb )
+    : _root( root ),
+      _cb( cb )
 {
     execute();
 }
 TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root )
-  : _root( root )
+    : _root( root )
 {
 }
 
@@ -72,14 +74,14 @@ void TraverseHierarchy::traverse( ChannelDataPtr cdp )
 
     if( lodData != NULL )
     {
-        for( unsigned int idx=0; idx<lodData->getNumChannels(); ++idx )
+        for( unsigned int idx = 0; idx < lodData->getNumChannels(); ++idx )
         {
             traverse( lodData->getChannel( idx ) );
         }
     }
     else if( imageData != NULL )
     {
-        for( unsigned int idx=0; idx<imageData->getNumChannels(); ++idx )
+        for( unsigned int idx = 0; idx < imageData->getNumChannels(); ++idx )
         {
             _name.push_back( idx );
             traverse( imageData->getChannel( idx ) );
@@ -113,15 +115,19 @@ PruneHierarchy::PruneHierarchy( ChannelDataPtr root )
 int PruneHierarchy::traverse( ChannelDataPtr cdp )
 {
     if( cdp == NULL )
+    {
         return( 0 );
+    }
 
     ChannelDataComposite* comp( dynamic_cast< ChannelDataComposite* >( cdp.get() ) );
     if( comp != NULL )
     {
-        for( unsigned int idx=comp->getNumChannels(); idx>0; --idx )
+        for( unsigned int idx = comp->getNumChannels(); idx > 0; --idx )
         {
-            if( traverse( comp->getChannel( idx-1 ) ) == 0 )
-                comp->removeChannel( idx-1 );
+            if( traverse( comp->getChannel( idx - 1 ) ) == 0 )
+            {
+                comp->removeChannel( idx - 1 );
+            }
         }
         return( comp->getNumChannels() );
     }
@@ -135,7 +141,7 @@ int PruneHierarchy::traverse( ChannelDataPtr cdp )
 
 
 AssembleHierarchy::AssembleHierarchy( RangeVec ranges )
-  : _ranges( ranges )
+    : _ranges( ranges )
 {
     if( _ranges.size() < 1 )
     {
@@ -163,18 +169,20 @@ AssembleHierarchy::AssembleHierarchy( unsigned int maxDepth, double baseRange )
     }
 
     double range( baseRange );
-    unsigned int idx( maxDepth-1 );
-    do {
+    unsigned int idx( maxDepth - 1 );
+    do
+    {
         _ranges.push_back( range );
         range *= 4.;
         --idx;
-    } while( idx > 0 );
+    }
+    while( idx > 0 );
 
     _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
     recurseInit( _root, 0 );
 }
 AssembleHierarchy::AssembleHierarchy( const AssembleHierarchy& rhs )
-  : _ranges( rhs._ranges )
+    : _ranges( rhs._ranges )
 {
     _root = boost::static_pointer_cast< ChannelData >( ChannelDataLODPtr( new ChannelDataLOD() ) );
     recurseInit( _root, 0 );
@@ -184,11 +192,13 @@ AssembleHierarchy::~AssembleHierarchy()
 }
 
 void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string nameString,
-        const osg::Vec3& offset, const unsigned int depth )
+                                        const osg::Vec3& offset, const unsigned int depth )
 {
     if( depth == 0 )
         // Special-case the initial condition.
+    {
         _iterator = _root;
+    }
 
     osg::Vec3 localOffset( offset );
     if( !( nameString.empty() ) && ( offset.length2() == 0. ) )
@@ -198,23 +208,40 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         // This can only happen when addChannelData is called from the app.
         //   Once we start recursing, offset will always be non-zero.
         std::string::const_iterator iter = nameString.end() - 1;
-        
-        switch( *iter ) {
-        case '0': localOffset.set( -1., -1., -1. ); break;
-        case '1': localOffset.set( 1., -1., -1. ); break;
-        case '2': localOffset.set( -1., 1., -1. ); break;
-        case '3': localOffset.set( 1., 1., -1. ); break;
-        case '4': localOffset.set( -1., -1., 1. ); break;
-        case '5': localOffset.set( 1., -1., 1. ); break;
-        case '6': localOffset.set( -1., 1., 1. ); break;
-        case '7': localOffset.set( 1., 1., 1. ); break;
+
+        switch( *iter )
+        {
+        case '0':
+            localOffset.set( -1., -1., -1. );
+            break;
+        case '1':
+            localOffset.set( 1., -1., -1. );
+            break;
+        case '2':
+            localOffset.set( -1., 1., -1. );
+            break;
+        case '3':
+            localOffset.set( 1., 1., -1. );
+            break;
+        case '4':
+            localOffset.set( -1., -1., 1. );
+            break;
+        case '5':
+            localOffset.set( 1., -1., 1. );
+            break;
+        case '6':
+            localOffset.set( -1., 1., 1. );
+            break;
+        case '7':
+            localOffset.set( 1., 1., 1. );
+            break;
         default:
-            {
-                std::string message = "addChannelData: Invalid nameString digit: ";
-                message.push_back( *iter );
-                LFX_ERROR_STATIC( "lfx.core.hier", message );
-                break;
-            }
+        {
+            std::string message = "addChannelData: Invalid nameString digit: ";
+            message.push_back( *iter );
+            LFX_ERROR_STATIC( "lfx.core.hier", message );
+            break;
+        }
         }
     }
 
@@ -247,7 +274,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         // This is the lower LOD at this level. The other (higher) LOD is an ImageSet.
         lodData->setChannel( 0, cdp );
         // Set to NULL for debugging purposes (not actually necessary).
-        _iterator = ChannelDataPtr( (ChannelData*)NULL );
+        _iterator = ChannelDataPtr( ( ChannelData* )NULL );
         return;
     }
 
@@ -266,7 +293,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
     }
 
     std::string::const_iterator iter = nameString.begin();
-    const unsigned int childIndex( (unsigned int)( *iter - '0' ) );
+    const unsigned int childIndex( ( unsigned int )( *iter - '0' ) );
     if( imageData->getChannel( childIndex ) == NULL )
     {
         // Case 2
@@ -274,7 +301,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         imageData->setChannel( childIndex, cdp );
         imageData->setOffset( childIndex, localOffset );
         // Set to NULL for debugging purposes (not actually necessary).
-        _iterator = ChannelDataPtr( (ChannelData*)NULL );
+        _iterator = ChannelDataPtr( ( ChannelData* )NULL );
     }
     else
     {
@@ -287,9 +314,9 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         }
 
         _iterator = imageData->getChannel( childIndex );
-        addChannelData( cdp, newName, localOffset, depth+1 );
+        addChannelData( cdp, newName, localOffset, depth + 1 );
     }
-} 
+}
 
 void AssembleHierarchy::prune()
 {
@@ -325,16 +352,16 @@ void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
     // ChannelData vector, and also the offset vector.
     cdImage->reserveChannels( 8 );
 
-    if( depth+1 < _ranges.size() )
+    if( depth + 1 < _ranges.size() )
     {
         // We haven't hit max depth yet, so we'll add LOD children and recurse.
         // Otherwise we do nothing, as the children will be inserted by the app
         // with a call to addChannelData().
-        for( unsigned int idx=0; idx<8; ++idx )
+        for( unsigned int idx = 0; idx < 8; ++idx )
         {
             ChannelDataLODPtr newLOD( new ChannelDataLOD() );
             cdImage->setChannel( idx, newLOD );
-            recurseInit( newLOD, depth+1 );
+            recurseInit( newLOD, depth + 1 );
         }
     }
 }
@@ -342,7 +369,7 @@ void AssembleHierarchy::recurseInit( ChannelDataPtr cdp, unsigned int depth )
 
 
 NameStringGenerator::NameStringGenerator( const osg::Vec3s& dimensions )
-  : _dims( dimensions )
+    : _dims( dimensions )
 {
 }
 
@@ -350,42 +377,69 @@ std::string NameStringGenerator::getNameString( const osg::Vec3s& subDims, const
 {
     // First, find the depth.
     int ratio( _dims.x() / subDims.x() );
-    if( ratio & ratio-1 )
+    if( ratio & ratio - 1 )
     {
         LFX_WARNING_STATIC( "lfx.core.hier", "getNameString: _dims.x()/subDims.x() must be a power of 2." );
     }
     int depth( 1 );
     while( ( ratio >>= 1 ) > 0 )
+    {
         depth++;
+    }
 
     // If depth is 1, we have the root of the hierarchy, so the
     // name string is the empty string.
     if( depth == 1 )
+    {
         return( std::string( "" ) );
+    }
 
     // Accumulate the name string.
     const osg::Vec3s subCenter( subDims / 2 + subMinCorner );
     osg::Vec3s octant( _dims / 2 );
     std::string nameString;
-    for( int idx=1; idx<depth; idx++ )
+    for( int idx = 1; idx < depth; idx++ )
     {
         int octantValue( 0 );
         if( subCenter.x() > octant.x() )
+        {
             octantValue += ( 1 << 0 );
+        }
         if( subCenter.y() > octant.y() )
+        {
             octantValue += ( 1 << 1 );
+        }
         if( subCenter.z() > octant.z() )
+        {
             octantValue += ( 1 << 2 );
+        }
 
-        switch( octantValue ) {
-        case 0: nameString += "0"; break;
-        case 1: nameString += "1"; break;
-        case 2: nameString += "2"; break;
-        case 3: nameString += "3"; break;
-        case 4: nameString += "4"; break;
-        case 5: nameString += "5"; break;
-        case 6: nameString += "6"; break;
-        case 7: nameString += "7"; break;
+        switch( octantValue )
+        {
+        case 0:
+            nameString += "0";
+            break;
+        case 1:
+            nameString += "1";
+            break;
+        case 2:
+            nameString += "2";
+            break;
+        case 3:
+            nameString += "3";
+            break;
+        case 4:
+            nameString += "4";
+            break;
+        case 5:
+            nameString += "5";
+            break;
+        case 6:
+            nameString += "6";
+            break;
+        case 7:
+            nameString += "7";
+            break;
         default:
             break;
         }
@@ -403,23 +457,40 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
     if( !( nameString.empty() ) )
     {
         std::string::const_iterator iter = nameString.end() - 1;
-        
-        switch( *iter ) {
-        case '0': offset.set( -1., -1., -1. ); break;
-        case '1': offset.set( 1., -1., -1. ); break;
-        case '2': offset.set( -1., 1., -1. ); break;
-        case '3': offset.set( 1., 1., -1. ); break;
-        case '4': offset.set( -1., -1., 1. ); break;
-        case '5': offset.set( 1., -1., 1. ); break;
-        case '6': offset.set( -1., 1., 1. ); break;
-        case '7': offset.set( 1., 1., 1. ); break;
+
+        switch( *iter )
+        {
+        case '0':
+            offset.set( -1., -1., -1. );
+            break;
+        case '1':
+            offset.set( 1., -1., -1. );
+            break;
+        case '2':
+            offset.set( -1., 1., -1. );
+            break;
+        case '3':
+            offset.set( 1., 1., -1. );
+            break;
+        case '4':
+            offset.set( -1., -1., 1. );
+            break;
+        case '5':
+            offset.set( 1., -1., 1. );
+            break;
+        case '6':
+            offset.set( -1., 1., 1. );
+            break;
+        case '7':
+            offset.set( 1., 1., 1. );
+            break;
         default:
-            {
-                std::string message = "getNameString: Invalid nameString digit: ";
-                message.push_back( *iter );
-                LFX_ERROR_STATIC( "lfx.core.hier", message );
-                break;
-            }
+        {
+            std::string message = "getNameString: Invalid nameString digit: ";
+            message.push_back( *iter );
+            LFX_ERROR_STATIC( "lfx.core.hier", message );
+            break;
+        }
         }
     }
 
@@ -430,8 +501,8 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
 
 
 VolumeBrickData::VolumeBrickData( const bool prune )
-  : _numBricks( 0, 0, 0 ),
-    _prune( prune )
+    : _numBricks( 0, 0, 0 ),
+      _prune( prune )
 {
 }
 VolumeBrickData::~VolumeBrickData()
@@ -452,23 +523,33 @@ void VolumeBrickData::addBrick( const osg::Vec3s& brickNum, osg::Image* image )
 {
     const int idx( brickIndex( brickNum ) );
     if( ( idx < 0 ) || ( idx >= _images.size() ) )
+    {
         return;
+    }
     else
+    {
         _images[ idx ] = image;
+    }
 }
 osg::Image* VolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
     const int idx( brickIndex( brickNum ) );
     if( ( idx < 0 ) || ( idx >= _images.size() ) )
+    {
         return( NULL );
+    }
     else
+    {
         return( _images[ idx ].get() );
+    }
 }
 osg::Image* VolumeBrickData::getBrick( const std::string& brickName ) const
 {
     const osg::Vec3s brickNum( nameToBrickNum( brickName ) );
     if( brickNum == osg::Vec3s( -1, -1, -1 ) )
+    {
         return( NULL );
+    }
 
     return( getBrick( brickNum ) );
 }
@@ -477,19 +558,37 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
 {
     osg::ref_ptr< osg::Image > dest;
 
-    for( int idx=0; idx<8; ++idx )
+    for( int idx = 0; idx < 8; ++idx )
     {
         osg::Vec3s current( brickNum );
-        switch( idx ) {
-        case 0: break;
-        case 1: current += osg::Vec3s( 1, 0, 0 ); break;
-        case 2: current += osg::Vec3s( 0, 1, 0 ); break;
-        case 3: current += osg::Vec3s( 1, 1, 0 ); break;
-        case 4: current += osg::Vec3s( 0, 0, 1 ); break;
-        case 5: current += osg::Vec3s( 1, 0, 1 ); break;
-        case 6: current += osg::Vec3s( 0, 1, 1 ); break;
-        case 7: current += osg::Vec3s( 1, 1, 1 ); break;
-        default: LFX_ERROR_STATIC( "lfx.core.hier", "Brick index out of range." ); break;
+        switch( idx )
+        {
+        case 0:
+            break;
+        case 1:
+            current += osg::Vec3s( 1, 0, 0 );
+            break;
+        case 2:
+            current += osg::Vec3s( 0, 1, 0 );
+            break;
+        case 3:
+            current += osg::Vec3s( 1, 1, 0 );
+            break;
+        case 4:
+            current += osg::Vec3s( 0, 0, 1 );
+            break;
+        case 5:
+            current += osg::Vec3s( 1, 0, 1 );
+            break;
+        case 6:
+            current += osg::Vec3s( 0, 1, 1 );
+            break;
+        case 7:
+            current += osg::Vec3s( 1, 1, 1 );
+            break;
+        default:
+            LFX_ERROR_STATIC( "lfx.core.hier", "Brick index out of range." );
+            break;
         }
 
         // TBD we might be outside the boundary defined by _numBricks.
@@ -499,7 +598,9 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
         if( srcBrick.valid() )
         {
             if( !( dest.valid() ) )
+            {
                 dest = newBrick( srcBrick.get() );
+            }
             overlap( dest.get(), srcBrick.get(), idx );
         }
     }
@@ -509,7 +610,7 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
         bool nonZeroPixels( false );
         unsigned char* ptr( dest->data() );
         const unsigned int sz( dest->getTotalSizeInBytes() );
-        for( unsigned int idx=0; idx<sz; ++idx, ++ptr )
+        for( unsigned int idx = 0; idx < sz; ++idx, ++ptr )
         {
             if( *ptr > 0 )
             {
@@ -520,13 +621,17 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
         return( nonZeroPixels ? dest.release() : NULL );
     }
     else
+    {
         return( NULL );
+    }
 }
 osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) const
 {
     const osg::Vec3s brickNum( nameToBrickNum( brickName ) );
     if( brickNum == osg::Vec3s( -1, -1, -1 ) )
+    {
         return( NULL );
+    }
 
     return( getSeamlessBrick( brickNum ) );
 }
@@ -534,33 +639,39 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) co
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
 {
     if( ( brickNum[0] >= _numBricks[0] ) || ( brickNum[0] < 0 ) ||
-        ( brickNum[1] >= _numBricks[1] ) || ( brickNum[1] < 0 ) ||
-        ( brickNum[2] >= _numBricks[2] ) || ( brickNum[2] < 0 ) )
-            return( -1 );
+            ( brickNum[1] >= _numBricks[1] ) || ( brickNum[1] < 0 ) ||
+            ( brickNum[2] >= _numBricks[2] ) || ( brickNum[2] < 0 ) )
+    {
+        return( -1 );
+    }
 
     return( brickNum[2] * _numBricks[0] * _numBricks[1] +
-        brickNum[1] * _numBricks[0] +
-        brickNum[0] );
+            brickNum[1] * _numBricks[0] +
+            brickNum[0] );
 }
 osg::Vec3s VolumeBrickData::nameToBrickNum( const std::string& name ) const
 {
     // Depth check
     short dim( 1 << name.length() );
     if( ( dim != _numBricks[0] ) || ( dim != _numBricks[1] ) || ( dim != _numBricks[2] ) )
+    {
         return( osg::Vec3s( -1, -1, -1 ) );
+    }
 
     osg::Vec3s brickNum;
     if( name.empty() )
-        return( brickNum ); // 0,0,0
-
-    osg::Vec3s half( _numBricks[0]/2, _numBricks[1]/2, _numBricks[2]/2 );
-    for( int idx=0; idx < name.length(); ++idx )
     {
-        int pos( (char)( name[ idx ] ) - 0 );
+        return( brickNum );    // 0,0,0
+    }
+
+    osg::Vec3s half( _numBricks[0] / 2, _numBricks[1] / 2, _numBricks[2] / 2 );
+    for( int idx = 0; idx < name.length(); ++idx )
+    {
+        int pos( ( char )( name[ idx ] ) - 0 );
         brickNum[0] += ( pos & 0x1 ) ? half[0] : 0;
         brickNum[1] += ( pos & 0x2 ) ? half[1] : 0;
         brickNum[2] += ( pos & 0x4 ) ? half[2] : 0;
-        half.set( half[0]/2, half[1]/2, half[2]/2 );
+        half.set( half[0] / 2, half[1] / 2, half[2] / 2 );
     }
 
     return( brickNum );
@@ -585,77 +696,78 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
 #define DEST_ADDR(_s,_t,_r) \
     ( destData + ( ( (_r) * destST + (_t) * destS + (_s) ) * pixSize ) )
 
-    switch( index ) {
+    switch( index )
+    {
     case 0:
     {
-        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+            for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
             {
                 memcpy( DEST_ADDR( 0, tIdx, rIdx ),
-                    SRC_ADDR( 0, tIdx, rIdx ), rowSize );
+                        SRC_ADDR( 0, tIdx, rIdx ), rowSize );
             }
         }
         break;
     }
     case 1:
     {
-        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+            for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
             {
-                memcpy( DEST_ADDR( destS-1, tIdx, rIdx ),
-                    SRC_ADDR( 0, tIdx, rIdx ), pixSize );
+                memcpy( DEST_ADDR( destS - 1, tIdx, rIdx ),
+                        SRC_ADDR( 0, tIdx, rIdx ), pixSize );
             }
         }
         break;
     }
     case 2:
     {
-        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            memcpy( DEST_ADDR( 0, destT-1, rIdx ),
-                SRC_ADDR( 0, 0, rIdx ), rowSize );
+            memcpy( DEST_ADDR( 0, destT - 1, rIdx ),
+                    SRC_ADDR( 0, 0, rIdx ), rowSize );
         }
         break;
     }
     case 3:
     {
-        for( unsigned int rIdx=0; rIdx<srcR; ++rIdx )
+        for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            memcpy( DEST_ADDR( destS-1, destT-1, rIdx ),
-                SRC_ADDR( 0, 0, rIdx ), pixSize );
+            memcpy( DEST_ADDR( destS - 1, destT - 1, rIdx ),
+                    SRC_ADDR( 0, 0, rIdx ), pixSize );
         }
         break;
     }
     case 4:
     {
-        for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+        for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
         {
-            memcpy( DEST_ADDR( 0, tIdx, destR-1 ),
-                SRC_ADDR( 0, tIdx, 0 ), rowSize );
+            memcpy( DEST_ADDR( 0, tIdx, destR - 1 ),
+                    SRC_ADDR( 0, tIdx, 0 ), rowSize );
         }
         break;
     }
     case 5:
     {
-        for( unsigned int tIdx=0; tIdx<srcT; ++tIdx )
+        for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
         {
-            memcpy( DEST_ADDR( destS-1, tIdx, destR-1 ),
-                SRC_ADDR( 0, tIdx, 0 ), pixSize );
+            memcpy( DEST_ADDR( destS - 1, tIdx, destR - 1 ),
+                    SRC_ADDR( 0, tIdx, 0 ), pixSize );
         }
         break;
     }
     case 6:
     {
-        memcpy( DEST_ADDR( 0, destT-1, destR-1 ),
-            SRC_ADDR( 0, 0, 0 ), rowSize );
+        memcpy( DEST_ADDR( 0, destT - 1, destR - 1 ),
+                SRC_ADDR( 0, 0, 0 ), rowSize );
         break;
     }
     case 7:
     {
-        memcpy( DEST_ADDR( destS-1, destT-1, destR-1 ),
-            SRC_ADDR( 0, 0, 0 ), pixSize );
+        memcpy( DEST_ADDR( destS - 1, destT - 1, destR - 1 ),
+                SRC_ADDR( 0, 0, 0 ), pixSize );
         break;
     }
     default:
@@ -680,8 +792,8 @@ osg::Image* VolumeBrickData::newBrick( const osg::Image* proto, const osg::Vec3s
     memset( data, 0, totalSizeBytes );
 
     image->setImage( dims[0], dims[1], dims[2],
-        proto->getInternalTextureFormat(), proto->getPixelFormat(), proto->getDataType(),
-        (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+                     proto->getInternalTextureFormat(), proto->getPixelFormat(), proto->getDataType(),
+                     ( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
 
     return( image.release() );
 }
@@ -689,8 +801,8 @@ osg::Image* VolumeBrickData::newBrick( const osg::Image* proto, const osg::Vec3s
 
 
 Downsampler::Downsampler( const VolumeBrickData* hiRes )
-  : _hi( hiRes ),
-    _low( NULL )
+    : _hi( hiRes ),
+      _low( NULL )
 {}
 Downsampler::~Downsampler()
 {
@@ -699,32 +811,46 @@ Downsampler::~Downsampler()
 VolumeBrickData* Downsampler::getLow() const
 {
     if( _low )
+    {
         return( _low );
+    }
     _low = new VolumeBrickData();
 
     osg::Vec3s numBricks( _hi->getNumBricks() );
-    numBricks[0] >>= 1;   if( numBricks[0] <= 1 ) numBricks[0] = 1;
-    numBricks[1] >>= 1;   if( numBricks[1] <= 1 ) numBricks[1] = 1;
-    numBricks[2] >>= 1;   if( numBricks[2] <= 1 ) numBricks[2] = 1;
+    numBricks[0] >>= 1;
+    if( numBricks[0] <= 1 )
+    {
+        numBricks[0] = 1;
+    }
+    numBricks[1] >>= 1;
+    if( numBricks[1] <= 1 )
+    {
+        numBricks[1] = 1;
+    }
+    numBricks[2] >>= 1;
+    if( numBricks[2] <= 1 )
+    {
+        numBricks[2] = 1;
+    }
     _low->setNumBricks( numBricks );
 
-    for( int rIdx=0; rIdx<numBricks[2]; ++rIdx )
+    for( int rIdx = 0; rIdx < numBricks[2]; ++rIdx )
     {
-        for( int tIdx=0; tIdx<numBricks[1]; ++tIdx )
+        for( int tIdx = 0; tIdx < numBricks[1]; ++tIdx )
         {
-            for( int sIdx=0; sIdx<numBricks[0]; ++sIdx )
+            for( int sIdx = 0; sIdx < numBricks[0]; ++sIdx )
             {
-                osg::ref_ptr< osg::Image > i0( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2,   rIdx*2 ) ) );
-                osg::ref_ptr< osg::Image > i1( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2,   rIdx*2 ) ) );
-                osg::ref_ptr< osg::Image > i2( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2+1, rIdx*2 ) ) );
-                osg::ref_ptr< osg::Image > i3( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2+1, rIdx*2 ) ) );
-                osg::ref_ptr< osg::Image > i4( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2,   rIdx*2+1 ) ) );
-                osg::ref_ptr< osg::Image > i5( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2,   rIdx*2+1 ) ) );
-                osg::ref_ptr< osg::Image > i6( _hi->getBrick( osg::Vec3s( sIdx*2,   tIdx*2+1, rIdx*2+1 ) ) );
-                osg::ref_ptr< osg::Image > i7( _hi->getBrick( osg::Vec3s( sIdx*2+1, tIdx*2+1, rIdx*2+1 ) ) );
+                osg::ref_ptr< osg::Image > i0( _hi->getBrick( osg::Vec3s( sIdx * 2,   tIdx * 2,   rIdx * 2 ) ) );
+                osg::ref_ptr< osg::Image > i1( _hi->getBrick( osg::Vec3s( sIdx * 2 + 1, tIdx * 2,   rIdx * 2 ) ) );
+                osg::ref_ptr< osg::Image > i2( _hi->getBrick( osg::Vec3s( sIdx * 2,   tIdx * 2 + 1, rIdx * 2 ) ) );
+                osg::ref_ptr< osg::Image > i3( _hi->getBrick( osg::Vec3s( sIdx * 2 + 1, tIdx * 2 + 1, rIdx * 2 ) ) );
+                osg::ref_ptr< osg::Image > i4( _hi->getBrick( osg::Vec3s( sIdx * 2,   tIdx * 2,   rIdx * 2 + 1 ) ) );
+                osg::ref_ptr< osg::Image > i5( _hi->getBrick( osg::Vec3s( sIdx * 2 + 1, tIdx * 2,   rIdx * 2 + 1 ) ) );
+                osg::ref_ptr< osg::Image > i6( _hi->getBrick( osg::Vec3s( sIdx * 2,   tIdx * 2 + 1, rIdx * 2 + 1 ) ) );
+                osg::ref_ptr< osg::Image > i7( _hi->getBrick( osg::Vec3s( sIdx * 2 + 1, tIdx * 2 + 1, rIdx * 2 + 1 ) ) );
 
                 osg::Image* image( sample( i0.get(), i1.get(), i2.get(), i3.get(),
-                    i4.get(), i5.get(), i6.get(), i7.get() ) );
+                                           i4.get(), i5.get(), i6.get(), i7.get() ) );
                 _low->addBrick( osg::Vec3s( sIdx, tIdx, rIdx ), image );
             }
         }
@@ -734,48 +860,107 @@ VolumeBrickData* Downsampler::getLow() const
 }
 
 osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, const osg::Image* i2, const osg::Image* i3,
-    const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const
+                                 const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const
 {
     osg::ref_ptr< osg::Image > image( new osg::Image() );
 
     unsigned int sDim, tDim, rDim;
-    if( i0 != NULL ) { sDim=i0->s(); tDim=i0->t(); rDim=i0->r(); }
-    else if( i1 != NULL ) { sDim=i1->s(); tDim=i1->t(); rDim=i1->r(); }
-    else if( i2 != NULL ) { sDim=i2->s(); tDim=i2->t(); rDim=i2->r(); }
-    else if( i3 != NULL ) { sDim=i3->s(); tDim=i3->t(); rDim=i3->r(); }
-    else if( i4 != NULL ) { sDim=i4->s(); tDim=i4->t(); rDim=i4->r(); }
-    else if( i5 != NULL ) { sDim=i5->s(); tDim=i5->t(); rDim=i5->r(); }
-    else if( i6 != NULL ) { sDim=i6->s(); tDim=i6->t(); rDim=i6->r(); }
-    else if( i7 != NULL ) { sDim=i7->s(); tDim=i7->t(); rDim=i7->r(); }
-    else return( NULL );
+    if( i0 != NULL )
+    {
+        sDim = i0->s();
+        tDim = i0->t();
+        rDim = i0->r();
+    }
+    else if( i1 != NULL )
+    {
+        sDim = i1->s();
+        tDim = i1->t();
+        rDim = i1->r();
+    }
+    else if( i2 != NULL )
+    {
+        sDim = i2->s();
+        tDim = i2->t();
+        rDim = i2->r();
+    }
+    else if( i3 != NULL )
+    {
+        sDim = i3->s();
+        tDim = i3->t();
+        rDim = i3->r();
+    }
+    else if( i4 != NULL )
+    {
+        sDim = i4->s();
+        tDim = i4->t();
+        rDim = i4->r();
+    }
+    else if( i5 != NULL )
+    {
+        sDim = i5->s();
+        tDim = i5->t();
+        rDim = i5->r();
+    }
+    else if( i6 != NULL )
+    {
+        sDim = i6->s();
+        tDim = i6->t();
+        rDim = i6->r();
+    }
+    else if( i7 != NULL )
+    {
+        sDim = i7->s();
+        tDim = i7->t();
+        rDim = i7->r();
+    }
+    else
+    {
+        return( NULL );
+    }
 
     unsigned char* data( new unsigned char[ sDim * tDim * rDim ] );
     image->setImage( sDim, tDim, rDim,
-        GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-        (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+                     GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                     ( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
     unsigned char* ptr( data );
     bool validData( false );
 
-    for( int rIdx=0; rIdx<image->r(); ++rIdx )
+    for( int rIdx = 0; rIdx < image->r(); ++rIdx )
     {
-        int rBit( ( rIdx < image->r()/2 ) ? 0 : 1 );
-        for( int tIdx=0; tIdx<image->t(); ++tIdx )
+        int rBit( ( rIdx < image->r() / 2 ) ? 0 : 1 );
+        for( int tIdx = 0; tIdx < image->t(); ++tIdx )
         {
-            int tBit( ( tIdx < image->t()/2 ) ? 0 : 1 );
-            for( int sIdx=0; sIdx<image->s(); ++sIdx )
+            int tBit( ( tIdx < image->t() / 2 ) ? 0 : 1 );
+            for( int sIdx = 0; sIdx < image->s(); ++sIdx )
             {
-                int sBit( ( sIdx < image->s()/2 ) ? 0 : 1 );
+                int sBit( ( sIdx < image->s() / 2 ) ? 0 : 1 );
                 osg::Image* inImage;
-                switch( (rBit << 2) + (tBit << 1) + sBit )
+                switch( ( rBit << 2 ) + ( tBit << 1 ) + sBit )
                 {
-                case 0: inImage = const_cast< osg::Image* >( i0 ); break;
-                case 1: inImage = const_cast< osg::Image* >( i1 ); break;
-                case 2: inImage = const_cast< osg::Image* >( i2 ); break;
-                case 3: inImage = const_cast< osg::Image* >( i3 ); break;
-                case 4: inImage = const_cast< osg::Image* >( i4 ); break;
-                case 5: inImage = const_cast< osg::Image* >( i5 ); break;
-                case 6: inImage = const_cast< osg::Image* >( i6 ); break;
-                case 7: inImage = const_cast< osg::Image* >( i7 ); break;
+                case 0:
+                    inImage = const_cast< osg::Image* >( i0 );
+                    break;
+                case 1:
+                    inImage = const_cast< osg::Image* >( i1 );
+                    break;
+                case 2:
+                    inImage = const_cast< osg::Image* >( i2 );
+                    break;
+                case 3:
+                    inImage = const_cast< osg::Image* >( i3 );
+                    break;
+                case 4:
+                    inImage = const_cast< osg::Image* >( i4 );
+                    break;
+                case 5:
+                    inImage = const_cast< osg::Image* >( i5 );
+                    break;
+                case 6:
+                    inImage = const_cast< osg::Image* >( i6 );
+                    break;
+                case 7:
+                    inImage = const_cast< osg::Image* >( i7 );
+                    break;
                 }
 
                 int pixel( 0 );
@@ -784,18 +969,18 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
                     const int s( sIdx % ( inImage->s() / 2 ) );
                     const int t( tIdx % ( inImage->t() / 2 ) );
                     const int r( rIdx % ( inImage->r() / 2 ) );
-                    pixel = *( inImage->data( s*2,   t*2,   r*2 ) ) +
-                        *( inImage->data( s*2+1, t*2,   r*2 ) ) +
-                        *( inImage->data( s*2,   t*2+1, r*2 ) ) +
-                        *( inImage->data( s*2+1, t*2+1, r*2 ) ) +
-                        *( inImage->data( s*2,   t*2,   r*2+1 ) ) +
-                        *( inImage->data( s*2+1, t*2,   r*2+1 ) ) +
-                        *( inImage->data( s*2,   t*2+1, r*2+1 ) ) +
-                        *( inImage->data( s*2+1, t*2+1, r*2+1 ) );
+                    pixel = *( inImage->data( s * 2,   t * 2,   r * 2 ) ) +
+                            *( inImage->data( s * 2 + 1, t * 2,   r * 2 ) ) +
+                            *( inImage->data( s * 2,   t * 2 + 1, r * 2 ) ) +
+                            *( inImage->data( s * 2 + 1, t * 2 + 1, r * 2 ) ) +
+                            *( inImage->data( s * 2,   t * 2,   r * 2 + 1 ) ) +
+                            *( inImage->data( s * 2 + 1, t * 2,   r * 2 + 1 ) ) +
+                            *( inImage->data( s * 2,   t * 2 + 1, r * 2 + 1 ) ) +
+                            *( inImage->data( s * 2 + 1, t * 2 + 1, r * 2 + 1 ) );
                     pixel >>= 3; // Divide by 8.
                     validData = true;
                 }
-                *ptr++ = (unsigned char)pixel;
+                *ptr++ = ( unsigned char )pixel;
             }
         }
     }
@@ -808,8 +993,8 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
 
 
 SaveHierarchy::SaveHierarchy( VolumeBrickData* base, const std::string baseName )
-  : _depth( 0 ),
-    _baseName( baseName )
+    : _depth( 0 ),
+      _baseName( baseName )
 {
     short xDim( base->getNumBricks().x() );
     _depth = 0;
@@ -820,16 +1005,16 @@ SaveHierarchy::SaveHierarchy( VolumeBrickData* base, const std::string baseName 
     }
     _lodVec.resize( _depth );
 
-    _lodVec[ _depth-1 ] = base;
-    for( int depthIdx = _depth-1; depthIdx > 0; --depthIdx )
+    _lodVec[ _depth - 1 ] = base;
+    for( int depthIdx = _depth - 1; depthIdx > 0; --depthIdx )
     {
         Downsampler ds( _lodVec[ depthIdx ] );
-        _lodVec[ depthIdx-1 ] = ds.getLow();
+        _lodVec[ depthIdx - 1 ] = ds.getLow();
     }
 }
 SaveHierarchy::~SaveHierarchy()
 {
-    for( unsigned int idx=0; idx < _lodVec.size()-1; ++idx )
+    for( unsigned int idx = 0; idx < _lodVec.size() - 1; ++idx )
     {
         delete _lodVec[ idx ];
     }
@@ -863,7 +1048,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
         LFX_INFO_STATIC( "lfx.core.hier", "NULL brick " + brickName );
     }
 
-    if( depth < _depth-1 )
+    if( depth < _depth - 1 )
     {
         recurseSaveBricks( db, brickName + std::string( "0" ) );
         recurseSaveBricks( db, brickName + std::string( "1" ) );
@@ -897,26 +1082,33 @@ ChannelDataPtr LoadHierarchy::operator()()
 
     // Determine the hierarchy maxDepth from the longest hierarchy name.
     unsigned int maxDepth( 1 );
-    BOOST_FOREACH( const std::string& fName, results )
+    BOOST_FOREACH( const std::string & fName, results )
     {
         if( !valid( fName ) )
+        {
             continue;
+        }
 
         Poco::Path pocoPath( fName );
         const std::string& actualName( pocoPath.getFileName() );
         size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
         if( depth > maxDepth )
+        {
             maxDepth = depth;
+        }
     }
 
     // Create the ChannelData hierarchy.
-    ChannelDataPtr cdp( (ChannelData*)NULL );
-    try {
+    ChannelDataPtr cdp( ( ChannelData* )NULL );
+    try
+    {
         AssembleHierarchy ah( maxDepth, 60000. );
-        BOOST_FOREACH( const std::string& fName, results )
+        BOOST_FOREACH( const std::string & fName, results )
         {
             if( !valid( fName ) )
+            {
                 continue;
+            }
 
             // Create this ChannelData.
             ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
@@ -927,7 +1119,7 @@ ChannelDataPtr LoadHierarchy::operator()()
             const std::string& actualName( pocoPath.getFileName() );
             const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
             const size_t lastLoc( actualName.find_last_of( "-" ) );
-            const std::string hierarchyName( actualName.substr( firstLoc, lastLoc-firstLoc ) );
+            const std::string hierarchyName( actualName.substr( firstLoc, lastLoc - firstLoc ) );
 
             LFX_DEBUG_STATIC( "lfx.core.hier", "Adding " + fName + ": " + hierarchyName );
             cdImage->setName( "volumedata" );
@@ -935,7 +1127,9 @@ ChannelDataPtr LoadHierarchy::operator()()
         }
         ah.prune();
         cdp = ah.getRoot();
-    } catch( std::exception& /*exc*/ ) {
+    }
+    catch( std::exception& /*exc*/ )
+    {
         LFX_ERROR_STATIC( "lfx.core.hier", "Unable to assemble hierarchy." );
         return( cdp );
     }
@@ -951,10 +1145,14 @@ bool LoadHierarchy::valid( const std::string& fileName )
     const size_t firstDash( nameOnly.find_first_of( "-" ) );
     const size_t lastDash( nameOnly.find_last_of( "-" ) );
     if( ( firstDash == lastDash ) || ( firstDash == std::string::npos ) ||
-        ( lastDash == std::string::npos ) )
+            ( lastDash == std::string::npos ) )
+    {
         return( false );
+    }
     else
+    {
         return( true );
+    }
 }
 
 

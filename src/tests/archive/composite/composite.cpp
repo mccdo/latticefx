@@ -43,7 +43,7 @@ class ColorProcess : public Preprocess
 {
 public:
     ColorProcess()
-      : Preprocess()
+        : Preprocess()
     {
         setActionType( Preprocess::REPLACE_DATA );
     }
@@ -58,9 +58,9 @@ public:
 
         ChannelDataLODPtr cdLOD( new ChannelDataLOD( input->getName() ) );
         cdLOD->setRange( cdLOD->addChannel( input ),
-            RangeValues( 0., 40000. ) );
+                         RangeValues( 0., 40000. ) );
         cdLOD->setRange( cdLOD->addChannel( newData ),
-            RangeValues( 40000., FLT_MAX ) );
+                         RangeValues( 40000., FLT_MAX ) );
         return( cdLOD );
     }
 };
@@ -74,7 +74,7 @@ public:
         osg::Vec3Array* c( static_cast< osg::Vec3Array* >( cda->asOSGArray() ) );
 
         osg::Vec4Array* color( new osg::Vec4Array );
-        color->push_back( osg::Vec4( (*c)[ 0 ], 1.f ) );
+        color->push_back( osg::Vec4( ( *c )[ 0 ], 1.f ) );
 
         osg::Geode* geode( new osg::Geode() );
 

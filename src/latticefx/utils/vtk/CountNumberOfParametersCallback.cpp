@@ -85,28 +85,28 @@ void CountNumberOfParametersCallback::OperateOnDataset( vtkDataSet* dataset )
     }
 
     unsigned int numCellDataArrays = dataset->GetCellData()
-        ->GetNumberOfArrays();    
+                                     ->GetNumberOfArrays();
     // count the number of paraneters containing numComponents components...
     for( unsigned int i = 0; i < numCellDataArrays; i++ )
     {
         vtkDataArray* array = dataset->GetCellData()->GetArray( i );
         name = std::find( m_scalarNames.begin(),
-                         m_scalarNames.end(),
-                         array->GetName() );
+                          m_scalarNames.end(),
+                          array->GetName() );
         if( name != m_scalarNames.end() )
         {
             ///This scalar already exists
             continue;
         }
         name = std::find( m_vectorNames.begin(),
-                         m_vectorNames.end(),
-                         array->GetName() );
+                          m_vectorNames.end(),
+                          array->GetName() );
         if( name != m_vectorNames.end() )
         {
             ///This vector already exists
             continue;
         }
-        
+
         // also, ignore arrays of normals...
         if( array->GetNumberOfComponents() == 3 && ( ! strcmp( array->GetName(), "normals" ) ) )
         {
@@ -123,7 +123,7 @@ void CountNumberOfParametersCallback::OperateOnDataset( vtkDataSet* dataset )
             m_scalarNames.push_back( std::string( array->GetName() ) );
         }
     }
-    
+
 }
 //////////////////////////////////////////////////////////////////////////////////
 unsigned int CountNumberOfParametersCallback::GetNumberOfParameters( bool isVector )

@@ -252,7 +252,7 @@ bool cfdTranslatorToVTK::_writeToVTK( unsigned int fileNum )
         }
 
         lfx::vtk_utils::writeVtkThing( _outputDataset,
-                                           ( char* )_outfileNames.at( fileNum ).c_str(), 1 );
+                                       ( char* )_outfileNames.at( fileNum ).c_str(), 1 );
         return true;
     }
     else

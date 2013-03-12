@@ -39,12 +39,14 @@
 using Poco::Util::IniFileConfiguration;
 
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 OperationInfo::OperationInfo( OperationBasePtr instance, const std::string& className,
-            const std::string& baseClassName, const std::string& description )
+                              const std::string& baseClassName, const std::string& description )
     :
     _pluginName( PluginManager::instance()->getActivelyLoadingPlugin() ),
     _className( className ),
@@ -58,24 +60,40 @@ OperationInfo::OperationInfo( OperationBasePtr instance, const std::string& clas
 bool operator<( const OperationInfo& lhs, const OperationInfo& rhs )
 {
     if( lhs._pluginName < rhs._pluginName )
+    {
         return( true );
+    }
     else if( lhs._pluginName > rhs._pluginName )
+    {
         return( false );
+    }
 
     if( lhs._className < rhs._className )
+    {
         return( true );
+    }
     else if( lhs._className > rhs._className )
+    {
         return( false );
+    }
 
     if( lhs._baseClassName < rhs._baseClassName )
+    {
         return( true );
+    }
     else if( lhs._baseClassName > rhs._baseClassName )
+    {
         return( false );
+    }
 
     if( lhs._description < rhs._description )
+    {
         return( true );
+    }
     else
+    {
         return( false );
+    }
 }
 
 
@@ -88,7 +106,7 @@ PluginManager* PluginManager::instance( const int initFlags )
 }
 
 PluginManager::PluginManager( const int initFlags )
-  : LogBase( "lfx.core.plugmgr" )
+    : LogBase( "lfx.core.plugmgr" )
 {
     if( ( initFlags & USE_CURRENT_DIRECTORY ) != 0 )
     {
@@ -97,33 +115,47 @@ PluginManager::PluginManager( const int initFlags )
     if( ( initFlags & USE_LFX_PLUGIN_PATN_ENV_VAR ) != 0 )
     {
         std::string paths;
-        try {
+        try
+        {
             paths = Poco::Environment::get( "LATTICEFX_PLUGIN_PATH" );
-        } catch (...) {}
+        }
+        catch( ... ) {}
         if( !paths.empty() )
+        {
             addPaths( paths, false );
+        }
     }
     if( ( initFlags & USE_SYSTEM_PATH ) != 0 )
     {
         std::string paths;
-        try {
+        try
+        {
             paths = Poco::Environment::get( "PATH" );
-        } catch (...) {}
+        }
+        catch( ... ) {}
         if( !paths.empty() )
+        {
             addPaths( paths, false );
+        }
     }
     if( ( initFlags & USE_LD_LIBRARY_PATH ) != 0 )
     {
         std::string paths;
-        try {
+        try
+        {
             paths = Poco::Environment::get( "LD_LIBRARY_PATH" );
-        } catch (...) {}
+        }
+        catch( ... ) {}
         if( !paths.empty() )
+        {
             addPaths( paths, false );
+        }
     }
 
     if( !_paths.empty() )
+    {
         loadConfigFiles();
+    }
 }
 PluginManager::~PluginManager()
 {
@@ -133,16 +165,21 @@ void PluginManager::addPath( const std::string& path, const bool loadConfigs )
 {
     _paths.push_back( path );
     if( loadConfigs )
+    {
         loadConfigFiles();
+    }
 }
 void PluginManager::addPaths( const std::string& paths, const bool loadConfigs )
 {
     if( paths.empty() )
+    {
         return;
+    }
 
     const char sep( Poco::Path::pathSeparator() );
     std::string::size_type pos, lastPos( 0 );
-    do {
+    do
+    {
         pos = paths.find( sep, lastPos );
         const std::string::size_type len( pos - lastPos );
         if( LFX_LOG_TRACE )
@@ -152,12 +189,17 @@ void PluginManager::addPaths( const std::string& paths, const bool loadConfigs )
             LFX_TRACE( ostr.str() );
         }
         if( len > 0 )
+        {
             _paths.push_back( paths.substr( lastPos, len ) );
-        lastPos = pos+1;
-    } while( pos != paths.npos );
+        }
+        lastPos = pos + 1;
+    }
+    while( pos != paths.npos );
 
     if( loadConfigs )
+    {
         loadConfigFiles();
+    }
 }
 void PluginManager::clearPaths()
 {
@@ -202,20 +244,27 @@ bool PluginManager::loadPlugin( const std::string& name, const std::string& path
 bool PluginManager::internalLoadLibraries( const Poco::Path::StringVec& libNames )
 {
     if( libNames.empty() )
+    {
         return( false );
+    }
 
     // Attempt to load all shared libraries found.
     BOOST_FOREACH( Poco::Path::StringVec::value_type libName, libNames )
     {
         typedef Poco::ClassLoader< OperationBase > LibLoader;
         LibLoader loader;
-        try {
+        try
+        {
             loader.loadLibrary( libName );
-        } catch( Poco::LibraryLoadException lle ) {
+        }
+        catch( Poco::LibraryLoadException lle )
+        {
             LFX_ERROR( "Caught Poco::LibraryLoadException." );
             LFX_ERROR( "Exception message: " + lle.message() );
             return( false );
-        } catch( ... ) {
+        }
+        catch( ... )
+        {
             LFX_ERROR( "Can't load \"" + libName + "\", unknown exception." );
             return( false );
         }
@@ -251,11 +300,13 @@ void PluginManager::addOperation( const OperationInfo& opInfo )
 
 OperationBasePtr PluginManager::createOperation( const std::string& pluginName, const std::string& className )
 {
-    BOOST_FOREACH( const OperationInfo& opInfo, _opInfo )
+    BOOST_FOREACH( const OperationInfo & opInfo, _opInfo )
     {
-        if( ( opInfo._pluginName == pluginName ) && 
+        if( ( opInfo._pluginName == pluginName ) &&
                 ( opInfo._className == className ) )
+        {
             return( OperationBasePtr( opInfo._opInstance->create() ) );
+        }
     }
     return( OperationBasePtr( ( OperationBase* )( NULL ) ) );
 }
@@ -271,7 +322,9 @@ void PluginManager::loadConfigFiles()
     {
         Poco::Path path, libPath;
         if( !( path.tryParse( s.c_str() ) ) )
+        {
             continue;
+        }
         path.makeDirectory();
         path.setFileName( "*.ini" );
 
@@ -283,7 +336,8 @@ void PluginManager::loadConfigFiles()
 
             Poco::AutoPtr< IniFileConfiguration > conf( new IniFileConfiguration( iniFileName ) );
             PluginInfo pi;
-            try {
+            try
+            {
                 pi._name = conf->getString( "LatticeFXPlugin.Name" );
                 pi._description = conf->getString( "LatticeFXPlugin.Description" );
             }
@@ -295,9 +349,11 @@ void PluginManager::loadConfigFiles()
 
             pi._path = path;
             pi._path.setFileName( Poco::Path( iniFileName ).getBaseName()
-                + Poco::SharedLibrary::suffix() );
+                                  + Poco::SharedLibrary::suffix() );
             if( !( Poco::File( pi._path ).exists() ) )
+            {
                 continue;
+            }
 
             _pluginInfo.insert( pi );
 
@@ -312,9 +368,13 @@ void PluginManager::loadConfigFiles()
 bool operator<( const PluginManager::PluginInfo& lhs, const PluginManager::PluginInfo& rhs )
 {
     if( lhs._name < rhs._name )
+    {
         return( true );
+    }
     else
+    {
         return( false );
+    }
 }
 
 

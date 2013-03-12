@@ -25,11 +25,14 @@
 class vtkPlane;
 class vtkDataSet;
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /*!\file CuttingPlane.h
  * CuttingPlane API
@@ -39,15 +42,16 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT CuttingPlane
 {
 public:
-    typedef enum {
+    typedef enum
+    {
         X_PLANE,
         Y_PLANE,
         Z_PLANE
     } SliceDirection;
-    
+
     ///Constructor
     CuttingPlane( const double* bounds, SliceDirection xyz,
-                     const int numSteps = 10 );
+                  const int numSteps = 10 );
     ///Destructor
     ~CuttingPlane();
 

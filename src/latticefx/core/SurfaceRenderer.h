@@ -35,12 +35,15 @@
 
 
 // Forward
-namespace osg {
-    class Geometry;
+namespace osg
+{
+class Geometry;
 }
 
-namespace lfx {
-namespace core {
+namespace lfx
+{
+namespace core
+{
 
 
 // Forward
@@ -118,7 +121,8 @@ public:
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
-    typedef enum {
+    typedef enum
+    {
         VERTEX,        /**< "positions" */
         NORMAL,        /**< "normals" */
         WARP_VERTEX,   /**< "warp_vertex" */
@@ -144,8 +148,8 @@ private:
     template< class Archive >
     void serialize( Archive& ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
-        ar & BOOST_SERIALIZATION_NVP( _primitiveSetGenerator );
+        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
+        ar& BOOST_SERIALIZATION_NVP( _primitiveSetGenerator );
     }
 };
 

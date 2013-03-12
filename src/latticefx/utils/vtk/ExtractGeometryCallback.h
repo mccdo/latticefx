@@ -38,7 +38,7 @@ namespace lfx
 namespace vtk_utils
 {
 class LATTICEFX_VTK_UTILS_EXPORT ExtractGeometryCallback:
-            public DataObjectHandler::DatasetOperatorCallback
+    public DataObjectHandler::DatasetOperatorCallback
 {
 public:
     ///Constructor
@@ -55,7 +55,7 @@ public:
     vtkDataObject* GetDataset();
     ///The polydata representing of a surface
     void SetPolyDataSurface( vtkPolyData* surface );
-    
+
 protected:
     ///THe multibblock dataset holding the sub sample
     vtkMultiBlockDataSet* m_dataset;

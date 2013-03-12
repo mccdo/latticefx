@@ -50,7 +50,7 @@ void FindVertexCellsCallback::OperateOnDataset( vtkDataSet* dataset )
             tempPair.second = new double[3];
             tempCell->GetPoints()->GetPoint( 0, &*tempPair.second );
             //double* tempData = tempPair.second;
-            //std::cout << tempPair.first << " " << tempData[ 0 ] 
+            //std::cout << tempPair.first << " " << tempData[ 0 ]
             //    << " " << tempData[ 1 ] << " " << tempData[ 2 ] << std::endl;
 
             m_pointGroup.push_back( tempPair );

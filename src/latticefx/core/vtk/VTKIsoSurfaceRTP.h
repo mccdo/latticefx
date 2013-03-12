@@ -24,11 +24,14 @@
 
 #include <latticefx/core/vtk/Export.h>
 
-namespace lfx {
+namespace lfx
+{
 
-namespace core {
+namespace core
+{
 
-namespace vtk {
+namespace vtk
+{
 
 /** \class VTKIsosurfaceRTP VTKIsosurfaceRTP.h <latticefx/core/vtk/VTKIsosurfaceRTP.h>
  \brief Class the creates an isosurface polydata from a vtk dataset.
@@ -38,22 +41,22 @@ namespace vtk {
 class LATTICEFX_CORE_VTK_EXPORT VTKIsoSurfaceRTP : public VTKBaseRTP
 {
 public:
-    
+
     ///Default constructor
     VTKIsoSurfaceRTP()
-        : 
-        VTKBaseRTP( lfx::core::RTPOperation::Channel )    
+        :
+        VTKBaseRTP( lfx::core::RTPOperation::Channel )
     {
         ;
     }
-    
+
     ///Destructor
     virtual ~VTKIsoSurfaceRTP()
     {
         ;
     }
-    
-    ///We are going to be creating a ChannelDatavtkPolyData so we override the 
+
+    ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
