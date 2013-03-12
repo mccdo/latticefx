@@ -252,16 +252,33 @@ public:
     example, setRenderer(NULL) ), then DataSet will not create a scene graph. */
     bool updateAll();
 
+    enum {
+        NONE_DIRTY            = 0x0,
+        PREPROCESS_DIRTY      = ( 0x1 << 0 ),
+        RTPOPERATION_DIRTY   = ( 0x1 << 1 ),
+        RENDERER_DIRTY        = ( 0x1 << 2 ),
+        ALL_DIRTY = ( PREPROCESS_DIRTY | RTPOPERATION_DIRTY | RENDERER_DIRTY )
+    };
+
     /** \brief Set the pipeline dirty flags.
     \details If the pipeline is not dirty, updateAll() is a no-op.
-    Adding Preprocess, RTPOperation, and Renderer objects, as well
-    as ChannelData objects, automatically sets the pipeline dirty
-    ( setDirty(true) ). WARNING: Apps that remove objects from the
+    Adding Preprocess, RTPOperation, and Renderer objects automatically
+    sets the pipeline dirty for the corresponding pipeline stage, as well
+    as all downstream stages. Adding a ChannelData sets the entire
+    pipeline dirty. WARNING: Apps that remove objects from the
     ChannelData, Preprocess, and RTPOperation vectors must manually
-    call setDirty(). */
-    void setDirty( const bool dirty = true );
+    call setDirty().
+    
+    Predefined DataSet enum values for \c dirty (bits may be OR'd):
+    \li NONE_DIRTY
+    \li PREPROCESS_DIRTY
+    \li RTPOPERATIONS_DIRTY
+    \li RENDERER_DIRTY
+    \li ALL_DIRTY
+    */
+    void setDirty( const int dirty = ALL_DIRTY );
     /** \brief Get the pipeline dirty flag. */
-    bool getDirty() const;
+    int getDirty() const;
 
     ///\}
 
@@ -301,7 +318,7 @@ protected:
     ChannelDataList _maskList;
 
     osg::ref_ptr< osg::Group > _sceneGraph;
-    bool _dirty;
+    int _dirty;
 
 
 private:

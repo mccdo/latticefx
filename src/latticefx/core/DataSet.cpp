@@ -42,7 +42,7 @@ namespace core
 DataSet::DataSet()
     : LogBase( "lfx.core.dataset" ),
       _sceneGraph( new osg::Group ),
-      _dirty( true )
+      _dirty( ALL_DIRTY )
 {
 }
 DataSet::DataSet( const DataSet& rhs )
@@ -54,7 +54,7 @@ DataSet::DataSet( const DataSet& rhs )
       _ops( rhs._ops ),
       _renderer( rhs._renderer ),
       _maskList( rhs._maskList ),
-      _dirty( true )
+      _dirty( ALL_DIRTY )
 {
 }
 DataSet::~DataSet()
@@ -143,7 +143,7 @@ void DataSet::getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const
 void DataSet::addPreprocess( const PreprocessPtr pre )
 {
     _preprocess.push_back( pre );
-    setDirty();
+    setDirty( PREPROCESS_DIRTY );
 }
 void DataSet::insertPreprocess( const unsigned int index, const PreprocessPtr pre )
 {
@@ -154,7 +154,7 @@ void DataSet::insertPreprocess( const unsigned int index, const PreprocessPtr pr
         if( ++idx == index )
         {
             _preprocess.insert( it, pre );
-            setDirty();
+            setDirty( PREPROCESS_DIRTY );
             break;
         }
     }
@@ -167,7 +167,7 @@ void DataSet::insertPreprocess( const PreprocessPtr location, const PreprocessPt
         if( *it == location )
         {
             _preprocess.insert( it, pre );
-            setDirty();
+            setDirty( PREPROCESS_DIRTY );
             break;
         }
     }
@@ -208,7 +208,7 @@ const PreprocessList& DataSet::getPreprocesses() const
 void DataSet::addOperation( const RTPOperationPtr op )
 {
     _ops.push_back( op );
-    setDirty();
+    setDirty( RTPOPERATION_DIRTY );
 }
 void DataSet::insertOperation( const unsigned int index, const RTPOperationPtr op )
 {
@@ -219,7 +219,7 @@ void DataSet::insertOperation( const unsigned int index, const RTPOperationPtr o
         if( ++idx == index )
         {
             _ops.insert( it, op );
-            setDirty();
+            setDirty( RTPOPERATION_DIRTY );
             break;
         }
     }
@@ -232,7 +232,7 @@ void DataSet::insertOperation( const RTPOperationPtr location, const RTPOperatio
         if( *it == location )
         {
             _ops.insert( it, op );
-            setDirty();
+            setDirty( RTPOPERATION_DIRTY );
             break;
         }
     }
@@ -273,7 +273,7 @@ const RTPOperationList& DataSet::getOperations() const
 void DataSet::setRenderer( const RendererPtr renderer )
 {
     _renderer = renderer;
-    setDirty();
+    setDirty( RENDERER_DIRTY );
 }
 RendererPtr DataSet::getRenderer()
 {
@@ -287,6 +287,11 @@ const RendererPtr DataSet::getRenderer() const
 osg::Node* DataSet::getSceneData()
 {
     if( _sceneGraph->getNumChildren() == 0 )
+    {
+        setDirty();
+    }
+
+    if( getDirty() != NONE_DIRTY )
     {
         updateAll();
     }
@@ -312,16 +317,21 @@ bool DataSet::updateAll()
     }
 
     // Preprocess & Cache (if dirty)
-    updatePreprocessing();
+    if( _dirty & PREPROCESS_DIRTY )
+        updatePreprocessing();
 
     // Run Time Operations (if dirty)
-    updateRunTimeProcessing();
+    if( _dirty & ( PREPROCESS_DIRTY | RTPOPERATION_DIRTY ) )
+        updateRunTimeProcessing();
 
     // Rendering Framework support
-    _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
-    updateRenderer();
+    if( _dirty & ( PREPROCESS_DIRTY | RTPOPERATION_DIRTY | RENDERER_DIRTY ) )
+    {
+        _sceneGraph->removeChildren( 0, _sceneGraph->getNumChildren() );
+        updateRenderer();
+    }
 
-    _dirty = false;
+    setDirty( NONE_DIRTY );
     return( true );
 }
 
@@ -659,11 +669,11 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
     return( NULL );
 }
 
-void DataSet::setDirty( const bool dirty )
+void DataSet::setDirty( const int dirty )
 {
     _dirty = dirty;
 }
-bool DataSet::getDirty() const
+int DataSet::getDirty() const
 {
     return( _dirty );
 }
