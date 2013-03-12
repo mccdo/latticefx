@@ -148,7 +148,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
         // surface shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
         osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
-        geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
+        geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray3 );
         geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
     }
 
