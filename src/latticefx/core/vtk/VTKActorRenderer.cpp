@@ -38,7 +38,11 @@
 #include <osg/Node>
 #include <osg/LightModel>
 #include <osg/CopyOp>
+
+#include <latticefx/utils/CompilerGuards.h>
+DIAG_OFF( overloaded-virtual )
 #include <osgUtil/Optimizer>
+DIAG_ON( overloaded-virtual )
 
 namespace lfx
 {
