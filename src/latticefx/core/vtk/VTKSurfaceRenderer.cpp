@@ -104,6 +104,12 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 
     if( !m_scalarChannels.empty() )
     {
+        //Re-add all of the local inputs since they get removed in this call
+        //void DataSet::setInputs( OperationBasePtr opPtr, ChannelDataList& currentData )
+        for( std::map< std::string, lfx::core::ChannelDataPtr >::const_iterator iter = m_scalarChannels.begin(); iter != m_scalarChannels.end(); ++iter )
+        {
+            addInput( iter->second );
+        }
         setTransferFunctionInput( m_activeScalar );
         return( lfx::core::SurfaceRenderer::getSceneGraph( maskIn ) );
     }
@@ -212,6 +218,8 @@ void VTKSurfaceRenderer::SetupNormalAndVertexArrays( vtkPolyData* pd )
     addInput( cdv );
     ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
     addInput( cdn );
+    m_scalarChannels[ "vertices" ] = cdv;
+    m_scalarChannels[ "normals" ] = cdn;
 
     setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
     setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
@@ -227,6 +235,7 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
     vtkIdType* pts = 0;
     vtkIdType cStripNp = 0;
     int stripNum = 0;
+    bool haveScalarData = false;
     
     for( size_t i = 0; i < numDataArrays; ++i )
     {
@@ -248,10 +257,11 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
             lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( arrayName, colorArray.get() ) );
             addInput( colorData );
             m_scalarChannels[ arrayName ] = colorData;
+            haveScalarData = true;
         }
     }
 
-    if( !m_scalarChannels.empty() )
+    if( haveScalarData )
     {
         // Configure transfer function.
         setTransferFunctionInput( m_activeScalar );

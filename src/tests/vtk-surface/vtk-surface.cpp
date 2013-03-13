@@ -80,8 +80,7 @@ public:
             {
                 boost::dynamic_pointer_cast< lfx::core::vtk::VTKSurfaceRenderer >( m_dsp->getRenderer() )->SetActiveScalar( "first-scalar" );
                 m_dsp->setDirty( lfx::core::DataSet::RENDERER_DIRTY );
-                m_group->removeChild( 0, 1 );
-                m_group->addChild( m_dsp->getSceneData() );
+                m_dsp->getSceneData();
                 handled = true;
             }
         }
