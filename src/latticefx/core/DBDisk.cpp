@@ -27,6 +27,7 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 #include <Poco/Glob.h>
+#include <Poco/String.h>
 
 #include <iostream>
 
@@ -100,12 +101,12 @@ osg::Image* DBDisk::loadImage( const DBKey& dbKey )
 
 bool DBDisk::storeArray( const osg::Array* array, const DBKey& dbKey )
 {
-    std::string fileName( fileNameFromDBKey( dbKey ) );
+    std::string fileName( ensureOSG( fileNameFromDBKey( dbKey ) ) );
     return( osgDB::writeObjectFile( *array, fileName ) );
 }
 osg::Array* DBDisk::loadArray( const DBKey& dbKey )
 {
-    std::string fileName( fileNameFromDBKey( dbKey ) );
+    std::string fileName( ensureOSG( fileNameFromDBKey( dbKey ) ) );
     return( dynamic_cast< osg::Array* >( osgDB::readObjectFile( fileName ) ) );
 }
 
@@ -153,6 +154,24 @@ std::string DBDisk::fileNameFromDBKey( const DBKey& dbKey ) const
         }
     }
     return( pocoPath.toString() );
+}
+
+std::string DBDisk::ensureOSG( const std::string& name )
+{
+    // If file extension is .ive, return file name with .osg
+    // extension instead. Otherwise, return unaltered input.
+    // Required because OSG Arrays do not write to .ive format.
+
+    const std::string nameLower( Poco::toLower( name ) );
+    const std::string::size_type pos( nameLower.find_last_of( ".ive" ) );
+    if( pos == nameLower.length() - 1 )
+    {
+        return( name.substr( 0, pos-3 ) + ".osg" );
+    }
+    else
+    {
+        return( name );
+    }
 }
 
 

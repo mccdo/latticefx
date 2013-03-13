@@ -42,11 +42,12 @@ using namespace lfx::core;
 
 bool performTests( DBBasePtr db )
 {
-    const std::string arraySuffix( ( db->getImplementationType() == DBBase::DISK ) ? ".osg" : "" );
-    const std::string imageSuffix( ( db->getImplementationType() == DBBase::DISK ) ? ".ive" : "" );
+    const std::string keySuffix( ( db->getImplementationType() == DBBase::DISK ) ? ".ive" : "" );
 
     {
-        const DBKey localKey( "floats-test" + arraySuffix );
+        LFX_CRITICAL_STATIC( logstr, "Testing simple array save/load to DB." );
+
+        const DBKey localKey( "floats-test" + keySuffix );
         osg::ref_ptr< osg::FloatArray > floatsOrig( new osg::FloatArray() );
         for( unsigned int idx = 0; idx < 100; ++idx )
         {
@@ -81,6 +82,11 @@ bool performTests( DBBasePtr db )
             }
         }
     }
+
+    {
+        LFX_CRITICAL_STATIC( logstr, "Testing TEST2." );
+    }
+
 
     /*
     NameStringGenerator nsg( osg::Vec3s( 128, 128, 128 ) );
@@ -132,6 +138,6 @@ int main( int argc, char** argv )
     //tempDBFile.remove( true );
 
 
-    LFX_CRITICAL_STATIC( logstr, "Pass." );
+    LFX_CRITICAL_STATIC( logstr, "\nPass." );
     return( 0 );
 }

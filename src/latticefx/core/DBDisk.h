@@ -71,6 +71,12 @@ public:
 protected:
     std::string fileNameFromDBKey( const DBKey& dbKey ) const;
 
+    /** \brief Convert file name extension from .ive to .osg if necessary.
+    \details OSG does not support writing an osg::Array to .ive. So, if the
+    \c name parameter has a .ive extension, change it to .osg and return the
+    new name. If name does not end in .ive, return \c name. */
+    static std::string ensureOSG( const std::string& name );
+
     std::string _rootPath;
 };
 
