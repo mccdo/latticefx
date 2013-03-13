@@ -24,12 +24,12 @@
 
 #include <latticefx/core/vtk/Export.h>
 
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+
 namespace lfx
 {
-
 namespace core
 {
-
 namespace vtk
 {
 
@@ -74,6 +74,10 @@ protected:
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering
     std::string m_activeScalar;
+    ///Scalar channel data
+    std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
+    ///The raw dataset object
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
 };
 
 typedef boost::shared_ptr< VTKVectorRenderer > VTKVectorRendererPtr;

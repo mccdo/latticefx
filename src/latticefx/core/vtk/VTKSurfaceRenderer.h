@@ -97,8 +97,6 @@ protected:
     std::string m_colorByScalar;
     ///The raw VTK data to render
     vtkPolyData* m_pd;
-    ///The scalar range for the color component of the vis feature
-    double m_scalarRange[ 2 ];
     ///Scalar channel data
     std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
     ///The raw dataset object
