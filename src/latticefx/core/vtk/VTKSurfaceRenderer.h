@@ -83,6 +83,12 @@ protected:
     ///Create the raw OSG primitives from the VTK data
     void ExtractVTKPrimitives();
 
+    ///Setup the normal and vertex osg arrays
+    void SetupNormalAndVertexArrays( vtkPolyData* pd );
+    
+    ///Setup the osg color arrays
+    void SetupColorArrays( vtkPolyData* pd );
+
     ///The active vector to set which vector to use for rendering
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering

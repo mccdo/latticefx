@@ -110,9 +110,6 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 
     ExtractVTKPrimitives();
 
-    setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
-    setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
-
 #if WRITE_IMAGE_DATA
     //osgDB::writeNodeFile( *(tempGeode.get()), "gpu_vector_field.ive" );
 #endif
@@ -153,13 +150,10 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     triangleStripper->Delete();
 
     vtkPolyData* pd = reTriangleStripper->GetOutput();
-    vtkPointData* pointData = pd->GetPointData();
-    vtkPoints* points = pd->GetPoints();
-    vtkCellArray* strips = pd->GetStrips();
 
     {
         VTKPrimitiveSetGeneratorPtr primitiveGenerator =
-            VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( strips ) );
+            VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( pd->GetStrips() ) );
         setPrimitiveSetGenerator( primitiveGenerator );
     }
 
@@ -177,67 +171,83 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     }*/
 
     //Setup normals and verts
-    {
-        double x[3];
-        double cnormal[3];
-        osg::Vec3 startVec;
-        osg::Vec3 normal;
-        vtkIdType* pts = 0;
-        vtkIdType cStripNp = 0;
-        int stripNum = 0;
-        vtkDataArray* normals = pointData->GetVectors( "Normals" );
-        osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
-        osg::ref_ptr< osg::Vec3Array > n = new osg::Vec3Array;
-
-        for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
-        {
-            for( vtkIdType i = 0; i < cStripNp; ++i )
-            {
-                points->GetPoint( pts[i], x );
-                startVec.set( x[0], x[1], x[2] );
-                normals->GetTuple( pts[i], cnormal );
-                normal.set( cnormal[0], cnormal[1], cnormal[2] );
-
-                v->push_back( startVec );
-                n->push_back( normal );
-            }
-        }
-        ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
-        addInput( cdv );
-        ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
-        addInput( cdn );
-    }
+    SetupNormalAndVertexArrays( pd );
 
     //Setup the scalar arrays
-    {
-        size_t numDataArrays = pointData->GetNumberOfArrays();
-        double val;
-        double scalarRange[ 2 ];
-        vtkIdType* pts = 0;
-        vtkIdType cStripNp = 0;
-        int stripNum = 0;
+    SetupColorArrays( pd );
 
-        for( size_t i = 0; i < numDataArrays; ++i )
+    reTriangleStripper->Delete();
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::SetupNormalAndVertexArrays( vtkPolyData* pd )
+{
+    vtkPointData* pointData = pd->GetPointData();
+    vtkPoints* points = pd->GetPoints();
+    vtkCellArray* strips = pd->GetStrips();
+    double x[3];
+    double cnormal[3];
+    osg::Vec3 startVec;
+    osg::Vec3 normal;
+    vtkIdType* pts = 0;
+    vtkIdType cStripNp = 0;
+    int stripNum = 0;
+    vtkDataArray* normals = pointData->GetVectors( "Normals" );
+    osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
+    osg::ref_ptr< osg::Vec3Array > n = new osg::Vec3Array;
+    
+    for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
+    {
+        for( vtkIdType i = 0; i < cStripNp; ++i )
         {
-            vtkDataArray* scalarArray = pointData->GetArray( i );
-            if( scalarArray->GetNumberOfComponents() == 1 )
+            points->GetPoint( pts[i], x );
+            startVec.set( x[0], x[1], x[2] );
+            normals->GetTuple( pts[i], cnormal );
+            normal.set( cnormal[0], cnormal[1], cnormal[2] );
+            
+            v->push_back( startVec );
+            n->push_back( normal );
+        }
+    }
+    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
+    addInput( cdv );
+    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
+    addInput( cdn );
+
+    setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
+    setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
+{
+    vtkPointData* pointData = pd->GetPointData();
+    vtkCellArray* strips = pd->GetStrips();
+    size_t numDataArrays = pointData->GetNumberOfArrays();
+    double val;
+    double scalarRange[ 2 ];
+    vtkIdType* pts = 0;
+    vtkIdType cStripNp = 0;
+    int stripNum = 0;
+    
+    for( size_t i = 0; i < numDataArrays; ++i )
+    {
+        vtkDataArray* scalarArray = pointData->GetArray( i );
+        if( scalarArray->GetNumberOfComponents() == 1 )
+        {
+            osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
+            const std::string arrayName = scalarArray->GetName();
+            m_dataObject->GetScalarRange( arrayName, scalarRange );
+            for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
             {
-                osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
-                const std::string arrayName = scalarArray->GetName();
-                m_dataObject->GetScalarRange( arrayName, scalarRange );
-                for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
+                for( vtkIdType j = 0; j < cStripNp; ++j )
                 {
-                    for( vtkIdType j = 0; j < cStripNp; ++j )
-                    {
-                        scalarArray->GetTuple( pts[j], &val );
-                        val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
-                        colorArray->push_back( val );
-                    }
+                    scalarArray->GetTuple( pts[j], &val );
+                    val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+                    colorArray->push_back( val );
                 }
-                lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( arrayName, colorArray.get() ) );
-                addInput( colorData );
-                m_scalarChannels[ arrayName ] = colorData;
             }
+            lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( arrayName, colorArray.get() ) );
+            addInput( colorData );
+            m_scalarChannels[ arrayName ] = colorData;
         }
     }
 
@@ -248,8 +258,6 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
         setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
-
-    reTriangleStripper->Delete();
 }
 ////////////////////////////////////////////////////////////////////////////////
 }
