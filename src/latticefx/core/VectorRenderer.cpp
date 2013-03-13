@@ -50,8 +50,7 @@ namespace lfx
 {
 namespace core
 {
-
-
+////////////////////////////////////////////////////////////////////////////////
 VectorRenderer::VectorRenderer()
     : Renderer( "vec" ),
       _pointStyle( SIMPLE_POINTS )
@@ -83,15 +82,17 @@ VectorRenderer::VectorRenderer()
     info = UniformInfo( "hmInput", osg::Uniform::SAMPLER_3D, "Hardware mask input data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 }
+////////////////////////////////////////////////////////////////////////////////
 VectorRenderer::VectorRenderer( const VectorRenderer& rhs )
     : Renderer( rhs ),
       _pointStyle( rhs._pointStyle )
 {
 }
+////////////////////////////////////////////////////////////////////////////////
 VectorRenderer::~VectorRenderer()
 {
 }
-
+////////////////////////////////////////////////////////////////////////////////
 osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
@@ -141,7 +142,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
             // simplepoints shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
             osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
-            geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray );
+            geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray3 );
             geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
         }
 
@@ -364,7 +365,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 
     return( geode.release() );
 }
-
+////////////////////////////////////////////////////////////////////////////////
 osg::StateSet* VectorRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
@@ -482,18 +483,17 @@ osg::StateSet* VectorRenderer::getRootState()
 
     return( stateSet.release() );
 }
-
-
+////////////////////////////////////////////////////////////////////////////////
 void VectorRenderer::setPointStyle( const PointStyle& pointStyle )
 {
     _pointStyle = pointStyle;
 }
+////////////////////////////////////////////////////////////////////////////////
 VectorRenderer::PointStyle VectorRenderer::getPointStyle() const
 {
     return( _pointStyle );
 }
-
-
+////////////////////////////////////////////////////////////////////////////////
 osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
 {
     osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
@@ -520,8 +520,7 @@ osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
 
     return( tex.release() );
 }
-
-
+////////////////////////////////////////////////////////////////////////////////
 // core
 }
 // lfx
