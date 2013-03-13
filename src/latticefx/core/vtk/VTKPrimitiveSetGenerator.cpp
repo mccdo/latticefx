@@ -40,11 +40,21 @@ VTKPrimitiveSetGenerator::VTKPrimitiveSetGenerator( const VTKPrimitiveSetGenerat
     ;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom )
+void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer*, osg::Geometry* geom )
 {
-    //int numStrips = polydata->GetNumberOfStrips();
-    vtkIdType cStripNp;
-    vtkIdType* pts;
+    if( !m_primitives.empty() )
+    {
+        for( std::vector< osg::ref_ptr< osg::DrawElementsUInt > >::const_iterator
+            iter = m_primitives.begin(); iter != m_primitives.end(); ++iter )
+        {
+            geom->addPrimitiveSet( iter->get() );
+        }
+
+        return;
+    }
+
+    vtkIdType cStripNp = 0;
+    vtkIdType* pts = 0;
     int stripNum = 0;
     int startVertexIdx = 0;
     for( m_triStrips->InitTraversal();  m_triStrips->GetNextCell( cStripNp, pts ); ++stripNum )
@@ -64,10 +74,9 @@ void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer* /* surfaceRend
         startVertexIdx += cStripNp;
 
         geom->addPrimitiveSet( deui.get() );
+        
+        m_primitives.push_back( deui.get() );
     }
-    //osg::DrawArrays* da( new osg::DrawArrays( GL_TRIANGLES, 0,
-    //                                         geom->getVertexArray()->getNumElements() ) );
-    //geom->addPrimitiveSet( da );
 }
 ////////////////////////////////////////////////////////////////////////////////
 }

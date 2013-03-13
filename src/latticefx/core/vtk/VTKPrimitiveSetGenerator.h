@@ -24,6 +24,11 @@
 
 #include <latticefx/core/vtk/Export.h>
 
+#include <osg/ref_ptr>
+#include <osg/PrimitiveSet>
+
+#include <vector>
+
 class vtkCellArray;
 
 namespace lfx
@@ -56,19 +61,21 @@ public:
     ///Destructor
     virtual ~VTKPrimitiveSetGenerator()
     {
-        //m_triStrips->Delete();
+        ;
     }
 
     ///Copy constructor
     VTKPrimitiveSetGenerator( const VTKPrimitiveSetGenerator& rhs );
 
-    virtual void operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom );
+    virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom );
 
 protected:
     ///The triangle strips from vtkPolyData
     vtkCellArray* m_triStrips;
+    ///Store the raw OSG primitives
+    std::vector< osg::ref_ptr< osg::DrawElementsUInt > > m_primitives;
 };
-
+///Smart pointer
 typedef boost::shared_ptr< VTKPrimitiveSetGenerator > VTKPrimitiveSetGeneratorPtr;
 
 }

@@ -102,64 +102,8 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         m_activeScalar = m_colorByScalar;
     }
     dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
+
     ExtractVTKPrimitives();
-
-    /*size_t dataSize = points->GetNumberOfPoints();
-
-    vtkPointData* pointData = m_pd->GetPointData();
-    vtkDataArray* vectorArray = pointData->GetVectors(m_activeVector.c_str());
-    vtkDataArray* scalarArray = pointData->GetScalars(m_activeScalar.c_str());
-
-    double x[3];
-    double val;
-
-    osg::ref_ptr< osg::Vec3Array > vertArray( new osg::Vec3Array );
-    vertArray->resize( dataSize );
-    osg::ref_ptr< osg::Vec3Array > dirArray( new osg::Vec3Array );
-    dirArray->resize( dataSize );
-    osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
-    colorArray->resize( dataSize );
-
-    for( size_t i = 0; i < dataSize; ++i )
-    {
-        //Get Position data
-        points->GetPoint( i, x );
-        (*vertArray)[ i ].set( x[0], x[1], x[2] );
-
-        if( scalarArray )
-        {
-            //Setup the color array
-            scalarArray->GetTuple( i, &val );
-            val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
-            (*colorArray)[ i ] = val;
-            //lut->GetColor( val, rgb );
-            //*scalarI++ = val;//rgb[0];
-            //*scalarI++ = rgb[1];
-            //*scalarI++ = rgb[2];
-        }
-
-        if( vectorArray )
-        {
-            //Get Vector data
-            vectorArray->GetTuple( i, x );
-            osg::Vec3 v( x[0], x[1], x[2] );
-            v.normalize();
-            (*dirArray)[ i ].set( v.x(), v.y(), v.z() );
-        }
-    }*/
-
-    //setPointStyle( lfx::core::VectorRenderer::DIRECTION_VECTORS );
-
-    //by this stage of the game the render has already had setInputs called
-    //on it by lfx::core::DataSet therefore we can modify the _inputs array
-    /*lfx::core::ChannelDataOSGArrayPtr vertData( new lfx::core::ChannelDataOSGArray( vertArray.get(), "positions" ) );
-    addInput( vertData );
-
-    lfx::core::ChannelDataOSGArrayPtr dirData( new lfx::core::ChannelDataOSGArray( dirArray.get(), "directions" ) );
-    addInput( dirData );*/
-
-    //lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( colorArray.get(), "scalar" ) );
-    //addInput( colorData );
 
     setInputNameAlias( SurfaceRenderer::VERTEX, "vertices" );
     setInputNameAlias( SurfaceRenderer::NORMAL, "normals" );
@@ -229,39 +173,29 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
 
     int numVetex = 0;
     vtkIdType* pts = 0;
-    vtkIdType cStripNp;
+    vtkIdType cStripNp = 0;
     int stripNum = 0;
 
-    for( strips->InitTraversal();
-            ( strips->GetNextCell( cStripNp, pts ) );
-            ++stripNum )
+    for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
     {
         numVetex += cStripNp;
     }
 
-    double val;
-
     osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
     //colorArray->resize( dataSize );
 
-    double x[3];
-    double cnormal[3];
-    double displacement[3];
-    double cVal;
-
     {
-        //osg::Vec3 destVec;
-        //osg::Vec3 ccolor;
+        double val;
+        double x[3];
+        double cnormal[3];
         osg::Vec3 startVec;
         osg::Vec3 normal;
-        //osg::Vec2 coord;
 
         stripNum = 0;
 
-        for( strips->InitTraversal(); ( strips->GetNextCell( cStripNp, pts ) );
-                stripNum++ )
+        for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
         {
-            for( int i = 0; i < cStripNp; ++i )
+            for( vtkIdType i = 0; i < cStripNp; ++i )
             {
                 points->GetPoint( pts[i], x );
                 startVec.set( x[0], x[1], x[2] );
@@ -277,34 +211,6 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
                     val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
                     colorArray->push_back( val );
                 }
-
-                //cVal = dataArray->GetTuple1( pts[i] );
-                //scalarArray.push_back( cVal );
-                //lut->GetColor(cVal,curColor);
-
-                //ccolor.set(curColor[0],curColor[1],curColor[2]);
-                //colors->push_back( ccolor);
-
-                //coord is the cord in the texture for strip x and vertex y in the "scale term" of s and t
-
-                /*int xx = ( v->size() - 1 ) % s;
-                int yy = ( v->size() - 1 ) / s;
-                coord.set( ( ( float )( xx ) / s ), ( ( float )( yy ) / t ) );
-
-                tc->push_back( coord );
-
-                if( vectorArray )
-                {
-                    vectorArray->GetTuple( pts[i], displacement );
-                }
-                else
-                {
-                    displacement[ 0 ] = 0.;
-                    displacement[ 1 ] = 0.;
-                    displacement[ 2 ] = 0.;
-                }
-                destVec.set( x[0] + displacement[0], x[1] + displacement[1], x[2] + displacement[2] );
-                vDest->push_back( destVec );*/
             }
         }
     }
