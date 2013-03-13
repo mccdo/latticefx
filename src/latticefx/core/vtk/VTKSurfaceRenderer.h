@@ -22,6 +22,8 @@
 
 #include <latticefx/core/SurfaceRenderer.h>
 
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+
 #include <latticefx/core/vtk/Export.h>
 
 class vtkPolyData;
@@ -91,6 +93,10 @@ protected:
     vtkPolyData* m_pd;
     ///The scalar range for the color component of the vis feature
     double m_scalarRange[ 2 ];
+    ///Scalar channel data
+    std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
+    ///The raw dataset object
+    lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
 };
 
 typedef boost::shared_ptr< VTKSurfaceRenderer > VTKSurfaceRendererPtr;

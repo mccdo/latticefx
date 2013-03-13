@@ -58,88 +58,42 @@ using namespace lfx::core;
 
 
 const std::string logstr( "lfx.demo" );
-
-
-void dumpUniformInfo( const RendererPtr renderOp )
+////////////////////////////////////////////////////////////////////////////////
+class MyKeyHandler : public osgGA::GUIEventHandler
 {
-    LFX_CRITICAL_STATIC( logstr, "Available uniforms:" );
-
-    const Renderer::UniformInfoVector& infoVec( renderOp->getUniforms() );
-    BOOST_FOREACH( const Renderer::UniformInfo & info, infoVec )
+public:
+    MyKeyHandler( lfx::core::DataSetPtr dsp, osg::Group* group )
+        :
+        m_dsp( dsp ),
+        m_group( group ),
+        _mode( false )
     {
-        if( info._access == Renderer::UniformInfo::PUBLIC )
-        {
-            LFX_CRITICAL_STATIC( logstr, info._prototype->getName() + "\t" +
-                                 Renderer::uniformTypeAsString( info._prototype->getType() ) + "\t" +
-                                 info._description );
-
-            // Display the default value.
-            std::ostringstream ostr;
-            ostr << "\tDefault: ";
-            switch( info._prototype->getType() )
-            {
-            case osg::Uniform::FLOAT_MAT4:
-            {
-                osg::Matrix mat;
-                info._prototype->get( mat );
-                ostr << mat;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC2:
-            {
-                osg::Vec2f vec2;
-                info._prototype->get( vec2 );
-                ostr << vec2;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC3:
-            {
-                osg::Vec3f vec3;
-                info._prototype->get( vec3 );
-                ostr << vec3;
-                break;
-            }
-            case osg::Uniform::FLOAT_VEC4:
-            {
-                osg::Vec4f vec4;
-                info._prototype->get( vec4 );
-                ostr << vec4;
-                break;
-            }
-            case osg::Uniform::FLOAT:
-            {
-                float f;
-                info._prototype->get( f );
-                ostr << f;
-                break;
-            }
-            case osg::Uniform::SAMPLER_1D:
-            case osg::Uniform::SAMPLER_2D:
-            case osg::Uniform::SAMPLER_3D:
-            case osg::Uniform::INT:
-            {
-                int i;
-                info._prototype->get( i );
-                ostr << i;
-                break;
-            }
-            case osg::Uniform::BOOL:
-            {
-                bool b;
-                info._prototype->get( b );
-                ostr << b;
-                break;
-            }
-            default:
-            {
-                std::cout << "unsupported uniform type." << std::endl;
-                break;
-            }
-            }
-            LFX_CRITICAL_STATIC( logstr, ostr.str() );
-        }
+        ;
     }
-}
+    
+    virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* )
+    {
+        bool handled( false );
+        if( ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN )
+        {
+            if( ea.getKey() == 'a' )
+            {
+                boost::dynamic_pointer_cast< lfx::core::vtk::VTKSurfaceRenderer >( m_dsp->getRenderer() )->SetActiveScalar( "first-scalar" );
+                m_dsp->setDirty( lfx::core::DataSet::RENDERER_DIRTY );
+                m_group->removeChild( 0, 1 );
+                m_group->addChild( m_dsp->getSceneData() );
+                handled = true;
+            }
+        }
+        return( handled );
+    }
+    
+protected:
+    lfx::core::DataSetPtr m_dsp;
+    osg::ref_ptr< osg::Group > m_group;
+    bool _mode;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 {
@@ -199,15 +153,16 @@ int main( int argc, char** argv )
     //just one instance of it
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
 
+    lfx::core::DataSetPtr dsp1( new lfx::core::DataSet() );
     {
         //Create the DataSet for this visualization with VTK
-        lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-        dsp->addChannel( dobjPtr );
+        dsp1->addChannel( dobjPtr );
+
         lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
         vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::X_PLANE );
         vectorRTP->SetRequestedValue( 50.0 );
         vectorRTP->addInput( "vtkDataObject" );
-        dsp->addOperation( vectorRTP );
+        dsp1->addOperation( vectorRTP );
 
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
@@ -215,12 +170,12 @@ int main( int argc, char** argv )
         renderOp->SetActiveScalar( "200_to_1000" );
         renderOp->addInput( "vtkPolyDataMapper" );
         renderOp->addInput( "vtkDataObject" );
-        dsp->setRenderer( renderOp );
+        dsp1->setRenderer( renderOp );
 
         std::cout << "lfx...creating data..." << std::endl;
-        tempGroup->addChild( dsp->getSceneData() );
+        tempGroup->addChild( dsp1->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
-        dumpUniformInfo( renderOp );
+        renderOp->dumpUniformInfo( std::cout );
     }
 
     {
@@ -245,7 +200,7 @@ int main( int argc, char** argv )
         std::cout << "lfx...creating data..." << std::endl;
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
-        dumpUniformInfo( renderOp2 );
+        renderOp2->dumpUniformInfo( std::cout );
     }
 
     //And do not forget to cleanup the algorithm executive prototype
@@ -255,6 +210,7 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( tempGroup.get() );
+    viewer.addEventHandler( new MyKeyHandler( dsp1, tempGroup.get() ) );
 
     return( viewer.run() );
 }

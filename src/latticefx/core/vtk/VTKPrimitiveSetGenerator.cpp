@@ -19,8 +19,6 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/VTKPrimitiveSetGenerator.h>
 
-#include <vtkCellArray.h>
-
 #include <osg/Geometry>
 
 namespace lfx
@@ -57,6 +55,7 @@ void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer*, osg::Geometry
     vtkIdType* pts = 0;
     int stripNum = 0;
     int startVertexIdx = 0;
+
     for( m_triStrips->InitTraversal();  m_triStrips->GetNextCell( cStripNp, pts ); ++stripNum )
     {
         if( cStripNp <= 0 )
@@ -72,9 +71,7 @@ void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer*, osg::Geometry
         }
 
         startVertexIdx += cStripNp;
-
         geom->addPrimitiveSet( deui.get() );
-        
         m_primitives.push_back( deui.get() );
     }
 }

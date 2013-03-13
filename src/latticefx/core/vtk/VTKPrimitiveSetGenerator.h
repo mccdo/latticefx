@@ -29,7 +29,7 @@
 
 #include <vector>
 
-class vtkCellArray;
+#include <vtkCellArray.h>
 
 namespace lfx
 {
@@ -53,15 +53,15 @@ public:
     VTKPrimitiveSetGenerator( vtkCellArray* const strips )
         :
         lfx::core::PrimitiveSetGenerator(),
-        m_triStrips( strips )
+        m_triStrips( vtkCellArray::New() )
     {
-        ;
+        m_triStrips->DeepCopy( strips );
     }
 
     ///Destructor
     virtual ~VTKPrimitiveSetGenerator()
     {
-        ;
+        m_triStrips->Delete();
     }
 
     ///Copy constructor

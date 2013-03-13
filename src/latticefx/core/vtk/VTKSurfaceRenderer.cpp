@@ -82,9 +82,9 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         return 0;
     }
 
-    lfx::core::vtk::ChannelDatavtkDataObjectPtr dataObject =
+    m_dataObject =
         boost::dynamic_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) );
-    if( !dataObject )
+    if( !m_dataObject )
     {
         std::cout << "No vtkDataObject input was specified to VTKSurfaceRenderer." << std::endl;
         return 0;
@@ -101,7 +101,12 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
     {
         m_activeScalar = m_colorByScalar;
     }
-    dataObject->GetScalarRange( m_activeScalar, m_scalarRange );
+
+    if( !m_scalarChannels.empty() )
+    {
+        setTransferFunctionInput( m_activeScalar );
+        return( lfx::core::SurfaceRenderer::getSceneGraph( maskIn ) );
+    }
 
     ExtractVTKPrimitives();
 
@@ -147,20 +152,10 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     triangleFilter->Delete();
     triangleStripper->Delete();
 
-    m_pd = reTriangleStripper->GetOutput();
-
-    vtkPointData* pointData = m_pd->GetPointData();
-    vtkPoints* points = m_pd->GetPoints();
-    vtkCellArray* strips = m_pd->GetStrips();
-    vtkDataArray* normals = pointData->GetVectors( "Normals" );
-    vtkDataArray* scalarArray = pointData->GetScalars( m_activeScalar.c_str() );
-    //vtkDataArray* vectorArray = pointData->GetVectors( disp.c_str() );
-
-    osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
-    //osg::ref_ptr< osg::Vec3Array> vDest = new osg::Vec3Array;
-    osg::ref_ptr< osg::Vec3Array > n = new osg::Vec3Array;
-    //osg::Vec3Array* colors = new osg::Vec3Array;
-    //osg::Vec2Array* tc = new osg::Vec2Array;
+    vtkPolyData* pd = reTriangleStripper->GetOutput();
+    vtkPointData* pointData = pd->GetPointData();
+    vtkPoints* points = pd->GetPoints();
+    vtkCellArray* strips = pd->GetStrips();
 
     {
         VTKPrimitiveSetGeneratorPtr primitiveGenerator =
@@ -171,7 +166,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     //Number of vertex is potentially bigger than number of points,
     //Since the same points can appear in different triangle strip.
 
-    int numVetex = 0;
+    /*int numVetex = 0;
     vtkIdType* pts = 0;
     vtkIdType cStripNp = 0;
     int stripNum = 0;
@@ -179,19 +174,20 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
     {
         numVetex += cStripNp;
-    }
+    }*/
 
-    osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
-    //colorArray->resize( dataSize );
-
+    //Setup normals and verts
     {
-        double val;
         double x[3];
         double cnormal[3];
         osg::Vec3 startVec;
         osg::Vec3 normal;
-
-        stripNum = 0;
+        vtkIdType* pts = 0;
+        vtkIdType cStripNp = 0;
+        int stripNum = 0;
+        vtkDataArray* normals = pointData->GetVectors( "Normals" );
+        osg::ref_ptr< osg::Vec3Array > v = new osg::Vec3Array;
+        osg::ref_ptr< osg::Vec3Array > n = new osg::Vec3Array;
 
         for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
         {
@@ -204,34 +200,58 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
 
                 v->push_back( startVec );
                 n->push_back( normal );
+            }
+        }
+        ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
+        addInput( cdv );
+        ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
+        addInput( cdn );
+    }
 
-                if( scalarArray )
+    //Setup the scalar arrays
+    {
+        size_t numDataArrays = pointData->GetNumberOfArrays();
+        double val;
+        double scalarRange[ 2 ];
+        vtkIdType* pts = 0;
+        vtkIdType cStripNp = 0;
+        int stripNum = 0;
+
+        for( size_t i = 0; i < numDataArrays; ++i )
+        {
+            vtkDataArray* scalarArray = pointData->GetArray( i );
+            if( scalarArray->GetNumberOfComponents() == 1 )
+            {
+                osg::ref_ptr< osg::FloatArray > colorArray( new osg::FloatArray );
+                const std::string arrayName = scalarArray->GetName();
+                m_dataObject->GetScalarRange( arrayName, scalarRange );
+                for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
                 {
-                    scalarArray->GetTuple( pts[i], &val );
-                    val = vtkMath::ClampAndNormalizeValue( val, m_scalarRange );
-                    colorArray->push_back( val );
+                    for( vtkIdType j = 0; j < cStripNp; ++j )
+                    {
+                        scalarArray->GetTuple( pts[j], &val );
+                        val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
+                        colorArray->push_back( val );
+                    }
                 }
+                lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( arrayName, colorArray.get() ) );
+                addInput( colorData );
+                m_scalarChannels[ arrayName ] = colorData;
             }
         }
     }
 
-    ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( "vertices", v.get() ) );
-    addInput( cdv );
-    ChannelDataOSGArrayPtr cdn( new ChannelDataOSGArray( "normals", n.get() ) );
-    addInput( cdn );
-
-    if( scalarArray )
+    if( !m_scalarChannels.empty() )
     {
-        lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( "scalar", colorArray.get() ) );
-        addInput( colorData );
-
         // Configure transfer function.
-        setTransferFunctionInput( "scalar" );
+        setTransferFunctionInput( m_activeScalar );
         setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
-}
 
+    reTriangleStripper->Delete();
+}
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }
