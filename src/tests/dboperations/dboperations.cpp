@@ -139,14 +139,41 @@ bool performTests( DBBasePtr db )
 
 
         // Create a DataSet with a DBLoad to load the array into a ChannelData.
+        ChannelDataPtr loadedChannel;
         {
             DataSetPtr dsp( new DataSet() );
 
-            DBLoadPtr dbLoad( new DBLoad( db, localKey ) );
+            const std::string channelName( "loadedChannel" );
+            DBLoadPtr dbLoad( new DBLoad( db, localKey, channelName ) );
             dsp->addPreprocess( dbLoad );
 
-            //dsp->updateAll();
+            dsp->updateAll();
+
+            loadedChannel = dsp->getChannel( channelName );
+            if( loadedChannel == NULL )
+            {
+                LFX_CRITICAL_STATIC( logstr, "DataSet::getChannel() returned NULL." );
+                return( false );
+            }
         }
+
+        // Compare the loaded array with the original array.
+        ChannelDataOSGArrayPtr cdap( boost::dynamic_pointer_cast< ChannelDataOSGArray >( loadedChannel ) );
+        if( cdap == NULL )
+        {
+            LFX_CRITICAL_STATIC( logstr, "Loaded Channel is not a ChannelDataOSGArray." );
+            return( false );
+        }
+        osg::FloatArray* loadedArray( dynamic_cast< osg::FloatArray* >( cdap->asOSGArray() ) );
+        if( loadedArray == NULL )
+        {
+            LFX_CRITICAL_STATIC( logstr, "ChannelDataOSGArray does not contain a FloatArray." );
+            return( false );
+        }
+
+        pass = arrayCompare( floatsOrig.get(), loadedArray );
+        if( !pass )
+            return( false );
     }
 
 

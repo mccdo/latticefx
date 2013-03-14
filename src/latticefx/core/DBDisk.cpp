@@ -87,7 +87,8 @@ osg::Image* DBDisk::loadImage( const DBKey& dbKey )
     osg::Image* image( osgDB::readImageFile( fileName ) );
     if( image == NULL )
     {
-        LFX_ERROR( "Can't load file " + fileName );
+        LFX_DEBUG( "DBDisk::loadImage(): Can't load file " + fileName );
+        return( NULL );
     }
 
     if( image->getFileName().empty() )
@@ -107,7 +108,14 @@ bool DBDisk::storeArray( const osg::Array* array, const DBKey& dbKey )
 osg::Array* DBDisk::loadArray( const DBKey& dbKey )
 {
     std::string fileName( ensureOSG( fileNameFromDBKey( dbKey ) ) );
-    return( dynamic_cast< osg::Array* >( osgDB::readObjectFile( fileName ) ) );
+    osg::Array* array( dynamic_cast< osg::Array* >( osgDB::readObjectFile( fileName ) ) );
+    if( array == NULL )
+    {
+        LFX_DEBUG( "DBDisk::loadArray(): Can't load file " + fileName );
+        return( NULL );
+    }
+
+    return( array );
 }
 
 

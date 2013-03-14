@@ -33,10 +33,11 @@ namespace core
 {
 
 
-DBLoad::DBLoad( DBBasePtr db, const DBKey& key )
+DBLoad::DBLoad( DBBasePtr db, const DBKey& key, const std::string& channelName )
     : Preprocess(),
       LogBase( "lfx.core.db.load" ),
-      _key( key )
+      _key( key ),
+      _channelName( channelName )
 {
     setDB( db );
     setActionType( Preprocess::ADD_DATA );
@@ -44,7 +45,8 @@ DBLoad::DBLoad( DBBasePtr db, const DBKey& key )
 DBLoad::DBLoad( const DBLoad& rhs )
     : Preprocess( rhs ),
       LogBase( rhs ),
-      _key( rhs._key )
+      _key( rhs._key ),
+      _channelName( rhs._channelName )
 {
 }
 DBLoad::~DBLoad()
@@ -59,27 +61,26 @@ ChannelDataPtr DBLoad::operator()()
         return( ChannelDataPtr( ( ChannelData* )NULL ) );
     }
 
+    std::string name( _channelName.empty() ? _key : _channelName );
     osg::ref_ptr< osg::Array > array( _db->loadArray( _key ) );
     osg::ref_ptr< osg::Image > image( _db->loadImage( _key ) );
     if( array.valid() )
     {
-        std::string nameString( _key );
         if( !( array->getName().empty() ) )
         {
-            nameString = array->getName();
+            name = array->getName();
         }
-        ChannelDataOSGArrayPtr cdap( new ChannelDataOSGArray( nameString, array.get() ) );
+        ChannelDataOSGArrayPtr cdap( new ChannelDataOSGArray( name, array.get() ) );
         cdap->setDBKey( _key );
         return( cdap );
     }
     else if( image.valid() )
     {
-        std::string nameString( _key );
         if( !( image->getName().empty() ) )
         {
-            nameString = image->getName();
+            name = image->getName();
         }
-        ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( nameString, image.get() ) );
+        ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( name, image.get() ) );
         cdip->setDBKey( _key );
         return( cdip );
     }
