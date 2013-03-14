@@ -25,6 +25,7 @@
 #include <latticefx/core/DBBase.h>
 #include <latticefx/core/DBDisk.h>
 
+#include <osgDB/ReadFile>
 #include <osg/Array>
 #include <osg/Image>
 
@@ -65,6 +66,41 @@ bool arrayCompare( const osg::FloatArray* a, const osg::FloatArray* b )
             return( false );
         }
     }
+    return( true );
+}
+
+
+osg::Image* genImage()
+{
+    const std::string imageName( "dboperation-testimage.jpg" );
+    osg::ref_ptr< osg::Image > image( osgDB::readImageFile( imageName ) );
+    if( image == NULL )
+    {
+        LFX_CRITICAL_STATIC( logstr, "Can't load \"" + imageName + "\"." );
+        return( NULL );
+    }
+    return( image.release() );
+}
+
+bool imageCompare( const osg::Image* a, const osg::Image* b )
+{
+    const int aSize( a->getTotalSizeInBytes() );
+    const int bSize( a->getTotalSizeInBytes() );
+    if( ( a->s() != b->s() ) || ( a->t() != b->t() ) || ( a->r() != b->r() ) ||
+        ( aSize != bSize ) )
+    {
+        LFX_CRITICAL_STATIC( logstr, "osg::Image size mismatch." );
+        return( false );
+    }
+
+    const unsigned char* aData( a->data() );
+    const unsigned char* bData( b->data() );
+    if( memcmp( (const void*)aData, (const void*)bData, aSize ) != 0 )
+    {
+        LFX_CRITICAL_STATIC( logstr, "Image data mismatch." );
+        return( false );
+    }
+
     return( true );
 }
 
@@ -176,6 +212,86 @@ bool performTests( DBBasePtr db )
             return( false );
     }
 
+
+    {
+        LFX_CRITICAL_STATIC( logstr, "Testing DBSave Image ChannelData." );
+
+
+        // Stick the image in a ChannelData. Set up a DataSet pipe with a DBSave
+        // operation to write the ChannelData to DB.
+        osg::ref_ptr< osg::Image > imageOrig( genImage() );
+        if( imageOrig == NULL )
+            return( false );
+        ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage( "imageChannel", imageOrig.get() ) );
+        const DBKey localKey( "image-dbsave-test" + keySuffix );
+        cdImage->setDBKey( localKey );
+
+        {
+            DataSetPtr dsp( new DataSet() );
+            dsp->addChannel( cdImage );
+
+            DBSavePtr dbSave( new DBSave( db ) );
+            dbSave->addInput( "imageChannel" );
+            dsp->addOperation( dbSave );
+
+            dsp->updateAll();
+        }
+
+
+        // Do a simple retrieve from the DB and do a match test.
+        osg::Image* newImage( db->loadImage( localKey ) );
+        if( newImage == NULL )
+        {
+            LFX_CRITICAL_STATIC( logstr, "Loaded osg::Image is NULL." );
+            return( false );
+        }
+        osg::ref_ptr< osg::Image > imageLoad( static_cast< osg::Image* >( newImage ) );
+
+        bool pass( imageCompare( imageOrig.get(), imageLoad.get() ) );
+        if( !pass )
+            return( false );
+
+
+        LFX_CRITICAL_STATIC( logstr, "Testing DBLoad Image ChannelData." );
+
+
+        // Create a DataSet with a DBLoad to load the array into a ChannelData.
+        ChannelDataPtr loadedChannel;
+        {
+            DataSetPtr dsp( new DataSet() );
+
+            const std::string channelName( "loadedChannel" );
+            DBLoadPtr dbLoad( new DBLoad( db, localKey, channelName ) );
+            dsp->addPreprocess( dbLoad );
+
+            dsp->updateAll();
+
+            loadedChannel = dsp->getChannel( channelName );
+            if( loadedChannel == NULL )
+            {
+                LFX_CRITICAL_STATIC( logstr, "DataSet::getChannel() returned NULL." );
+                return( false );
+            }
+        }
+
+        // Compare the loaded image with the original image.
+        ChannelDataOSGImagePtr cdip( boost::dynamic_pointer_cast< ChannelDataOSGImage >( loadedChannel ) );
+        if( cdip == NULL )
+        {
+            LFX_CRITICAL_STATIC( logstr, "Loaded Channel is not a ChannelDataOSGImage." );
+            return( false );
+        }
+        osg::Image* loadedImage( dynamic_cast< osg::Image* >( cdip->asOSGImage() ) );
+        if( loadedImage == NULL )
+        {
+            LFX_CRITICAL_STATIC( logstr, "ChannelDataOSGImage does not contain an Image." );
+            return( false );
+        }
+
+        pass = imageCompare( imageOrig.get(), loadedImage );
+        if( !pass )
+            return( false );
+    }
 
 
     return( true );
