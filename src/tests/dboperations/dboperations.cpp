@@ -212,8 +212,10 @@ int main( int argc, char** argv )
     }
 
 
-    // Delete the DB.
-    //tempDBFile.remove( true );
+    // Delete the DB. If any tests failed, we return before
+    // executing this line, so DBDisk file contents can be
+    // examined during failure analysis if desired.
+    tempDBFile.remove( true );
 
 
     LFX_CRITICAL_STATIC( logstr, "\nPass." );
