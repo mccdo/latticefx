@@ -33,17 +33,18 @@ namespace core
 {
 
 
-DBLoad::DBLoad( const DBKeyList& keys )
+DBLoad::DBLoad( DBBasePtr db, const DBKey& key )
     : Preprocess(),
       LogBase( "lfx.core.db.load" ),
-      _keys( keys )
+      _key( key )
 {
+    setDB( db );
     setActionType( Preprocess::ADD_DATA );
 }
 DBLoad::DBLoad( const DBLoad& rhs )
     : Preprocess( rhs ),
       LogBase( rhs ),
-      _keys( rhs._keys )
+      _key( rhs._key )
 {
 }
 DBLoad::~DBLoad()
@@ -58,40 +59,31 @@ ChannelDataPtr DBLoad::operator()()
         return( ChannelDataPtr( ( ChannelData* )NULL ) );
     }
 
-    if( _keys.size() > 1 )
+    osg::ref_ptr< osg::Array > array( _db->loadArray( _key ) );
+    osg::ref_ptr< osg::Image > image( _db->loadImage( _key ) );
+    if( array.valid() )
     {
-        // TBD We should be able to support a Preprocess
-        // that can create more than one ChannelData.
-        LFX_WARNING( "DBLoad: Currently only 1 key will be loaded." );
+        std::string nameString( _key );
+        if( !( array->getName().empty() ) )
+        {
+            nameString = array->getName();
+        }
+        ChannelDataOSGArrayPtr cdap( new ChannelDataOSGArray( nameString, array.get() ) );
+        cdap->setDBKey( _key );
+        return( cdap );
+    }
+    else if( image.valid() )
+    {
+        std::string nameString( _key );
+        if( !( image->getName().empty() ) )
+        {
+            nameString = image->getName();
+        }
+        ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( nameString, image.get() ) );
+        cdip->setDBKey( _key );
+        return( cdip );
     }
 
-    BOOST_FOREACH( DBKey key, _keys )
-    {
-        osg::ref_ptr< osg::Array > array( _db->loadArray( key ) );
-        osg::ref_ptr< osg::Image > image( _db->loadImage( key ) );
-        if( array.valid() )
-        {
-            std::string nameString( key );
-            if( !( array->getName().empty() ) )
-            {
-                nameString = array->getName();
-            }
-            ChannelDataOSGArrayPtr cdap( new ChannelDataOSGArray( nameString, array.get() ) );
-            cdap->setDBKey( key );
-            return( cdap );
-        }
-        else if( image.valid() )
-        {
-            std::string nameString( key );
-            if( !( image->getName().empty() ) )
-            {
-                nameString = image->getName();
-            }
-            ChannelDataOSGImagePtr cdip( new ChannelDataOSGImage( nameString, image.get() ) );
-            cdip->setDBKey( key );
-            return( cdip );
-        }
-    }
     return( ChannelDataPtr( ( ChannelData* )NULL ) );
 }
 
@@ -100,14 +92,13 @@ ChannelDataPtr DBLoad::operator()()
 
 DBSave::DBSave( DBBasePtr db )
     : RTPOperation( RTPOperation::Filter ),
-      LogBase( "lfx.core.db.save" ),
-      _db( db )
+      LogBase( "lfx.core.db.save" )
 {
+    setDB( db );
 }
 DBSave::DBSave( const DBSave& rhs )
     : RTPOperation( rhs ),
-      LogBase( rhs ),
-      _db( rhs._db )
+      LogBase( rhs )
 {
 }
 DBSave::~DBSave()

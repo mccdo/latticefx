@@ -109,14 +109,16 @@ bool performTests( DBBasePtr db )
         const DBKey localKey( "floats-dbsave-test" + keySuffix );
         cdArray->setDBKey( localKey );
 
-        DataSetPtr dsp( new DataSet() );
-        dsp->addChannel( cdArray );
+        {
+            DataSetPtr dsp( new DataSet() );
+            dsp->addChannel( cdArray );
 
-        DBSavePtr dbSave( new DBSave( db ) );
-        dbSave->addInput( "floatChannel" );
-        dsp->addOperation( dbSave );
+            DBSavePtr dbSave( new DBSave( db ) );
+            dbSave->addInput( "floatChannel" );
+            dsp->addOperation( dbSave );
 
-        dsp->updateAll();
+            dsp->updateAll();
+        }
 
 
         // Do a simple retrieve from the DB and do a match test.
@@ -131,20 +133,23 @@ bool performTests( DBBasePtr db )
         bool pass( arrayCompare( floatsOrig.get(), floatsLoad.get() ) );
         if( !pass )
             return( false );
+
+
+        LFX_CRITICAL_STATIC( logstr, "Testing DBLoad FloatArray ChannelData." );
+
+
+        // Create a DataSet with a DBLoad to load the array into a ChannelData.
+        {
+            DataSetPtr dsp( new DataSet() );
+
+            DBLoadPtr dbLoad( new DBLoad( db, localKey ) );
+            dsp->addPreprocess( dbLoad );
+
+            //dsp->updateAll();
+        }
     }
 
 
-    /*
-    NameStringGenerator nsg( osg::Vec3s( 128, 128, 128 ) );
-
-    std::string result( nsg.getNameString( osg::Vec3s( 128, 128, 128 ), osg::Vec3s( 0, 0, 0 ) ) );
-    std::string correct( "" );
-    if( result != correct )
-    {
-        LFX_ERROR_STATIC( logstr, "Failure: Root node has non-null name string: " + result );
-        return( 1 );
-    }
-    */
 
     return( true );
 }

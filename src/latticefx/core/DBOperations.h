@@ -43,7 +43,7 @@ namespace core
 class LATTICEFX_EXPORT DBLoad : public Preprocess, protected LogBase
 {
 public:
-    DBLoad( const DBKeyList& keys );
+    DBLoad( const DBBasePtr db, const DBKey& key );
     DBLoad( const DBLoad& rhs );
     virtual ~DBLoad();
 
@@ -53,7 +53,7 @@ public:
     virtual ChannelDataPtr operator()();
 
 protected:
-    DBKeyList _keys;
+    DBKey _key;
 
 private:
 };
@@ -78,7 +78,6 @@ public:
     virtual void filter( const ChannelDataPtr );
 
 protected:
-    DBBasePtr _db;
 
 private:
 };
