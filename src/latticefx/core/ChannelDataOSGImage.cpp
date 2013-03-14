@@ -109,7 +109,12 @@ void ChannelDataOSGImage::reset()
 {
     if( _workingImage == NULL )
     {
-        _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
+        if( _image == NULL )
+        {
+            LFX_WARNING( "OSGImage::reset(): _image == NULL." );
+        }
+        else
+            _workingImage = new osg::Image( *_image, osg::CopyOp::DEEP_COPY_ALL );
     }
     else if( _workingImage->data() != NULL )
     {
