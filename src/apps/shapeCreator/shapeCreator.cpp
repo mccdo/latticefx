@@ -55,11 +55,12 @@ VolumeBrickData* createVtkBricks( const char* vtkDataSetFile )
     ds->SetFileName( osgDB::findDataFile( vtkDataSetFile ) );
     ds->LoadData();
 
-    vtk::VTKVolumeBrickData* vbd = new vtk::VTKVolumeBrickData( ds, false, 0, true, osg::Vec3s( 32, 32, 32 ), osg::Vec3s( 8, 8, 8 ), 32 ); //osg::Vec3s(32,32,32), osg::Vec3s(8,8,8));//osg::Vec3s(8,8,8), osg::Vec3s(2,2,2));
-    if( !vbd )
-    {
-        delete vbd;
-        vbd = NULL;
+	vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32);
+	//vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), 2);
+	if (!vbd)
+	{
+		delete vbd;
+		vbd = NULL;
 
         std::string msg = "Unable to load valid vtkDataSet from file: ";
         msg += vtkDataSetFile;
