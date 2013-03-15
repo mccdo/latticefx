@@ -160,6 +160,7 @@ public:
     vtkPolyData* GetPolyData();
     ///Get the data object for the dataset
     vtkDataObject* GetDataSet();
+	int GetAllDataSets(std::vector<vtkDataSet*> *pList);
 
     void SetType();       // compute dataset type by looking at the file
     void SetType( int );  // manually set the dataset type

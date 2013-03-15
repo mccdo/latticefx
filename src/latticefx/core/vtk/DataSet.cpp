@@ -444,6 +444,30 @@ vtkDataObject* DataSet::GetDataSet()
 {
     return this->m_dataSet;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+int DataSet::GetAllDataSets(std::vector<vtkDataSet*> *pList)
+{
+	int count = 0;
+	if (m_dataSet->IsA( "vtkDataSet" ))
+	{
+		vtkDataSet* pset = vtkDataSet::SafeDownCast(m_dataSet);
+		if (pset)
+		{
+			pList->push_back(pset);
+			count++;
+		}
+	}
+
+	for (unsigned int i=0; i<m_childDataSets.size(); i++)
+	{
+		count += m_childDataSets[i]->GetAllDataSets(pList);
+	}
+	
+	return count;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetType()
 {
