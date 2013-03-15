@@ -30,16 +30,12 @@
 #include <vtkSmartPointer.h>
 #include <vtkDoubleArray.h>
 
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 class vtkDataArray;
 
-namespace lfx
-{
-namespace core
-{
-namespace vtk
-{
+namespace lfx {
+namespace core {
+namespace vtk {
 
 /** \class VTKVolumeBrickData VTKVolumeBrickData.h <latticefx/core/vtk/VTKVolumeBrickData.h>
 \brief To be done
@@ -48,94 +44,89 @@ namespace vtk
 class LATTICEFX_CORE_VTK_EXPORT VTKVolumeBrickData : public lfx::core::VolumeBrickData
 {
 protected:
-    struct SThreadData
-    {
-        const VTKVolumeBrickData* pVBD;
-        unsigned char* ptrPixels;
-        int bytesPerPixel;
-        osg::Vec3s brickStart;
-        osg::Vec3s brickEnd;
-        osg::Vec3d vtkDelta;
-        osg::Vec3d vtkMin;
-        vtkDoubleArray* tuples;
+	struct SThreadData
+	{
+		const VTKVolumeBrickData* pVBD;
+		unsigned char* ptrPixels;
+		int bytesPerPixel;
+		osg::Vec3s brickStart;
+		osg::Vec3s brickEnd;
+		osg::Vec3d vtkDelta;
+		osg::Vec3d vtkMin;
+		vtkDoubleArray* tuples;
+		
+		SThreadData()
+		{
+			tuples = vtkDoubleArray::New();
+		}
 
-        SThreadData()
-        {
-            tuples = vtkDoubleArray::New();
-        }
+		~SThreadData()
+		{
+			tuples->Delete();
+		}
 
-        ~SThreadData()
-        {
-            tuples->Delete();
-        }
+	};
 
-    };
+	class BrickThread
+	{
+	public:
+		BrickThread(std::tr1::shared_ptr<SThreadData> pData) { m_pData = pData; }
+		void operator()();
 
-    typedef boost::shared_ptr< SThreadData > SThreadDataPtr;
+	protected:
+		std::tr1::shared_ptr<SThreadData> m_pData;
+	};
 
-    class BrickThread
-    {
-    public:
-        BrickThread( SThreadDataPtr pData )
-        {
-            m_pData = pData;
-        }
-        void operator()();
-
-    protected:
-        SThreadDataPtr m_pData;
-    };
-
-    friend class BrickThread;
+	friend class BrickThread;
 
 
+	typedef std::vector<vtkDataArray *> DataArrayVector;
+	typedef std::tr1::shared_ptr <DataArrayVector> PDataArrayVector;
+	
+	
 public:
-    VTKVolumeBrickData(	DataSetPtr dataSet,
-                        bool prune = false,
-                        int dataNum = 0,
-                        bool isScalar = true,
-                        osg::Vec3s brickRes = osg::Vec3s( 32, 32, 32 ),
-                        osg::Vec3s totalNumBricks = osg::Vec3s( 8, 8, 8 ),
-                        int threadCount = 4 );
+	VTKVolumeBrickData(	DataSetPtr dataSet,
+						bool prune = false,
+						int dataNum = 0, 
+						bool isScalar = true, 
+						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
+						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8),
+						int threadCount=4);
 
-    /** To be done. Override this. */
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 
-    bool isValid();
+	bool isValid();
 
 protected:
 
-    osg::Vec4ub lerpDataInCell( vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache ) const;
-    osg::Vec4ub lerpPixelData( vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar ) const;
+	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache, int dsNum) const;
+	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
 
-    void extractTuplesForScalar2( vtkIdList* ptIds, vtkDataArray* tuples, int num ) const;
-    void extractTuplesForVector2( vtkIdList* ptIds, vtkDataArray* tuples, int num ) const;
+	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
+	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
-    void extractTuplesForVector( vtkIdList* ptIds, vtkDataArray* vector, int whichVector ) const;
-    void extractTuplesForScalar( vtkIdList* ptIds, vtkDataArray* scalar, int whichScalar ) const;
+	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
 
-    osg::Vec4ub getOutSideCellValue() const;
+	osg::Vec4ub getOutSideCellValue() const;
 
-    void initMaxPts();
-    void initDataArrays();
+	void initMaxPts();
+	void initDataArrays();
+	bool initCellTrees();
 
 protected:
-    DataSetPtr m_dataSet;
-    vtkDataSet* m_pds;
-    vtkSmartPointer<vtkCellTreeLocator> m_cellLocator;
-    bool m_isScalar;
-    int m_dataNum;
-    int m_nPtDataArrays;
-    int m_maxPts;
-    osg::Vec3s m_brickRes;
-    std::vector< vtkDataArray* > m_dataArraysScalar;
-    std::vector< vtkDataArray* > m_dataArraysVector;
-    int m_cellCache;
+	osg::BoundingBoxd m_bbox;
+	DataSetPtr m_dataSet;
+	std::vector<vtkDataSet*> m_dataSets;
 
-    //osg::Vec3d vtkBrickSize;
-    //osg::Vec3d vtkDelta;
-    //osg::Vec3d brickDelta;
-    int m_threadCount;
+	std::vector< vtkSmartPointer<vtkCellTreeLocator> > m_cellLocators;
+	bool m_isScalar;
+	int m_dataNum;
+	int m_maxPts;
+	osg::Vec3s m_brickRes;
+	std::vector< PDataArrayVector > m_dataArraysScalar;
+	std::vector< PDataArrayVector > m_dataArraysVector;
+	int m_cellCache;
+	int m_threadCount;
 };
 
 
