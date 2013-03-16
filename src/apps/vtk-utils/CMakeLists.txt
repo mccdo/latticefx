@@ -1,4 +1,4 @@
-_addExecutable( Test meshViewer
+_addExecutable( App meshViewer
     meshViewer.cxx
     LATTICEFX_LIBRARIES
         latticefx_core
@@ -7,7 +7,7 @@ _addExecutable( Test meshViewer
         ${_vtkLibraries}
 )
 
-_addExecutable( Test convertVTK2Ascii
+_addExecutable( App convertVTK2Ascii
     convertVTK2Ascii.cxx
     LATTICEFX_LIBRARIES
         latticefx_core
@@ -16,7 +16,7 @@ _addExecutable( Test convertVTK2Ascii
         ${_vtkLibraries}
 )
 
-_addExecutable( Test convertVTK2Binary
+_addExecutable( App convertVTK2Binary
     convertVTK2Binary.cxx
     LATTICEFX_LIBRARIES
         latticefx_core
@@ -25,7 +25,7 @@ _addExecutable( Test convertVTK2Binary
         ${_vtkLibraries}
 )
 
-_addExecutable( Test convertSurfaceFileToStl
+_addExecutable( App convertSurfaceFileToStl
     convertSurfaceFileToStl.cxx
     LATTICEFX_LIBRARIES
         latticefx_core
@@ -34,7 +34,7 @@ _addExecutable( Test convertSurfaceFileToStl
         ${_vtkLibraries}
 )
 
-_addExecutable( Test whatIsScalarRange
+_addExecutable( App whatIsScalarRange
     whatIsScalarRange.cxx
     LATTICEFX_LIBRARIES
         latticefx_core
