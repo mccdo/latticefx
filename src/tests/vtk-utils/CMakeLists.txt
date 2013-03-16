@@ -24,3 +24,21 @@ _addExecutable( Test convertVTK2Binary
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+
+_addExecutable( Test convertSurfaceFileToStl
+    convertSurfaceFileToStl.cxx
+    LATTICEFX_LIBRARIES
+        latticefx_core
+        latticefx_utils_vtk
+        latticefx_core_vtk
+        ${_vtkLibraries}
+)
+
+_addExecutable( Test whatIsScalarRange
+    whatIsScalarRange.cxx
+    LATTICEFX_LIBRARIES
+        latticefx_core
+        latticefx_utils_vtk
+        latticefx_core_vtk
+        ${_vtkLibraries}
+)

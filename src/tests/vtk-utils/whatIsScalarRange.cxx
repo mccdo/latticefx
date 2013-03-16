@@ -32,9 +32,9 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <iostream>
 
-#include <ves/xplorer/util/fileIO.h>
-#include <ves/xplorer/util/readWriteVtkThings.h>
-#include <ves/xplorer/util/cfdAccessoryFunctions.h>
+#include <latticefx/utils/vtk/fileIO.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
+#include <latticefx/utils/vtk/AccessoryFunctions.h>
 
 #include <vtkDataSet.h>
 #include <vtkDataObject.h>
@@ -43,7 +43,6 @@
 #include <vtkCompositeDataSet.h>
 #include <vtkCompositeDataIterator.h>
 
-using namespace ves::xplorer::util;
 void ProcessScalarRangeInfo( vtkDataObject* dataSet );
 
 int main( int argc, char* argv[] )
@@ -60,12 +59,12 @@ int main( int argc, char* argv[] )
         //char tempText[ 100 ];
         std::string tempText( "the file to compute scalar/vector range" );
         //strcpy( tempText, "the file to compute scalar/vector range" );
-        inFileName = fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
+        inFileName = lfx::vtk_utils::fileIO::getReadableFileFromDefault( tempText, "inFile.vtk" );
     }
 
     // read the data set ("1" means print info to screen)
     ///This will need to be changed to handle multiblock datasets
-    vtkDataObject* dataObject = readVtkThing( inFileName, 1 );
+    vtkDataObject* dataObject = lfx::vtk_utils::readVtkThing( inFileName, 1 );
     if( dataObject->IsA( "vtkCompositeDataSet" ) )
     {
         try
@@ -118,7 +117,7 @@ void ProcessScalarRangeInfo( vtkDataObject* dataObject )
 
         if( numComponents == 3 )
         {
-            double* vecMagRange = cfdAccessoryFunctions::
+            double* vecMagRange = lfx::vtk_utils::AccessoryFunctions::
                                   ComputeVectorMagnitudeRange(
                                       dataset->GetPointData()->GetArray( i ) );
 

@@ -37,25 +37,23 @@
 #include <vtkTriangleFilter.h>
 #include <vtkSTLWriter.h>
 
-#include <ves/xplorer/util/fileIO.h>
-#include <ves/xplorer/util/readWriteVtkThings.h>
-
-using namespace ves::xplorer::util;
+#include <latticefx/utils/vtk/fileIO.h>
+#include <latticefx/utils/vtk/readWriteVtkThings.h>
 
 int main( int argc, char* argv[] )
 {
     // If the command line contains an input vtk file name and an output file set them up.
     // Otherwise, get them from the user...
-    std::string inFileName;// = NULL;
-    std::string outFileName;// = new char [20];
+    std::string inFileName;
+    std::string outFileName;
     outFileName.assign( "surface.stl" );//strcpy( outFileName, "surface.stl" );  //default name
-    fileIO::processCommandLineArgs( argc, argv, "convert geometry to STL format in", inFileName, outFileName );
+    lfx::vtk_utils::fileIO::processCommandLineArgs( argc, argv, "convert geometry to STL format in", inFileName, outFileName );
     if( ! inFileName.c_str() )
     {
         return 1;
     }
     ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( inFileName, 1 ) );
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( lfx::vtk_utils::readVtkThing( inFileName, 1 ) );
     // convert to vtkPolyData
     vtkGeometryFilter* cFilter = vtkGeometryFilter::New();
     cFilter->SetInput( dataset );
@@ -76,8 +74,8 @@ int main( int argc, char* argv[] )
     cFilter->Delete();
     tFilter->Delete();
     dataset->Delete();
-    inFileName.erase();//delete [] inFileName;   inFileName = NULL;
-    outFileName.erase();//delete [] outFileName;  outFileName = NULL;
+    inFileName.erase();
+    outFileName.erase();
 
     return 0;
 }

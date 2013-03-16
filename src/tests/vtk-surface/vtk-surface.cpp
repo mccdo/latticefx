@@ -158,15 +158,20 @@ int main( int argc, char** argv )
         dsp1->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
-        vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::X_PLANE );
+        vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::Y_PLANE );
         vectorRTP->SetRequestedValue( 50.0 );
         vectorRTP->addInput( "vtkDataObject" );
         dsp1->addOperation( vectorRTP );
 
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
+#if 0
         renderOp->SetActiveVector( "steve's_vector" );
         renderOp->SetActiveScalar( "200_to_1000" );
+#else
+        renderOp->SetActiveVector( "Momentum" );
+        renderOp->SetActiveScalar( "Momentum_magnitude" );
+#endif
         renderOp->addInput( "vtkPolyDataMapper" );
         renderOp->addInput( "vtkDataObject" );
         dsp1->setRenderer( renderOp );
@@ -183,15 +188,25 @@ int main( int argc, char** argv )
         dsp->addChannel( dobjPtr );
 
         lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
+#if 0
         isosurfaceRTP->SetRequestedValue( 500.0 );
         isosurfaceRTP->SetActiveScalar( "200_to_1000" );
+#else
+        isosurfaceRTP->SetRequestedValue( 0.0 );
+        isosurfaceRTP->SetActiveScalar( "StagnationEnergy" );
+#endif
         isosurfaceRTP->addInput( "vtkDataObject" );
         dsp->addOperation( isosurfaceRTP );
 
         //Try the vtkActor renderer
         lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
+#if 0
         renderOp2->SetActiveVector( "steve's_vector" );
         renderOp2->SetActiveScalar( "200_to_1000" );
+#else
+        renderOp2->SetActiveVector( "Momentum" );
+        renderOp2->SetActiveScalar( "StagnationEnergy" );
+#endif
         renderOp2->addInput( "vtkPolyDataMapper" );
         renderOp2->addInput( "vtkDataObject" );
         dsp->setRenderer( renderOp2 );
