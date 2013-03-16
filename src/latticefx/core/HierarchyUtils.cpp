@@ -1062,6 +1062,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
 
 
 LoadHierarchy::LoadHierarchy()
+    : _load( false )
 {
     setActionType( Preprocess::ADD_DATA );
 }
@@ -1069,8 +1070,23 @@ LoadHierarchy::~LoadHierarchy()
 {
 }
 
+void LoadHierarchy::setLoadData( const bool load )
+{
+    _load = load;
+}
+bool LoadHierarchy::getLoadData() const
+{
+    return( _load );
+}
+
 ChannelDataPtr LoadHierarchy::operator()()
 {
+    if( _db == NULL )
+    {
+        LFX_FATAL_STATIC( "lfx.core.hier", "DB is NULL." );
+        return( ChannelDataPtr( (ChannelData*)NULL ) );
+    }
+
     DBBase::StringSet results( _db->getAllKeys() );
     if( results.empty() )
     {
@@ -1110,6 +1126,8 @@ ChannelDataPtr LoadHierarchy::operator()()
             // Create this ChannelData.
             ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
             cdImage->setDBKey( DBKey( fName ) );
+            if( _load )
+                cdImage->setImage( _db->loadImage( DBKey( fName ) ) );
 
             // Get the hierarchy name string.
             Poco::Path pocoPath( fName );

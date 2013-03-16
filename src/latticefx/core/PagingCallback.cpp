@@ -392,7 +392,7 @@ public:
                 {
                 case PageData::RangeData::UNLOADED:
                 {
-                    rangeData._status = PageData::RangeData::LOAD_REQUESTED;
+                    //rangeData._status = PageData::RangeData::LOAD_REQUESTED;
                     break;
                 }
                 case PageData::RangeData::LOAD_REQUESTED:

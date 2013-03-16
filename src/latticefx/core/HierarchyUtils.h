@@ -419,9 +419,23 @@ public:
 
     virtual ChannelDataPtr operator()();
 
+    /** \brief Set whether to actually load the data into memory.
+    \details By default, LoadHierarchy creates a ChannelData hierarchy that
+    contains only DB keys but no actual data. Call setLoadData(true) to
+    change this behavior so that LoadHierarchy loads the actual data from
+    the DB, and the resulting ChannelData hierarchy contains all the loaded
+    data in memory. */
+    void setLoadData( const bool load );
+    /** \brief Get whether to load the data into memory. */
+    bool getLoadData() const;
+
 protected:
     static bool valid( const std::string& fileName );
+
+    bool _load;
 };
+
+typedef boost::shared_ptr< LoadHierarchy > LoadHierarchyPtr;
 
 
 // core

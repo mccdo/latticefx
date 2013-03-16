@@ -75,7 +75,7 @@ osg::Node* createClipSubgraph()
 
 DataSetPtr prepareVolume( const osg::Vec3& dims,
                           const std::string& csFile, const std::string& diskPath,
-                          const bool useIso, const float isoVal )
+                          const bool useIso, const float isoVal, const bool nopage )
 {
     DataSetPtr dsp( new DataSet() );
 
@@ -116,11 +116,16 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     dsp->setDB( dbBase );
 
 
-    LoadHierarchy* loader( new LoadHierarchy() );
+    LoadHierarchyPtr loader( new LoadHierarchy() );
+    if( nopage )
+        // Not paging. Load the data.
+        loader->setLoadData( true );
     loader->setDB( dbBase );
-    dsp->addPreprocess( PreprocessPtr( ( Preprocess* )loader ) );
+    dsp->addPreprocess( loader );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
+    if( !nopage )
+        renderOp->setDB( dbBase );
     renderOp->setVolumeDims( dims );
     renderOp->setRenderMode( VolumeRenderer::RAY_TRACED );
     renderOp->setMaxSamples( 400.f );
@@ -365,6 +370,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-cyl\tDisplay a polygonal cylinder." );
     LFX_CRITICAL_STATIC( logstr, "-iso <x>\tDisplay as an isosurface." );
     LFX_CRITICAL_STATIC( logstr, "-clip\tTest clip plane." );
+    LFX_CRITICAL_STATIC( logstr, "-nopage\tDisable paging (all textures are stored in the scene graph)." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -387,6 +393,7 @@ int main( int argc, char** argv )
     const bool useIso( arguments.read( "-iso", isoVal ) );
 
     const bool clip( arguments.find( "-clip" ) > 0 );
+    const bool nopage( arguments.find( "-nopage" ) > 0 );
 
     osgViewer::Viewer viewer;
     viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
@@ -403,7 +410,7 @@ int main( int argc, char** argv )
     RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
-    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal ) );
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal, nopage ) );
     setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData(), clip );
 
 
@@ -438,9 +445,13 @@ Other options:
 \li -cyl Display a polygonal cylinder.
 \li -iso <x> Display as an isosurface.
 \li -clip Test clip plane.
+\li -nopage Disable paging (all textures are stored in the scene graph).
 
 If \c -iso is not specified, the test renders using the hardware mask
 condifigured to display alpha values greater than 0.15. If \c -iso is
 specified, the test renders alpha values equal to the specified value.
+
+If -nopage is not specified, stub textures are stored in the scene graph
+and actual textures are paged in at runtime.
 
 */

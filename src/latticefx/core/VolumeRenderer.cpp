@@ -260,10 +260,19 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
                                        ChannelDataOSGImage* >( dataPtr.get() ) );
 
 
-    // Create empty stub texture, to be paged in at run-time.
     const std::string imageFileName( dataImagePtr->getDBKey() );
-    osg::Texture3D* volumeTexture( createStubTexture( imageFileName ) );
-    volumeTexture->setDataVariance( osg::Object::DYNAMIC ); // for paging.
+    osg::Texture3D* volumeTexture( NULL );
+    if( _db != NULL )
+    {
+        // Create empty stub texture, to be paged in at run-time.
+        volumeTexture = createTexture( imageFileName, NULL );
+        volumeTexture->setDataVariance( osg::Object::DYNAMIC ); // for paging.
+    }
+    else
+    {
+        // Create texture with actual Image data, not paged.
+        volumeTexture = createTexture( imageFileName, dataImagePtr->asOSGImage() );
+    }
 
     stateSet->setTextureAttributeAndModes(
         getOrAssignTextureUnit( "volumeTex" ), volumeTexture );
@@ -411,7 +420,7 @@ float VolumeRenderer::getNumPlanes() const
 }
 
 
-osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
+osg::Texture3D* VolumeRenderer::createTexture( const DBKey& key, osg::Image* image )
 {
     // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
@@ -427,9 +436,17 @@ osg::Texture3D* VolumeRenderer::createStubTexture( const DBKey& key )
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
 
-    osg::Image* dummyImage( new osg::Image );
-    dummyImage->setFileName( key );
-    tex->setImage( dummyImage );
+    if( image == NULL )
+    {
+        osg::Image* dummyImage( new osg::Image );
+        dummyImage->setFileName( key );
+        tex->setImage( dummyImage );
+    }
+    else
+    {
+        tex->setImage( image );
+        tex->setName( "donotpage" );
+    }
 
     return( tex.release() );
 }

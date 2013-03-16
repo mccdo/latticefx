@@ -217,7 +217,7 @@ public:
     }
 
 protected:
-    static osg::Texture3D* createStubTexture( const DBKey& key );
+    static osg::Texture3D* createTexture( const DBKey& key, osg::Image* image );
     virtual bool validInputs() const;
 
     osg::Geometry* createDAIGeometry( int nInstances );
