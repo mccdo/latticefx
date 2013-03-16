@@ -34,7 +34,9 @@
 #include <vtkOutlineCornerFilter.h>
 #include <vtkVectorText.h>
 #include <vtkFollower.h>
-
+#include <vtkCellDataToPointData.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkGeometryFilter.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <vtkRenderer.h>
@@ -480,47 +482,44 @@ void lfx::vtk_utils::AddToRenderer( vtkDataObject* dataset, vtkRenderer* ren1, c
     }*/
     //else    std::cout << "\tAddToRenderer: The number of cells is " << numCells << std::endl;
 
+    vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+    if( dataset->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataGeometryFilter* wireframe = vtkCompositeDataGeometryFilter::New();
+        wireframe->SetInput( dataset );
+        
+        c2p->SetInputConnection( wireframe->GetOutputPort() );
+        
+        wireframe->Delete();
+    }
+    else
+    {
+        vtkGeometryFilter* wireframe = vtkGeometryFilter::New();
+        wireframe->SetInput( dataset );
+        
+        c2p->SetInputConnection( wireframe->GetOutputPort() );
+        
+        wireframe->Delete();
+    }
+
     vtkDataSetMapper* map = vtkDataSetMapper::New();
     //    By default, VTK uses OpenGL display lists which results in another copy of the data being stored
     //    in memory. For most large datasets you will be better off saving memory by not using display lists.
     //    You can turn off display lists by turning on ImmediateModeRendering.
     map->ImmediateModeRenderingOn();
 
-    /*if( dataset->IsA( "vtkCompositeDataSet" ) )
-    {
-        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
-        vtkCompositeDataGeometryFilter::New();
-        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
-        //return m_multiGroupGeomFilter->GetOutputPort(0);
-        tris->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
-        m_multiGroupGeomFilter->Delete();
-    }
-    else
-    {
-        //m_geometryFilter->SetInputConnection( input );
-        //return m_geometryFilter->GetOutputPort();
-        vtkDataSetSurfaceFilter* m_surfaceFilter =
-        vtkDataSetSurfaceFilter::New();
-        m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
-        //return m_surfaceFilter->GetOutputPort();
-        tris->SetInputConnection( m_surfaceFilter->GetOutputPort() );
-        m_surfaceFilter->Delete();
-    }*/
-
-    //std::cout << "Using shrinkFactor = " << shrinkFactor << std::endl;
-
     vtkShrinkFilter* shrink = NULL;
     if( shrinkFactor < 1.0 )
     {
         shrink = vtkShrinkFilter::New();
-        shrink->SetInput( dataset );
+        shrink->SetInputConnection( c2p->GetOutputPort() );
         shrink->SetShrinkFactor( shrinkFactor );
         //shrink->GetOutput()->ReleaseDataFlagOn();
-        map->SetInput( shrink->GetOutput() );
+        map->SetInputConnection( shrink->GetOutputPort() );
     }
     else
     {
-        //map->SetInput( dataset );
+        map->SetInputConnection( c2p->GetOutputPort() );
     }
 
     /*

@@ -260,7 +260,7 @@ void viewWhatsInFile( std::string vtkFilename, const float shrinkFactor )
     }
     else if( dataset->IsA( "vtkCompositeDataSet" ) )
     {
-        
+        viewCells( dataset , 0 );
     }
     else if( dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID )
     {
@@ -495,11 +495,10 @@ vtkActor* getActorFromFile( std::string vtkFilename )
         
         vtkPolyDataMapper* wireframeMapper = vtkPolyDataMapper::New();
         wireframeMapper->SetInputConnection( c2p->GetOutputPort() );
-        //vtkPolyData* poly = lfx::vtk_utils::cfdGrid2Surface( this->GetDataSet(), 0.8f );
         wireframeMapper->SetScalarModeToUsePointFieldData();
         //mapper->SetScalarModeToDefault();
         wireframeMapper->UseLookupTableScalarRangeOn();
-        //wireframeMapper->SelectColorArray( GetActiveScalarName().c_str() );
+        wireframeMapper->SelectColorArray( 0 );
         //wireframeMapper->SetLookupTable( GetLookupTable() );
         //wireframeMapper->Update();
         c2p->Delete();
