@@ -25,6 +25,7 @@
 #include <latticefx/core/HierarchyUtils.h>
 #include <latticefx/core/vtk/DataSet.h>
 #include <latticefx/core/vtk/DataSetPtr.h>
+#include <latticefx/core/vtk/VTKVolumeBrickDataPtr.h>
 
 #include <vtkCellTreeLocator.h>
 #include <vtkSmartPointer.h>

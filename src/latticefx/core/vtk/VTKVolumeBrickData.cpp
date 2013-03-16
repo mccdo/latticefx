@@ -19,7 +19,9 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/vtk/VTKVolumeBrickData.h>
+
 #include <osg/Image>
+
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
