@@ -1,4 +1,3 @@
-# Required for ModuleInstall.cmake
 set( _libName multiop )
 
 _addLibrary( Plugin ${_libName}
@@ -8,3 +7,5 @@ _addLibrary( Plugin ${_libName}
 )
 
 _addPluginINI( multiop.ini )
+
+set_property( TARGET ${_libName} PROPERTY FOLDER "Plugins")

@@ -1,4 +1,5 @@
-_addExecutable( Test vtk-timeseries-points
+set( _exeName vtk-timeseries-points )
+_addExecutable( Test ${_exeName}
     vtk-timeseries-points.cpp
     LATTICEFX_LIBRARIES
         latticefx_core
@@ -6,3 +7,5 @@ _addExecutable( Test vtk-timeseries-points
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+
+set_property( TARGET ${_exeName} PROPERTY FOLDER "Tests/VTK")

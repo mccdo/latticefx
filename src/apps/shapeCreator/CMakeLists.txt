@@ -7,9 +7,12 @@ if( VTK_FOUND )
     )
 endif()
 
-_addExecutable( App shapeCreator
+set( _exeName shapeCreator )
+_addExecutable( App ${_exeName}
     shapeCreator.cpp
     LATTICEFX_LIBRARIES
         latticefx_core
         ${_vtkLibs}
 )
+
+set_property( TARGET ${_exeName} PROPERTY FOLDER "App")

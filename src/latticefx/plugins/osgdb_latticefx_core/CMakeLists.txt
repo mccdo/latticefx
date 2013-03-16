@@ -1,4 +1,3 @@
-# Required for ModuleInstall.cmake
 set( _libName osgdb_latticefx_core )
 
 _addLibrary( Plugin ${_libName}
@@ -7,3 +6,5 @@ _addLibrary( Plugin ${_libName}
     LATTICEFX_LIBRARIES
         latticefx_core
 )
+
+set_property( TARGET ${_libName} PROPERTY FOLDER "Plugins")

@@ -5,6 +5,8 @@ _addExecutable( CTest ${_exeName}
         latticefx_core
 )
 
+set_property( TARGET ${_exeName} PROPERTY FOLDER "Tests/Regression")
+
 add_test(
     NAME ${_exeName}
     COMMAND ${_exeName}
