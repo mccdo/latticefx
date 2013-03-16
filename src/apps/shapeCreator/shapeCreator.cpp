@@ -49,18 +49,17 @@ const std::string logstr( "lfx.demo" );
 using namespace lfx::core;
 
 #ifdef VTK_FOUND
-VolumeBrickData* createVtkBricks( const char* vtkDataSetFile )
+VolumeBrickDataPtr createVtkBricks( const char* vtkDataSetFile )
 {
     vtk::DataSetPtr ds( new vtk::DataSet() );
     ds->SetFileName( osgDB::findDataFile( vtkDataSetFile ) );
     ds->LoadData();
 
-	vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32);
+	vtk::VTKVolumeBrickDataPtr vbd = vtk::VTKVolumeBrickDataPtr( new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32) );
 	//vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), 2);
 	if (!vbd)
 	{
-		delete vbd;
-		vbd = NULL;
+		vbd = vtk::VTKVolumeBrickDataPtr();
 
         std::string msg = "Unable to load valid vtkDataSet from file: ";
         msg += vtkDataSetFile;
@@ -373,7 +372,7 @@ protected:
 };
 
 
-void createDataSet( const std::string& csFile, VolumeBrickData* shapeGen )
+void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen )
 {
     SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
 
@@ -445,14 +444,14 @@ int main( int argc, char** argv )
     bool softCube( arguments.find( "-scube" ) > 0 );
     bool softSphere( arguments.find( "-ssphere" ) > 0 );
 
-    VolumeBrickData* shapeGen( NULL );
+    VolumeBrickDataPtr shapeGen;
     if( ( arguments.find( "-sphere" ) > 0 ) || softSphere )
     {
-        shapeGen = new SphereVolumeBrickData( prune, softSphere );
+        shapeGen = VolumeBrickDataPtr( new SphereVolumeBrickData( prune, softSphere ) );
     }
     else if( arguments.find( "-cone" ) > 0 )
     {
-        shapeGen = new ConeVolumeBrickData( prune );
+        shapeGen = VolumeBrickDataPtr( new ConeVolumeBrickData( prune ) );
     }
 #ifdef VTK_FOUND
     else if( arguments.find( "-vtk" ) > 0 )
@@ -469,7 +468,7 @@ int main( int argc, char** argv )
 #endif
     else
     {
-        shapeGen = new CubeVolumeBrickData( prune, softCube );
+        shapeGen = VolumeBrickDataPtr( new CubeVolumeBrickData( prune, softCube ) );
     }
 
     osg::Timer timer;

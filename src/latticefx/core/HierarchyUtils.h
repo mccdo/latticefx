@@ -25,6 +25,7 @@
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/DBBase.h>
 #include <latticefx/core/Preprocess.h>
+#include <latticefx/core/VolumeBrickDataPtr.h>
 
 #include <osg/Vec3>
 #include <osg/Vec3s>
@@ -328,21 +329,21 @@ by getLow(). */
 class LATTICEFX_EXPORT Downsampler
 {
 public:
-    Downsampler( const VolumeBrickData* hiRes );
+    Downsampler( const VolumeBrickDataPtr hiRes );
     virtual ~Downsampler();
 
     /** \brief TBD
     \details
     Note that calling code is responsible for calling delete
     on the return value. */
-    VolumeBrickData* getLow() const;
+    VolumeBrickDataPtr getLow() const;
 
 protected:
     osg::Image* sample( const osg::Image* i0, const osg::Image* i1, const osg::Image* i2, const osg::Image* i3,
                         const osg::Image* i4, const osg::Image* i5, const osg::Image* i6, const osg::Image* i7 ) const;
 
-    const VolumeBrickData* _hi;
-    mutable VolumeBrickData* _low;
+    const VolumeBrickDataPtr _hi;
+    mutable VolumeBrickDataPtr _low;
 };
 
 
@@ -379,7 +380,7 @@ using VolumeBrickData::getSeamlessBrick(), and stores them to the
 class LATTICEFX_EXPORT SaveHierarchy
 {
 public:
-    SaveHierarchy( VolumeBrickData* base, const std::string baseName );
+    SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName );
     virtual ~SaveHierarchy();
 
     void save( DBBasePtr db );
@@ -389,7 +390,7 @@ protected:
 
     unsigned int _depth;
 
-    typedef std::vector< VolumeBrickData* > LODVector;
+    typedef std::vector< VolumeBrickDataPtr > LODVector;
     LODVector _lodVec;
 
     std::string _baseName;

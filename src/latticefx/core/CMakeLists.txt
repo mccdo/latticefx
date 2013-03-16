@@ -94,5 +94,3 @@ _addLibrary( Lib ${_libName}
     LATTICEFX_LIBRARIES
         ${_vtkLibraries}
 )
-
-

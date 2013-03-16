@@ -800,21 +800,21 @@ osg::Image* VolumeBrickData::newBrick( const osg::Image* proto, const osg::Vec3s
 
 
 
-Downsampler::Downsampler( const VolumeBrickData* hiRes )
-    : _hi( hiRes ),
-      _low( NULL )
+Downsampler::Downsampler( const VolumeBrickDataPtr hiRes )
+    :
+    _hi( hiRes )
 {}
 Downsampler::~Downsampler()
 {
 }
 
-VolumeBrickData* Downsampler::getLow() const
+VolumeBrickDataPtr Downsampler::getLow() const
 {
     if( _low )
     {
         return( _low );
     }
-    _low = new VolumeBrickData();
+    _low = VolumeBrickDataPtr( new VolumeBrickData() );
 
     osg::Vec3s numBricks( _hi->getNumBricks() );
     numBricks[0] >>= 1;
@@ -992,7 +992,7 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
 
 
 
-SaveHierarchy::SaveHierarchy( VolumeBrickData* base, const std::string baseName )
+SaveHierarchy::SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName )
     : _depth( 0 ),
       _baseName( baseName )
 {
@@ -1014,10 +1014,7 @@ SaveHierarchy::SaveHierarchy( VolumeBrickData* base, const std::string baseName 
 }
 SaveHierarchy::~SaveHierarchy()
 {
-    for( unsigned int idx = 0; idx < _lodVec.size() - 1; ++idx )
-    {
-        delete _lodVec[ idx ];
-    }
+    _lodVec.clear();
 }
 
 void SaveHierarchy::save( DBBasePtr db )
@@ -1033,7 +1030,7 @@ void SaveHierarchy::save( DBBasePtr db )
 void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName )
 {
     const int depth( brickName.length() );
-    VolumeBrickData* vbd( _lodVec[ depth ] );
+    VolumeBrickDataPtr vbd( _lodVec[ depth ] );
     osg::Image* image( vbd->getSeamlessBrick( brickName ) );
 
     if( image != NULL )

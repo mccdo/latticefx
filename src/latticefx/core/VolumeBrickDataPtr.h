@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef LFX_VTK_VOLUME_BRICK_DATA_PTR_H
-#define LFX_VTK_VOLUME_BRICK_DATA_PTR_H
+#ifndef LFX_VOLUME_BRICK_DATA_PTR_H
+#define LFX_VOLUME_BRICK_DATA_PTR_H
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -28,27 +28,24 @@
  * \file
  *
  * Include this file to get a forward declaration of the type
- * lfx::core::vtk::VTKVolumeBrickData and its pointer types.
- * For the full declaration of lfx::core::vtk::VTKVolumeBrickData
- * latticefx/core/vtk/VTKVolumeBrickData.h must be included, too.
+ * lfx::core::VolumeBrickData and its pointer types.
+ * For the full declaration of lfx::core::VolumeBrickData
+ * latticefx/core/VolumeBrickData.h must be included, too.
  */
 
 namespace lfx
 {
 namespace core
 {
-namespace vtk
-{
-class VTKVolumeBrickData;
+class VolumeBrickData;
 /// Typedef for the SmartPtr types.
 //typedef ves::util::ClassPtrDef<DataSet>::type  DataSetPtr;
 //typedef ves::util::SharedPtrDef<DataSet>::type DataSetSharedPtr;
 // WeakPtrDef used for getting around circular references only.
-typedef boost::weak_ptr< VTKVolumeBrickData > VTKVolumeBrickDataWeakPtr;
+typedef boost::weak_ptr< VolumeBrickData > VolumeBrickDataWeakPtr;
 //typedef ves::util::ScopedPtrDef<DataSet>::type DataSetScopedPtr;
-typedef boost::shared_ptr< VTKVolumeBrickData > VTKVolumeBrickDataPtr;
+typedef boost::shared_ptr< VolumeBrickData > VolumeBrickDataPtr;
 
-}
 }
 }
 #endif
