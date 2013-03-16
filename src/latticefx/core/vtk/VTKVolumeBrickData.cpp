@@ -28,11 +28,12 @@
 
 #include <boost/thread.hpp>
 
-using namespace std::tr1;
-
-namespace lfx {
-namespace core {
-namespace vtk {
+namespace lfx
+{
+namespace core
+{
+namespace vtk
+{
 
 
 VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, 
@@ -42,7 +43,8 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 									   osg::Vec3s brickRes, 
 									   osg::Vec3s totalNumBricks, 
 									   int threadCount)
-: VolumeBrickData(prune)
+    :
+    VolumeBrickData(prune)
 {
 	m_dataSet = dataSet;
 	m_dataNum = dataNum;
@@ -124,7 +126,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	for (int i=0; i<m_threadCount; i++)
 	{
-		shared_ptr<SThreadData> pData(new SThreadData());
+		SThreadDataPtr pData = SThreadDataPtr( new SThreadData() );
 		pData->pVBD = this;
 		pData->ptrPixels = ptr;
 		pData->bytesPerPixel = bytesPerPixel;
@@ -372,7 +374,7 @@ osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* tuples, double* weig
 void VTKVolumeBrickData::extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const
 {
 	if (m_dataArraysScalar.size() <= dsNum) return;
-	PDataArrayVector pScalars = m_dataArraysScalar[dsNum];
+	PDataArrayVectorPtr pScalars = m_dataArraysScalar[dsNum];
 
 	if (pScalars->size() <= num) return;
 	(*pScalars)[num]->GetTuples(ptIds, tuples);
@@ -381,7 +383,7 @@ void VTKVolumeBrickData::extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* 
 void VTKVolumeBrickData::extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const
 {
 	if (m_dataArraysVector.size() <= dsNum) return;
-	PDataArrayVector pVectors = m_dataArraysVector[dsNum];
+	PDataArrayVectorPtr pVectors = m_dataArraysVector[dsNum];
 
 	if (pVectors->size() <= num) return;
 	(*pVectors)[num]->GetTuples(ptIds, tuples);
@@ -416,10 +418,10 @@ void VTKVolumeBrickData::initDataArrays()
 	{
 		vtkDataSet *pds = m_dataSets[s];
 
-		PDataArrayVector pScalarArray(new DataArrayVector());
+		PDataArrayVectorPtr pScalarArray = PDataArrayVectorPtr(new DataArrayVector());
 		m_dataArraysScalar.push_back(pScalarArray);
 
-		PDataArrayVector pVectorArray(new DataArrayVector());
+		PDataArrayVectorPtr pVectorArray = PDataArrayVectorPtr(new DataArrayVector());
 		m_dataArraysVector.push_back(pVectorArray);
 
 		int count = pds->GetPointData()->GetNumberOfArrays();

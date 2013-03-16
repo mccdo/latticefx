@@ -52,6 +52,11 @@
 #include <vtkSTLReader.h>
 #include <vtkScalarsToColors.h>
 #include <vtkLookupTable.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkOutlineFilter.h>
+#include <vtkCompositeDataPipeline.h>
+#include <vtkGeometryFilter.h>
 
 #include <latticefx/utils/vtk/setScalarAndVector.h>
 #include <latticefx/utils/vtk/viewCells.h>
@@ -68,6 +73,10 @@ vtkActor* getActorFromFile( std::string vtkFilename );
 
 int main( const int argc, char* argv[] )
 {
+    vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
+    vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
+    prototype->Delete();
+
     int i;
     std::string vtkFilename;
     float shrinkFactor = 1.0;
@@ -212,10 +221,10 @@ int main( const int argc, char* argv[] )
 
 void viewWhatsInFile( std::string vtkFilename, const float shrinkFactor )
 {
-    //std::cout << "viewWhatsInFile" << std::endl;
+    std::cout << "viewWhatsInFile" << std::endl;
     //
     ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( vtkFilename, 1 ) );
+    vtkDataObject* dataset = readVtkThing( vtkFilename, 1 );
     if( dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID )
     {
         int showGraphics;
@@ -236,18 +245,22 @@ void viewWhatsInFile( std::string vtkFilename, const float shrinkFactor )
             else
             {
                 // let the user pick the active scalar
-                activateScalar( dataset );
+                activateScalar( static_cast< vtkDataSet* >( dataset ) );
 
                 // if multiple point data scalar arrays are present,
                 // allow user to change active scalar
                 //do
                 {
-                    viewCells( dataset, shrinkFactor );
+                    viewCells( static_cast< vtkDataSet* >( dataset ), shrinkFactor );
                     //activateScalar( dataset );
                 }
                 //while ( 1 );
             }
         }
+    }
+    else if( dataset->IsA( "vtkCompositeDataSet" ) )
+    {
+        
     }
     else if( dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID )
     {
@@ -257,7 +270,7 @@ void viewWhatsInFile( std::string vtkFilename, const float shrinkFactor )
         std::cin >> showGraphics;
         if( showGraphics == 0 )
         {
-            viewCells( dataset, shrinkFactor );
+            viewCells( static_cast< vtkDataSet* >( dataset ), shrinkFactor );
         }
         else
         {
@@ -267,15 +280,14 @@ void viewWhatsInFile( std::string vtkFilename, const float shrinkFactor )
     }
     else if( dataset->GetDataObjectType() == VTK_POLY_DATA )
     {
-        std::cout << "sjk 1" << std::endl;
         // let the user pick the active scalar
-        activateScalar( dataset );
-        viewCells( dataset, shrinkFactor );
+        activateScalar( static_cast< vtkDataSet* >( dataset ) );
+        viewCells( static_cast< vtkDataSet* >( dataset ), shrinkFactor );
     }
     else if( dataset->GetDataObjectType() == VTK_STRUCTURED_GRID )
     {
         std::cout << "IsFileStructuredGrid" << std::endl;
-        viewCells( dataset, shrinkFactor );
+        viewCells( static_cast< vtkDataSet* >( dataset ), shrinkFactor );
     }
     else
     {
@@ -402,7 +414,7 @@ vtkActor* getActorFromFile( std::string vtkFilename )
         extension.erase();
     }
     ///This will need to be changed to handle both vtkDataset and vtkMultigroupDataSet
-    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>( readVtkThing( vtkFilename, 1 ) );
+    vtkDataObject* dataset = readVtkThing( vtkFilename, 1 );
     if( dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID )
     {
         std::cout << "IsFileUnstructuredGrid" << std::endl;
@@ -423,33 +435,97 @@ vtkActor* getActorFromFile( std::string vtkFilename )
             else
             {
                 // let the user pick the active scalar
-                activateScalar( dataset );
+                activateScalar( static_cast< vtkDataSet* >( dataset ) );
 
                 // if multiple point data scalar arrays are present,
                 // allow user to change active scalar
                 //do
                 {
-                    actor = getActorFromDataSet( dataset );
+                    actor = getActorFromDataSet( static_cast< vtkDataSet* >( dataset ) );
                     //activateScalar( dataset );
                 }
                 //while ( 1 );
             }
         }
     }
+    else if( dataset->IsA( "vtkCompositeDataSet" ) )
+    {
+        std::cout << "IsvtkCompositeDataSet" << std::endl;
+        /*vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+        c2p->SetInput( dataset );
+
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
+            vtkCompositeDataGeometryFilter::New();
+        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+
+        vtkOutlineFilter* outlineData = vtkOutlineFilter::New();
+        outlineData->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort() );
+
+        vtkPolyDataMapper* mapOutline = vtkPolyDataMapper::New();
+        mapOutline->SetInputConnection( outlineData->GetOutputPort() );
+        
+        actor = vtkActor::New();
+        actor->SetMapper( mapOutline );
+        actor->GetProperty()->SetColor( 1, 0, 0 );
+
+        c2p->Delete();
+        m_multiGroupGeomFilter->Delete();
+        outlineData->Delete();
+        mapOutline->Delete();*/
+
+        vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
+        if( dataset->IsA( "vtkCompositeDataSet" ) )
+        {
+            vtkCompositeDataGeometryFilter* wireframe = vtkCompositeDataGeometryFilter::New();
+            wireframe->SetInput( dataset );
+            
+            c2p->SetInputConnection( wireframe->GetOutputPort() );
+            
+            wireframe->Delete();
+        }
+        else
+        {
+            vtkGeometryFilter* wireframe = vtkGeometryFilter::New();
+            wireframe->SetInput( dataset );
+            
+            c2p->SetInputConnection( wireframe->GetOutputPort() );
+            
+            wireframe->Delete();
+        }
+        
+        vtkPolyDataMapper* wireframeMapper = vtkPolyDataMapper::New();
+        wireframeMapper->SetInputConnection( c2p->GetOutputPort() );
+        //vtkPolyData* poly = lfx::vtk_utils::cfdGrid2Surface( this->GetDataSet(), 0.8f );
+        wireframeMapper->SetScalarModeToUsePointFieldData();
+        //mapper->SetScalarModeToDefault();
+        wireframeMapper->UseLookupTableScalarRangeOn();
+        //wireframeMapper->SelectColorArray( GetActiveScalarName().c_str() );
+        //wireframeMapper->SetLookupTable( GetLookupTable() );
+        //wireframeMapper->Update();
+        c2p->Delete();
+        
+        actor = vtkActor::New();
+        actor->SetMapper( wireframeMapper );
+        //wireframeActor->GetProperty()->SetColor( 0, 0, 1 );
+        actor->GetProperty()->SetOpacity( 0.7f );
+        //actor->GetProperty()->SetRepresentationToWireframe();
+        //actor->GetProperty()->EdgeVisibilityOn();
+        //wireframeMapper->Delete();
+    }
     else if( dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID )
     {
         std::cout << "IsFileRectilinearGrid" << std::endl;
-        actor = getActorFromDataSet( dataset );
+        actor = getActorFromDataSet( static_cast< vtkDataSet* >( dataset ) );
     }
     else if( dataset->GetDataObjectType() == VTK_POLY_DATA )
     {
         std::cout << "IsFilePolyData" << std::endl;
-        actor = getActorFromDataSet( dataset );
+        actor = getActorFromDataSet( static_cast< vtkDataSet* >( dataset ) );
     }
     else if( dataset->GetDataObjectType() == VTK_STRUCTURED_GRID )
     {
         std::cout << "IsFileStructuredGrid" << std::endl;
-        actor = getActorFromDataSet( dataset );
+        actor = getActorFromDataSet( static_cast< vtkDataSet* >( dataset ) );
     }
     else
     {

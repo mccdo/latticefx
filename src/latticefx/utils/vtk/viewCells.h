@@ -30,6 +30,8 @@ class vtkRectilinearGrid;
 class vtkActor;
 class vtkFollower;
 class vtkRenderer;
+class vtkDataObject;
+
 namespace lfx
 {
 namespace vtk_utils
@@ -41,7 +43,7 @@ extractExteriorCellsOnly( vtkUnstructuredGrid* output );
 ///Renders the data set that is passed in.
 ///\param *output pointer to the data set to be rendered.
 ///\param shrinkFactor scaling factor for the rendering.
-LATTICEFX_VTK_UTILS_EXPORT void viewCells( vtkDataSet* output,
+LATTICEFX_VTK_UTILS_EXPORT void viewCells( vtkDataObject* output,
         const float shrinkFactor = 0.95 );
 ///Renders a cross section of the model halfway along the x-axis.
 ///\param *output pointer to the data set to be rendered.
@@ -61,7 +63,7 @@ LATTICEFX_VTK_UTILS_EXPORT void GetAxesLabels( vtkFollower* xActor,
 ///\param dataset pointer to the dataset from which the new actor will be extracted.
 ///\param ren1 (????)The renderer.
 ///\param shrinkFactor Scaling factor for the new actor
-LATTICEFX_VTK_UTILS_EXPORT void AddToRenderer( vtkDataSet* dataset,
+LATTICEFX_VTK_UTILS_EXPORT void AddToRenderer( vtkDataObject* dataset,
         vtkRenderer* ren1, const float shrinkFactor = 1.0 );
 }// end of util namesapce
 }// end of xplorer namesapce

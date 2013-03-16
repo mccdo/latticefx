@@ -115,18 +115,18 @@ vtkUnstructuredGrid* lfx::vtk_utils::extractExteriorCellsOnly( vtkUnstructuredGr
     return exteriorCells;
 }
 
-void lfx::vtk_utils::viewCells( vtkDataSet* dataset, const float shrinkFactor )
+void lfx::vtk_utils::viewCells( vtkDataObject* dataset, const float shrinkFactor )
 {
     std::cout << "\nviewCells: Preparing to view mesh..." << std::endl;
-    int numCells = dataset->GetNumberOfCells();
-    std::cout << "     The number of cells is " << numCells << std::endl;
-    int numPts = dataset->GetNumberOfPoints();
-    std::cout << "     The number of points is " << numPts << std::endl;
+    //int numCells = dataset->GetNumberOfCells();
+    //std::cout << "     The number of cells is " << numCells << std::endl;
+    //int numPts = dataset->GetNumberOfPoints();
+    //std::cout << "     The number of points is " << numPts << std::endl;
 
-    if( numCells == 0 )
-    {
-        return;
-    }
+    //if( numCells == 0 )
+    //{
+    //    return;
+    //}
 
     //Create one-time graphics stuff
     vtkRenderer* ren1 = vtkRenderer::New();
@@ -463,21 +463,21 @@ void lfx::vtk_utils::GetAxesLabels( vtkFollower* xActor,
     zMapper->Delete();
 }
 
-void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, const float shrinkFactor )
+void lfx::vtk_utils::AddToRenderer( vtkDataObject* dataset, vtkRenderer* ren1, const float shrinkFactor )
 {
     //std::cout << "\nPreparing to view mesh..." << std::endl;
-    int numCells = dataset->GetNumberOfCells();
+    //int numCells = dataset->GetNumberOfCells();
     /*
         std::cout << "     The number of cells is " << numCells << std::endl;
         int numPts = dataset->GetNumberOfPoints();
         std::cout << "     The number of points is "<< numPts << std::endl;
     */
 
-    if( numCells == 0 )
+    /*if( numCells == 0 )
     {
         std::cout << "\tNothing to plot in AddToRenderer: The number of cells is " << numCells << std::endl;
         return;
-    }
+    }*/
     //else    std::cout << "\tAddToRenderer: The number of cells is " << numCells << std::endl;
 
     vtkDataSetMapper* map = vtkDataSetMapper::New();
@@ -485,6 +485,27 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, cons
     //    in memory. For most large datasets you will be better off saving memory by not using display lists.
     //    You can turn off display lists by turning on ImmediateModeRendering.
     map->ImmediateModeRenderingOn();
+
+    /*if( dataset->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
+        vtkCompositeDataGeometryFilter::New();
+        m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_multiGroupGeomFilter->GetOutputPort(0);
+        tris->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
+        m_multiGroupGeomFilter->Delete();
+    }
+    else
+    {
+        //m_geometryFilter->SetInputConnection( input );
+        //return m_geometryFilter->GetOutputPort();
+        vtkDataSetSurfaceFilter* m_surfaceFilter =
+        vtkDataSetSurfaceFilter::New();
+        m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
+        //return m_surfaceFilter->GetOutputPort();
+        tris->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+        m_surfaceFilter->Delete();
+    }*/
 
     //std::cout << "Using shrinkFactor = " << shrinkFactor << std::endl;
 
@@ -499,7 +520,7 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, cons
     }
     else
     {
-        map->SetInput( dataset );
+        //map->SetInput( dataset );
     }
 
     /*
@@ -539,7 +560,7 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, cons
 
     vtkActor* actor = vtkActor::New();
 
-    if( dataset->GetPointData()->GetScalars() )
+    /*if( dataset->GetPointData()->GetScalars() )
     {
         vtkLookupTable* lut = vtkLookupTable::New();
         lut->SetNumberOfColors( 256 ); //default is 256
@@ -568,7 +589,7 @@ void lfx::vtk_utils::AddToRenderer( vtkDataSet* dataset, vtkRenderer* ren1, cons
         map->SetLookupTable( lut );
         lut->Delete();
     }
-    else
+    else*/
     {
         actor->GetProperty()->SetColor( 1, 0, 0 );
     }

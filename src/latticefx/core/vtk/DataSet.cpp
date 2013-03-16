@@ -34,12 +34,7 @@
 #include <latticefx/utils/vtk/CreateDataObjectBBoxActorsCallback.h>
 #include <latticefx/utils/vtk/ComputeVectorMagnitudeAndScalarsCallback.h>
 
-//#include <ves/xplorer/data/DatasetPropertySet.h>
-
 #include <latticefx/translators/vtk/DataLoader.h>
-//#include <ves/builder/cfdTranslatorToVTK/cfdTranslatorToVTK.h>
-
-//#include <ves/open/xml/Command.h>
 
 #include <vtkLookupTable.h>
 #include <vtkPointData.h>

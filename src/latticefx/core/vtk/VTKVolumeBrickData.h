@@ -30,12 +30,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkDoubleArray.h>
 
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 class vtkDataArray;
 
-namespace lfx {
-namespace core {
-namespace vtk {
+namespace lfx
+{
+namespace core
+{
+namespace vtk
+{
 
 /** \class VTKVolumeBrickData VTKVolumeBrickData.h <latticefx/core/vtk/VTKVolumeBrickData.h>
 \brief To be done
@@ -66,24 +70,24 @@ protected:
 		}
 
 	};
+    typedef boost::shared_ptr< SThreadData > SThreadDataPtr;
 
 	class BrickThread
 	{
 	public:
-		BrickThread(std::tr1::shared_ptr<SThreadData> pData) { m_pData = pData; }
+		BrickThread( SThreadDataPtr pData) { m_pData = pData; }
 		void operator()();
 
 	protected:
-		std::tr1::shared_ptr<SThreadData> m_pData;
+		SThreadDataPtr m_pData;
 	};
 
 	friend class BrickThread;
 
 
-	typedef std::vector<vtkDataArray *> DataArrayVector;
-	typedef std::tr1::shared_ptr <DataArrayVector> PDataArrayVector;
-	
-	
+	typedef std::vector< vtkDataArray* > DataArrayVector;
+    typedef boost::shared_ptr< DataArrayVector > PDataArrayVectorPtr;
+
 public:
 	VTKVolumeBrickData(	DataSetPtr dataSet,
 						bool prune = false,
@@ -123,8 +127,8 @@ protected:
 	int m_dataNum;
 	int m_maxPts;
 	osg::Vec3s m_brickRes;
-	std::vector< PDataArrayVector > m_dataArraysScalar;
-	std::vector< PDataArrayVector > m_dataArraysVector;
+	std::vector< PDataArrayVectorPtr > m_dataArraysScalar;
+	std::vector< PDataArrayVectorPtr > m_dataArraysVector;
 	int m_cellCache;
 	int m_threadCount;
 };
