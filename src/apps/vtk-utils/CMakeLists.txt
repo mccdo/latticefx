@@ -6,6 +6,7 @@ _addExecutable( App meshViewer
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+set_property(TARGET meshViewer PROPERTY FOLDER "App/VTK")
 
 _addExecutable( App convertVTK2Ascii
     convertVTK2Ascii.cxx
@@ -15,6 +16,7 @@ _addExecutable( App convertVTK2Ascii
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+set_property(TARGET convertVTK2Ascii PROPERTY FOLDER "App/VTK")
 
 _addExecutable( App convertVTK2Binary
     convertVTK2Binary.cxx
@@ -24,6 +26,7 @@ _addExecutable( App convertVTK2Binary
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+set_property(TARGET convertVTK2Binary PROPERTY FOLDER "App/VTK")
 
 _addExecutable( App convertSurfaceFileToStl
     convertSurfaceFileToStl.cxx
@@ -33,6 +36,7 @@ _addExecutable( App convertSurfaceFileToStl
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+set_property(TARGET convertSurfaceFileToStl PROPERTY FOLDER "App/VTK")
 
 _addExecutable( App whatIsScalarRange
     whatIsScalarRange.cxx
@@ -42,3 +46,4 @@ _addExecutable( App whatIsScalarRange
         latticefx_core_vtk
         ${_vtkLibraries}
 )
+set_property(TARGET whatIsScalarRange PROPERTY FOLDER "App/VTK")
