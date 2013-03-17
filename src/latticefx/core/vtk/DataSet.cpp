@@ -124,15 +124,15 @@ DataSet::DataSet()
     // automatically have the same color mapping as the "parent"
     // By default, the dataset is assumed to have no parent, that is,
     // use its own range to determine color mapping.
-    //this->switchNode = new ves::xplorer::scenegraph::Switch();
-    //this->switchNode->SetName( "switch_for_data_viz" );
+    this->switchNode = new osg::Switch();
+    this->switchNode->setName( "switch_for_data_viz" );
     this->classic = new osg::Group();
     this->classic->setName( "classic" );
-    //this->switchNode->AddChild( this->classic.get() );
+    this->switchNode->addChild( this->classic.get() );
     this->textureBased = new osg::Group();
     this->textureBased->setName( "textureBased" );
-    //this->switchNode->AddChild( this->textureBased.get() );
-    //this->switchNode->SetVal( 0 );
+    this->switchNode->addChild( this->textureBased.get() );
+    this->switchNode->setSingleChildOn( 0 );
 
     m_bounds[0] = 100000;
     m_bounds[1] = -100000;
@@ -1419,12 +1419,7 @@ void DataSet::SetDisplayedScalarRange( int index, double* range )
 //////////////////////////////////////////////////////////////////
 osg::Switch* DataSet::GetSwitchNode()
 {
-    /*if( !switchNode.valid() )
-    {
-        switchNode = new ves::xplorer::scenegraph::Switch();
-    }*/
-
-    return 0;
+    return switchNode.get();
 }
 /////////////////////////////////////////////////////
 osg::PositionAttitudeTransform* DataSet::GetDCS()
