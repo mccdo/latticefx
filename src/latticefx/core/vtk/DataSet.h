@@ -172,10 +172,12 @@ public:
     void SetActiveScalar( const std::string& scalarName );
     int GetActiveScalar();
     const std::string GetActiveScalarName();
+    const std::vector< std::string > GetScalarNames() const;
 
     void SetActiveVector( int );
     void SetActiveVector( const std::string& vectorName );
     int GetActiveVector();
+    const std::vector< std::string > GetVectorNames() const;
 
     static void AutoComputeUserRange( const double rawRange[2],
                                       double prettyRange[2] );
@@ -189,11 +191,6 @@ public:
 
     void SetPrecomputedSurfaceDir( const std::string& newDir );
     const std::string& GetPrecomputedSurfaceDir();
-
-    /*cfdPlanes* GetPrecomputedXSlices();
-    cfdPlanes* GetPrecomputedYSlices();
-    cfdPlanes* GetPrecomputedZSlices();
-    cfdPlanes* GetPrecomputedSlices( int xyz );*/
 
     void StoreScalarInfo();
 
@@ -304,10 +301,11 @@ public:
     ///can tell other pipelines what the other datasets in the series are.
     void SetTransientDataSetsList( std::vector< DataSetPtr >& tempTransientData );
 
+    ///Get the sub dataset pointers
+    const std::vector< DataSetPtr > GetChildDataSets() const;
+
 protected:
-    //#ifdef QT_ON
     void WriteDatabaseEntry();
-    //#endif // QT_ON
 
 private:
     ///Load a VTK Temporal data set

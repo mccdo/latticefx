@@ -1289,6 +1289,16 @@ const std::string DataSet::GetScalarName( int i )
         return m_nullScalarName;
     }
 }
+//////////////////////////////////////////////////////////////////////////
+const std::vector< std::string > DataSet::GetScalarNames() const
+{
+    return scalarName;
+}
+//////////////////////////////////////////////////////////////////////////
+const std::vector< std::string > DataSet::GetVectorNames() const
+{
+    return vectorName;
+}
 ///////////////////////////////////////////////
 int DataSet::GetNumberOfVectors()
 {
@@ -2071,11 +2081,6 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
             vecMagRangeCbk->GetVectorMagnitudeRange( this->vectorMagRange );
         }
     }
-    else
-    {
-        //vprDEBUG( vesDBG, 0 ) << "\tWARNING: No Point Data"
-        //                      << std::endl << vprDEBUG_FLUSH;
-    }
 
     SetType();
 
@@ -2085,6 +2090,11 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
     CreateCompositeDataSets();
 
     WriteDatabaseEntry();
+}
+////////////////////////////////////////////////////////////////////////////////
+const std::vector< DataSetPtr > DataSet::GetChildDataSets() const
+{
+    return m_childDataSets;
 }
 ////////////////////////////////////////////////////////////////////////////////
 } // end xplorer

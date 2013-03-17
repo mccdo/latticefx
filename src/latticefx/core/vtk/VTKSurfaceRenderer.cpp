@@ -65,8 +65,14 @@ void VTKSurfaceRenderer::SetColorByScalar( std::string const scalarName )
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
+    lfx::core::ChannelDataPtr channelDataTemp = getInput( "vtkPolyDataMapper" );
+    if( !channelDataTemp )
+    {
+        std::cout << "VTKSurfaceRenderer::getSceneGraph : The vtkPolyDataMapper was not set as an input." << std::endl;
+        return 0;
+    }
     m_pd =
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( getInput( "vtkPolyDataMapper" ) )->GetPolyDataMapper()->GetInput();
+        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( channelDataTemp )->GetPolyDataMapper()->GetInput();
     /*{
         vtkXMLPolyDataWriter* writer = vtkXMLPolyDataWriter::New();
         writer->SetInput( ( vtkPolyData* ) m_pd );
