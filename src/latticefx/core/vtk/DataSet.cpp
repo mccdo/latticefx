@@ -1782,6 +1782,10 @@ void DataSet::CreateCompositeDataSets()
         num++;
     }
 
+    //Reset the filename to reset the dcs filename after
+    //all of the files have set the names
+    GetDCS()->setName( GetFileName() );
+
     mgdIterator->Delete();
     mgdIterator = 0;
 }
