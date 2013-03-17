@@ -47,5 +47,6 @@ void ComputeVectorMagnitudeRangeCallback::OperateOnDataset( vtkDataSet* dataset 
         AccessoryFunctions::ComputeVectorMagnitudeRange( dataset->GetPointData()->GetVectors() );
     m_magnitudeRange[0] = ( range[0] < m_magnitudeRange[0] ) ? range[0] : m_magnitudeRange[0];
     m_magnitudeRange[1] = ( range[1] > m_magnitudeRange[1] ) ? range[1] : m_magnitudeRange[1];
+    delete [] range;
 }
 
