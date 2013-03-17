@@ -253,7 +253,6 @@ public:
     bool updateAll();
 
     enum {
-        NONE_DIRTY            = 0x0,
         PREPROCESS_DIRTY      = ( 0x1 << 0 ),
         RTPOPERATION_DIRTY   = ( 0x1 << 1 ),
         RENDERER_DIRTY        = ( 0x1 << 2 ),
@@ -270,7 +269,6 @@ public:
     call setDirty().
     
     Predefined DataSet enum values for \c dirty (bits may be OR'd):
-    \li NONE_DIRTY
     \li PREPROCESS_DIRTY
     \li RTPOPERATIONS_DIRTY
     \li RENDERER_DIRTY
@@ -280,6 +278,9 @@ public:
     Note that setDirty() bitwise ORs the \c dirty parameter with the
     existing DataSet::_dirty value. */
     void setDirty( const int dirty = ALL_DIRTY );
+    /** \brief Clear dirty flags.
+    \details Clears bits in \c dirty from the internal DataSet::_dirty member variable. */
+    void clearDirty( const int dirty = ALL_DIRTY );
     /** \brief Get the pipeline dirty flag. */
     int getDirty() const;
 

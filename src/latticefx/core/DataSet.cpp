@@ -291,7 +291,7 @@ osg::Node* DataSet::getSceneData()
         setDirty();
     }
 
-    if( getDirty() != NONE_DIRTY )
+    if( getDirty() != 0 )
     {
         updateAll();
     }
@@ -331,7 +331,8 @@ bool DataSet::updateAll()
         updateRenderer();
     }
 
-    setDirty( NONE_DIRTY );
+    clearDirty( RENDERER_DIRTY );
+    clearDirty();
     return( true );
 }
 
@@ -672,6 +673,10 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 void DataSet::setDirty( const int dirty )
 {
     _dirty |= dirty;
+}
+void DataSet::clearDirty( const int dirty )
+{
+    _dirty &= ( ~dirty & ALL_DIRTY );
 }
 int DataSet::getDirty() const
 {
