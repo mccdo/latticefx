@@ -21,6 +21,7 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/LogMacros.h>
 
+#include <cstring>
 
 
 namespace lfx
@@ -351,26 +352,26 @@ void ChannelDataOSGArray::copyArray( osg::Array* lhs, const osg::Array* rhs )
     {
     case osg::Array::ByteArrayType:
     {
-        memcpy( AS_CHAR_PTR( osg::ByteArray, lhs ),
-                AS_CONST_CHAR_PTR( osg::ByteArray, rhs ), sizeBytes );
+        std::memcpy( AS_CHAR_PTR( osg::ByteArray, lhs ),
+                     AS_CONST_CHAR_PTR( osg::ByteArray, rhs ), sizeBytes );
         break;
     }
     case osg::Array::FloatArrayType:
     {
-        memcpy( AS_CHAR_PTR( osg::FloatArray, lhs ),
-                AS_CONST_CHAR_PTR( osg::FloatArray, rhs ), sizeBytes );
+        std::memcpy( AS_CHAR_PTR( osg::FloatArray, lhs ),
+                     AS_CONST_CHAR_PTR( osg::FloatArray, rhs ), sizeBytes );
         break;
     }
     case osg::Array::Vec2ArrayType:
     {
-        memcpy( AS_CHAR_PTR( osg::Vec2Array, lhs ),
-                AS_CONST_CHAR_PTR( osg::Vec2Array, rhs ), sizeBytes );
+        std::memcpy( AS_CHAR_PTR( osg::Vec2Array, lhs ),
+                     AS_CONST_CHAR_PTR( osg::Vec2Array, rhs ), sizeBytes );
         break;
     }
     case osg::Array::Vec3ArrayType:
     {
-        memcpy( AS_CHAR_PTR( osg::Vec3Array, lhs ),
-                AS_CONST_CHAR_PTR( osg::Vec3Array, rhs ), sizeBytes );
+        std::memcpy( AS_CHAR_PTR( osg::Vec3Array, lhs ),
+                     AS_CONST_CHAR_PTR( osg::Vec3Array, rhs ), sizeBytes );
         break;
     }
     default:

@@ -27,6 +27,7 @@
 #include <osg/Vec3>
 
 #include <cmath>
+#include <cstring>
 
 
 namespace lfx
@@ -201,7 +202,7 @@ osg::Image* createImage3DForInstancedRenderer( const ChannelDataPtr source )
     image->allocateImage( texDim[ 0 ], texDim[ 1 ], texDim[ 2 ], dataFormat, dataType );
     if( sourceData != NULL )
     {
-        memcpy( image->data(), sourceData, sourceArray->getTotalDataSize() );
+        std::memcpy( image->data(), sourceData, sourceArray->getTotalDataSize() );
     }
     image->setInternalTextureFormat( intFormat );
     image->setDataType( dataType );
