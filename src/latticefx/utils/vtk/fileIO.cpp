@@ -226,7 +226,7 @@ int fileIO::readNByteBlockFromFile( void* ptr, const unsigned int nByte,
                 buf[nByte - 1 - j] = * ( ( ( char* )ptr ) + i + j );
             }
 
-            memcpy( ( ( char* )ptr ) + i, buf, nByte );
+            std::memcpy( ( ( char* )ptr ) + i, buf, nByte );
         }
         delete [] buf;
     }

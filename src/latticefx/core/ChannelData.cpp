@@ -24,6 +24,7 @@
 #include <boost/foreach.hpp>
 
 #include <sstream>
+#include <cstring>
 
 
 namespace lfx
@@ -44,7 +45,7 @@ ChannelData::ChannelData( const ChannelData& rhs )
       _name( rhs._name ),
       _dbKey( rhs._dbKey )
 {
-    memcpy( _dimensions, rhs._dimensions, sizeof( _dimensions ) );
+    std::memcpy( _dimensions, rhs._dimensions, sizeof( _dimensions ) );
 }
 ChannelData::~ChannelData()
 {

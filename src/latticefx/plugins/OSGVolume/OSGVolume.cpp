@@ -28,6 +28,8 @@
 #include <osgDB/WriteFile>
 #include <osg/Image>
 
+#include <cstring>
+
 
 using namespace lfx::core;
 
@@ -60,7 +62,7 @@ osg::Image* downsample( osg::Image* srcImage )
             for( sIdx = 0; sIdx < s; sIdx++ )
             {
                 const unsigned int srcS( ( float )sIdx / ( float )s * srcImage->s() );
-                memcpy( image->data( sIdx, tIdx, rIdx ), srcImage->data( srcS, srcT, srcR ), pixelSize );
+                std::memcpy( image->data( sIdx, tIdx, rIdx ), srcImage->data( srcS, srcT, srcR ), pixelSize );
             }
         }
     }

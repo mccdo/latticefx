@@ -36,7 +36,7 @@
 #include <boost/foreach.hpp>
 
 #include <sstream>
-
+#include <cstring>
 #include <string>
 
 
@@ -704,7 +704,7 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
         {
             for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
             {
-                memcpy( DEST_ADDR( 0, tIdx, rIdx ),
+                std::memcpy( DEST_ADDR( 0, tIdx, rIdx ),
                         SRC_ADDR( 0, tIdx, rIdx ), rowSize );
             }
         }
@@ -716,7 +716,7 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
         {
             for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
             {
-                memcpy( DEST_ADDR( destS - 1, tIdx, rIdx ),
+                std::memcpy( DEST_ADDR( destS - 1, tIdx, rIdx ),
                         SRC_ADDR( 0, tIdx, rIdx ), pixSize );
             }
         }
@@ -726,7 +726,7 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
     {
         for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            memcpy( DEST_ADDR( 0, destT - 1, rIdx ),
+            std::memcpy( DEST_ADDR( 0, destT - 1, rIdx ),
                     SRC_ADDR( 0, 0, rIdx ), rowSize );
         }
         break;
@@ -735,7 +735,7 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
     {
         for( unsigned int rIdx = 0; rIdx < srcR; ++rIdx )
         {
-            memcpy( DEST_ADDR( destS - 1, destT - 1, rIdx ),
+            std::memcpy( DEST_ADDR( destS - 1, destT - 1, rIdx ),
                     SRC_ADDR( 0, 0, rIdx ), pixSize );
         }
         break;
@@ -744,7 +744,7 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
     {
         for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
         {
-            memcpy( DEST_ADDR( 0, tIdx, destR - 1 ),
+            std::memcpy( DEST_ADDR( 0, tIdx, destR - 1 ),
                     SRC_ADDR( 0, tIdx, 0 ), rowSize );
         }
         break;
@@ -753,20 +753,20 @@ void VolumeBrickData::overlap( osg::Image* dest, const osg::Image* source, const
     {
         for( unsigned int tIdx = 0; tIdx < srcT; ++tIdx )
         {
-            memcpy( DEST_ADDR( destS - 1, tIdx, destR - 1 ),
+            std::memcpy( DEST_ADDR( destS - 1, tIdx, destR - 1 ),
                     SRC_ADDR( 0, tIdx, 0 ), pixSize );
         }
         break;
     }
     case 6:
     {
-        memcpy( DEST_ADDR( 0, destT - 1, destR - 1 ),
+        std::memcpy( DEST_ADDR( 0, destT - 1, destR - 1 ),
                 SRC_ADDR( 0, 0, 0 ), rowSize );
         break;
     }
     case 7:
     {
-        memcpy( DEST_ADDR( destS - 1, destT - 1, destR - 1 ),
+        std::memcpy( DEST_ADDR( destS - 1, destT - 1, destR - 1 ),
                 SRC_ADDR( 0, 0, 0 ), pixSize );
         break;
     }

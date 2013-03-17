@@ -22,6 +22,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <boost/foreach.hpp>
+#include <cstring>
 
 
 namespace lfx
@@ -120,7 +121,7 @@ void ChannelDataOSGImage::reset()
     {
         // Only do the copy if _workingImage has data. It will not have any data
         // if the image has not yet been paged in.
-        memcpy( _workingImage->data(), _image->data(),
+        std::memcpy( _workingImage->data(), _image->data(),
                 _image->getTotalSizeInBytes() );
     }
 }
