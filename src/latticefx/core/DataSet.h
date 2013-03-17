@@ -275,7 +275,10 @@ public:
     \li RTPOPERATIONS_DIRTY
     \li RENDERER_DIRTY
     \li ALL_DIRTY
-    */
+
+    Dirty flags are stored internally as an int, DataSet::_dirty.
+    Note that setDirty() bitwise ORs the \c dirty parameter with the
+    existing DataSet::_dirty value. */
     void setDirty( const int dirty = ALL_DIRTY );
     /** \brief Get the pipeline dirty flag. */
     int getDirty() const;

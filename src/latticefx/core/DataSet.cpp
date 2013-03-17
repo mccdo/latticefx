@@ -671,7 +671,7 @@ osg::Node* DataSet::recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr 
 
 void DataSet::setDirty( const int dirty )
 {
-    _dirty = dirty;
+    _dirty |= dirty;
 }
 int DataSet::getDirty() const
 {
