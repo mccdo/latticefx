@@ -19,6 +19,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/vtk/DataSet.h>
+#include <latticefx/core/vtk/vtkActorToOSG.h>
 
 #include <latticefx/utils/vtk/AccessoryFunctions.h>
 #include <latticefx/utils/vtk/fileIO.h>
@@ -156,6 +157,9 @@ DataSet::~DataSet()
     /*xplorer::data::DatasetPropertySet set;
     set.LoadByKey( "Filename", fileName );
     set.DeleteFromDatabase();*/
+    dataSetUUIDMap.clear();
+    m_activeDataArrays.clear();
+    parent = vtk::DataSetPtr();
 
     this->lut->Delete();
     this->lut = NULL;
@@ -198,16 +202,16 @@ DataSet::~DataSet()
 
     m_childDataSets.clear();
 
-    if( this->m_dataSet != NULL )
+    if( m_dataSet )
     {
         //This dataset could be part of a composite dataset which would mean
         //its memory is handled by another destructor
         if( !m_isPartOfCompositeDataset )
         {
-            this->m_dataSet->Delete();
+            m_dataSet->Delete();
         }
 
-        this->m_dataSet = NULL;
+        m_dataSet = NULL;
     }
 
     if( _vtkFHndlr )
@@ -537,8 +541,6 @@ void DataSet::LoadData( vtkUnstructuredGrid* dataset, int datasetindex )
     //array->Delete();
     //dumpVerticesNotUsedByCells(pointset);
 
-    // This MUST BE FIXED mccdo
-    //writeVtkThing( pointset, this->fileName, 1 );
     this->LoadData();
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -636,16 +638,10 @@ void DataSet::LoadData( vtkDataSet* tempDataset, bool isPartOfCompositeDataset )
 {
     if( this->m_dataSet != NULL )
     {
-        //vprDEBUG( vesDBG, 1 ) << "|\tAlready have loaded the data for "
-        //                      << fileName
-        //                      << std::endl << vprDEBUG_FLUSH;
         return;
     }
 
     m_isPartOfCompositeDataset = isPartOfCompositeDataset;
-
-    //vprDEBUG( vesDBG, 1 ) << "|\tLoadData: filename = " << fileName
-    //                      << std::endl << vprDEBUG_FLUSH;
 
     m_dataSet = tempDataset;
 
@@ -693,11 +689,6 @@ void DataSet::LoadData( vtkDataSet* tempDataset, bool isPartOfCompositeDataset )
             m_dataObjectHandler->OperateOnAllDatasetsInObject( this->m_dataSet );
             vecMagRangeCbk->GetVectorMagnitudeRange( this->vectorMagRange );
         }
-    }
-    else
-    {
-        //vprDEBUG( vesDBG, 0 ) << "\tWARNING: No Point Data"
-        //                      << std::endl << vprDEBUG_FLUSH;
     }
 
     SetType();
@@ -1090,10 +1081,6 @@ void DataSet::AutoComputeUserRange( const double rawRange[2],
 void DataSet::ResetScalarBarRange( double min, double max )
 {
     // converts percentile parameters into decimal values for a particular scalar
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tDataSet::ResetScalarBarRange "
-    //                      << "min = " << min << ", max = " << max
-    //                      << std::endl << vprDEBUG_FLUSH;
-
     if( this->numScalars == 0 )
     {
         return;
@@ -1109,9 +1096,6 @@ void DataSet::ResetScalarBarRange( double min, double max )
 
     double newPrettyRange[2];
     AutoComputeUserRange( newRawRange, newPrettyRange );
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tnewPrettyRange[0] = " << newPrettyRange[0]
-    //                      << ", newPrettyRange[1] = " << newPrettyRange[1]
-    //                      << std::endl << vprDEBUG_FLUSH;
 
     this->SetUserRange( newPrettyRange );
 }
@@ -1129,7 +1113,6 @@ void DataSet::SetFileName_OnFly( int datasetindex )
     file_name << "NewlyLoadedDataSet_" << datasetindex << ".vtk";
     currentVtkFileName = file_name.str();
 
-    //const std::string newName;
     std::string newName;
     newName.assign( currentVtkFileName );
 
@@ -1369,38 +1352,12 @@ void DataSet::GetActualScalarRange( int index, double* range )
 ///////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetActualScalarRange( int index, double* range )
 {
-    /*vprDEBUG( vesDBG, 2 )
-            << "|\t\tDataSet::SetActualScalarRange, for file " << this->fileName
-            << ", index: " << index
-            << std::endl << vprDEBUG_FLUSH;
-
-    vprDEBUG( vesDBG, 2 )
-            << "|\t\tDataSet::SetActualScalarRange OLD actualScalarRange["
-            << index << "] = "
-            << this->actualScalarRange[ index ][ 0 ] << " : "
-            << this->actualScalarRange[ index ][ 1 ]
-            << std::endl << vprDEBUG_FLUSH;
-
-    vprDEBUG( vesDBG, 2 ) << "|\t\tDataSet::SetActualScalarRange request range: "
-                          << range[0] << " : " << range[1]
-                          << std::endl << vprDEBUG_FLUSH;*/
-
     this->actualScalarRange[ index ][ 0 ] = range[ 0 ];
     this->actualScalarRange[ index ][ 1 ] = range[ 1 ];
-
-    /*vprDEBUG( vesDBG, 1 )
-            << "|\t\tDataSet::SetActualScalarRange NEW actualScalarRange["
-            << index << "] = "
-            << this->actualScalarRange[ index ][ 0 ] << " : "
-            << this->actualScalarRange[ index ][ 1 ]
-            << std::endl << vprDEBUG_FLUSH;*/
 }
 //////////////////////////////////////////////////////////
 double* DataSet::GetDisplayedScalarRange()
 {
-    /*vprDEBUG( vesDBG, 1 ) << "|\t\tDataSet::GetDisplayedScalarRange"
-                          << " activeScalar = " << this->activeScalar
-                          << std::endl << vprDEBUG_FLUSH;*/
     return this->displayedScalarRange[ this->activeScalar ];
 }
 ////////////////////////////////////////////////////////////////////////
@@ -1413,8 +1370,6 @@ void DataSet::SetDisplayedScalarRange( int index, double* range )
 {
     this->displayedScalarRange[ index ][ 0 ] = range[ 0 ];
     this->displayedScalarRange[ index ][ 1 ] = range[ 1 ];
-    //this->definedRange[ 0 ] = range[ 0 ];
-    //this->definedRange[ 1 ] = range[ 1 ];
 }
 //////////////////////////////////////////////////////////////////
 osg::Switch* DataSet::GetSwitchNode()
@@ -1455,17 +1410,11 @@ void DataSet::StoreScalarInfo()
     //Get the scalar and vector information
     m_dataObjectHandler->SetDatasetOperatorCallback( m_dataObjectOps["Count Number Of Vectors And Scalars"] );
     m_dataObjectHandler->OperateOnAllDatasetsInObject( this->m_dataSet );
-    /*
-    m_dataObjectHandler->SetDatasetOperatorCallback(m_dataObjectOps["Count Number Of Vectors And Scalars"]);
-    m_dataObjectHandler->OperateOnAllDatasetsInObject(this->m_dataSet);*/
+
 
     // count the number of vectors and store names ...
     this->numScalars = dynamic_cast<lfx::vtk_utils::CountNumberOfParametersCallback*>
                        ( m_dataObjectOps["Count Number Of Vectors And Scalars"] )->GetNumberOfParameters();
-
-    //vprDEBUG( vesDBG, 1 ) << "|\t\tStoreScalarInfo: numScalars = "
-    //                      << this->numScalars
-    //                      << std::endl << vprDEBUG_FLUSH;
 
     if( this->numScalars )
     {
@@ -1569,18 +1518,15 @@ void DataSet::CreateBoundingBoxGeode( void )
 
     m_dataObjectHandler->SetDatasetOperatorCallback( bboxActorsCbk );
     m_dataObjectHandler->OperateOnAllDatasetsInObject( this->m_dataSet );
-    std::vector< vtkActor* > bboxActors = bboxActorsCbk->GetBBoxActors();
+    std::vector< vtkActor* >& bboxActors = bboxActorsCbk->GetBBoxActors();
     size_t nBBoxActors = bboxActors.size();
     for( size_t i = 0; i < nBBoxActors; ++i )
     {
-        osg::ref_ptr<osg::Geode> bboxGeode = new osg::Geode();
-        //bboxGeode->TranslateToGeode( bboxActors.at( i ) );
+        osg::ref_ptr<osg::Geode> bboxGeode = vtkActorToOSG( bboxActors.at( i ), 0, 0 );
         m_visualBBox->addChild( bboxGeode.get() );
         bboxActors.at( i )->Delete();
     }
     bboxActors.clear();
-
-    //osgDB::writeNodeFile( *static_cast< osg::Group* >( m_visualBBox.get() ), "bbox.osg" );
 }
 ////////////////////////////////////////////////////////////////////////////////
 //create wireframe to ensure accurate representation
@@ -1625,8 +1571,7 @@ void DataSet::CreateWireframeGeode( void )
     //wireframeActor->GetProperty()->SetRepresentationToWireframe();
     wireframeMapper->Delete();
 
-    wireframeGeode = new osg::Geode();
-    //wireframeGeode->TranslateToGeode( wireframeActor );
+    wireframeGeode = vtkActorToOSG( wireframeActor, 0, 0 );
     wireframeActor->Delete();
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -1718,11 +1663,6 @@ const std::string DataSet::GetActiveVectorName()
 {
     return GetVectorName( GetActiveVector() );
 }
-////////////////////////////////////////////////////////////////////////////////
-/*void DataSet::SetModel( ves::xplorer::Model* model )
-{
-    m_tempModel = model;
-}*/
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::CreateCompositeDataSets()
 {
@@ -2021,8 +1961,6 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
         this->noOfData = table->GetNumberOfCells();
     }
 
-    //vprDEBUG( vesDBG, 1 ) << "noOfData:" << this->noOfData
-    //                      << std::endl << vprDEBUG_FLUSH;
     tableReader->Delete();
 
     # pragma omp parallel for private(label,i)
@@ -2040,7 +1978,6 @@ void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )
 #endif
 
     // Compute the geometrical properties of the mesh
-    //this->UpdatePropertiesForNewMesh();
     /// Load the precomputed data
     LoadPrecomputedDataSlices();
 

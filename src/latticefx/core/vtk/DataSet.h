@@ -283,8 +283,6 @@ public:
 
     ///Get the number of points
     unsigned int GetNumberOfPoints();
-    ///Set the model for this dataset
-    //void SetModel( ves::xplorer::Model* model );
 
     ///Create a surface wrap of this dataset
     void CreateSurfaceWrap();
