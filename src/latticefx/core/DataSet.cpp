@@ -331,7 +331,6 @@ bool DataSet::updateAll()
         updateRenderer();
     }
 
-    clearDirty( RENDERER_DIRTY );
     clearDirty();
     return( true );
 }
