@@ -35,6 +35,9 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
+#include <cstring>
+
+
 static std::string logstr( "lfx.ctest.dbops" );
 
 
@@ -95,7 +98,7 @@ bool imageCompare( const osg::Image* a, const osg::Image* b )
 
     const unsigned char* aData( a->data() );
     const unsigned char* bData( b->data() );
-    if( memcmp( (const void*)aData, (const void*)bData, aSize ) != 0 )
+    if( std::memcmp( (const void*)aData, (const void*)bData, aSize ) != 0 )
     {
         LFX_CRITICAL_STATIC( logstr, "Image data mismatch." );
         return( false );
