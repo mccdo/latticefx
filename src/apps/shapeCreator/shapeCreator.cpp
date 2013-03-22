@@ -42,7 +42,10 @@
 #include <latticefx/core/vtk/VTKVolumeBrickData.h>
 #endif
 
-
+#include <latticefx/utils/CompilerGuards.h>
+DIAG_OFF(unused-parameter)
+#include <boost/date_time/posix_time/posix_time.hpp>
+DIAG_ON(unused-parameter)
 
 const std::string logstr( "lfx.demo" );
 
@@ -471,14 +474,15 @@ int main( int argc, char** argv )
         shapeGen = VolumeBrickDataPtr( new CubeVolumeBrickData( prune, softCube ) );
     }
 
-    osg::Timer timer;
-
-    osg::Timer_t start_tick = osg::Timer::instance()->tick();
+    boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
     createDataSet( csFile, shapeGen );
-    osg::Timer_t end_tick = osg::Timer::instance()->tick();
+    boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
+    boost::posix_time::time_duration diff = start_time - end_time;
+    
+    double createTime = diff.total_milliseconds() * 0.001;
 
     std::ostringstream ss;
-    ss << "Time to create data set = " << osg::Timer::instance()->delta_s( start_tick, end_tick ) << " secs" << std::endl;
+    ss << "Time to create data set = " << createTime << " secs" << std::endl;
     LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
 
     return( 0 );
