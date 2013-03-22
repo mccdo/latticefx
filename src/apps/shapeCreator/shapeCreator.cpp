@@ -40,6 +40,7 @@
 #ifdef VTK_FOUND
 #include <latticefx/core/vtk/DataSet.h>
 #include <latticefx/core/vtk/VTKVolumeBrickData.h>
+#include <boost/filesystem.hpp>
 #endif
 
 #include <latticefx/utils/CompilerGuards.h>
@@ -51,26 +52,142 @@ const std::string logstr( "lfx.demo" );
 
 using namespace lfx::core;
 
+void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName );
+
 #ifdef VTK_FOUND
-VolumeBrickDataPtr createVtkBricks( const char* vtkDataSetFile )
+
+void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar)
 {
-    vtk::DataSetPtr ds( new vtk::DataSet() );
-    ds->SetFileName( osgDB::findDataFile( vtkDataSetFile ) );
+	int iarg = 0;
+	std::string cmd = "-s";
+	if (!scalar) cmd = "-v";
+
+	pItems->clear();
+
+	// find which scalars or vectors
+	
+	// do they want all items
+	iarg = arguments.find(cmd);
+	if (iarg >= 0 && iarg < arguments.argc())
+	{
+		for (int i=0; i< totalItems; i++)
+		{
+			pItems->push_back(i);
+		}
+
+		return;
+	}
+
+	
+	// look for individual scalars
+	for (int i=0; i<totalItems; i++)
+	{
+		std::ostringstream ss;
+		ss << cmd << i;
+
+		iarg = arguments.find(ss.str());
+		if (iarg >= 0 && iarg < arguments.argc())
+		{
+			pItems->push_back(i);
+		}
+	}
+}
+
+void vtkCreateBricks(vtk::DataSetPtr ds, const std::string csFile, int item, bool scalar)
+{
+	std::ostringstream sst;
+	if (scalar)
+	{
+		sst << "shapevolume_s" << item;
+	}
+	else
+	{
+		sst << "shapevolume_v" << item;
+	}
+
+	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
+
+    //vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, item, scalar, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32));
+	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, item, scalar, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), 32));
+	createDataSet(csFile, vbd, sst.str());
+
+    boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
+    boost::posix_time::time_duration diff = end_time - start_time;
+    
+    double createTime = diff.total_milliseconds() * 0.001;
+
+    std::ostringstream ss;
+	ss << "Time to create data set " << ss.str() << " = " << createTime << " secs" << std::endl;
+    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+}
+
+int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
+{
+	// get the vtk file
+	int iarg = arguments.find( "-vtk" );
+	if (iarg < 0 || arguments.argc() <= (iarg+1))
+    {
+		LFX_CRITICAL_STATIC( logstr, "You must specify a vtk data file." );
+        return 1;
+	}
+	iarg++;
+
+	std::string vtkFile = osgDB::findDataFile(arguments[iarg]);
+	if (!boost::filesystem::exists(vtkFile))
+	{
+		LFX_CRITICAL_STATIC( logstr, "Vtk data file could not be found." );
+        return 1;
+	}
+
+	vtk::DataSetPtr ds( new vtk::DataSet() );
+    ds->SetFileName(vtkFile);
     ds->LoadData();
 
-	vtk::VTKVolumeBrickDataPtr vbd = vtk::VTKVolumeBrickDataPtr( new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32) );
-	//vtk::VTKVolumeBrickData *vbd = new vtk::VTKVolumeBrickData(ds, false, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), 2);
-	if (!vbd)
+	int countScl = ds->GetNumberOfScalars();
+	int countVec = ds->GetNumberOfVectors();
+	std::vector<int> scalars, vectors;
+
+	// find which scalars and which vectors to process
+	getVtkProcessOptions(arguments, countScl, &scalars, true);
+	getVtkProcessOptions(arguments, countVec, &vectors, false);
+
+	// no items were specified so process all
+	if (scalars.size() == 0 && vectors.size() == 0)
 	{
-		vbd = vtk::VTKVolumeBrickDataPtr();
+		for (int i=0; i<countScl; i++)
+		{
+			scalars.push_back(i);
+		}
+		for (int i=0; i<countVec; i++)
+		{
+			vectors.push_back(i);
+		}
+	}
 
-        std::string msg = "Unable to load valid vtkDataSet from file: ";
-        msg += vtkDataSetFile;
-        LFX_CRITICAL_STATIC( logstr, msg.c_str() );
-    }
+	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 
-    return vbd;
+	// now lets create all scalar and vector bricks
+	for (unsigned int i=0; i<scalars.size(); i++)
+	{
+		vtkCreateBricks(ds, csFile, scalars[i], true);
+	}
+	for (unsigned int i=0; i<vectors.size(); i++)
+	{
+		vtkCreateBricks(ds, csFile, vectors[i], false);
+	}
+
+	boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
+    boost::posix_time::time_duration diff = end_time - start_time;
+    
+    double createTime = diff.total_milliseconds() * 0.001;
+
+    std::ostringstream ss;
+	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
+    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+
+	return 0;
 }
+
 #endif
 
 
@@ -375,9 +492,10 @@ protected:
 };
 
 
-void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen )
+void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
 {
-    SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
+    //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
+	SaveHierarchy* saver( new SaveHierarchy( shapeGen, baseName ) );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
@@ -450,32 +568,25 @@ int main( int argc, char** argv )
     VolumeBrickDataPtr shapeGen;
     if( ( arguments.find( "-sphere" ) > 0 ) || softSphere )
     {
-        shapeGen = VolumeBrickDataPtr( new SphereVolumeBrickData( prune, softSphere ) );
+        shapeGen.reset(new SphereVolumeBrickData( prune, softSphere ));
     }
     else if( arguments.find( "-cone" ) > 0 )
     {
-        shapeGen = VolumeBrickDataPtr( new ConeVolumeBrickData( prune ) );
+        shapeGen.reset(new ConeVolumeBrickData( prune ));
     }
 #ifdef VTK_FOUND
     else if( arguments.find( "-vtk" ) > 0 )
     {
-        int iarg = arguments.find( "-vtk" ) + 1;
-        if( arguments.argc() <= iarg )
-        {
-            LFX_CRITICAL_STATIC( logstr, "You must specify a vtk data file." );
-            return 0;
-        }
-
-        shapeGen = createVtkBricks( arguments[iarg] );
+        return processVtk(arguments, csFile);
     }
 #endif
     else
     {
-        shapeGen = VolumeBrickDataPtr( new CubeVolumeBrickData( prune, softCube ) );
+        shapeGen.reset(new CubeVolumeBrickData( prune, softCube ));
     }
 
     boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
-    createDataSet( csFile, shapeGen );
+	createDataSet( csFile, shapeGen, std::string("shapevolume") );
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
     boost::posix_time::time_duration diff = start_time - end_time;
     
