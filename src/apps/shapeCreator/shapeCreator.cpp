@@ -550,6 +550,10 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-ssphere Generate a soft sphere data set." );
 #ifdef VTK_FOUND
     LFX_CRITICAL_STATIC( logstr, "-vtk <file> Generate a data set from a VTK volume data file." );
+	LFX_CRITICAL_STATIC( logstr, "-s Generate a dataset for each scalar in a VTK volume data file." );
+	LFX_CRITICAL_STATIC( logstr, "-v Generate a dataset for each vector in a VTK volume data file." );
+	LFX_CRITICAL_STATIC( logstr, "-s0 Generate a dataset for scalar number 0 in a VTK volume data file (you can specify 0..(n-1)." );
+	LFX_CRITICAL_STATIC( logstr, "-v0 Generate a dataset for vector number 0 in a VTK volume data file (you can specify 0..(n-1)." );
 #endif
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 
@@ -620,6 +624,11 @@ Generate other shapes by specifying one of these options:
 If you've built LatticeFX with the optional VTK dependency, you can also
 generate hierarchies for VTK folume data.
 \li -vtk <file> Generate a data set from a VTK volume data file
+\li -s Generate a dataset for each scalar in a VTK volume data file
+\li -v Generate a dataset for each vector in a VTK volume data file
+\li -s0 Generate a dataset for scalar number 0 in a VTK volume data file (you can specify 0..(n-1)
+\li -v0 Generate a dataset for vector number 0 in a VTK volume data file (you can specify 0..(n-1)
+\li if you do not specify any option then all scalars and vectors will be built.
 
 <h2>Database Usage</h2>
 
