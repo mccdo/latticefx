@@ -32,7 +32,6 @@
 #include <osg/Shader>
 #include <osg/Program>
 #include <osg/Uniform>
-#include <osgDB/FileUtils>
 
 #include <osgwTools/Shapes.h>
 #include <string>
