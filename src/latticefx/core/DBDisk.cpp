@@ -166,7 +166,7 @@ std::string DBDisk::fileNameFromDBKey( const DBKey& dbKey ) const
 
 std::string DBDisk::ensureOSG( const std::string& name )
 {
-    // If file extension is .ive, return file name with .osg
+    // If file extension is .ive, return file name with ".osgarray"
     // extension instead. Otherwise, return unaltered input.
     // Required because OSG Arrays do not write to .ive format.
 
@@ -174,7 +174,7 @@ std::string DBDisk::ensureOSG( const std::string& name )
     const std::string::size_type pos( nameLower.find_last_of( ".ive" ) );
     if( pos == nameLower.length() - 1 )
     {
-        return( name.substr( 0, pos-3 ) + ".osg" );
+        return( name.substr( 0, pos-3 ) + ".osgarray" );
     }
     else
     {
