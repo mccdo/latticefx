@@ -100,8 +100,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = "${PROJECT_SOURCE_DIR}/src" \
-                         "${PROJECT_SOURCE_DIR}/doc"
+INPUT                  = "${PROJECT_SOURCE_DIR}/doc" \
+                         "${PROJECT_SOURCE_DIR}/src"
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp *.h *.txt
 RECURSIVE              = YES

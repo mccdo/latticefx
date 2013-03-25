@@ -39,3 +39,16 @@ int main( int argc, char** argv )
     }
     return 0;
 }
+
+
+/** \page AppLoaderToVTK Application loaderToVTK
+
+<h2>Example Usage</h2>
+
+In the data/vtk_particles directory, run this command:
+\code
+loaderToVTK -singleFile binary.case -o . -loader ens -w file
+\endcode
+
+View the output with \ref TestVtkTimeseriesPoints "vtk-timeseries-points".
+*/

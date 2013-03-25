@@ -21,7 +21,7 @@ If you build LatticeFX with the optional VTK dependency, the following applicati
 \li \ref TestVolumeRT "volume-rt"
 
 If you build LatticeFX with the optional VTK dependency, the following applications are also available:
-\li \ref TestFoo "foo"
+\li \ref TestVtkTimeseriesPoints "vtk-timeseries-points"
 
 
 <h2>Regression Tests</h2>

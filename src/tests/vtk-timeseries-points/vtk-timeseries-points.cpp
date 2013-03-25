@@ -592,3 +592,15 @@ int main( int argc, char** argv )
 
     return( 0 );
 }
+
+
+/** \page TestVtkTimeseriesPoints Test vtk-timeseries-points
+
+<h2>Example Usage</h2>
+
+First, generate the test data using \ref AppLoaderToVTK "loaderToVTK".
+Then, in the data/vtk_particles directory, run this command:
+\code
+vtk-timeseries-points binary_000000.vtm
+\endcode
+*/

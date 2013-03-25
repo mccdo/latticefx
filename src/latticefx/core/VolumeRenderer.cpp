@@ -184,6 +184,8 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     const osg::Vec3 hd( _volumeDims * .5 );
     const osg::Vec3& c( _volumeOrigin );
 
+    geom->setColorBinding( osg::Geometry::BIND_OFF );
+
     osg::Vec3Array* v( new osg::Vec3Array );
     v->resize( 8 );
     geom->setVertexArray( v );
