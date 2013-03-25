@@ -348,14 +348,16 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
 }
 
 DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
-                           const std::string& csFile, const std::string& diskPath, const bool createDB )
+                           const std::string& csFile, const std::string& diskPath, const bool createDB, const bool nopage )
 {
     DataSetPtr dataSet;
 
-    DBBasePtr dbBase;
+    DBBasePtr dbBase( DBBasePtr( (DBBase*)NULL ) );
 #ifdef LFX_USE_CRUNCHSTORE
     if( !( csFile.empty() ) )
     {
+        LFX_CRITICAL_STATIC( logstr, "Paging with DBCruchStore." );
+
         DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
 
         crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
@@ -380,11 +382,18 @@ DataSetPtr prepareDataSet( const VectorRenderer::PointStyle& style,
         dbBase = ( DBBasePtr )cs;
     }
 #endif
-    if( csFile.empty() )
+    if( csFile.empty() && !nopage )
     {
+        LFX_CRITICAL_STATIC( logstr, "Paging with DBDisk." );
+
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
         disk->setRootPath( diskPath );
         dbBase = ( DBBasePtr )disk;
+    }
+
+    if( dbBase == NULL )
+    {
+        LFX_CRITICAL_STATIC( logstr, "Paging disabled." );
     }
 
     switch( style )
@@ -414,15 +423,21 @@ int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
-    LFX_INFO_STATIC( logstr, "With no options, render as simple points." );
-    LFX_INFO_STATIC( logstr, "Options:" );
+    // Please document all options using Doxygen at the bottom of this file.
+    LFX_INFO_STATIC( logstr, "Style options:" );
     LFX_INFO_STATIC( logstr, "\t-ps\tRender as point sprites." );
     LFX_INFO_STATIC( logstr, "\t-s\tRender as spheres." );
     LFX_INFO_STATIC( logstr, "\t-d\tRender as direction vectors." );
+    LFX_INFO_STATIC( logstr, "If no style option is specified, simple points are renderered.\n" );
+
+    LFX_INFO_STATIC( logstr, "Lighting options (style -s and -d only):" );
     LFX_INFO_STATIC( logstr, "\t-l <n>\tLight config: 0, 1, or 2 (default: 0).\n" );
 
-    LFX_INFO_STATIC( logstr, "-dp <path> Specifies directory to use for DBDisk. Default: cwd." );
-    LFX_INFO_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
+    LFX_INFO_STATIC( logstr, "Paging options:" );
+    LFX_INFO_STATIC( logstr, "\t-dp <path> Page at runtime using DBDisk and this directory path." );
+    LFX_INFO_STATIC( logstr, "\t-cs <dbFile> Write volume image data files using DBCrunchStore." );
+    LFX_INFO_STATIC( logstr, "\t-nopage Do not page. Keep all data resident in the scene graph." );
+    LFX_INFO_STATIC( logstr, "-dp <cwd> is the default if no other paging option is specified.\n" );
 
     osg::ArgumentParser arguments( &argc, argv );
     VectorRenderer::PointStyle style( VectorRenderer::SIMPLE_POINTS );
@@ -442,16 +457,20 @@ int main( int argc, char** argv )
     int lightConfig( 0 );
     arguments.read( "-l", lightConfig );
 
+    const bool nopage( arguments.find( "-nopage" ) > 0 );
     std::string csFile;
-#ifdef LFX_USE_CRUNCHSTORE
-    arguments.read( "-cs", csFile );
-#endif
     std::string diskPath;
-    arguments.read( "-dp", diskPath );
-    if( !diskPath.empty() && !csFile.empty() )
+    if( !nopage )
     {
-        LFX_WARNING_STATIC( logstr, "Can't use both CrunchStore and DBDisk. Using CrunchStore..." );
-        diskPath.clear();
+#ifdef LFX_USE_CRUNCHSTORE
+        arguments.read( "-cs", csFile );
+#endif
+        arguments.read( "-dp", diskPath );
+        if( !diskPath.empty() && !csFile.empty() )
+        {
+            LFX_WARNING_STATIC( logstr, "Can't use both CrunchStore and DBDisk. Using CrunchStore..." );
+            diskPath.clear();
+        }
     }
 
     bool createDB;
@@ -468,7 +487,7 @@ int main( int argc, char** argv )
 
     // Create an example data set.
     osg::Group* root( new osg::Group );
-    DataSetPtr dsp( prepareDataSet( style, csFile, diskPath, createDB ) );
+    DataSetPtr dsp( prepareDataSet( style, csFile, diskPath, createDB, nopage ) );
     root->addChild( dsp->getSceneData() );
 
     // Adjust root state.
@@ -546,3 +565,35 @@ int main( int argc, char** argv )
     }
     return( 0 );
 }
+
+
+/** \page TestTimeseriesVector timeseries-vector
+
+Uses the VectorRenderer to display point data as simple points,
+spheres with variying radii, or vectors with varying direction.
+
+Style options:
+\li -s Render as spheres.
+\li -d Render as direction vectors.
+\li -ps Render as point sprites. This option is currently not supported.
+
+If no style option is specified, simple points are used.
+
+Lighting options:
+\li -l <n> Light config: 0, 1, or 2 (default: 0).
+
+#0 Headlight, no specular
+#1 Point light source, no specular
+#2 Point light source, specular highlights
+
+Note that VectorRenderer automatically disabled lighting when configured to display
+simple points, so this option has effect only when configured to render spheres or
+direction vectors (-s or -d).
+
+Paging options:
+\li -dp <path> Page at runtime using DBDisk and this directory path.
+\li -cs <dbFile> Write volume image data files using DBCrunchStore.
+\li -nopage Do not page. Keep all data resident in the scene graph.
+
+-dp <cwd> is the default if no other paging option is specified.
+*/

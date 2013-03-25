@@ -209,7 +209,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         }
 
         // Create image data and store in DB.
-        osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
+        osg::Texture3D* posTex( createTexture( posChannel ) );
 
         const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
@@ -224,7 +224,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
         const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
 
         // Create image data and store in DB.
-        osg::Texture3D* radTex( createDummyDBTexture( radChannel ) );
+        osg::Texture3D* radTex( createTexture( radChannel ) );
 
         const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
         stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
@@ -245,7 +245,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
 
-            osg::Texture3D* tfInputTex( createDummyDBTexture( tfInputChannel ) );
+            osg::Texture3D* tfInputTex( createTexture( tfInputChannel ) );
 
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
@@ -265,7 +265,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
 
-            osg::Texture3D* hmInputTex( createDummyDBTexture( hmInputChannel ) );
+            osg::Texture3D* hmInputTex( createTexture( hmInputChannel ) );
 
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
@@ -305,7 +305,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
         }
 
-        osg::Texture3D* posTex( createDummyDBTexture( posChannel ) );
+        osg::Texture3D* posTex( createTexture( posChannel ) );
 
         const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
         stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
@@ -318,7 +318,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             return( NULL );
         }
         const ChannelDataPtr dirChannel( dirAlias->getMaskedChannel( maskIn ) );
-        osg::Texture3D* dirTex( createDummyDBTexture( dirChannel ) );
+        osg::Texture3D* dirTex( createTexture( dirChannel ) );
         const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
         stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
 
@@ -337,7 +337,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* tfInputTex( createDummyDBTexture( tfInputChannel ) );
+            osg::Texture3D* tfInputTex( createTexture( tfInputChannel ) );
             const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
             stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
         }
@@ -355,7 +355,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
                 return( NULL );
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* hmInputTex( createDummyDBTexture( hmInputChannel ) );
+            osg::Texture3D* hmInputTex( createTexture( hmInputChannel ) );
             const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
             stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
         }
@@ -494,29 +494,38 @@ VectorRenderer::PointStyle VectorRenderer::getPointStyle() const
     return( _pointStyle );
 }
 ////////////////////////////////////////////////////////////////////////////////
-osg::Texture3D* VectorRenderer::createDummyDBTexture( ChannelDataPtr data )
+osg::Texture3D* VectorRenderer::createTexture( ChannelDataPtr data )
 {
-    osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
-
-    image->setFileName( data->getName() );
-    if( _db != NULL )
-    {
-        // TBD DB temp hack.
-        // Do we really want the VectorRenderer to store data in the DB,
-        // or should that be the responsibility of an upstream OperationBase?
-        const DBKey key( _db->generateDBKey() );
-        image->setFileName( key );
-        _db->storeImage( image.get(), key );
-    }
-
-    // Create dummy Texture / Image as placeholder until real image data is paged in.
     osg::ref_ptr< osg::Texture3D > tex( new osg::Texture3D );
     tex->setResizeNonPowerOfTwoHint( false );
     tex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::NEAREST );
     tex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::NEAREST );
-    osg::Image* dummyImage( new osg::Image );
-    dummyImage->setFileName( image->getFileName() );
-    tex->setImage( dummyImage );
+    tex->setUseHardwareMipMapGeneration( false );
+
+    // Create Image representation of the data using special
+    // createImage3DForInstancedRenderer() tool.
+    osg::ref_ptr< osg::Image > image( createImage3DForInstancedRenderer( data ) );
+    image->setFileName( data->getName() );
+
+    if( _db != NULL )
+    {
+        // Store the actual data in the DB.
+        const DBKey key( _db->generateDBKey() );
+        image->setFileName( key );
+        _db->storeImage( image.get(), key );
+
+        // Now create a dummy image containing no data and stick this in the Texture3D.
+        // The actual data will be paged in at runtime.
+        osg::Image* dummyImage( new osg::Image );
+        dummyImage->setFileName( image->getFileName() );
+        tex->setImage( dummyImage );
+    }
+    else
+    {
+        // Store the actual data in the scene graph.
+        tex->setImage( image.get() );
+        tex->setName( "donotpage" );
+    }
 
     return( tex.release() );
 }

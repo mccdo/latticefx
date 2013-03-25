@@ -19,6 +19,7 @@ If you build LatticeFX with the optional VTK dependency, the following applicati
 
 \li \ref TestPageVolumeRT "page-volume-rt"
 \li \ref TestVolumeRT "volume-rt"
+\li \ref TestTimeseriesVector "timeseries-vector"
 
 If you build LatticeFX with the optional VTK dependency, the following applications are also available:
 \li \ref TestVtkTimeseriesPoints "vtk-timeseries-points"

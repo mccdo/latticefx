@@ -97,7 +97,16 @@ Required ChannelData inputs:
 </table>
 
 Required name-value pair inputs (see OperationBase): None.
-*/
+
+VectorRenderer stores point and related rendering data in a specially
+formatted 3D texture data block, and extracts that data at runtime using
+the OpenGL instanced rendering feature.
+
+If the DB is non-NULL (see OperationBase::setDB() ), the 3D texture
+instanced rendering data is store in a DB during execution of
+getSceneGraph(), and paged in as-needed at runtime by the PagingCallback.
+If the DB is NULL, the 3D texture instanced rendering data is kept
+directly in the scene graph, and no paging occurs at tuntime. */
 class LATTICEFX_EXPORT VectorRenderer : public Renderer
 {
 public:
@@ -145,7 +154,7 @@ public:
     PointStyle getPointStyle() const;
 
 protected:
-    osg::Texture3D* createDummyDBTexture( ChannelDataPtr data );
+    osg::Texture3D* createTexture( ChannelDataPtr data );
 
     PointStyle _pointStyle;
 

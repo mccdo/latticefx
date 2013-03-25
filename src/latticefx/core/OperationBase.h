@@ -177,7 +177,16 @@ public:
 
     /** \name DB Access
     \details For derived classes that access a database, the application must specify
-    the database using setDB(). */
+    the database using setDB().
+    
+    Some Renderers, for example, create the scene graph differently when the DB in
+    non-NULL. VolumeRenderer creates stub Texture3D objects when the DB is non-NULL,
+    to be paged in at runtime by the PagingCallback. When the DB is NULL,
+    VolumeRenderer stores the full Texture3D data in the scene graph and no paging
+    occurs.
+
+    Other classes have similar behavior, but how they respond to the presence or
+    absence of a DB is claaa-dependent. */
     /**@{*/
 
     /** \brief Set the DB */
