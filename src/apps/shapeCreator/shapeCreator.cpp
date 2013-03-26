@@ -592,7 +592,7 @@ int main( int argc, char** argv )
     boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 	createDataSet( csFile, shapeGen, std::string("shapevolume") );
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
-    boost::posix_time::time_duration diff = start_time - end_time;
+    boost::posix_time::time_duration diff = end_time - start_time;
     
     double createTime = diff.total_milliseconds() * 0.001;
 
