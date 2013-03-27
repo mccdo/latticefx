@@ -423,6 +423,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         osg::Texture1D* tf1dTex( new osg::Texture1D( function ) );
         tf1dTex->setResizeNonPowerOfTwoHint( false );
         tf1dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
+        tf1dTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
+        tf1dTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+        tf1dTex->setUseHardwareMipMapGeneration( false );
         tf1dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf1d" ), tf1dTex,
                                                osg::StateAttribute::OFF );
@@ -436,6 +439,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tf2dTex->setResizeNonPowerOfTwoHint( false );
         tf2dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tf2dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
+        tf2dTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
+        tf2dTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+        tf2dTex->setUseHardwareMipMapGeneration( false );
         tf2dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf2d" ), tf2dTex,
                                                osg::StateAttribute::OFF );
@@ -450,6 +456,9 @@ void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
         tf3dTex->setWrap( osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE );
         tf3dTex->setWrap( osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE );
         tf3dTex->setWrap( osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE );
+        tf3dTex->setFilter( osg::Texture::MAG_FILTER, osg::Texture::LINEAR );
+        tf3dTex->setFilter( osg::Texture::MIN_FILTER, osg::Texture::LINEAR );
+        tf3dTex->setUseHardwareMipMapGeneration( false );
         tf3dTex->setName( "donotpage" );
         stateSet->setTextureAttributeAndModes( getOrAssignTextureUnit( "tf3d" ), tf3dTex,
                                                osg::StateAttribute::OFF );
