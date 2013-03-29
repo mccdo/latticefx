@@ -27,6 +27,7 @@
 #include <latticefx/core/vtk/DataSetPtr.h>
 #include <latticefx/core/vtk/VTKVolumeBrickDataPtr.h>
 
+#include <vtkGenericCell.h>
 #include <vtkCellTreeLocator.h>
 #include <vtkSmartPointer.h>
 #include <vtkDoubleArray.h>
@@ -54,6 +55,7 @@ protected:
 		const VTKVolumeBrickData* pVBD;
 		unsigned char* ptrPixels;
 		int bytesPerPixel;
+		osg::Vec3s brickNum;
 		osg::Vec3s brickStart;
 		osg::Vec3s brickEnd;
 		osg::Vec3d vtkDelta;
@@ -85,7 +87,37 @@ protected:
 
 	friend class BrickThread;
 
+	struct STexelDataCache
+	{
+		int cellid;
+		double pcoords[3];
+		std::vector<double> weights;
+		vtkSmartPointer<vtkGenericCell> cell;
+		int dsNum;
 
+		STexelDataCache()
+		{
+			cellid = -1;
+			pcoords[0] = 0;
+			pcoords[1] = 0;
+			pcoords[2] = 0;
+			cell = vtkSmartPointer<vtkGenericCell>::New();
+			dsNum = 0;
+		}
+
+		STexelDataCache(int weightCount)
+		{
+			cellid = -1;
+			pcoords[0] = 0;
+			pcoords[1] = 0;
+			pcoords[2] = 0;
+			weights.resize(weightCount);
+			cell = vtkSmartPointer<vtkGenericCell>::New();
+			dsNum = 0;
+		}
+	};
+
+	typedef boost::shared_ptr< STexelDataCache > PTexelDataCache;
 	typedef std::vector< vtkDataArray* > DataArrayVector;
     typedef boost::shared_ptr< DataArrayVector > PDataArrayVectorPtr;
 
@@ -102,21 +134,31 @@ public:
 
 	bool isValid();
 
+	void setDataNumber(int num) { m_dataNum = num; }
+	void setIsScalar(bool isScalar) { m_isScalar = isScalar; }
+
+	void cacheCreate(bool create) { m_cacheCreate = create; }
+	void cacheUse(bool use) { m_cacheUse = use; }
+
 protected:
 
-	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, bool haveCache, int dsNum) const;
+	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
 
 	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
+	PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
 	void initMaxPts();
 	void initDataArrays();
 	bool initCellTrees();
+
+	int getCacheLoc(int x, int y, int z, const osg::Vec3s &brickNum) const; 
+	void initCache();
 
 protected:
 	osg::BoundingBoxd m_bbox;
@@ -130,8 +172,12 @@ protected:
 	osg::Vec3s m_brickRes;
 	std::vector< PDataArrayVectorPtr > m_dataArraysScalar;
 	std::vector< PDataArrayVectorPtr > m_dataArraysVector;
-	int m_cellCache;
+	//int m_cellCache;
 	int m_threadCount;
+
+	std::vector<PTexelDataCache> m_texelDataCache;
+	bool m_cacheUse;
+	bool m_cacheCreate;
 };
 
 
