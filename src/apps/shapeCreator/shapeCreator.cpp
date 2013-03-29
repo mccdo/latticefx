@@ -56,6 +56,7 @@ void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, cons
 
 #ifdef VTK_FOUND
 
+////////////////////////////////////////////////////////////////////////////////
 void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar)
 {
 	int iarg = 0;
@@ -93,6 +94,7 @@ void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::v
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void vtkCreateBricks(vtk::DataSetPtr ds, const std::string csFile, int item, bool scalar)
 {
 	std::ostringstream sst;
@@ -121,6 +123,36 @@ void vtkCreateBricks(vtk::DataSetPtr ds, const std::string csFile, int item, boo
     LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void vtkCreateBricks(vtk::VTKVolumeBrickDataPtr vbd, const std::string csFile, int item, bool scalar)
+{
+	std::ostringstream sst;
+	if (scalar)
+	{
+		sst << "shapevolume_s" << item;
+	}
+	else
+	{
+		sst << "shapevolume_v" << item;
+	}
+
+	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
+
+	vbd->setDataNumber(item);
+	vbd->setIsScalar(scalar);
+	createDataSet(csFile, vbd, sst.str());
+
+    boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
+    boost::posix_time::time_duration diff = end_time - start_time;
+    
+    double createTime = diff.total_milliseconds() * 0.001;
+
+    std::ostringstream ss;
+	ss << "Time to create data set " << ss.str() << " = " << createTime << " secs" << std::endl;
+    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 {
 	// get the vtk file
@@ -166,14 +198,22 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 
+	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), 32));
+	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), 32));
+	vbd->cacheCreate(true);
+	vbd->cacheUse(true);
+
 	// now lets create all scalar and vector bricks
 	for (unsigned int i=0; i<scalars.size(); i++)
 	{
-		vtkCreateBricks(ds, csFile, scalars[i], true);
+		vtkCreateBricks(vbd, csFile, scalars[i], true);
+		vbd->cacheCreate(false);
+		//vtkCreateBricks(ds, csFile, scalars[i], true);
 	}
 	for (unsigned int i=0; i<vectors.size(); i++)
 	{
-		vtkCreateBricks(ds, csFile, vectors[i], false);
+		vtkCreateBricks(vbd, csFile, vectors[i], false);
+		//vtkCreateBricks(ds, csFile, vectors[i], false);
 	}
 
 	boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
