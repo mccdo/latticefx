@@ -149,7 +149,7 @@ protected:
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc) const;
+	PTexelDataCache findCell(double curPos[3], int cacheLoc) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
