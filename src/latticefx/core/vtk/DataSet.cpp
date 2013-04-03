@@ -154,9 +154,6 @@ DataSet::DataSet()
 ////////////////////////////////////////////////////////////////////////////////
 DataSet::~DataSet()
 {
-    /*xplorer::data::DatasetPropertySet set;
-    set.LoadByKey( "Filename", fileName );
-    set.DeleteFromDatabase();*/
     dataSetUUIDMap.clear();
     m_activeDataArrays.clear();
     parent = vtk::DataSetPtr();
