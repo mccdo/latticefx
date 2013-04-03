@@ -408,7 +408,7 @@ public:
     The default is HM_SOURCE_ALPHA */
     void setHardwareMaskInputSource( const HardwareMaskInputSource source );
     /** \brief Get the input source setting. */
-    const HardwareMaskInputSource getHardwareMaskInputSource() const;
+    const HardwareMaskInputSource& getHardwareMaskInputSource() const;
 
     /** \brief Specify the hardware mask input ChannelData.
     \details Specifies the ChannelData to use as the hardware mask source input when

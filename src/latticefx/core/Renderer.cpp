@@ -363,7 +363,7 @@ void Renderer::setHardwareMaskInputSource( const HardwareMaskInputSource source 
 {
     _hmSource = source;
 }
-const Renderer::HardwareMaskInputSource Renderer::getHardwareMaskInputSource() const
+const Renderer::HardwareMaskInputSource& Renderer::getHardwareMaskInputSource() const
 {
     return( _hmSource );
 }
