@@ -818,17 +818,17 @@ VolumeBrickDataPtr Downsampler::getLow() const
 
     osg::Vec3s numBricks( _hi->getNumBricks() );
     numBricks[0] >>= 1;
-    if( numBricks[0] <= 1 )
+    if( numBricks[0] < 1 )
     {
         numBricks[0] = 1;
     }
     numBricks[1] >>= 1;
-    if( numBricks[1] <= 1 )
+    if( numBricks[1] < 1 )
     {
         numBricks[1] = 1;
     }
     numBricks[2] >>= 1;
-    if( numBricks[2] <= 1 )
+    if( numBricks[2] < 1 )
     {
         numBricks[2] = 1;
     }
