@@ -440,8 +440,6 @@ vtkDataObject* DataSet::GetDataSet()
 {
     return this->m_dataSet;
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////
 int DataSet::GetAllDataSets(std::vector<vtkDataSet*> *pList)
 {
@@ -463,7 +461,6 @@ int DataSet::GetAllDataSets(std::vector<vtkDataSet*> *pList)
 	
 	return count;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::SetType()
 {
