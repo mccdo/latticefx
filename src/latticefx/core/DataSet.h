@@ -32,8 +32,9 @@
 #include <latticefx/core/LogBase.h>
 #include <latticefx/core/types.h>
 
+#include <latticefx/core/DataSetPtr.h>
+
 #include <osg/ref_ptr>
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/list.hpp>
@@ -337,7 +338,6 @@ private:
     }
 };
 
-typedef boost::shared_ptr< DataSet > DataSetPtr;
 typedef std::list< DataSetPtr > DataSetList;
 
 

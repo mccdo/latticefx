@@ -19,6 +19,7 @@ set( _headerFiles
     ChannelDataOSGArray.h
     ChannelDataOSGImage.h
     DataSet.h
+    DataSetPtr.h
     DBBase.h
     DBDisk.h
 #    DBUtils.h
@@ -35,6 +36,7 @@ set( _headerFiles
     PagingCallback.h
     PagingThread.h
     PlayControl.h
+    PlayControlPtr.h
     PluginManager.h
     Preprocess.h
     Renderer.h

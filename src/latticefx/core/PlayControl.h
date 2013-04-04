@@ -25,10 +25,10 @@
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/LogBase.h>
 #include <latticefx/core/types.h>
+#include <latticefx/core/PlayControlPtr.h>
 
 #include <osg/Node>
 
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include <map>
 
 
@@ -136,8 +136,6 @@ protected:
 
     TimeValue _lastFrameHold, _holdCount;
 };
-
-typedef boost::shared_ptr< PlayControl > PlayControlPtr;
 
 
 /**@}*/
