@@ -113,6 +113,8 @@ public:
     osg::Vec2d getTimeRange() const;
     /** \overload */
     void getTimeRange( TimeValue& minTime, TimeValue& maxTime ) const;
+    ///Determine if this DataSet has multiple time steps
+    bool isTemporalData() const;
     ///\}
 
 

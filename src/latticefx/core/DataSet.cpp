@@ -763,6 +763,10 @@ void DataSet::createFallbackMaskList()
     _maskList.push_back( mask );
 }
 
+bool DataSet::isTemporalData() const
+{
+    return( !getTimeSet().empty() );
+}
 
 // core
 }
