@@ -39,11 +39,11 @@ ChannelDatavtkDataObjectVector::ChannelDatavtkDataObjectVector( std::vector< vtk
     ChannelData( name ),
     m_dobj( dobj )
 {
-    m_bounds[0] = 100000;
+    m_bounds[0] =  100000;
     m_bounds[1] = -100000;
-    m_bounds[2] = 100000;
+    m_bounds[2] =  100000;
     m_bounds[3] = -100000;
-    m_bounds[4] = 100000;
+    m_bounds[4] =  100000;
     m_bounds[5] = -100000;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,11 +52,11 @@ ChannelDatavtkDataObjectVector::ChannelDatavtkDataObjectVector( const ChannelDat
     ChannelData( rhs ),
     m_dobj( rhs.m_dobj )
 {
-    m_bounds[0] = 100000;
+    m_bounds[0] =  100000;
     m_bounds[1] = -100000;
-    m_bounds[2] = 100000;
+    m_bounds[2] =  100000;
     m_bounds[3] = -100000;
-    m_bounds[4] = 100000;
+    m_bounds[4] =  100000;
     m_bounds[5] = -100000;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,17 +72,31 @@ std::vector< vtkDataObject* > ChannelDatavtkDataObjectVector::GetDataObjectVecto
 ////////////////////////////////////////////////////////////////////////////////
 /*unsigned int ChannelDatavtkDataObjectVector::GetNumberOfPoints()
 {
-    lfx::vtk_utils::DataObjectHandler dataObjectHandler;
-    lfx::vtk_utils::GetNumberOfPointsCallback* numberOfPointsCallback =
-        new lfx::vtk_utils::GetNumberOfPointsCallback();
-    dataObjectHandler.SetDatasetOperatorCallback( numberOfPointsCallback );
-    dataObjectHandler.OperateOnAllDatasetsInObject( m_dobj );
-    unsigned int numPoints = numberOfPointsCallback->GetNumberOfPoints();
-    delete numberOfPointsCallback;
-    return numPoints;
-}
+    lfx::vtk_utils::FindVertexCellsCallback* findVertexCellsCbk =
+        new lfx::vtk_utils::FindVertexCellsCallback();
+    lfx::vtk_utils::DataObjectHandler dataObjectHandler();
+    dataObjectHandler.SetDatasetOperatorCallback( findVertexCellsCbk );
+
+    size_t maxNumPoints = 0;
+    for( size_t i = 0; i < m_dobj.size(); ++i )
+    {
+        vtkDataObject* tempDataSet = m_dobj.at( i )->GetDataSet();
+
+        dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
+        std::vector< std::pair< vtkIdType, double* > > tempCellGroups =
+        findVertexCellsCbk->GetVertexCells();
+        m_pointCollection.push_back( tempCellGroups );
+        findVertexCellsCbk->ResetPointGroup();
+        if( maxNumPoints < tempCellGroups.size() )
+        {
+            maxNumPoints = tempCellGroups.size();
+        }
+    }
+    delete findVertexCellsCbk;
+    return 0;
+}*/
 ////////////////////////////////////////////////////////////////////////////////
-double* ChannelDatavtkDataObjectVector::GetBounds()
+/*double* ChannelDatavtkDataObjectVector::GetBounds()
 {
     GetBounds( m_bounds );
     return m_bounds;
