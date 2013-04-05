@@ -40,6 +40,11 @@ PlayControl::PlayControl( osg::Node* scene )
       _lastFrameHold( 0. ),
       _holdCount( 0. )
 {
+    if( !scene )
+    {
+        return;
+    }
+
     PagingCallback* rootcb( dynamic_cast< PagingCallback* >( scene->getUpdateCallback() ) );
     if( rootcb == NULL )
     {
