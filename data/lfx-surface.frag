@@ -8,11 +8,9 @@ varying vec3 ecNormal;
 
 vec4 fragmentLighting( vec4 baseColor )
 {
-    vec3 normal;
-    if( gl_FrontFacing )
-        normal = ecNormal;
-    else
-        normal = -ecNormal;
+    vec3 normal = normalize( ecNormal );
+    if( !gl_FrontFacing )
+        normal = -normal;
 
     vec3 lightVec = normalize( gl_LightSource[0].position.xyz - ecVertex );
     vec3 eyeVec = normalize( -ecVertex );
