@@ -164,5 +164,5 @@ void main()
     gl_Position = gl_ModelViewProjectionMatrix * oVec;
     gl_ClipVertex = gl_ModelViewMatrix * oVec;
 
-    vertexLighting( oVec, normalize( gl_Normal ) );
+    vertexLighting( oVec, gl_Normal );
 }
