@@ -75,7 +75,7 @@ void main()
     gl_Position = gl_ModelViewProjectionMatrix * position;
 
     transferFunction();
-    vertexLighting( position, normal );
+    vertexLighting( position, normalize( normal ) );
 
     // Clip plane support. Must follow vertexLighting() because that's
     // where ecVertex is computed.
