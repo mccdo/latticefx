@@ -1684,9 +1684,7 @@ void DataSet::CreateCompositeDataSets()
             dynamic_cast<vtkDataSet*>( mgdIterator->GetCurrentDataObject() );
 
         DataSetPtr tempDataset = DataSetPtr( new DataSet() );
-        tempDataset->SetParent( tempDataset );
-        //set dcs
-        tempDataset->SetDCS( this->GetDCS() );
+        tempDataset->SetParent( shared_from_this() );
         //set filename
         std::string subfilename;
 
@@ -1704,6 +1702,9 @@ void DataSet::CreateCompositeDataSets()
             subfilename = filenameStream.str();
         }
         tempDataset->SetFileName( subfilename );
+        //set dcs
+        tempDataset->SetDCS( this->GetDCS() );
+
         //set the vector arrow
         tempDataset->SetArrow( arrow );
         //Load Data sort of
@@ -1753,13 +1754,13 @@ void DataSet::CreateSurfaceWrap()
 
     DataSetPtr tempDataset = DataSetPtr( new DataSet() );
     tempDataset->SetParent( tempDataset );
-    //set dcs
-    tempDataset->SetDCS( GetDCS() );
     //set filename
     std::ostringstream filenameStream;
     filenameStream << GetFileName() << "-surface";
     std::string subfilename = filenameStream.str();
     tempDataset->SetFileName( subfilename );
+    //set dcs
+    tempDataset->SetDCS( GetDCS() );
     //set the vector arrow
     tempDataset->SetArrow( arrow );
     //Load Data sort of
@@ -1796,11 +1797,11 @@ void DataSet::LoadTransientData( const std::string& dirName, const std::string f
         //This could be a multi block dataset
         //Load in the dataset
         DataSetPtr tempDataset( new DataSet() );
-        tempDataset->SetParent( tempDataset );
-        //set dcs
-        tempDataset->SetDCS( GetDCS() );
+        tempDataset->SetParent( shared_from_this() );
         //set filename
         tempDataset->SetFileName( transientFile.at( i ) );
+        //set dcs
+        tempDataset->SetDCS( GetDCS() );
         //set the vector arrow
         tempDataset->SetArrow( arrow );
         //Load Data sort of
@@ -1891,9 +1892,7 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
         //Load in the dataset
         //Do work
         DataSetPtr tempDataset( new DataSet() );
-        tempDataset->SetParent( tempDataset );
-        //set dcs
-        tempDataset->SetDCS( GetDCS() );
+        tempDataset->SetParent( shared_from_this() );
         //set filename
         std::ostringstream strm;
         strm << fileName
@@ -1903,6 +1902,9 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
              << i << ".vtm";
 
         tempDataset->SetFileName( strm.str() );
+        //set dcs
+        tempDataset->SetDCS( GetDCS() );
+
         //set the vector arrow
         tempDataset->SetArrow( arrow );
         //Load Data sort of
