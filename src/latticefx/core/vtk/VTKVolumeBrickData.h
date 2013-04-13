@@ -129,6 +129,7 @@ public:
 						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
 						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8),
 						int threadCount=4);
+	virtual ~VTKVolumeBrickData();
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 
@@ -139,6 +140,11 @@ public:
 
 	void cacheCreate(bool create) { m_cacheCreate = create; }
 	void cacheUse(bool use) { m_cacheUse = use; }
+
+	void debugLogOpen(const char *file);
+	void debugLogCache(int x, int y, int z, int cachePos);
+	void debugLogBrick(const osg::Vec3s& brickNum);
+	void debugLog(const char *msg);
 
 protected:
 
@@ -178,6 +184,7 @@ protected:
 	std::vector<PTexelDataCache> m_texelDataCache;
 	bool m_cacheUse;
 	bool m_cacheCreate;
+	FILE *m_pstLogDbg;
 };
 
 

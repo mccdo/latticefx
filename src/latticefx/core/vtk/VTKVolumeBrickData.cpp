@@ -69,6 +69,14 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 
 	m_cacheUse = true;
 	m_cacheCreate = true;
+
+
+	m_pstLogDbg = NULL;
+}
+
+VTKVolumeBrickData::~VTKVolumeBrickData()
+{
+	if (m_pstLogDbg) fclose(m_pstLogDbg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +90,8 @@ bool VTKVolumeBrickData::isValid()
 ////////////////////////////////////////////////////////////////////////////////
 osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
+	((VTKVolumeBrickData *)this)->debugLogBrick(brickNum);
+
 	//if (!m_pds) return NULL;
 	if (!m_cellLocators.size()) return NULL;
 
@@ -108,9 +118,9 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
 	//
 	osg::Vec3d vtkBrickSize, vtkDelta;
-	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / _numBricks.x();
-	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / _numBricks.y();
-	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / _numBricks.z();
+	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / (_numBricks.x()+1);
+	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / (_numBricks.y()+1);
+	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / (_numBricks.z()+1);
 	/*
 	vtkBrickSize.x() = fabs(bbox[1] - bbox[0]) / _numBricks.x();
 	vtkBrickSize.y() = fabs(bbox[3] - bbox[2]) / _numBricks.y();
@@ -174,6 +184,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
         return( image.release() );
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 void VTKVolumeBrickData::BrickThread::operator()()
 {
@@ -222,9 +233,11 @@ if (m_pData->pVBD->m_cacheUse)
 					cache = m_pData->pVBD->findCell(curPos, cacheLoc);
 				}
 				else
-				{
+				{ 
 					cache = m_pData->pVBD->m_texelDataCache[cacheLoc];
 				}
+
+				((VTKVolumeBrickData *)m_pData->pVBD)->debugLogCache(x, y, z, cacheLoc);
 
 				if (cache->cellid < 0)
 				{
@@ -283,6 +296,53 @@ else
 		// jump to next depth slice
 		curPos[2] += m_pData->vtkDelta[2];
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::debugLogBrick(const osg::Vec3s& brickNum)
+{
+	if (!m_pstLogDbg) return;
+
+	fprintf(m_pstLogDbg, "\nstart of brick (%d,%d,%d)\n", brickNum[0], brickNum[1], brickNum[2]);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::debugLogOpen(const char *file)
+{
+	if (m_pstLogDbg) fclose(m_pstLogDbg);
+
+	m_pstLogDbg = fopen(file, "wt");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::debugLogCache(int x, int y, int z, int cachePos)
+{
+	if (!m_pstLogDbg) return;
+
+	PTexelDataCache cache = m_texelDataCache[cachePos];
+	std::stringstream ss;
+	
+	fprintf(m_pstLogDbg, "x:%d y:%d z:%d cache:%d\n", x, y, z, cachePos);
+
+	
+	fprintf(m_pstLogDbg, "id:%d x:%.2f y:%.2f z:%.2f ds:%d\n", 
+			cache->cellid, cache->pcoords[0], cache->pcoords[1], cache->pcoords[2], cache->dsNum);
+
+	ss << "weights: " << cache->weights.size() << " ";
+	for (unsigned int i=0; i<cache->weights.size(); i++)
+	{
+		ss << cache->weights[i] << ",";
+	}
+
+	fprintf(m_pstLogDbg, "%s\n", ss.str().c_str());
+	//vtkSmartPointer<vtkGenericCell> cell;	
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::debugLog(const char *msg)
+{
+	if (!m_pstLogDbg) return;
+	fprintf(m_pstLogDbg, "%s\n", msg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -578,25 +638,23 @@ void VTKVolumeBrickData::initCache()
 {
 	m_texelDataCache.clear();
 
-	int brickCount = _numBricks[0] * _numBricks[1] * _numBricks[2];
+	int brickCount = (_numBricks[0]+1) * (_numBricks[1]+1) * (_numBricks[2]+1);
 	int brickSize = m_brickRes[0] * m_brickRes[1] * m_brickRes[2];
 	int totalTexels = brickCount * brickSize;
 	m_texelDataCache.resize(totalTexels);
-
-	// todo: we can avoid this loop and just add each cache object as the cache is being built
-	/*
-	for (int i=0; i<totalTexels; i++)
-	{
-		m_texelDataCache[i].reset(new STexelDataCache(m_maxPts));
-	}
-	*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 int VTKVolumeBrickData::getCacheLoc(int x, int y, int z, const osg::Vec3s &brickNum) const
 {
 	int bricksz = m_brickRes[0] * m_brickRes[1] * m_brickRes[2];
-	int loc = brickNum[0] * bricksz + brickNum[1] * bricksz + brickNum[2] * bricksz; // get to the start of this brick
+	//int loc = brickNum[0] * bricksz + brickNum[1] * bricksz + brickNum[2] * bricksz; // get to the start of this brick
+
+	// get to the start of this brick
+	int loc = brickNum[0] * bricksz;
+	loc += (_numBricks[0]+1) * brickNum[1] * bricksz;
+	loc += (_numBricks[0]+1) * (_numBricks[1]+1) * brickNum[2] * bricksz; 
+
 	loc += z * m_brickRes[0] * m_brickRes[1]; // get to the correct depth slice
 	loc += y * m_brickRes[0]; // get to the correct scan line
 	loc += x; // get to the correct position on the current scan line
