@@ -90,6 +90,9 @@ bool VTKVolumeBrickData::isValid()
 ////////////////////////////////////////////////////////////////////////////////
 osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
+	// make sure the brick is in range
+	if (brickNum[0] >= _numBricks[0] || brickNum[1] >= _numBricks[1] || brickNum[2] >= _numBricks[2]) return NULL;
+
 	((VTKVolumeBrickData *)this)->debugLogBrick(brickNum);
 
 	//if (!m_pds) return NULL;
@@ -638,7 +641,7 @@ void VTKVolumeBrickData::initCache()
 {
 	m_texelDataCache.clear();
 
-	int brickCount = (_numBricks[0]+1) * (_numBricks[1]+1) * (_numBricks[2]+1);
+	int brickCount = (_numBricks[0]) * (_numBricks[1]) * (_numBricks[2]);
 	int brickSize = m_brickRes[0] * m_brickRes[1] * m_brickRes[2];
 	int totalTexels = brickCount * brickSize;
 	m_texelDataCache.resize(totalTexels);
@@ -652,8 +655,8 @@ int VTKVolumeBrickData::getCacheLoc(int x, int y, int z, const osg::Vec3s &brick
 
 	// get to the start of this brick
 	int loc = brickNum[0] * bricksz;
-	loc += (_numBricks[0]+1) * brickNum[1] * bricksz;
-	loc += (_numBricks[0]+1) * (_numBricks[1]+1) * brickNum[2] * bricksz; 
+	loc += (_numBricks[0]) * brickNum[1] * bricksz;
+	loc += (_numBricks[0]) * (_numBricks[1]) * brickNum[2] * bricksz; 
 
 	loc += z * m_brickRes[0] * m_brickRes[1]; // get to the correct depth slice
 	loc += y * m_brickRes[0]; // get to the correct scan line
