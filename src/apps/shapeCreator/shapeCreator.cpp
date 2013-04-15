@@ -33,14 +33,13 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osg/ArgumentParser>
-#include <osgViewer/Viewer>
 #include <osgDB/FileUtils>
 #include <osg/io_utils>
 
 #ifdef VTK_FOUND
-#include <latticefx/core/vtk/DataSet.h>
-#include <latticefx/core/vtk/VTKVolumeBrickData.h>
-#include <boost/filesystem.hpp>
+#  include <latticefx/core/vtk/DataSet.h>
+#  include <latticefx/core/vtk/VTKVolumeBrickData.h>
+#  include <boost/filesystem.hpp>
 #endif
 
 #include <latticefx/utils/CompilerGuards.h>
@@ -262,7 +261,6 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 #endif
 
 
-/** TBD Does not yet support _prune. */
 class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
@@ -363,7 +361,6 @@ protected:
     bool _soft;
 };
 
-/** TBD Does not yet support _prune. */
 class SphereVolumeBrickData : public VolumeBrickData
 {
 public:
