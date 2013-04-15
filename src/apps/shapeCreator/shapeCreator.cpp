@@ -625,6 +625,8 @@ int main( int argc, char** argv )
 	LFX_CRITICAL_STATIC( logstr, "-v Generate a dataset for each vector in a VTK volume data file." );
 	LFX_CRITICAL_STATIC( logstr, "-s0 Generate a dataset for scalar number 0 in a VTK volume data file (you can specify 0..(n-1)." );
 	LFX_CRITICAL_STATIC( logstr, "-v0 Generate a dataset for vector number 0 in a VTK volume data file (you can specify 0..(n-1)." );
+	LFX_CRITICAL_STATIC( logstr, "-threads number will specify the number of threads to use for VTK brick creation, if left out the default of 32 is used" );
+	LFX_CRITICAL_STATIC( logstr, "-nocache will create VTK bricks with out storing or using a cache system. The cache system is much faster for mutliple scalars and vectors, but uses lots of memory" );
 #endif
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 
@@ -700,6 +702,8 @@ generate hierarchies for VTK folume data.
 \li -s0 Generate a dataset for scalar number 0 in a VTK volume data file (you can specify 0..(n-1)
 \li -v0 Generate a dataset for vector number 0 in a VTK volume data file (you can specify 0..(n-1)
 \li if you do not specify any option then all scalars and vectors will be built.
+\li -threads number will specify the number of threads to use for VTK brick creation, if left out the default of 32 is used
+\li -nocache will create VTK bricks with out storing or using a cache system. The cache system is much faster for mutliple scalars and vectors, but uses lots of memory
 
 <h2>Database Usage</h2>
 
