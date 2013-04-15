@@ -188,8 +188,8 @@ protected:
 	osg::Vec3s m_brickRes;
 	std::vector< PDataArrayVectorPtr > m_dataArraysScalar;
 	std::vector< PDataArrayVectorPtr > m_dataArraysVector;
-	//int m_cellCache;
 	int m_threadCount;
+	int m_bricksDone;
 
 	std::vector<PTexelDataCache> m_texelDataCache;
 	bool m_cacheUse;

@@ -19,6 +19,8 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/vtk/VTKVolumeBrickData.h>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 #include <osg/Image>
 
@@ -29,7 +31,6 @@
 
 #include <boost/thread.hpp>
 
-#define CACHE_ON 1
 
 namespace lfx
 {
@@ -69,6 +70,7 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 
 	m_cacheUse = true;
 	m_cacheCreate = true;
+	m_bricksDone = 0;
 
 
 	m_pstLogDbg = NULL;
@@ -97,6 +99,16 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	//if (!m_pds) return NULL;
 	if (!m_cellLocators.size()) return NULL;
+
+	if (m_cacheCreate)
+	{
+		int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
+		std::string logname = "VTKVolumeBrickData";
+		std::stringstream ss;
+		ss << "brick: " << brickNum[0] << "," << brickNum[1] << "," << brickNum[2] << " " << m_bricksDone << " of " << totbricks << std::endl;
+		//LFX_CRITICAL_STATIC( logname.c_str(), ss.str().c_str() );
+		printf(ss.str().c_str());
+	}
 
 	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
 	// 
@@ -184,7 +196,9 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
         image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
             textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
             (unsigned char*) data, osg::Image::USE_NEW_DELETE );
-        return( image.release() );
+
+	((VTKVolumeBrickData *)this)->m_bricksDone++;
+	return( image.release() );
 }
 
 
@@ -611,6 +625,11 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 ////////////////////////////////////////////////////////////////////////////////
 VTKVolumeBrickData::PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell) const
 {
+	if (m_texelDataCache[cacheLoc].get())
+	{
+		return m_texelDataCache[cacheLoc];
+	}
+
 	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
 	//PTexelDataCache cache(new STexelDataCache(m_maxPts));
 	PTexelDataCache cache(new STexelDataCache());
