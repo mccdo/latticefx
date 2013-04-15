@@ -87,12 +87,22 @@ protected:
 
 	friend class BrickThread;
 
+
+	//
+	// TexelDataCache Memory Usage
+	//
+	// 1. the number of storage slots will be totalNumBricks * brickRes
+	// 2. then in the slot I store a cell id and a pointer to some cell data that is needed for final color calculation.
+	//    when there is no cell (which happens a lot), I do not alloc the pointer and subsequent cell data.
+	//    So if you had a vtk volume where every single one of our brick texel locations hit a valid cell of 
+	//	  data then the memory usuage will be higher.
+	//
 	struct STexelData
 	{
 		std::vector<double> weights;
 		//vtkSmartPointer<vtkGenericCell> cell;
 		vtkSmartPointer<vtkIdList> pointIds;
-		int dsNum;
+		int dsNum;  
 
 		STexelData()
 		{
@@ -165,7 +175,7 @@ protected:
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelDataCache findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell) const;
+	PTexelDataCache findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
