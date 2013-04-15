@@ -233,7 +233,7 @@ if (m_pData->pVBD->m_cacheUse)
 
 				if (m_pData->pVBD->m_cacheCreate)
 				{
-					cache = m_pData->pVBD->findCell(curPos, cacheLoc);
+					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell);
 				}
 				else
 				{ 
@@ -255,7 +255,7 @@ if (m_pData->pVBD->m_cacheUse)
 
 					// cell cache is not showing any signs of a speed up
 					//if (m_cellCache == cellId) haveCache = false;
-					value = m_pData->pVBD->lerpDataInCell(cache->cell, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
+					value = m_pData->pVBD->lerpDataInCell(cache->pdata->pointIds, &cache->pdata->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->pdata->dsNum); 
 				}
 }
 else
@@ -269,7 +269,7 @@ else
 				{
 					// cell cache is not showing any signs of a speed up
 					//if (m_cellCache == cellId) haveCache = false;
-					value = m_pData->pVBD->lerpDataInCell(cell, &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, dataSetNum); 
+					value = m_pData->pVBD->lerpDataInCell(cell->GetPointIds(), &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, dataSetNum); 
 				}
 }
 
@@ -328,13 +328,20 @@ void VTKVolumeBrickData::debugLogCache(int x, int y, int z, int cachePos)
 	fprintf(m_pstLogDbg, "x:%d y:%d z:%d cache:%d\n", x, y, z, cachePos);
 
 	
-	fprintf(m_pstLogDbg, "id:%d x:%.2f y:%.2f z:%.2f ds:%d\n", 
-			cache->cellid, cache->pcoords[0], cache->pcoords[1], cache->pcoords[2], cache->dsNum);
+	//fprintf(m_pstLogDbg, "id:%d x:%.2f y:%.2f z:%.2f ds:%d\n", 
+	//		cache->cellid, cache->pcoords[0], cache->pcoords[1], cache->pcoords[2], cache->dsNum);
 
-	ss << "weights: " << cache->weights.size() << " ";
-	for (unsigned int i=0; i<cache->weights.size(); i++)
+	if (cache->pdata.get())
 	{
-		ss << cache->weights[i] << ",";
+		ss << "weights: " << cache->pdata->weights.size() << " ";
+		for (unsigned int i=0; i<cache->pdata->weights.size(); i++)
+		{
+			ss << cache->pdata->weights[i] << ",";
+		}
+	}
+	else
+	{
+		ss << "weights: none";
 	}
 
 	fprintf(m_pstLogDbg, "%s\n", ss.str().c_str());
@@ -349,15 +356,16 @@ void VTKVolumeBrickData::debugLog(const char *msg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const
+osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkIdList* pointIds, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const
 {
 	osg::Vec4ub value;
 
 	//list of point ids in cell
-	vtkIdList* pointIds = cell->GetPointIds();
+	//vtkIdList* pointIds = cell->GetPointIds();
    
 	//number of verts in the cell
-	int nCellPts = cell->GetNumberOfPoints();
+	//int nCellPts = cell->GetNumberOfPoints();
+	int nCellPts = pointIds->GetNumberOfIds();
    
 	if (isScalar)
 	{
@@ -601,26 +609,30 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VTKVolumeBrickData::PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc) const
+VTKVolumeBrickData::PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell) const
 {
 	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
-	PTexelDataCache cache(new STexelDataCache(m_maxPts));
+	//PTexelDataCache cache(new STexelDataCache(m_maxPts));
+	PTexelDataCache cache(new STexelDataCache());
 	self->m_texelDataCache[cacheLoc] = cache;
-	//PTexelDataCache cache = self->m_texelDataCache[cacheLoc];
+	PTexelData data(new STexelData(m_maxPts));
+	double pcoords[3];
 
-	//int hitcount = 0;
 	for (unsigned int i=0; i<m_cellLocators.size(); i++)
 	{
-		cache->cellid = m_cellLocators[i]->FindCell(curPos, 0, cache->cell, cache->pcoords, &cache->weights[0]);
+		cache->cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &data->weights[0]);
 		if (cache->cellid >= 0)
 		{
-			cache->dsNum = i;
+			data->pointIds->DeepCopy(cell->GetPointIds());
+			data->dsNum = i;
+			cache->pdata = data;
 			return cache;
 		}
 	}
 
 	
 	cache->cellid = -1;
+
 	return cache;
 }
 

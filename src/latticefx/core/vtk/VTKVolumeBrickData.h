@@ -87,33 +87,43 @@ protected:
 
 	friend class BrickThread;
 
+	struct STexelData
+	{
+		std::vector<double> weights;
+		//vtkSmartPointer<vtkGenericCell> cell;
+		vtkSmartPointer<vtkIdList> pointIds;
+		int dsNum;
+
+		STexelData()
+		{
+			//cell = vtkSmartPointer<vtkGenericCell>::New();
+			pointIds = vtkSmartPointer<vtkIdList>::New();
+			dsNum = 0;
+		}
+
+		STexelData(int weightCount)
+		{
+			weights.resize(weightCount);
+			//cell = vtkSmartPointer<vtkGenericCell>::New();
+			pointIds = vtkSmartPointer<vtkIdList>::New();
+			dsNum = 0;
+		}
+	};
+	typedef boost::shared_ptr< STexelData > PTexelData;
+
 	struct STexelDataCache
 	{
 		int cellid;
-		double pcoords[3];
-		std::vector<double> weights;
-		vtkSmartPointer<vtkGenericCell> cell;
-		int dsNum;
+		PTexelData pdata;
 
 		STexelDataCache()
 		{
 			cellid = -1;
-			pcoords[0] = 0;
-			pcoords[1] = 0;
-			pcoords[2] = 0;
-			cell = vtkSmartPointer<vtkGenericCell>::New();
-			dsNum = 0;
 		}
 
 		STexelDataCache(int weightCount)
 		{
 			cellid = -1;
-			pcoords[0] = 0;
-			pcoords[1] = 0;
-			pcoords[2] = 0;
-			weights.resize(weightCount);
-			cell = vtkSmartPointer<vtkGenericCell>::New();
-			dsNum = 0;
 		}
 	};
 
@@ -148,14 +158,14 @@ public:
 
 protected:
 
-	osg::Vec4ub lerpDataInCell(vtkGenericCell* cell, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
+	osg::Vec4ub lerpDataInCell(vtkIdList* pointIds, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
 
 	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelDataCache findCell(double curPos[3], int cacheLoc) const;
+	PTexelDataCache findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
