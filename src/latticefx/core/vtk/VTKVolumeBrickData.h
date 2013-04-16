@@ -129,7 +129,7 @@ public:
 						int threadCount=4);
 	virtual ~VTKVolumeBrickData();
 
-	virtual void setNumBricks( const osg::Vec3s& numBricks );
+	virtual void setDepth( const unsigned int depth );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 	

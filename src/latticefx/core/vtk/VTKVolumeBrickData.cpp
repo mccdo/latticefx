@@ -79,9 +79,9 @@ VTKVolumeBrickData::~VTKVolumeBrickData()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVolumeBrickData::setNumBricks( const osg::Vec3s& numBricks )
+void VTKVolumeBrickData::setDepth( const unsigned int depth )
 {
-	VolumeBrickData::setNumBricks(numBricks);
+	VolumeBrickData::setDepth(depth);
 	initCache();
 }
 
