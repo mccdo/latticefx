@@ -121,6 +121,7 @@ protected:
 	};
 	typedef boost::shared_ptr< STexelData > PTexelData;
 
+	/*
 	struct STexelDataCache
 	{
 		int cellid;
@@ -138,6 +139,8 @@ protected:
 	};
 
 	typedef boost::shared_ptr< STexelDataCache > PTexelDataCache;
+	*/
+
 	typedef std::vector< vtkDataArray* > DataArrayVector;
     typedef boost::shared_ptr< DataArrayVector > PDataArrayVectorPtr;
 
@@ -174,7 +177,7 @@ protected:
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelDataCache findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
+	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
@@ -200,7 +203,7 @@ protected:
 	int m_threadCount;
 	int m_bricksDone;
 
-	std::vector<PTexelDataCache> m_texelDataCache;
+	std::vector<PTexelData> m_texelDataCache;
 	bool m_cacheUse;
 	bool m_cacheCreate;
 	FILE *m_pstLogDbg;

@@ -241,7 +241,7 @@ void VTKVolumeBrickData::BrickThread::operator()()
 if (m_pData->pVBD->m_cacheUse)
 {
 				int cacheLoc = m_pData->pVBD->getCacheLoc(x, y, z, m_pData->brickNum);
-				PTexelDataCache cache;
+				PTexelData cache;
 
 				if (m_pData->pVBD->m_cacheCreate)
 				{
@@ -254,20 +254,16 @@ if (m_pData->pVBD->m_cacheUse)
 
 				((VTKVolumeBrickData *)m_pData->pVBD)->debugLogCache(x, y, z, cacheLoc);
 
-				if (cache->cellid < 0)
+				if (!cache.get())
 				{
 					value = m_pData->pVBD->getOutSideCellValue(); 
 				}
 				else
 				{
-					if (!m_pData->pVBD->m_cacheCreate)
-					{
-						int idebug = 1;
-					}
 
 					// cell cache is not showing any signs of a speed up
 					//if (m_cellCache == cellId) haveCache = false;
-					value = m_pData->pVBD->lerpDataInCell(cache->pdata->pointIds, &cache->pdata->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->pdata->dsNum); 
+					value = m_pData->pVBD->lerpDataInCell(cache->pointIds, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
 				}
 }
 else
@@ -334,7 +330,7 @@ void VTKVolumeBrickData::debugLogCache(int x, int y, int z, int cachePos)
 {
 	if (!m_pstLogDbg) return;
 
-	PTexelDataCache cache = m_texelDataCache[cachePos];
+	PTexelData cache = m_texelDataCache[cachePos];
 	std::stringstream ss;
 	
 	fprintf(m_pstLogDbg, "x:%d y:%d z:%d cache:%d\n", x, y, z, cachePos);
@@ -343,12 +339,12 @@ void VTKVolumeBrickData::debugLogCache(int x, int y, int z, int cachePos)
 	//fprintf(m_pstLogDbg, "id:%d x:%.2f y:%.2f z:%.2f ds:%d\n", 
 	//		cache->cellid, cache->pcoords[0], cache->pcoords[1], cache->pcoords[2], cache->dsNum);
 
-	if (cache->pdata.get())
+	if (cache.get())
 	{
-		ss << "weights: " << cache->pdata->weights.size() << " ";
-		for (unsigned int i=0; i<cache->pdata->weights.size(); i++)
+		ss << "weights: " << cache->weights.size() << " ";
+		for (unsigned int i=0; i<cache->weights.size(); i++)
 		{
-			ss << cache->pdata->weights[i] << ",";
+			ss << cache->weights[i] << ",";
 		}
 	}
 	else
@@ -621,7 +617,7 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VTKVolumeBrickData::PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const
+VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const
 {
 	if (m_texelDataCache[cacheLoc].get())
 	{
@@ -630,28 +626,30 @@ VTKVolumeBrickData::PTexelDataCache VTKVolumeBrickData::findCell(double curPos[3
 
 	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
 	//PTexelDataCache cache(new STexelDataCache(m_maxPts));
-	PTexelDataCache cache(new STexelDataCache());
-	self->m_texelDataCache[cacheLoc] = cache;
+	//PTexelDataCache cache(new STexelDataCache());
+	//self->m_texelDataCache[cacheLoc] = cache;
 	//PTexelData data(new STexelData(m_maxPts));
 	double pcoords[3];
+	int cellid;
 
 	for (unsigned int i=0; i<m_cellLocators.size(); i++)
 	{
-		cache->cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &pdata->weights[0]);
-		if (cache->cellid >= 0)
+		cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &pdata->weights[0]);
+		if (cellid >= 0)
 		{
 			pdata->pointIds->DeepCopy(cell->GetPointIds());
 			pdata->dsNum = i;
-			cache->pdata = pdata;
+			//cache->pdata = pdata;
+			self->m_texelDataCache[cacheLoc] = pdata;
 			pdata.reset(new STexelData(m_maxPts)); // create a new pdata now that this one is used
-			return cache;
+			return pdata;
 		}
 	}
 
 	
-	cache->cellid = -1;
+	//cache->cellid = -1;
 
-	return cache;
+	return PTexelData();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
