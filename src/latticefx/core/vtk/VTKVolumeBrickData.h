@@ -87,7 +87,6 @@ protected:
 
 	friend class BrickThread;
 
-
 	//
 	// TexelDataCache Memory Usage
 	//
@@ -99,47 +98,24 @@ protected:
 	//
 	struct STexelData
 	{
-		std::vector<double> weights;
-		//vtkSmartPointer<vtkGenericCell> cell;
+		float *weights;
+		//std::vector<float> weights;
 		vtkSmartPointer<vtkIdList> pointIds;
-		int dsNum;  
-
-		STexelData()
-		{
-			//cell = vtkSmartPointer<vtkGenericCell>::New();
-			pointIds = vtkSmartPointer<vtkIdList>::New();
-			dsNum = 0;
-		}
+		unsigned char dsNum;  
 
 		STexelData(int weightCount)
 		{
-			weights.resize(weightCount);
-			//cell = vtkSmartPointer<vtkGenericCell>::New();
+			weights = new float[weightCount];
+			//weights.reserve(weightCount);
 			pointIds = vtkSmartPointer<vtkIdList>::New();
 			dsNum = 0;
 		}
+		~STexelData()
+		{
+			delete [] weights;
+		}
 	};
 	typedef boost::shared_ptr< STexelData > PTexelData;
-
-	/*
-	struct STexelDataCache
-	{
-		int cellid;
-		PTexelData pdata;
-
-		STexelDataCache()
-		{
-			cellid = -1;
-		}
-
-		STexelDataCache(int weightCount)
-		{
-			cellid = -1;
-		}
-	};
-
-	typedef boost::shared_ptr< STexelDataCache > PTexelDataCache;
-	*/
 
 	typedef std::vector< vtkDataArray* > DataArrayVector;
     typedef boost::shared_ptr< DataArrayVector > PDataArrayVectorPtr;
@@ -153,7 +129,10 @@ public:
 						int threadCount=4);
 	virtual ~VTKVolumeBrickData();
 
+	virtual void setNumBricks( const osg::Vec3s& numBricks );
+
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+	
 
 	bool isValid();
 
@@ -173,11 +152,14 @@ protected:
 	osg::Vec4ub lerpDataInCell(vtkIdList* pointIds, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
 
+	osg::Vec4ub lerpDataInCell(vtkIdList* pointIds, float* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
+	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, float* weights, int npts, int whichValue, bool isScalar) const;
+
 	void extractTuplesForScalar(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
+	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 

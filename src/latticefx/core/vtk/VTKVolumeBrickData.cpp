@@ -63,7 +63,7 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 
 	initMaxPts();
 	initDataArrays();
-	initCache();
+	
 
 	m_cacheUse = true;
 	m_cacheCreate = true;
@@ -76,6 +76,13 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 VTKVolumeBrickData::~VTKVolumeBrickData()
 {
 	if (m_pstLogDbg) fclose(m_pstLogDbg);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::setNumBricks( const osg::Vec3s& numBricks )
+{
+	VolumeBrickData::setNumBricks(numBricks);
+	initCache();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,12 +215,12 @@ void VTKVolumeBrickData::BrickThread::operator()()
 	vtkIdType cellId;
 	double pcoords[3], curPos[3];
 	std::vector<double> weights(m_pData->pVBD->m_maxPts); // need to find out max points in a cell for the whole dataset
+	PTexelData pdata(new STexelData(m_pData->pVBD->m_maxPts));
 	int subId = 0;
 	osg::Vec4ub value;
 	int debugNumPts = 0;
 	bool haveCache = false;
 	int dataSetNum = 0;
-	PTexelData pdata(new STexelData(m_pData->pVBD->m_maxPts));
 
 	unsigned char* ptr = NULL;
 
@@ -245,7 +252,7 @@ if (m_pData->pVBD->m_cacheUse)
 
 				if (m_pData->pVBD->m_cacheCreate)
 				{
-					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
+					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights);
 				}
 				else
 				{ 
@@ -260,9 +267,6 @@ if (m_pData->pVBD->m_cacheUse)
 				}
 				else
 				{
-
-					// cell cache is not showing any signs of a speed up
-					//if (m_cellCache == cellId) haveCache = false;
 					value = m_pData->pVBD->lerpDataInCell(cache->pointIds, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
 				}
 }
@@ -341,11 +345,13 @@ void VTKVolumeBrickData::debugLogCache(int x, int y, int z, int cachePos)
 
 	if (cache.get())
 	{
+		/*
 		ss << "weights: " << cache->weights.size() << " ";
 		for (unsigned int i=0; i<cache->weights.size(); i++)
 		{
 			ss << cache->weights[i] << ",";
 		}
+		*/
 	}
 	else
 	{
@@ -410,7 +416,134 @@ osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkIdList* pointIds, double* weig
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+osg::Vec4ub VTKVolumeBrickData::lerpDataInCell(vtkIdList* pointIds, float* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const
+{
+	osg::Vec4ub value;
+
+	//list of point ids in cell
+	//vtkIdList* pointIds = cell->GetPointIds();
+   
+	//number of verts in the cell
+	//int nCellPts = cell->GetNumberOfPoints();
+	int nCellPts = pointIds->GetNumberOfIds();
+   
+	if (isScalar)
+	{
+		if (tuples->GetNumberOfComponents() != 1)
+		{
+			tuples->SetNumberOfComponents(1);
+			tuples->SetNumberOfTuples(nCellPts);
+		}
+		else if (tuples->GetNumberOfTuples() != nCellPts)
+		{
+			tuples->SetNumberOfTuples(nCellPts);
+		}
+
+		extractTuplesForScalar(pointIds, tuples, whichValue, dsNum);
+		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
+	}
+	else
+	{
+		if (tuples->GetNumberOfComponents() != 3)
+		{
+			tuples->SetNumberOfComponents(3);
+			tuples->SetNumberOfTuples(nCellPts);
+		}
+		else if (tuples->GetNumberOfTuples() != nCellPts)
+		{
+			tuples->SetNumberOfTuples(nCellPts);
+		}
+
+		extractTuplesForVector(pointIds, tuples, whichValue, dsNum);
+		value = lerpPixelData(tuples, weights, nCellPts, whichValue, isScalar);
+   }
+
+   return value;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* tuples, double* weights, int npts, int whichValue, bool isScalar) const
+{
+	osg::Vec4ub data(0,0,0,0);
+
+	// vector data
+   if (!isScalar) 
+   {
+      double vector[4];
+      vector[0] = 0;
+      vector[1] = 0;
+      vector[2] = 0;
+      double vectorData[3];
+      for(int j = 0; j < npts; j++)
+	  {
+         tuples->GetTuple(j, vectorData);
+         //the weighted sum of the velocities
+         vector[0] += vectorData[0]*weights[j];
+         vector[1] += vectorData[1]*weights[j];
+         vector[2] += vectorData[2]*weights[j];
+      }
+      //calulate the magnitude
+      double vMag = 0;
+      double iMag = 0;
+      vMag = sqrt(vector[0]*vector[0]
+                +vector[1]*vector[1]
+                +vector[2]*vector[2]);
+         
+      //inverse magnitude 
+      if(vMag >= 1e-6){
+         iMag = 1.0/vMag;
+      }else{
+         iMag = 0;
+      }
+      
+      //normaliz e data
+      vector[0] *= iMag;
+      vector[1] *= iMag;
+      vector[2] *= iMag;
+      vector[3] = vMag;
+
+      //quantize data
+      vector[0] = 255*((vector[0] + 1)*.5);
+      vector[1] = 255*((vector[1] + 1)*.5);
+      vector[2] = 255*((vector[2] + 1)*.5);
+      
+	  data[0] = vector[0];
+	  data[1] = vector[1];
+	  data[2] = vector[2];
+	  data[3] = vector[3];
+   }
+   else // scalar data
+   {
+      double scalarData;
+      double scalar = 0;
+      for(int j = 0; j < npts; j++)
+	  {
+         tuples->GetTuple(j,&scalarData);
+         scalar += scalarData*weights[j];
+      }
+
+	  if (scalar > 0 || scalar < 0)
+	  {
+		  int idebug = 1;
+	  }
+
+	  if (scalar > 1)
+	  {
+		  scalar = 1;
+	  }
+	  else if (scalar < 0)
+	  {
+		  scalar = 0;
+	  }
+
+	  data[0] = (unsigned char) (255.0 * scalar);
+   }
+
+   return data;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+osg::Vec4ub VTKVolumeBrickData::lerpPixelData(vtkDataArray* tuples, float* weights, int npts, int whichValue, bool isScalar) const
 {
 	osg::Vec4ub data(0,0,0,0);
 
@@ -617,7 +750,7 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const
+VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const
 {
 	if (m_texelDataCache[cacheLoc].get())
 	{
@@ -625,23 +758,25 @@ VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], in
 	} 
 
 	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
-	//PTexelDataCache cache(new STexelDataCache(m_maxPts));
-	//PTexelDataCache cache(new STexelDataCache());
-	//self->m_texelDataCache[cacheLoc] = cache;
-	//PTexelData data(new STexelData(m_maxPts));
+
 	double pcoords[3];
 	int cellid;
 
 	for (unsigned int i=0; i<m_cellLocators.size(); i++)
 	{
-		cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &pdata->weights[0]);
+		cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &weights[0]);
 		if (cellid >= 0)
 		{
-			pdata->pointIds->DeepCopy(cell->GetPointIds());
+			PTexelData pdata(new STexelData(weights.size()));
+			for (unsigned int w=0; w<weights.size(); w++)
+			{
+				pdata->weights[w] = weights[w];
+			}
+
+			pdata->pointIds->DeepCopy(cell->GetPointIds());	
 			pdata->dsNum = i;
-			//cache->pdata = pdata;
 			self->m_texelDataCache[cacheLoc] = pdata;
-			pdata.reset(new STexelData(m_maxPts)); // create a new pdata now that this one is used
+			//pdata.reset(new STexelData(m_maxPts)); // create a new pdata now that this one is used
 			return pdata;
 		}
 	}
@@ -672,6 +807,8 @@ void VTKVolumeBrickData::initCache()
 	int brickCount = (_numBricks[0]) * (_numBricks[1]) * (_numBricks[2]);
 	int brickSize = m_brickRes[0] * m_brickRes[1] * m_brickRes[2];
 	int totalTexels = brickCount * brickSize;
+	if (totalTexels <= 0) return;
+
 	m_texelDataCache.resize(totalTexels);
 }
 
