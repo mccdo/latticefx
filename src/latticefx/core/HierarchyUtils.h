@@ -253,7 +253,8 @@ public:
     VolumeBrickData( const bool prune = false );
     virtual ~VolumeBrickData();
 
-    void setDepth( const unsigned int depth );
+
+    virtual void setDepth( const unsigned int depth );
     unsigned int getDepth() const;
     osg::Vec3s getNumBricks() const;
 
