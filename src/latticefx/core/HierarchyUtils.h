@@ -253,7 +253,8 @@ public:
     VolumeBrickData( const bool prune = false );
     virtual ~VolumeBrickData();
 
-    void setNumBricks( const osg::Vec3s& numBricks );
+    void setDepth( const unsigned int depth );
+    unsigned int getDepth() const;
     osg::Vec3s getNumBricks() const;
 
     /** \brief Add a brick to the \c _images vector of bricks.
@@ -301,6 +302,7 @@ protected:
     osg::Image* newBrick( const osg::Image* proto, const osg::Vec3s& overlap = osg::Vec3s( 1, 1, 1 ) ) const;
 
     osg::Vec3s _numBricks;
+    unsigned int _depth;
     bool _prune;
 
     typedef std::vector< osg::ref_ptr< osg::Image > > ImageVector;

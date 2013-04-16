@@ -40,12 +40,11 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet, 
-									   bool prune, 
-									   int dataNum, 
-									   bool isScalar, 
-									   osg::Vec3s brickRes, 
-									   osg::Vec3s totalNumBricks, 
+VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
+									   bool prune,
+									   int dataNum,
+									   bool isScalar,
+									   osg::Vec3s brickRes,
 									   int threadCount)
     :
     VolumeBrickData(prune)
@@ -59,8 +58,6 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 
 	m_threadCount = threadCount;
 	if (m_threadCount <= 0) m_threadCount = 1;
-
-	setNumBricks(totalNumBricks);
 
 	if (!initCellTrees()) return;
 

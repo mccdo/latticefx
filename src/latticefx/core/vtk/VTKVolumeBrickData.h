@@ -147,7 +147,6 @@ public:
 						int dataNum = 0, 
 						bool isScalar = true, 
 						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
-						osg::Vec3s totalNumBricks = osg::Vec3s(8,8,8),
 						int threadCount=4);
 	virtual ~VTKVolumeBrickData();
 

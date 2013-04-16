@@ -148,26 +148,17 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
     ds->SetFileName(vtkFile);
     ds->LoadData();
 
-	// get the threads
-	int threads = 32;
-	iarg = arguments.find("-threads");
-	if (iarg >= 0)
-	{
-		if (arguments.argc() <= (iarg+1))
-		{
-			LFX_CRITICAL_STATIC(logstr, "You must supply and integer value for the number of threads: -threads number");
-		}
-		else
-		{
+    int depth( 4 );
+    arguments.read( "-depth", depth );
+    if( depth < 1 ) depth = 1;
 
-			std::string str = arguments[iarg+1];
-			threads = atoi(str.c_str());
-			if (threads <= 0) 
-			{
-				threads = 32;
-				LFX_CRITICAL_STATIC(logstr, "Invalid number of threads using restoring default");
-			}
-		}
+    // get the threads
+	int threads( 32 );
+	arguments.read("-threads", threads );
+	if (threads <= 0) 
+	{
+		threads = 32;
+		LFX_CRITICAL_STATIC(logstr, "Invalid number of threads using restoring default");
 	}
 
 	ss << "Number of threads: " << threads;
@@ -200,9 +191,10 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 
-	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), threads));
-	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), osg::Vec3s(2,2,2), threads));
-	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), osg::Vec3s(8,8,8), threads));
+	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
+	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
+	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
+    vbd->setDepth( depth );
 
 	LFX_CRITICAL_STATIC( logstr, "" );
 	if (arguments.find("-nocache") >= 0)
@@ -270,9 +262,7 @@ public:
           _cubeMin( .2, .2, .2 ),
           _cubeMax( .8, .8, .8 ),
           _soft( soft )
-    {
-        setNumBricks( osg::Vec3s( 8, 8, 8 ) );
-    }
+    {}
     virtual ~CubeVolumeBrickData()
     {}
 
@@ -370,9 +360,7 @@ public:
           _center( .5, .5, .5 ),
           _minRad( soft ? .1 : .45 ),
           _maxRad( .45 )
-    {
-        setNumBricks( osg::Vec3s( 8, 8, 8 ) );
-    }
+    {}
     virtual ~SphereVolumeBrickData()
     {}
 
@@ -475,9 +463,7 @@ public:
         : VolumeBrickData( prune ),
           _brickRes( 32, 32, 32 ),
           _baseRad( .475 )
-    {
-        setNumBricks( osg::Vec3s( 4, 4, 4 ) );
-    }
+    {}
     virtual ~ConeVolumeBrickData()
     {}
 
@@ -608,6 +594,7 @@ int main( int argc, char** argv )
 
     // Please document all options using Doxygen at the bottom of this file.
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
+    LFX_CRITICAL_STATIC( logstr, "-depth <d> Hierarchy levels. Default is 4." );
 #ifdef LFX_USE_CRUNCHSTORE
     LFX_CRITICAL_STATIC( logstr, "-cs <dbFile> Write volume image data files using DBCrunchStore." );
 #endif
@@ -659,6 +646,11 @@ int main( int argc, char** argv )
         shapeGen.reset(new CubeVolumeBrickData( prune, softCube ));
     }
 
+    int depth( 4 );
+    arguments.read( "-depth", depth );
+    if( depth < 1 ) depth = 1;
+    shapeGen->setDepth( depth );
+
     boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 	createDataSet( csFile, shapeGen, std::string("shapevolume") );
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
@@ -679,6 +671,18 @@ int main( int argc, char** argv )
 
 shapeCreator generates sample volumetric data for use with the page-volume
 and page-volume-rt test programs.
+
+<h2>Hierarchy Depth Control</h2>
+
+shapeCreator creates a hierarchy of volumetric levels of detail.
+Larger values display more detail (if available in the source data)
+at near viewing distances, but large values also create more data
+files and increase shapeCreator runtime duration. Use the -depth command
+line argument to control the hierarchy depth:
+
+\li-depth <d> Hierarchy levels. Default is 4.
+
+Valid values are >= 1.
 
 <h2>Shape Creation</h2>
 

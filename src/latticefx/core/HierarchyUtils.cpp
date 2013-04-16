@@ -501,7 +501,8 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
 
 
 VolumeBrickData::VolumeBrickData( const bool prune )
-    : _numBricks( 0, 0, 0 ),
+    : _numBricks( 8, 8, 8 ),
+      _depth( 4 ),
       _prune( prune )
 {
 }
@@ -509,10 +510,27 @@ VolumeBrickData::~VolumeBrickData()
 {
 }
 
-void VolumeBrickData::setNumBricks( const osg::Vec3s& numBricks )
+void VolumeBrickData::setDepth( const unsigned int depth )
 {
-    _numBricks = numBricks;
-    _images.resize( numBricks[0] * numBricks[1] * numBricks[2] );
+    _depth = depth;
+    if( _depth < 1 )
+    {
+        LFX_WARNING_STATIC( "lfx.core.hier", "Depth < 1 invalid. Using depth 1." );
+        _depth = 1;
+    }
+    else if( _depth > 15 )
+    {
+        LFX_WARNING_STATIC( "lfx.core.hier", "Depth > 15 invalid. Using depth 15." );
+        _depth = 16;
+    }
+    short n( 0x1 << ( _depth - 1 ) );
+    _numBricks.set( n, n, n );
+    unsigned short usn( ( unsigned short )n );
+    _images.resize( usn * usn * usn );
+}
+unsigned int VolumeBrickData::getDepth() const
+{
+    return( _depth );
 }
 osg::Vec3s VolumeBrickData::getNumBricks() const
 {
@@ -816,23 +834,8 @@ VolumeBrickDataPtr Downsampler::getLow() const
     }
     _low = VolumeBrickDataPtr( new VolumeBrickData() );
 
-    osg::Vec3s numBricks( _hi->getNumBricks() );
-    numBricks[0] >>= 1;
-    if( numBricks[0] < 1 )
-    {
-        numBricks[0] = 1;
-    }
-    numBricks[1] >>= 1;
-    if( numBricks[1] < 1 )
-    {
-        numBricks[1] = 1;
-    }
-    numBricks[2] >>= 1;
-    if( numBricks[2] < 1 )
-    {
-        numBricks[2] = 1;
-    }
-    _low->setNumBricks( numBricks );
+    _low->setDepth( _hi->getDepth() - 1 );
+    osg::Vec3s numBricks( _low->getNumBricks() );
 
     for( int rIdx = 0; rIdx < numBricks[2]; ++rIdx )
     {
