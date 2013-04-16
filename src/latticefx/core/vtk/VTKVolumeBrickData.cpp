@@ -68,6 +68,7 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 	m_cacheUse = true;
 	m_cacheCreate = true;
 	m_bricksDone = 0;
+	m_brickCount = 0;
 
 
 	m_pstLogDbg = NULL;
@@ -252,6 +253,7 @@ if (m_pData->pVBD->m_cacheUse)
 
 				if (m_pData->pVBD->m_cacheCreate)
 				{
+					//cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
 					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights);
 				}
 				else
@@ -750,9 +752,11 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// this method converts weights to floats, which creates a lower memory footprint but
+// converting the weights increasesthe processing time
 VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const
 {
-	if (m_texelDataCache[cacheLoc].get())
+	if (m_bricksDone >= m_brickCount)
 	{
 		return m_texelDataCache[cacheLoc];
 	} 
@@ -776,16 +780,43 @@ VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], in
 			pdata->pointIds->DeepCopy(cell->GetPointIds());	
 			pdata->dsNum = i;
 			self->m_texelDataCache[cacheLoc] = pdata;
-			//pdata.reset(new STexelData(m_maxPts)); // create a new pdata now that this one is used
 			return pdata;
 		}
 	}
 
-	
-	//cache->cellid = -1;
+	return PTexelData();
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const
+{
+	if (m_bricksDone >= m_brickCount)
+	{
+		return m_texelDataCache[cacheLoc];
+	}
+
+	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
+
+	double pcoords[3];
+	int cellid;
+
+	for (unsigned int i=0; i<m_cellLocators.size(); i++)
+	{
+		cellid = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &pdata->weights[0]);
+		if (cellid >= 0)
+		{
+			pdata->pointIds->DeepCopy(cell->GetPointIds());	
+			pdata->dsNum = i;
+			self->m_texelDataCache[cacheLoc] = pdata;
+			pdata.reset(new STexelData(m_maxPts)); // create a new pdata now that this one is used
+			return self->m_texelDataCache[cacheLoc];
+		}
+	}
 
 	return PTexelData();
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 osg::Vec4ub VTKVolumeBrickData::getOutSideCellValue() const
@@ -804,9 +835,9 @@ void VTKVolumeBrickData::initCache()
 {
 	m_texelDataCache.clear();
 
-	int brickCount = (_numBricks[0]) * (_numBricks[1]) * (_numBricks[2]);
+	m_brickCount = (_numBricks[0]) * (_numBricks[1]) * (_numBricks[2]);
 	int brickSize = m_brickRes[0] * m_brickRes[1] * m_brickRes[2];
-	int totalTexels = brickCount * brickSize;
+	int totalTexels = m_brickCount * brickSize;
 	if (totalTexels <= 0) return;
 
 	m_texelDataCache.resize(totalTexels);

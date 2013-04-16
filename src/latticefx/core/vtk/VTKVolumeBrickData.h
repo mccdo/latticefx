@@ -99,14 +99,12 @@ protected:
 	struct STexelData
 	{
 		float *weights;
-		//std::vector<float> weights;
 		vtkSmartPointer<vtkIdList> pointIds;
 		unsigned char dsNum;  
 
 		STexelData(int weightCount)
 		{
 			weights = new float[weightCount];
-			//weights.reserve(weightCount);
 			pointIds = vtkSmartPointer<vtkIdList>::New();
 			dsNum = 0;
 		}
@@ -160,6 +158,7 @@ protected:
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
 	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const;
+	//PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
 
@@ -184,6 +183,7 @@ protected:
 	std::vector< PDataArrayVectorPtr > m_dataArraysVector;
 	int m_threadCount;
 	int m_bricksDone;
+	int m_brickCount;
 
 	std::vector<PTexelData> m_texelDataCache;
 	bool m_cacheUse;
