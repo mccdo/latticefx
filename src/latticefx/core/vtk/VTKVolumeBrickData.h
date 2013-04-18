@@ -61,10 +61,12 @@ protected:
 		osg::Vec3d vtkDelta;
 		osg::Vec3d vtkMin;
 		vtkDoubleArray* tuples;
+		int hits;
 		
 		SThreadData()
 		{
 			tuples = vtkDoubleArray::New();
+			hits = 0;
 		}
 
 		~SThreadData()

@@ -162,9 +162,11 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	double curBrickEndX = 0;
 	boost::thread_group group;
 
+	std::vector<SThreadDataPtr> theadData;
 	for (int i=0; i<m_threadCount; i++)
 	{
 		SThreadDataPtr pData = SThreadDataPtr( new SThreadData() );
+		theadData.push_back(pData);
 		pData->pVBD = this;
 		pData->ptrPixels = ptr;
 		pData->bytesPerPixel = bytesPerPixel;
@@ -195,6 +197,21 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	}
 
 	group.join_all();
+
+	if (_prune)
+	{
+		int totalCellHits = 0;
+		for (unsigned int i=0; i<theadData.size(); i++)
+		{
+			totalCellHits += theadData[i]->hits;
+		}
+
+		//printf("Cell Hits: %d\n", totalCellHits);
+		if (totalCellHits <= 0) 
+		{
+			return NULL;
+		}
+	}
 
 	// create an image with our data and return it
 	osg::ref_ptr< osg::Image > image( new osg::Image() );
@@ -270,6 +287,7 @@ if (m_pData->pVBD->m_cacheUse)
 				else
 				{
 					value = m_pData->pVBD->lerpDataInCell(cache->pointIds, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
+					m_pData->hits++;
 				}
 }
 else
@@ -284,6 +302,7 @@ else
 					// cell cache is not showing any signs of a speed up
 					//if (m_cellCache == cellId) haveCache = false;
 					value = m_pData->pVBD->lerpDataInCell(cell->GetPointIds(), &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, dataSetNum); 
+					m_pData->hits++;
 				}
 }
 
@@ -729,31 +748,22 @@ bool VTKVolumeBrickData::initCellTrees()
 ////////////////////////////////////////////////////////////////////////////////
 int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const
 {
-	//int hitcount = 0;
 	for (unsigned int i=0; i<m_cellLocators.size(); i++)
 	{
 		vtkIdType cellId = m_cellLocators[i]->FindCell(curPos, 0, cell, pcoords, &(*pweights)[0]);
 		if (cellId >= 0)
 		{
-			//hitcount++;
 			*pdsNum = i;
 			return cellId;
 		}
 	}
-
-	/*
-	if (hitcount > 1)
-	{
-		int debug=1;
-	}
-	*/
 
 	return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // this method converts weights to floats, which creates a lower memory footprint but
-// converting the weights increasesthe processing time
+//
 VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const
 {
 	if (m_bricksDone >= m_brickCount)
