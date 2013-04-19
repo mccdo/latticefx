@@ -1,6 +1,22 @@
 cmake_minimum_required( VERSION 2.8.8 )
 project( latticefx )
-set( LATTICEFX_VERSION 0 )
+
+
+macro( zeroPad _input _output )
+    if( ${${_input}} LESS 10 )
+        set( ${_output} "0${${_input}}" )
+    else()
+        set( ${_output} "${${_input}}" )
+    endif()
+endmacro()
+
+set( LATTICEFX_MAJOR_VERSION 0 )
+set( LATTICEFX_MINOR_VERSION 0 )
+set( LATTICEFX_SUB_VERSION 1 )
+zeroPad( LATTICEFX_MINOR_VERSION __minorPad )
+zeroPad( LATTICEFX_SUB_VERSION __patchPad )
+set( LATTICEFX_VERSION ${LATTICEFX_MAJOR_VERSION}.${__minorPad}.${__patchPad} )
+
 
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}" )
 
