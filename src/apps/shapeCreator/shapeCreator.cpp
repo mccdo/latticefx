@@ -48,6 +48,7 @@ DIAG_OFF(unused-parameter)
 DIAG_ON(unused-parameter)
 
 const std::string logstr( "lfx.demo" );
+const std::string loginfo( logstr+".info" );
 
 using namespace lfx::core;
 
@@ -120,7 +121,7 @@ void vtkCreateBricks(vtk::VTKVolumeBrickDataPtr vbd, const std::string csFile, i
 
     std::ostringstream ss;
 	ss << "Time to create  " << sst.str() << " = " << createTime << " secs";
-    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,11 +159,11 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 	if (threads <= 0) 
 	{
 		threads = 32;
-		LFX_CRITICAL_STATIC(logstr, "Invalid number of threads using restoring default");
+		LFX_CRITICAL_STATIC( logstr, "Invalid number of threads using restoring default" );
 	}
 
 	ss << "Number of threads: " << threads;
-    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
 	ss.str( std::string() );
 	ss.clear();
 
@@ -196,19 +197,19 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
 	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
     vbd->setDepth( depth );
 
-	LFX_CRITICAL_STATIC( logstr, "" );
 	if (arguments.find("-nocache") >= 0)
 	{
-		LFX_CRITICAL_STATIC( logstr, "Vtk lookup cache is disabled." );
+		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is disabled." );
 		vbd->cacheCreate(false);
 		vbd->cacheUse(false);
 	}
 	else
 	{
-		LFX_CRITICAL_STATIC( logstr, "Vtk lookup cache is enabled." );
+		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is enabled." );
 		vbd->cacheCreate(true);
 		vbd->cacheUse(true);
 	}
+	LFX_CRITICAL_STATIC( loginfo, "" );
 
 #if 0
 	// debug the cache
@@ -245,7 +246,7 @@ int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
     double createTime = diff.total_milliseconds() * 0.001;
 
 	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
-    LFX_CRITICAL_STATIC( logstr, ss.str().c_str() );
+    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
 
 	return 0;
 }
@@ -589,8 +590,8 @@ void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, cons
 
 int main( int argc, char** argv )
 {
-    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
-	Log::instance()->setPriority( Log::PrioSilent, "lfx.core.hier" );
+    Log::instance()->setPriority( Log::PrioSilent, Log::Console );
+	Log::instance()->setPriority( Log::PrioInfo, loginfo );
 
     // Please document all options using Doxygen at the bottom of this file.
     LFX_CRITICAL_STATIC( logstr, "With no command line args, write image data as files using DBDisk." );
