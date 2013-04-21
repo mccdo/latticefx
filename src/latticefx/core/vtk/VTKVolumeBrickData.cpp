@@ -23,6 +23,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <osg/Image>
+#include <osg/io_utils>
 
 #include <vtkDataSet.h>
 #include <vtkDataArray.h>
@@ -108,11 +109,10 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	if (m_cacheCreate)
 	{
 		int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
-		std::string logname = "VTKVolumeBrickData";
+		std::string logname = "lfx.core.hier.vtk";
 		std::stringstream ss;
-		ss << "brick: " << brickNum[0] << "," << brickNum[1] << "," << brickNum[2] << " " << m_bricksDone << " of " << totbricks << std::endl;
-		//LFX_CRITICAL_STATIC( logname.c_str(), ss.str().c_str() );
-		printf(ss.str().c_str());
+		ss << "brick: (" << brickNum << "), " << m_bricksDone << " of " << totbricks;
+		LFX_INFO_STATIC( logname, ss.str() );
 	}
 
 	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
