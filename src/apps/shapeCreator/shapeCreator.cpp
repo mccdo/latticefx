@@ -550,7 +550,7 @@ protected:
 void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
 {
     //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
-	SaveHierarchy* saver( new SaveHierarchy( shapeGen, baseName ) );
+	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
 
     // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
@@ -583,7 +583,7 @@ void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, cons
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
-        saver->save( ( DBBasePtr )disk );
+        saver->save( ( DBBasePtr )disk, shapeGen );
     }
 }
 
