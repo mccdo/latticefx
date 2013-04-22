@@ -991,14 +991,12 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
     return( validData ? image.release() : NULL );
 }
 
-
-
-
-
-SaveHierarchy::SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName )
+// SaveHierarchy::SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName )
+SaveHierarchy::SaveHierarchy( const std::string baseName )
     : _depth( 0 ),
-      _baseName( baseName )
+      _baseName( baseName ) 
 {
+	/*
     short xDim( base->getNumBricks().x() );
     _depth = 0;
     while( xDim > 0 )
@@ -1014,20 +1012,80 @@ SaveHierarchy::SaveHierarchy( VolumeBrickDataPtr base, const std::string baseNam
         Downsampler ds( _lodVec[ depthIdx ] );
         _lodVec[ depthIdx - 1 ] = ds.getLow();
     }
+	*/
 }
+
 SaveHierarchy::~SaveHierarchy()
 {
     _lodVec.clear();
 }
 
-void SaveHierarchy::save( DBBasePtr db )
+unsigned int SaveHierarchy::computeLevel(unsigned short numBricksX)
+{
+	unsigned int depth = 0;
+    while( numBricksX > 0 )
+    {
+        ++depth;
+        numBricksX >>= 1;
+    }
+
+	return depth;
+}
+
+void SaveHierarchy::addLevel( unsigned int level, VolumeBrickDataPtr base, bool addSubLevels )
+{
+	if (addSubLevels)
+	{
+		_lodVec.clear();
+	}
+
+	if (_lodVec.size() < level)
+	{
+		_lodVec.resize(level);
+	}
+
+	_lodVec[ level - 1 ] = base;
+
+	if (addSubLevels)
+	{
+		for( int depthIdx = level - 1; depthIdx > 0; --depthIdx )
+		{
+			Downsampler ds( _lodVec[ depthIdx ] );
+			_lodVec[ depthIdx - 1 ] = ds.getLow();
+		}
+    }
+
+	_depth = _lodVec.size();
+}
+
+bool SaveHierarchy::save( DBBasePtr db, unsigned int level, VolumeBrickDataPtr base, bool addSubLevels )
+{
+	addLevel( level, base, addSubLevels );
+	return save( db );
+}
+
+bool SaveHierarchy::save( DBBasePtr db, VolumeBrickDataPtr base )
+{
+	unsigned int level = computeLevel(base->getNumBricks().x());
+	addLevel( level, base, true );
+	return save( db );
+}
+
+bool SaveHierarchy::save( DBBasePtr db )
 {
     if( db == NULL )
     {
         LFX_WARNING_STATIC( "lfx.core.hier", "NULL DB in SaveHierarchy." );
     }
 
+	if (!_depth)
+	{
+		LFX_ERROR_STATIC( "lfx.core.hier", "LOD levels not set in SaveHierarchy." );
+	}
+
     recurseSaveBricks( db, std::string( "" ) );
+
+	return true;
 }
 
 void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName )

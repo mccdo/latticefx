@@ -376,10 +376,15 @@ using VolumeBrickData::getSeamlessBrick(), and stores them to the
 class LATTICEFX_EXPORT SaveHierarchy
 {
 public:
-    SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName );
+    SaveHierarchy( const std::string baseName );
     virtual ~SaveHierarchy();
 
-    void save( DBBasePtr db );
+	static unsigned int computeLevel(unsigned short numbricksX);
+	void addLevel(unsigned int level, VolumeBrickDataPtr base, bool addSubLevels=true);
+
+	bool save( DBBasePtr db, unsigned int level, VolumeBrickDataPtr base, bool addSubLevels=true );
+	bool save( DBBasePtr db, VolumeBrickDataPtr base );
+    bool save( DBBasePtr db );
 
 protected:
     void recurseSaveBricks( DBBasePtr db, const std::string brickName );
