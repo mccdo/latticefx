@@ -9,7 +9,10 @@ endif()
 
 set( _exeName shapeCreator )
 _addExecutable( App ${_exeName}
+    shapeCreator.h
     shapeCreator.cpp
+    vtkCreator.h
+    vtkCreator.cpp
     LATTICEFX_LIBRARIES
         latticefx_core
         ${_vtkLibs}

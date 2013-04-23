@@ -37,9 +37,7 @@
 #include <osg/io_utils>
 
 #ifdef VTK_FOUND
-#  include <latticefx/core/vtk/DataSet.h>
-#  include <latticefx/core/vtk/VTKVolumeBrickData.h>
-#  include <boost/filesystem.hpp>
+#  include "vtkCreator.h"
 #endif
 
 #include <latticefx/utils/CompilerGuards.h>
@@ -53,205 +51,6 @@ const std::string loginfo( logstr+".info" );
 using namespace lfx::core;
 
 void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName );
-
-#ifdef VTK_FOUND
-
-////////////////////////////////////////////////////////////////////////////////
-void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar)
-{
-	int iarg = 0;
-	std::string cmd = "-s";
-	if (!scalar) cmd = "-v";
-
-	pItems->clear();
-
-	// find which scalars or vectors
-	
-	// do they want all items
-	iarg = arguments.find(cmd);
-	if (iarg >= 0 && iarg < arguments.argc())
-	{
-		for (int i=0; i< totalItems; i++)
-		{
-			pItems->push_back(i);
-		}
-
-		return;
-	}
-
-	
-	// look for individual scalars
-	for (int i=0; i<totalItems; i++)
-	{
-		std::ostringstream ss;
-		ss << cmd << i;
-
-		iarg = arguments.find(ss.str());
-		if (iarg >= 0 && iarg < arguments.argc())
-		{
-			//pItems->insert(pItems->begin(), i);
-			pItems->push_back(i);
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void vtkCreateBricks(vtk::VTKVolumeBrickDataPtr vbd, const std::string csFile, int item, bool scalar)
-{
-	std::ostringstream sst;
-	if (scalar)
-	{
-		sst << "shapevolume_s" << item;
-	}
-	else
-	{
-		sst << "shapevolume_v" << item;
-	}
-
-	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
-
-	vbd->setDataNumber(item);
-	vbd->setIsScalar(scalar);
-	createDataSet(csFile, vbd, sst.str());
-
-    boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
-    boost::posix_time::time_duration diff = end_time - start_time;
-    
-    double createTime = diff.total_milliseconds() * 0.001;
-
-    std::ostringstream ss;
-	ss << "Time to create  " << sst.str() << " = " << createTime << " secs";
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-int processVtk(osg::ArgumentParser &arguments, const std::string &csFile)
-{
-	std::ostringstream ss;
-
-	// get the vtk file
-	int iarg = arguments.find( "-vtk" );
-	if (iarg < 0 || arguments.argc() <= (iarg+1))
-    {
-		LFX_CRITICAL_STATIC( logstr, "You must specify a vtk data file." );
-        return 1;
-	}
-	iarg++;
-
-	std::string vtkFile = osgDB::findDataFile(arguments[iarg]);
-	if (!boost::filesystem::exists(vtkFile))
-	{
-		LFX_CRITICAL_STATIC( logstr, "Vtk data file could not be found." );
-        return 1;
-	}
-
-	vtk::DataSetPtr ds( new vtk::DataSet() );
-    ds->SetFileName(vtkFile);
-    ds->LoadData();
-
-    int depth( 4 );
-    arguments.read( "-depth", depth );
-    if( depth < 1 ) depth = 1;
-
-    // get the threads
-	int threads( 32 );
-	arguments.read("-threads", threads );
-	if (threads <= 0) 
-	{
-		threads = 32;
-		LFX_CRITICAL_STATIC( logstr, "Invalid number of threads using restoring default" );
-	}
-
-	ss << "Number of threads: " << threads;
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
-	ss.str( std::string() );
-	ss.clear();
-
-
-	// get scalars and vectors from commandf line
-	int countScl = ds->GetNumberOfScalars();
-	int countVec = ds->GetNumberOfVectors();
-	std::vector<int> scalars, vectors;
-
-	// find which scalars and which vectors to process
-	getVtkProcessOptions(arguments, countScl, &scalars, true);
-	getVtkProcessOptions(arguments, countVec, &vectors, false);
-
-	// no items were specified so process all
-	if (scalars.size() == 0 && vectors.size() == 0)
-	{
-		for (int i=0; i<countScl; i++)
-		{
-			scalars.push_back(i);
-		}
-		for (int i=0; i<countVec; i++)
-		{
-			vectors.push_back(i);
-		}
-	}
-
-	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
-
-	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
-	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
-	vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
-    vbd->setDepth( depth );
-
-	if (arguments.find("-nocache") >= 0)
-	{
-		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is disabled." );
-		vbd->cacheCreate(false);
-		vbd->cacheUse(false);
-	}
-	else
-	{
-		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is enabled." );
-		vbd->cacheCreate(true);
-		vbd->cacheUse(true);
-	}
-	LFX_CRITICAL_STATIC( loginfo, "" );
-
-#if 0
-	// debug the cache
-	scalars.clear();
-	scalars.push_back(0);
-	scalars.push_back(0);
-	// now lets create all scalar and vector bricks
-	for (unsigned int i=0; i<scalars.size(); i++)
-	{
-		std::stringstream ss;
-		ss << "D:/skewmatrix/latticefx/bld/src/apps/shapeCreator/log_s" << i << ".txt";
-		vbd->debugLogOpen(ss.str().c_str());
-
-		vtkCreateBricks(vbd, csFile, scalars[i], true);
-		vbd->cacheCreate(false);
-	}
-#endif
-
-	for (unsigned int i=0; i<scalars.size(); i++)
-	{
-		vtkCreateBricks(vbd, csFile, scalars[i], true);
-		vbd->cacheCreate(false);
-	}
-
-	for (unsigned int i=0; i<vectors.size(); i++)
-	{
-		vtkCreateBricks(vbd, csFile, vectors[i], false);
-		vbd->cacheCreate(false);
-	}
-
-	boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
-    boost::posix_time::time_duration diff = end_time - start_time;
-    
-    double createTime = diff.total_milliseconds() * 0.001;
-
-	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
-
-	return 0;
-}
-
-#endif
 
 
 class CubeVolumeBrickData : public VolumeBrickData
@@ -546,13 +345,9 @@ protected:
     float _baseRad;
 };
 
-
-void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
+void createDataSet( const std::string& csFile, SaveHierarchy* saver )
 {
-    //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
-	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
-
-    // Configure database to use
+	 // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
     if( !( csFile.empty() ) )
     {
@@ -583,8 +378,16 @@ void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, cons
     if( csFile.empty() )
     {
         DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
-        saver->save( ( DBBasePtr )disk, shapeGen );
+        saver->save( ( DBBasePtr )disk );
     }
+}
+
+void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
+{
+    //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
+	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
+	saver->addLevel( shapeGen );
+	createDataSet( csFile, saver );
 }
 
 
@@ -612,6 +415,7 @@ int main( int argc, char** argv )
 	LFX_CRITICAL_STATIC( logstr, "-v0 Generate a dataset for vector number 0 in a VTK volume data file (you can specify 0..(n-1)." );
 	LFX_CRITICAL_STATIC( logstr, "-threads number will specify the number of threads to use for VTK brick creation, if left out the default of 32 is used" );
 	LFX_CRITICAL_STATIC( logstr, "-nocache will create VTK bricks with out storing or using a cache system. The cache system is much faster for mutliple scalars and vectors, but uses lots of memory" );
+	LFX_CRITICAL_STATIC( logstr, "-hireslod will create a seperate VTK brick object for each level of detail. This should create a better quality rendering, but is slower to create." );
 #endif
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 
@@ -639,7 +443,8 @@ int main( int argc, char** argv )
 #ifdef VTK_FOUND
     else if( arguments.find( "-vtk" ) > 0 )
     {
-        return processVtk(arguments, csFile);
+		VtkCreator vtk(logstr.c_str(), loginfo.c_str());
+        return vtk.create(arguments, csFile);
     }
 #endif
     else
@@ -706,6 +511,7 @@ generate hierarchies for VTK folume data.
 \li if you do not specify any option then all scalars and vectors will be built.
 \li -threads number will specify the number of threads to use for VTK brick creation, if left out the default of 32 is used
 \li -nocache will create VTK bricks with out storing or using a cache system. The cache system is much faster for mutliple scalars and vectors, but uses lots of memory
+\li -hireslod will create a seperate VTK brick object for each level of detail. This should create a better quality rendering, but is slower to create.
 
 <h2>Database Usage</h2>
 
