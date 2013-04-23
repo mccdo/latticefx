@@ -111,7 +111,8 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
 		std::string logname = "lfx.core.hier.vtk";
 		std::stringstream ss;
-		ss << "brick: (" << brickNum << "), " << m_bricksDone << " of " << totbricks;
+
+		ss << "brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks;
 		LFX_INFO_STATIC( logname, ss.str() );
 	}
 
@@ -769,11 +770,11 @@ VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], in
 	if (m_bricksDone >= m_brickCount)
 	{
 		return m_texelDataCache[cacheLoc];
-	} 
+	}  
 
 	VTKVolumeBrickData* self = const_cast<VTKVolumeBrickData*> (this);
-
-	double pcoords[3];
+ 
+	double pcoords[3]; 
 	int cellid;
 
 	for (unsigned int i=0; i<m_cellLocators.size(); i++)
