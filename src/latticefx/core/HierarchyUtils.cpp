@@ -1032,6 +1032,17 @@ unsigned int SaveHierarchy::computeLevel(unsigned short numBricksX)
 	return depth;
 }
 
+void SaveHierarchy::addAllLevels( LODVector &allLevels )
+{
+	_lodVec.clear();
+	_depth = 0;
+
+	if (!allLevels.size()) return;
+	_lodVec = allLevels;
+
+	_depth = _lodVec.size();
+}
+
 void SaveHierarchy::addLevel( unsigned int level, VolumeBrickDataPtr base, bool addSubLevels )
 {
 	if (addSubLevels)
@@ -1058,16 +1069,15 @@ void SaveHierarchy::addLevel( unsigned int level, VolumeBrickDataPtr base, bool 
 	_depth = _lodVec.size();
 }
 
-bool SaveHierarchy::save( DBBasePtr db, unsigned int level, VolumeBrickDataPtr base, bool addSubLevels )
+void SaveHierarchy::addLevel( VolumeBrickDataPtr base )
 {
-	addLevel( level, base, addSubLevels );
-	return save( db );
+	unsigned int level = computeLevel(base->getNumBricks().x());
+	addLevel( level, base, true );
 }
 
 bool SaveHierarchy::save( DBBasePtr db, VolumeBrickDataPtr base )
 {
-	unsigned int level = computeLevel(base->getNumBricks().x());
-	addLevel( level, base, true );
+	addLevel(base);
 	return save( db );
 }
 
