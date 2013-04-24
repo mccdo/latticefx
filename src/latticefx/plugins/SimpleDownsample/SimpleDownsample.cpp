@@ -97,7 +97,7 @@ public:
         }
         if( cdp == NULL )
         {
-            LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL input." );
+            LFX_WARNING_STATIC( "lfx.plugin.SimpleDownsample", "ReduceLOD: NULL input." );
             return( ChannelDataPtr( ( ChannelData* )NULL ) );
         }
         ChannelDataOSGImage* dataImage( static_cast <
@@ -105,7 +105,7 @@ public:
         osg::Image* srcImage( dataImage->getImage() );
         if( srcImage == NULL )
         {
-            LFX_WARNING_STATIC( "lfx.plugin.OSGVolume", "ReduceLOD: NULL source image." );
+            LFX_WARNING_STATIC( "lfx.plugin.SimpleDownsample", "ReduceLOD: NULL source image." );
             return( ChannelDataPtr( ( ChannelData* )NULL ) );
         }
 

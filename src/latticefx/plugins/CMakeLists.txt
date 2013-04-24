@@ -2,7 +2,7 @@
 # LatticeFX Operation plugins
 #
 add_subdirectory( multiop )
-add_subdirectory( OSGVolume )
+add_subdirectory( SimpleDownsample )
 
 #
 # Dot OSG support
