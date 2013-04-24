@@ -1,11 +1,11 @@
-set( _libName OSGVolume )
+set( _libName SimpleDownsample )
 
 _addLibrary( Plugin ${_libName}
-    OSGVolume.cpp
+    SimpleDownsample.cpp
     LATTICEFX_LIBRARIES
         latticefx_core
 )
 
-_addPluginINI( OSGVolume.ini )
+_addPluginINI( SimpleDownsample.ini )
 
 set_property( TARGET ${_libName} PROPERTY FOLDER "Plugins")
