@@ -136,18 +136,13 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	//m_pds->GetBounds(bbox);
 
 	// vtkBrickSize - the size of our brick in vtk coordniates
-	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
-	//
 	osg::Vec3d vtkBrickSize, vtkDelta;
-	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / (_numBricks.x()+1);
-	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / (_numBricks.y()+1);
-	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / (_numBricks.z()+1);
-	/*
-	vtkBrickSize.x() = fabs(bbox[1] - bbox[0]) / _numBricks.x();
-	vtkBrickSize.y() = fabs(bbox[3] - bbox[2]) / _numBricks.y();
-	vtkBrickSize.z() = fabs(bbox[5] - bbox[4]) / _numBricks.z();
-	*/
-	vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
+	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / (_numBricks.x());
+	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / (_numBricks.y());
+	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / (_numBricks.z());
+
+	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
+    vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
 	vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
 	vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
 
