@@ -625,18 +625,7 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
 
     if( dest.valid() )
     {
-        bool nonZeroPixels( false );
-        unsigned char* ptr( dest->data() );
-        const unsigned int sz( dest->getTotalSizeInBytes() );
-        for( unsigned int idx = 0; idx < sz; ++idx, ++ptr )
-        {
-            if( *ptr > 0 )
-            {
-                nonZeroPixels = true;
-                break;
-            }
-        }
-        return( nonZeroPixels ? dest.release() : NULL );
+        return( dest.release() );
     }
     else
     {
