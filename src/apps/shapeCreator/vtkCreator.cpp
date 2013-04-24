@@ -85,6 +85,8 @@ int VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile
 	bool hireslod = false;
 	if (arguments.find( "-hireslod" ) > 0) { hireslod = true; }
 
+	bool prune = false;
+	if (arguments.find( "-prune" ) > 0) { prune = true; }
 
 
 	// get scalars and vectors from commandf line
@@ -113,12 +115,12 @@ int VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile
 
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
-	VolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
+	VolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads));
     vbd->setDepth( depth );
 
 	// get our depths
 	SaveHierarchy::LODVector depths;
-	getLod( &depths, vbd, ds, threads, hireslod );
+	getLod( &depths, vbd, ds, threads, hireslod, prune );
 
 
 	if (arguments.find("-nocache") >= 0)
@@ -194,7 +196,7 @@ void VtkCreator::setCacheUse(SaveHierarchy::LODVector &depths, bool use)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod)
+void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune)
 {
 	pdepths->clear();
 	if (!hireslod)
@@ -215,7 +217,7 @@ void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hi
 
 	for (int i=0; i<depth-1; i++)
 	{
-		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads) );
+		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads) );
 		vbd->setDepth( i+1 );
 		(*pdepths)[i] = vbd;
 	}

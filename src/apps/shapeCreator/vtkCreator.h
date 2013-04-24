@@ -43,7 +43,7 @@ protected:
 	void setCacheCreate(SaveHierarchy::LODVector &depths, bool create);
 	void setCacheUse(SaveHierarchy::LODVector &depths, bool use);
 
-	void getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod);
+	void getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune);
 
 protected:
 	std::string logstr;
