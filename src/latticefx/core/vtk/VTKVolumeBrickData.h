@@ -55,6 +55,7 @@ protected:
 		const VTKVolumeBrickData* pVBD;
 		unsigned char* ptrPixels;
 		int bytesPerPixel;
+		bool brickCached;
 		osg::Vec3s brickNum;
 		osg::Vec3s brickStart;
 		osg::Vec3s brickEnd;
@@ -159,7 +160,7 @@ protected:
 	void extractTuplesForVector(vtkIdList* ptIds, vtkDataArray* tuples, int num, int dsNum) const;
 
 	int findCell(double curPos[3], double pcoords[3], std::vector<double> *pweights, vtkSmartPointer<vtkGenericCell> &cell, int *pdsNum) const;
-	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const;
+	PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights, bool brickCached) const;
 	//PTexelData findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, PTexelData &pdata) const;
 
 	osg::Vec4ub getOutSideCellValue() const;
@@ -170,6 +171,9 @@ protected:
 
 	int getCacheLoc(int x, int y, int z, const osg::Vec3s &brickNum) const; 
 	void initCache();
+	bool isBrickCached(const osg::Vec3s &brickNum) const;
+	void cacheBrick(const osg::Vec3s &brickNum, bool isCached);
+	unsigned int getBrickId(const osg::Vec3s &brickNum) const;
 
 protected:
 	osg::BoundingBoxd m_bbox;
@@ -188,6 +192,7 @@ protected:
 	int m_brickCount;
 
 	std::vector<PTexelData> m_texelDataCache;
+	std::map<unsigned int, bool> m_mapBricksDone;
 	bool m_cacheUse;
 	bool m_cacheCreate;
 	FILE *m_pstLogDbg;

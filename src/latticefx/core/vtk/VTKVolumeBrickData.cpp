@@ -32,6 +32,7 @@
 
 #include <boost/thread.hpp>
 
+//static FILE* s_pfDebug = NULL;
 
 namespace lfx
 {
@@ -73,11 +74,15 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 
 
 	m_pstLogDbg = NULL;
+
+	//if (!s_pfDebug) s_pfDebug = fopen("D:/skewmatrix/latticefx/bld/src/apps/shapeCreator/log_prune.txt", "wt");
 }
 
 VTKVolumeBrickData::~VTKVolumeBrickData()
 {
 	if (m_pstLogDbg) fclose(m_pstLogDbg);
+	//if (s_pfDebug) fclose(s_pfDebug);
+	//s_pfDebug = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,16 +114,16 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	//if (!m_pds) return NULL;
 	if (!m_cellLocators.size()) return NULL;
 
-	if (m_cacheCreate)
-	{
-		int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
-		std::string logname = "lfx.core.hier.vtk";
-		std::stringstream ss;
+	bool brickCached = isBrickCached(brickNum);
 
-		ss << "brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks;
-		LFX_INFO_STATIC( logname, ss.str() );
-		//printf("%s\n", ss.str().c_str());
-	}
+	int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
+	std::string logname = "lfx.core.hier.vtk";
+	std::stringstream ss;
+
+	ss << "brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks << ", cached: " << brickCached;
+	LFX_INFO_STATIC( logname, ss.str() );
+	//printf("%s\n", ss.str().c_str());
+	//if (s_pfDebug) { fprintf(s_pfDebug, "%s\n", ss.str().c_str()); }
 
 	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
 	// 
@@ -171,6 +176,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		pData->ptrPixels = ptr;
 		pData->bytesPerPixel = bytesPerPixel;
 		pData->brickNum = brickNum;
+		pData->brickCached = brickCached;
 
 		// update brick coordinates
 		pData->brickStart[0] = curBrickEndX;
@@ -198,6 +204,8 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	group.join_all();
 
+	((VTKVolumeBrickData *)this)->cacheBrick(brickNum, brickCached);
+
 	if (_prune)
 	{
 		int totalCellHits = 0;
@@ -209,6 +217,14 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		//printf("Cell Hits: %d\n", totalCellHits);
 		if (totalCellHits <= 0) 
 		{
+			ss.str(std::string());
+			//ss << "prune brick: (" << brickNum << "), " << "depth: " << _depth;
+			ss << "PRUNE - brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks; 
+			LFX_INFO_STATIC( logname, ss.str() );
+			//printf("%s\n", ss.str().c_str());
+
+			//if (s_pfDebug) { fprintf(s_pfDebug, "%s\n", ss.str().c_str()); }
+
 			((VTKVolumeBrickData *)this)->m_bricksDone++;
 			return NULL;
 		}
@@ -272,7 +288,7 @@ if (m_pData->pVBD->m_cacheUse)
 				if (m_pData->pVBD->m_cacheCreate)
 				{
 					//cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
-					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights);
+					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights, m_pData->brickCached);
 				}
 				else
 				{ 
@@ -765,9 +781,10 @@ int VTKVolumeBrickData::findCell(double curPos[3], double pcoords[3], std::vecto
 ////////////////////////////////////////////////////////////////////////////////
 // this method converts weights to floats, which creates a lower memory footprint but
 //
-VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights) const
+VTKVolumeBrickData::PTexelData VTKVolumeBrickData::findCell(double curPos[3], int cacheLoc, vtkSmartPointer<vtkGenericCell> cell, std::vector<double> &weights, bool brickCached) const
 {
-	if (m_bricksDone >= m_brickCount)
+	//if (m_bricksDone >= m_brickCount)
+	if (brickCached)
 	{
 		return m_texelDataCache[cacheLoc];
 	}  
@@ -870,6 +887,44 @@ int VTKVolumeBrickData::getCacheLoc(int x, int y, int z, const osg::Vec3s &brick
 	loc += x; // get to the correct position on the current scan line
 
 	return loc;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVolumeBrickData::isBrickCached(const osg::Vec3s &brickNum) const
+{
+	if (m_cacheCreate)
+	{
+		unsigned int brickid = getBrickId(brickNum);
+		std::map<unsigned int, bool>::const_iterator it = m_mapBricksDone.find(brickid);
+
+		if (it == m_mapBricksDone.end()) return false;
+		return true;
+		
+	}
+
+	// must just assume that is already be created if use is on but create is not
+	if (m_cacheUse)
+	{
+		if (m_mapBricksDone.size() > 0) return true;
+	}
+	
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::cacheBrick(const osg::Vec3s &brickNum, bool isCached)
+{
+	if (!m_cacheCreate) return;
+	if (isCached) return;
+
+	unsigned int brickid = getBrickId(brickNum);
+	m_mapBricksDone.insert(std::make_pair(brickid, true));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+unsigned int VTKVolumeBrickData::getBrickId(const osg::Vec3s &brickNum) const
+{
+	return brickNum[0] + brickNum[1]*100 + brickNum[2]*10000;
 }
 
 
