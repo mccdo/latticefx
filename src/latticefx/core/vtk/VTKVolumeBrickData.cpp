@@ -99,7 +99,10 @@ bool VTKVolumeBrickData::isValid()
 osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
 	// make sure the brick is in range
-	if (brickNum[0] >= _numBricks[0] || brickNum[1] >= _numBricks[1] || brickNum[2] >= _numBricks[2]) return NULL;
+	if (brickNum[0] >= _numBricks[0] || brickNum[1] >= _numBricks[1] || brickNum[2] >= _numBricks[2])
+	{
+		return NULL;
+	}
 
 	((VTKVolumeBrickData *)this)->debugLogBrick(brickNum);
 
@@ -114,6 +117,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 		ss << "brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks;
 		LFX_INFO_STATIC( logname, ss.str() );
+		//printf("%s\n", ss.str().c_str());
 	}
 
 	// NOTE: IF m_isScalar == FALSE, then a vector type requires 4 values for each pixel, not 1 as in the case of scalar.
@@ -205,6 +209,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		//printf("Cell Hits: %d\n", totalCellHits);
 		if (totalCellHits <= 0) 
 		{
+			((VTKVolumeBrickData *)this)->m_bricksDone++;
 			return NULL;
 		}
 	}
