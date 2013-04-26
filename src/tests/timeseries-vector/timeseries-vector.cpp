@@ -163,7 +163,7 @@ DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
         renderOp->setHardwareMaskInput( "depth" );
         renderOp->setHardwareMaskOperator( Renderer::HM_OP_EQ );
         renderOp->setHardwareMaskReference( 0.5f );
-        renderOp->setHardwareMaskEpsilon( 4.f );
+        renderOp->setHardwareMaskEpsilon( 1.f );
     }
     else
     {

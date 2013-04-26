@@ -81,7 +81,7 @@ bool hardwareMask()
         signEps = 0.;
     bool result = ( signEps == hmParams[ 1 ] );
 
-    if( hmParams[ 2 ] == 1. ) // Negate
+    if( hmParams[ 2 ] == -1. ) // Negate
         result = !result;
     return( result );
 }

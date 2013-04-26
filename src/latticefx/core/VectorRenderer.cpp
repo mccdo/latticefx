@@ -41,7 +41,7 @@
 // When sending transfer function / hardware mask inputs as vertex attributes,
 // specify these vertex attrib locations.
 #define TF_INPUT_ATTRIB 14
-#define HM_SOURCE_ATTRIB 15
+#define HM_INPUT_ATTRIB 15
 // Note: GeForce 9800M supports only 0 .. 15.
 
 
@@ -159,8 +159,8 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
             }
             const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
             osg::Array* hmInputArray( hmInputChannel->asOSGArray() );
-            geom->setVertexAttribArray( HM_SOURCE_ATTRIB, hmInputArray );
-            geom->setVertexAttribBinding( HM_SOURCE_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
+            geom->setVertexAttribArray( HM_INPUT_ATTRIB, hmInputArray );
+            geom->setVertexAttribBinding( HM_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
         }
 
         // Draw points.
@@ -379,6 +379,7 @@ osg::StateSet* VectorRenderer::getRootState()
 
         osg::Program* program = new osg::Program();
         program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
+        program->addBindAttribLocation( "hmInput", HM_INPUT_ATTRIB );
         stateSet->setAttribute( program );
         program->addShader( loadShader( osg::Shader::VERTEX, "lfx-simplepoints.vert" ) );
         program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-simplepoints.frag" ) );
