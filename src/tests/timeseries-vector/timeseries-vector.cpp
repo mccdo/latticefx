@@ -156,6 +156,20 @@ DataSetPtr prepareSimplePoints( DBBasePtr dbBase )
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
+    // Configure hardware mask.
+    if( true )
+    {
+        renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_SCALAR );
+        renderOp->setHardwareMaskInput( "depth" );
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_EQ );
+        renderOp->setHardwareMaskReference( 0.5f );
+        renderOp->setHardwareMaskEpsilon( 4.f );
+    }
+    else
+    {
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
+    }
+
     renderOp->setDB( dbBase );
 
     dsp->setRenderer( renderOp );
@@ -242,9 +256,18 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     // Configure hardware mask.
-    renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_RED );
-    renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
-    renderOp->setHardwareMaskReference( 0.f );
+    if( true )
+    {
+        renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_SCALAR );
+        renderOp->setHardwareMaskInput( "depth" );
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_EQ );
+        renderOp->setHardwareMaskReference( 0.5f );
+        renderOp->setHardwareMaskEpsilon( 1.f );
+    }
+    else
+    {
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
+    }
 
     renderOp->setDB( dbBase );
 
@@ -338,6 +361,20 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
     renderOp->setTransferFunctionInput( "depth" );
     renderOp->setTransferFunction( loadImageFromDat( "01.dat" ) );
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
+
+    // Co0nfigure hardware mask
+    if( true )
+    {
+        renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_SCALAR );
+        renderOp->setHardwareMaskInput( "depth" );
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_EQ );
+        renderOp->setHardwareMaskReference( 0.5f );
+        renderOp->setHardwareMaskEpsilon( 1.f );
+    }
+    else
+    {
+        renderOp->setHardwareMaskOperator( Renderer::HM_OP_OFF );
+    }
 
     renderOp->setDB( dbBase );
 

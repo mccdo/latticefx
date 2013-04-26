@@ -72,6 +72,7 @@ void transferFunction( in vec3 tC )
 
 uniform sampler3D hmInput;
 uniform vec4 hmParams;
+uniform float hmEpsilon;
 const float hmAlpha = 0.;
 const float hmRed = 1.;
 const float hmScalar = 2.;
@@ -104,7 +105,11 @@ bool hardwareMask( in vec3 tC )
 
     // sign() returns 1=pos, 0=0, and -1=neg -- same as what we have in hmParams[ 1 ].
     // So if sign(value-ref) == hmParams[1], we have passed the hm test.
-    bool result = ( sign( value - hmParams[ 3 ] ) == hmParams[ 1 ] );
+    float signEps = sign( value - hmParams[ 3 ] - hmEpsilon );
+    float signPlusEps = sign( value - hmParams[ 3 ] + hmEpsilon );
+    if( signEps != signPlusEps )
+        signEps = 0.;
+    bool result = ( signEps == hmParams[ 1 ] );
 
     if( hmParams[ 2 ] == -1. ) // Negate
         result = !result;
