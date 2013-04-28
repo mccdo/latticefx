@@ -250,7 +250,10 @@ public:
     a GUI or to the console. */
     static std::string uniformTypeAsString( const osg::Uniform::Type type );
 
+	static void setVectorMask(osg::StateSet* ss, float min, float max);
+
     /**@}*/
+
 
 
     /** \name Texture Unit Usage
