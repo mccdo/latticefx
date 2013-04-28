@@ -369,7 +369,10 @@ DataSetPtr prepareDirectionVectors( DBBasePtr dbBase )
         renderOp->setHardwareMaskInput( "depth" );
         renderOp->setHardwareMaskOperator( Renderer::HM_OP_EQ );
         renderOp->setHardwareMaskReference( 0.5f );
-        renderOp->setHardwareMaskEpsilon( 1.f );
+        renderOp->setHardwareMaskEpsilon( 1.f ); // + and - reference gives range
+
+		//renderOp->setHardwareMaskReference( 0.0f );
+        //renderOp->setHardwareMaskEpsilon( 9999999.0f );
     }
     else
     {
@@ -589,6 +592,10 @@ int main( int argc, char** argv )
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     viewer.setSceneData( root );
+
+
+	//Renderer::setVectorMask(root->getStateSet(), -.5f, 1.5f);
+	Renderer::setVectorMask(root->getStateSet(), -999999, 999999);
 
     double prevClockTime( 0. );
     while( !( viewer.done() ) )
