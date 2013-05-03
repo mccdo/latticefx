@@ -594,9 +594,6 @@ int main( int argc, char** argv )
     viewer.setSceneData( root );
 
 
-	//Renderer::setVectorMask(root->getStateSet(), -.5f, 1.5f);
-	Renderer::setVectorMask(root->getStateSet(), -999999, 999999);
-
     double prevClockTime( 0. );
     while( !( viewer.done() ) )
     {
@@ -604,6 +601,10 @@ int main( int argc, char** argv )
         const double elapsed( clockTime - prevClockTime );
         prevClockTime = clockTime;
         playControl->elapsedClockTick( elapsed );
+
+        // Test dynamic hardware mask range.
+    	Renderer::setHardwareMaskRange(root->getStateSet(),
+            (float)(2. * cos( clockTime * .7 )), 1.f + (float)(2. * sin( clockTime )) );
 
         viewer.frame();
     }

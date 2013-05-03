@@ -250,7 +250,30 @@ public:
     a GUI or to the console. */
     static std::string uniformTypeAsString( const osg::Uniform::Type type );
 
-	static void setVectorMask(osg::StateSet* ss, float min, float max);
+    /** \brief Dynamically modify the displayed range of the hardware mask.
+    \details This static function adds hardware mask Uniforms to the given
+    \c ss StateSet. In a typical use case, \c ss is the StateSet of the
+    parent Node of the LatticeFX subgraph.
+
+    The Uniforms configure the hardware mask such that only data whose
+    hardware mask input scalar falls into the specified \c minVal and \c maxVal
+    range will be displayed. This function reuses existing OSG Uniform
+    objects in \c cc if they already exist, otherwise it creates and adds
+    new Uniform objects.
+
+    Preconditions: Prior to executing the LatticeFX pipeline
+    (DataSet::getSceneData() or DataSet::updateAll() ), the application
+    should configure the Renderer's hardware mask with an appropriate
+    input scalar:
+    \code
+Renderer::setHardwareMaskInputSource( Renderer::HM_SOURCE_SCALAR );
+Renderer::setHardwareMaskInput( "scalar-string-name" );
+Renderer::addInput( "scalar-string-name" );
+    \endcode
+
+    This function can be called during the OSG update traversal to
+    dynamically modify the hardware mask. */
+	static void setHardwareMaskRange( osg::StateSet* ss, float minVal, float maxVal );
 
     /**@}*/
 

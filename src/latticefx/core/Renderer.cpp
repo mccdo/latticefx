@@ -269,13 +269,13 @@ std::string Renderer::uniformTypeAsString( const osg::Uniform::Type type )
     }
 }
 
-void Renderer::setVectorMask(osg::StateSet* ss, float min, float max)
+void Renderer::setHardwareMaskRange( osg::StateSet* ss, float minVal, float maxVal )
 {
 	osg::Uniform* pu;
-	float eps = fabs(max-min)/2.;
-	float ref = min + eps;
+	float eps = fabs(maxVal-minVal)/2.;
+	float ref = minVal + eps;
 
-	 // Cram all mask parameters into a single vec4 uniform:
+	// Cram all mask parameters into a single vec4 uniform:
     //   Element 0: Input source (0=alpha, 1=red, 2=scalar, 1000=no mask)
     //   Element 1: Mask operator (0=EQ, -1=LT, 1=GT).
     //   Element 2: Operator negate flag (1=no negate, -1=negate).
@@ -284,9 +284,13 @@ void Renderer::setVectorMask(osg::StateSet* ss, float min, float max)
 
 	pu = ss->getOrCreateUniform( "hmParams", osg::Uniform::FLOAT_VEC4 );
 	pu->set(maskParams);
+    // Make sure OVERRIDE bit is set.
+    ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
 
 	pu = ss->getOrCreateUniform( "hmEpsilon", osg::Uniform::FLOAT );
 	pu->set(eps);
+    // Make sure OVERRIDE bit is set.
+    ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
 }
 
 void Renderer::setTextureBaseUnit( const int baseUnit )
