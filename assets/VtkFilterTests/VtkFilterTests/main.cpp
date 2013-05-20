@@ -100,7 +100,7 @@ void renderGraphNoBox(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMult
 void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
 void renderGraphExtractSurface(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
 void renderGraphExtractPolys(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
-
+void renderGraphAddOutline(vtkRenderer *ren, vtkMultiBlockDataSet* mb);
 
 int main(int argc, char* argv[])
 {
@@ -233,41 +233,22 @@ int main(int argc, char* argv[])
 
 //===========================================================================
 //===========================================================================
+void renderGraphExtractVectorSlice(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[])
+{
+	renderGraphAddOutline(ren, mb);
+
+	//TODO:
+}
+
+//===========================================================================
+//===========================================================================
 void renderGraphExtractSurface(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[])
 {
-
-	////////////////////////////////////////
-	// outline start
-	//
-	vtkSmartPointer<vtkStructuredGridOutlineFilter> of = vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
-	of->SetInput(mb);
-
-	// geometry filter
-	// This filter is multi-block aware and will request blocks from the
-	// input. These blocks will be processed by simple processes as if they
-	// are the whole dataset
-
-	vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
-	geom1->SetInputConnection(0, of->GetOutputPort(0));
-
-	// Rendering objects
-	vtkSmartPointer<vtkPolyDataMapper> geoMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	//geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-	geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-
-	vtkSmartPointer<vtkActor> geoActor = vtkSmartPointer<vtkActor>::New();
-	geoActor->SetMapper(geoMapper);
-	geoActor->GetProperty()->SetColor(0, 0, 0);
-	ren->AddActor(geoActor);
-	//
-	// outline end
-	////////////////////////////////////////
-
+	renderGraphAddOutline(ren, mb);
 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(bbox);
 
-	
 	vtkSmartPointer<vtkExtractGeometry> extract = vtkSmartPointer<vtkExtractGeometry>::New();
 	extract->SetImplicitFunction(boxExtract);
 	extract->SetExtractBoundaryCells(1);
@@ -309,34 +290,7 @@ void renderGraphExtractSurface(vtkRenderer *ren, vtkRenderWindowInteractor *iren
 //===========================================================================
 void renderGraphExtractPolys(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[])
 {
-
-	////////////////////////////////////////
-	// outline start
-	//
-	vtkSmartPointer<vtkStructuredGridOutlineFilter> of = vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
-	of->SetInput(mb);
-
-	// geometry filter
-	// This filter is multi-block aware and will request blocks from the
-	// input. These blocks will be processed by simple processes as if they
-	// are the whole dataset
-
-	vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
-	geom1->SetInputConnection(0, of->GetOutputPort(0));
-
-	// Rendering objects
-	vtkSmartPointer<vtkPolyDataMapper> geoMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	//geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-	geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-
-	vtkSmartPointer<vtkActor> geoActor = vtkSmartPointer<vtkActor>::New();
-	geoActor->SetMapper(geoMapper);
-	geoActor->GetProperty()->SetColor(0, 0, 0);
-	ren->AddActor(geoActor);
-	//
-	// outline end
-	////////////////////////////////////////
-
+	renderGraphAddOutline(ren, mb);
 
 	/*
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
@@ -456,32 +410,7 @@ void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMu
 	//c2p->SetInputData(mb);
 	*/
 
-	////////////////////////////////////////
-	// outline start
-	//
-	vtkSmartPointer<vtkStructuredGridOutlineFilter> of = vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
-	of->SetInput(mb);
-
-	// geometry filter
-	// This filter is multi-block aware and will request blocks from the
-	// input. These blocks will be processed by simple processes as if they
-	// are the whole dataset
-
-	vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
-	geom1->SetInputConnection(0, of->GetOutputPort(0));
-
-	// Rendering objects
-	vtkSmartPointer<vtkPolyDataMapper> geoMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	//geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-	geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-
-	vtkSmartPointer<vtkActor> geoActor = vtkSmartPointer<vtkActor>::New();
-	geoActor->SetMapper(geoMapper);
-	geoActor->GetProperty()->SetColor(0, 0, 0);
-	ren->AddActor(geoActor);
-	//
-	// outline end
-	////////////////////////////////////////
+	renderGraphAddOutline(ren, mb);
 
 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
@@ -563,34 +492,7 @@ void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMu
 //===========================================================================
 void renderGraphBase(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb)
 {
-	// Multi-block can be processed with regular VTK filters in two ways:
-	// 1. Pass through a multi-block aware consumer. Since a multi-block
-	//    aware mapper is not yet available, vtkCompositeDataGeometryFilter
-	//    can be used
-	// 2. Assign the composite executive (vtkCompositeDataPipeline) to
-	//    all "simple" (that work only on simple, non-composite datasets) filters
-
-	// outline
-	vtkSmartPointer<vtkStructuredGridOutlineFilter> of = vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
-	of->SetInput(mb);
-
-	// geometry filter
-	// This filter is multi-block aware and will request blocks from the
-	// input. These blocks will be processed by simple processes as if they
-	// are the whole dataset
-
-	vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
-	geom1->SetInputConnection(0, of->GetOutputPort(0));
-
-	// Rendering objects
-	vtkSmartPointer<vtkPolyDataMapper> geoMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	//geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-	geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
-
-	vtkSmartPointer<vtkActor> geoActor = vtkSmartPointer<vtkActor>::New();
-	geoActor->SetMapper(geoMapper);
-	geoActor->GetProperty()->SetColor(0, 0, 0);
-	ren->AddActor(geoActor);
+	renderGraphAddOutline(ren, mb);
 
 	// cell 2 point and contour
 	vtkSmartPointer<vtkCellDataToPointData> c2p = vtkSmartPointer<vtkCellDataToPointData>::New();
@@ -645,4 +547,38 @@ void renderGraphNoBox(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMult
 
 	iren->Initialize();
 	iren->Start();
+}
+
+//===========================================================================
+//===========================================================================
+void renderGraphAddOutline(vtkRenderer *ren, vtkMultiBlockDataSet* mb)
+{
+	// Multi-block can be processed with regular VTK filters in two ways:
+	// 1. Pass through a multi-block aware consumer. Since a multi-block
+	//    aware mapper is not yet available, vtkCompositeDataGeometryFilter
+	//    can be used
+	// 2. Assign the composite executive (vtkCompositeDataPipeline) to
+	//    all "simple" (that work only on simple, non-composite datasets) filters
+
+	// outline
+	vtkSmartPointer<vtkStructuredGridOutlineFilter> of = vtkSmartPointer<vtkStructuredGridOutlineFilter>::New();
+	of->SetInput(mb);
+
+	// geometry filter
+	// This filter is multi-block aware and will request blocks from the
+	// input. These blocks will be processed by simple processes as if they
+	// are the whole dataset
+
+	vtkSmartPointer<vtkCompositeDataGeometryFilter> geom1 = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
+	geom1->SetInputConnection(0, of->GetOutputPort(0));
+
+	// Rendering objects
+	vtkSmartPointer<vtkPolyDataMapper> geoMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	//geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
+	geoMapper->SetInputConnection(0, geom1->GetOutputPort(0));
+
+	vtkSmartPointer<vtkActor> geoActor = vtkSmartPointer<vtkActor>::New();
+	geoActor->SetMapper(geoMapper);
+	geoActor->GetProperty()->SetColor(0, 0, 0);
+	ren->AddActor(geoActor);
 }
