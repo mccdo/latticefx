@@ -18,6 +18,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/VTKBaseRTP.h>
+#include <vtkBox.h>
 
 namespace lfx
 {
@@ -59,6 +60,73 @@ void VTKBaseRTP::SetPlaneDirection( const CuttingPlane::SliceDirection& planeDir
 {
     m_planeDirection = planeDirection;
 }
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetRoiBox(const std::vector<double> &roiBox)
+{
+	m_roiBox = roiBox;
+}
+////////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkDataObject *pdo)
+{
+	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractGeometry>();
+
+	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
+	boxExtract->SetBounds(&m_roiBox[0]);
+ 
+	vtkSmartPointer<vtkExtractGeometry> extract = vtkSmartPointer<vtkExtractGeometry>::New();
+	extract->SetImplicitFunction(boxExtract);
+
+	if (m_roiExtractBoundaryCells)
+		extract->SetExtractBoundaryCells(1);
+	else
+		extract->SetExtractBoundaryCells(0);
+
+	extract->SetInput(pdo);
+
+	return extract;
+}
+////////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkAlgorithmOutput* pOutPin)
+{
+	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractGeometry>();
+
+	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
+	boxExtract->SetBounds(&m_roiBox[0]);
+ 
+	vtkSmartPointer<vtkExtractGeometry> extract = vtkSmartPointer<vtkExtractGeometry>::New();
+	extract->SetImplicitFunction(boxExtract);
+
+	if (m_roiExtractBoundaryCells)
+		extract->SetExtractBoundaryCells(1);
+	else
+		extract->SetExtractBoundaryCells(0);
+
+	extract->SetInputConnection(0, pOutPin);
+
+	return extract;
+}
+////////////////////////////////////////////////////////////////////////////////
+vtkSmartPointer<vtkExtractPolyDataGeometry> VTKBaseRTP::GetRoiPoly(vtkAlgorithmOutput* pOutPin)
+{
+	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractPolyDataGeometry>();
+
+	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
+	boxExtract->SetBounds(&m_roiBox[0]);
+ 
+	vtkSmartPointer<vtkExtractPolyDataGeometry> extract = vtkSmartPointer<vtkExtractPolyDataGeometry>::New();
+	extract->SetImplicitFunction(boxExtract);
+
+	if (m_roiExtractBoundaryCells)
+		extract->SetExtractBoundaryCells(1);
+	else
+		extract->SetExtractBoundaryCells(0);
+	
+
+	extract->SetInputConnection(0, pOutPin);
+
+	return extract;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

@@ -27,6 +27,11 @@
 
 #include <latticefx/core/vtk/CuttingPlane.h>
 
+#include <vtkSmartPointer.h>
+#include <vtkExtractGeometry.h>
+#include <vtkExtractPolyDataGeometry.h>
+#include <vtkAlgorithmOutput.h>
+
 namespace lfx
 {
 
@@ -54,7 +59,8 @@ public:
         m_minScalarValue( 0.0 ),
         m_maxScalarValue( 100.0 ),
         m_mask( 1.0 ),
-        m_planeDirection( CuttingPlane::X_PLANE )
+        m_planeDirection( CuttingPlane::X_PLANE ),
+		m_roiExtractBoundaryCells( true )
     {
         ;
     }
@@ -84,6 +90,18 @@ public:
     ///Set the plane direction if it is needed for this rtp operation
     void SetPlaneDirection( const CuttingPlane::SliceDirection& planeDirection );
 
+	//Set the region of interest bounding box
+	//vector must contain 6 values in this order: xmin,xmax,ymin,ymax,zmin,zmax
+	//If no roi is set, the default sate, then the entire dataset will be used for any operations
+	void SetRoiBox(const std::vector<double> &roiBox);
+
+	void ExtractBoundaryCells(bool extract) { m_roiExtractBoundaryCells = extract; }
+
+protected:
+	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkDataObject *pdo);
+	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkAlgorithmOutput* pOutPin);
+	vtkSmartPointer<vtkExtractPolyDataGeometry> GetRoiPoly(vtkAlgorithmOutput* pOutPin);
+
 protected:
     ///Value for setting the position or value for an iso surface
     double m_requestedValue;
@@ -103,6 +121,9 @@ protected:
 
     ///Plane direction
     CuttingPlane::SliceDirection m_planeDirection;
+
+	std::vector<double> m_roiBox;
+	bool m_roiExtractBoundaryCells;
 };
 
 typedef boost::shared_ptr< VTKBaseRTP > VTKBaseRTPPtr;
