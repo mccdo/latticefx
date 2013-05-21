@@ -1,15 +1,15 @@
 /*=========================================================================
 
-  Program:   Visualization Toolkit
-  Module:    MultiBlock.cxx
+Program:   Visualization Toolkit
+Module:    MultiBlock.cxx
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
+All rights reserved.
+See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
 // This example demonstrates how multi-block datasets can be processed
@@ -50,6 +50,14 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkTriangleFilter.h"
 #include "vtkStripper.h"
+#include "vtkCutter.h"
+#include "vtkPlane.h"
+#include "vtkMaskPoints.h"
+#include "vtkConeSource.h"
+#include "vtkTransform.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkGlyph3D.h"
+#include "CuttingPlane.h"
 
 #pragma comment(lib, "LSDyna.lib")
 #pragma comment(lib, "MapReduceMPI.lib")
@@ -93,151 +101,244 @@
 
 
 
-
-
 void renderGraphBase(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb);
 void renderGraphNoBox(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb);
 void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
 void renderGraphExtractSurface(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
 void renderGraphExtractPolys(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[]);
+void renderGraphExtractVectorSlice(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[], double bboxRoi[], unsigned int numPts);
 void renderGraphAddOutline(vtkRenderer *ren, vtkMultiBlockDataSet* mb);
 
 int main(int argc, char* argv[])
 {
-  vtkCompositeDataPipeline* exec = vtkCompositeDataPipeline::New();
-  vtkAlgorithm::SetDefaultExecutivePrototype(exec);
-  exec->Delete();
+	vtkCompositeDataPipeline* exec = vtkCompositeDataPipeline::New();
+	vtkAlgorithm::SetDefaultExecutivePrototype(exec);
+	exec->Delete();
 
-  // Standard rendering classes
-  vtkRenderer *ren = vtkRenderer::New();
-  vtkRenderWindow *renWin = vtkRenderWindow::New();
-  renWin->AddRenderer(ren);
-  vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+	// Standard rendering classes
+	vtkRenderer *ren = vtkRenderer::New();
+	vtkRenderWindow *renWin = vtkRenderWindow::New();
+	renWin->AddRenderer(ren);
+	vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
 
 	iren->SetRenderWindow(renWin);
 	ren->SetBackground(1,1,1);
 	renWin->SetSize(800,600);
 
-  // We will read three files and collect them together in one
-  // multi-block dataset. I broke the combustor dataset into
-  // three pieces and wrote them out separately.
-  int i;
-  vtkXMLStructuredGridReader* reader = vtkXMLStructuredGridReader::New();
+	// We will read three files and collect them together in one
+	// multi-block dataset. I broke the combustor dataset into
+	// three pieces and wrote them out separately.
+	int i;
+	vtkXMLStructuredGridReader* reader = vtkXMLStructuredGridReader::New();
 
-  // vtkMultiBlockDataSet respresents multi-block datasets. See
-  // the class documentation for more information.
-  vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::New();
-  double bbox[6];
-  bbox[0] = 999999;
-  bbox[1] = -999999;
-  bbox[2] = 999999;
-  bbox[3] = -999999;
-  bbox[4] = 999999;
-  bbox[5] = -999999;
+	// vtkMultiBlockDataSet respresents multi-block datasets. See
+	// the class documentation for more information.
+	vtkMultiBlockDataSet* mb = vtkMultiBlockDataSet::New();
+	double bbox[6];
+	bbox[0] = 999999;
+	bbox[1] = -999999;
+	bbox[2] = 999999;
+	bbox[3] = -999999;
+	bbox[4] = 999999;
+	bbox[5] = -999999;
 
- // m_bbox.expandBy(osg::Vec3d(box[0], box[2], box[4])); // min
-//	m_bbox.expandBy(osg::Vec3d(box[1], box[3], box[5])); // max
+	unsigned int numberOfPoints = 0;
 
-  for (i=0; i<3; i++)
-    {
-    // Here we load the three separate files (each containing
-    // a structured grid dataset)
-    vtksys_ios::ostringstream fname;
-    fname << "mb/mb_" << i << ".vts" << ends;
-    char* cfname =
-      vtkTestUtilities::ExpandDataFileName(argc, argv, fname.str().c_str());
-    reader->SetFileName(cfname);
-    // We have to update since we are working without a VTK pipeline.
-    // This will read the file and the output of the reader will be
-    // a valid structured grid data.
-    reader->Update();
-    delete[] cfname;
+	// m_bbox.expandBy(osg::Vec3d(box[0], box[2], box[4])); // min
+	//	m_bbox.expandBy(osg::Vec3d(box[1], box[3], box[5])); // max
 
-    // We create a copy to avoid adding the same data three
-    // times (the output object of the reader does not change
-    // when the filename changes)
-    vtkStructuredGrid* sg = vtkStructuredGrid::New();
-    sg->ShallowCopy(reader->GetOutput());
-
-	double box[6];
-
-	sg->GetBounds(box);
-
-	// update bounding box;
-	bool min = true;
-	for (int j=0; j<6; j++)
+	for (i=0; i<3; i++)
 	{
-		if (min)
+		// Here we load the three separate files (each containing
+		// a structured grid dataset)
+		vtksys_ios::ostringstream fname;
+		fname << "mb/mb_" << i << ".vts" << ends;
+		char* cfname =
+			vtkTestUtilities::ExpandDataFileName(argc, argv, fname.str().c_str());
+		reader->SetFileName(cfname);
+		// We have to update since we are working without a VTK pipeline.
+		// This will read the file and the output of the reader will be
+		// a valid structured grid data.
+		reader->Update();
+		delete[] cfname;
+
+		// We create a copy to avoid adding the same data three
+		// times (the output object of the reader does not change
+		// when the filename changes)
+		vtkStructuredGrid* sg = vtkStructuredGrid::New();
+		sg->ShallowCopy(reader->GetOutput());
+		numberOfPoints += sg->GetNumberOfPoints();
+
+		double box[6];
+
+		sg->GetBounds(box);
+
+		// update bounding box;
+		bool min = true;
+		for (int j=0; j<6; j++)
 		{
-			if (box[j] < bbox[j]) bbox[j] = box[j]; 
-		}
-		else
-		{
-			if (box[j] > bbox[j]) bbox[j] = box[j]; 
+			if (min)
+			{
+				if (box[j] < bbox[j]) bbox[j] = box[j]; 
+			}
+			else
+			{
+				if (box[j] > bbox[j]) bbox[j] = box[j]; 
+			}
+
+			min = !min;
 		}
 
-		min = !min;
+
+		// Add the structured grid to the multi-block dataset
+		mb->SetBlock(i, sg);
+		sg->Delete();
 	}
+	reader->Delete();
+
+	double boxsm[6];
+	double boxleft[6];
+
+	boxsm[0] = bbox[0];
+	boxsm[2] = bbox[2];
+	boxsm[4] = bbox[4];
+
+	boxsm[1] = bbox[0] + (bbox[1] - bbox[0])/2.0;
+	boxsm[3] = bbox[2] + (bbox[3] - bbox[2])/2.0;
+	boxsm[5] = bbox[4] + (bbox[5] - bbox[4])/2.0;
+
+	for (int i=0; i<6; i++)
+	{
+		boxleft[i] = bbox[i];
+	}
+	boxleft[1] = bbox[0] + (bbox[1] - bbox[0])/2.0;
 
 
-    // Add the structured grid to the multi-block dataset
-    mb->SetBlock(i, sg);
-    sg->Delete();
-    }
-  reader->Delete();
-
-  double boxsm[6];
-  double boxleft[6];
-
-  boxsm[0] = bbox[0];
-  boxsm[2] = bbox[2];
-  boxsm[4] = bbox[4];
-
-  boxsm[1] = bbox[0] + (bbox[1] - bbox[0])/2.0;
-  boxsm[3] = bbox[2] + (bbox[3] - bbox[2])/2.0;
-  boxsm[5] = bbox[4] + (bbox[5] - bbox[4])/2.0;
-
-  for (int i=0; i<6; i++)
-  {
-	boxleft[i] = bbox[i];
-  }
-  boxleft[1] = bbox[0] + (bbox[1] - bbox[0])/2.0;
-
-  
 
 	/* extraction types
-		vtkExtractVOI
-		vtkExtractGrid
-		vtkExtractUnstructuredGrid
-		vtkExtractGeometry - A more efficient version of this filter is available for vtkPolyData input. See..
-		vtkExtractPolyDataGeometry
+	vtkExtractVOI
+	vtkExtractGrid
+	vtkExtractUnstructuredGrid
+	vtkExtractGeometry - A more efficient version of this filter is available for vtkPolyData input. See..
+	vtkExtractPolyDataGeometry
 	*/
 
 
 
-  renderGraphExtractPolys(ren, iren, mb, boxleft);
-  //renderGraphExtractSurface(ren, iren, mb, boxleft);
-  //renderGraphExtract(ren, iren, mb, boxleft);
-  //renderGraphBase(ren, iren, mb);
+	
+	renderGraphExtractPolys(ren, iren, mb, boxleft);
+	//renderGraphExtractVectorSlice(ren, iren, mb, bbox, boxleft, numberOfPoints);
+	//renderGraphExtractSurface(ren, iren, mb, boxleft);
+	//renderGraphExtract(ren, iren, mb, boxleft);
+	//renderGraphBase(ren, iren, mb);
 
- 
 
-  vtkAlgorithm::SetDefaultExecutivePrototype(0);
-  ren->Delete();
-  renWin->Delete();
-  iren->Delete();
-  mb->Delete();
 
-  return 0;
+	vtkAlgorithm::SetDefaultExecutivePrototype(0);
+	ren->Delete();
+	renWin->Delete();
+	iren->Delete();
+	mb->Delete();
+
+	return 0;
 }
 
 //===========================================================================
 //===========================================================================
-void renderGraphExtractVectorSlice(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[])
+void renderGraphExtractVectorSlice(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMultiBlockDataSet* mb, double bbox[], double bboxRoi[], unsigned int numPts)
 {
+	int mask = 1.0;
+
 	renderGraphAddOutline(ren, mb);
 
-	//TODO:
+	CuttingPlane cuttingPlane(bbox, CuttingPlane::X_PLANE, 1);
+	// insure that we are using correct bounds for the given data set...
+	cuttingPlane.Advance( 0.2 );
+	vtkSmartPointer<vtkPlane> cutPlane = cuttingPlane.GetPlane();
+
+	vtkSmartPointer<vtkCutter> cutter = vtkSmartPointer<vtkCutter>::New();
+	cutter->SetInput( mb );
+	cutter->SetCutFunction( cutPlane );
+
+	vtkSmartPointer<vtkCellDataToPointData> c2p = vtkSmartPointer<vtkCellDataToPointData>::New();
+	c2p->SetInputConnection( cutter->GetOutputPort() );
+
+	vtkSmartPointer<vtkMaskPoints> ptmask = vtkSmartPointer<vtkMaskPoints>::New();
+	//This is required for use with VTK 5.10
+	ptmask->SetMaximumNumberOfPoints( numPts );
+	//#if ( VTK_MAJOR_VERSION >= 5 ) && ( VTK_MINOR_VERSION >= 10 )
+	//New feature for selecting points at random in VTK 5.10
+	ptmask->SetRandomModeType( 0 );
+	//#else
+	ptmask->RandomModeOn();
+	//#endif
+	// get every nth point from the dataSet data
+	ptmask->SetOnRatio( mask );
+
+	vtkSmartPointer<vtkCompositeDataGeometryFilter> m_multiGroupGeomFilter = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
+	m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );    
+	ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
+
+
+	/*
+	if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
+	{
+	vtkCompositeDataGeometryFilter* m_multiGroupGeomFilter =
+	vtkCompositeDataGeometryFilter::New();
+	m_multiGroupGeomFilter->SetInputConnection( c2p->GetOutputPort() );
+	//return m_multiGroupGeomFilter->GetOutputPort(0);
+	ptmask->SetInputConnection( m_multiGroupGeomFilter->GetOutputPort( 0 ) );
+	m_multiGroupGeomFilter->Delete();
+	}
+	else
+	{
+	//m_geometryFilter->SetInputConnection( input );
+	//return m_geometryFilter->GetOutputPort();
+	vtkDataSetSurfaceFilter* m_surfaceFilter =
+	vtkDataSetSurfaceFilter::New();
+	m_surfaceFilter->SetInputConnection( c2p->GetOutputPort() );
+	//return m_surfaceFilter->GetOutputPort();
+	ptmask->SetInputConnection( m_surfaceFilter->GetOutputPort() );
+	m_surfaceFilter->Delete();
+	}
+	*/
+
+	ptmask->Update();
+
+	// Rendering objects
+
+	// In this case we are using a cone as a glyph. We transform the cone so
+   // its base is at 0,0,0. This is the point where glyph rotation occurs.
+	vtkSmartPointer<vtkConeSource> cone = vtkSmartPointer<vtkConeSource>::New();
+	cone->SetResolution(6);
+	vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+	transform->Translate(0.5, 0.0, 0.0);
+	vtkSmartPointer<vtkTransformPolyDataFilter> transformF = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+	transformF->SetInputConnection(cone->GetOutputPort());
+	transformF->SetTransform(transform);
+   
+  // vtkGlyph3D takes two inputs: the input point set (SetInput) which can be
+  // any vtkDataSet; and the glyph (SetSource) which must be a vtkPolyData.
+  // We are interested in orienting the glyphs by the surface normals that
+  // we previosuly generated.
+	vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
+	glyph->SetInputConnection(ptmask->GetOutputPort());
+	glyph->SetSourceConnection(transformF->GetOutputPort());
+	 glyph->SetVectorModeToUseNormal();
+	glyph->SetScaleModeToScaleByVector();
+	glyph->SetScaleFactor(0.004);
+
+	vtkSmartPointer<vtkPolyDataMapper> spikeMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	spikeMapper->SetInputConnection(glyph->GetOutputPort());
+	vtkSmartPointer<vtkActor> spikeActor = vtkSmartPointer<vtkActor>::New();
+	spikeActor->SetMapper(spikeMapper);
+	spikeActor->GetProperty()->SetColor(0.0, 0.79, 0.34);
+
+	
+	ren->AddActor(spikeActor);
+
+	iren->Initialize();
+	iren->Start();
 }
 
 //===========================================================================
@@ -253,7 +354,7 @@ void renderGraphExtractSurface(vtkRenderer *ren, vtkRenderWindowInteractor *iren
 	extract->SetImplicitFunction(boxExtract);
 	extract->SetExtractBoundaryCells(1);
 	extract->SetInput(mb);
-	
+
 
 	vtkSmartPointer<vtkCellDataToPointData> c2p = vtkSmartPointer<vtkCellDataToPointData>::New();
 	c2p->SetInputConnection(0, extract->GetOutputPort(0));
@@ -296,13 +397,13 @@ void renderGraphExtractPolys(vtkRenderer *ren, vtkRenderWindowInteractor *iren, 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(bbox);
 
-	
+
 	vtkSmartPointer<vtkExtractGeometry> extract = vtkSmartPointer<vtkExtractGeometry>::New();
 	extract->SetImplicitFunction(boxExtract);
 	extract->SetExtractBoundaryCells(1);
 	extract->SetInput(mb);
 	*/
-	
+
 
 	vtkSmartPointer<vtkCellDataToPointData> c2p = vtkSmartPointer<vtkCellDataToPointData>::New();
 	c2p->SetInput(mb);
@@ -346,41 +447,41 @@ void renderGraphExtractPolys(vtkRenderer *ren, vtkRenderWindowInteractor *iren, 
 
 void ExtractVTKPrimitives(vtkPolyData *m_pd, std::vector<double> *pBox)
 {
-    m_pd->Update();
+	m_pd->Update();
 
-    vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
-    triangleFilter->SetInput( m_pd );
-    triangleFilter->PassVertsOff();
-    triangleFilter->PassLinesOff();
-    //triangleFilter->Update();
+	vtkSmartPointer<vtkTriangleFilter> triangleFilter = vtkSmartPointer<vtkTriangleFilter>::New();
+	triangleFilter->SetInput( m_pd );
+	triangleFilter->PassVertsOff();
+	triangleFilter->PassLinesOff();
+	//triangleFilter->Update();
 
-    vtkSmartPointer<vtkStripper> triangleStripper = vtkSmartPointer<vtkStripper>::New();  
-    triangleStripper->SetInput( triangleFilter->GetOutput() );
-    int stripLength = triangleStripper->GetMaximumLength();
-    triangleStripper->SetMaximumLength( stripLength * 1000 );
-    //triangleStripper->Update();
+	vtkSmartPointer<vtkStripper> triangleStripper = vtkSmartPointer<vtkStripper>::New();  
+	triangleStripper->SetInput( triangleFilter->GetOutput() );
+	int stripLength = triangleStripper->GetMaximumLength();
+	triangleStripper->SetMaximumLength( stripLength * 1000 );
+	//triangleStripper->Update();
 
-    vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
-    normalGen->SetInput( triangleStripper->GetOutput() );
-    normalGen->NonManifoldTraversalOn();
-    normalGen->AutoOrientNormalsOn();
-    normalGen->ConsistencyOn();
-    normalGen->SplittingOn();
- 
-    vtkSmartPointer<vtkStripper> reTriangleStripper = vtkSmartPointer<vtkStripper>::New();
-    reTriangleStripper->SetInput( normalGen->GetOutput() );
-    reTriangleStripper->SetMaximumLength( stripLength * 1000 );
-    reTriangleStripper->Update();
+	vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
+	normalGen->SetInput( triangleStripper->GetOutput() );
+	normalGen->NonManifoldTraversalOn();
+	normalGen->AutoOrientNormalsOn();
+	normalGen->ConsistencyOn();
+	normalGen->SplittingOn();
+
+	vtkSmartPointer<vtkStripper> reTriangleStripper = vtkSmartPointer<vtkStripper>::New();
+	reTriangleStripper->SetInput( normalGen->GetOutput() );
+	reTriangleStripper->SetMaximumLength( stripLength * 1000 );
+	reTriangleStripper->Update();
 
 
-    vtkPolyData* pd = reTriangleStripper->GetOutput();
+	vtkPolyData* pd = reTriangleStripper->GetOutput();
 	vtkCellArray* pcells = pd->GetStrips();
 	/*
-    { 
-        VTKPrimitiveSetGeneratorPtr primitiveGenerator =
-            VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( pd->GetStrips() ) );
-        setPrimitiveSetGenerator( primitiveGenerator );
-    }
+	{ 
+	VTKPrimitiveSetGeneratorPtr primitiveGenerator =
+	VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( pd->GetStrips() ) );
+	setPrimitiveSetGenerator( primitiveGenerator );
+	}
 	*/
 }
 
@@ -416,12 +517,12 @@ void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMu
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(bbox);
 
-	
+
 	vtkSmartPointer<vtkExtractGeometry> extract = vtkSmartPointer<vtkExtractGeometry>::New();
 	extract->SetImplicitFunction(boxExtract);
 	extract->SetExtractBoundaryCells(1);
 	extract->SetInput(mb);
-	
+
 
 	/*
 	// doesn't workd
@@ -436,7 +537,7 @@ void renderGraphExtract(vtkRenderer *ren, vtkRenderWindowInteractor *iren, vtkMu
 	extract->SetVOI(points);
 	extract->SetInput(mb);
 	*/
-	
+
 
 	/*
 	// doesn't work
