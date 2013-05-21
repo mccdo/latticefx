@@ -121,6 +121,37 @@ int main( int argc, char** argv )
     lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
     vectorRTP->SetRequestedValue( 50.0 );
     vectorRTP->addInput( "vtkDataObject" );
+#if 1
+		// test roi
+		std::vector<double> bounds;
+		bounds.resize(6);
+		tempDataSet->GetBounds(&bounds[0]);
+
+		// left, top front
+		
+		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2.;
+		bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/2.;
+		//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/2.;
+		
+
+		/*
+		// half box
+		double quarterx = fabs(bounds[1] - bounds[0])/4.; 
+		double quartery = fabs(bounds[3] - bounds[2])/4.; 
+		double quarterz = fabs(bounds[5] - bounds[4])/4.;
+
+		bounds[0] += quarterx;
+		bounds[1] -= quarterx;
+		bounds[2] += quartery;
+		bounds[3] -= quartery;
+		bounds[4] += quarterz;
+		bounds[5] -= quarterz;
+		*/
+
+
+		vectorRTP->SetRoiBox(bounds);
+		vectorRTP->ExtractBoundaryCells(true);
+#endif
     dsp->addOperation( vectorRTP );
 
     //2nd Step - the output of this is a ChannelData containing vtkPolyData
