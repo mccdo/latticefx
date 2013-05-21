@@ -54,9 +54,20 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
             getInput( "vtkDataObject" ) );
     vtkDataObject* tempVtkDO = cddoPtr->GetDataObject();
-
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
-    c2p->SetInput( tempVtkDO );
+
+	/*
+	vtkSmartPointer<vtkExtractGeometry> roi = GetRoi(tempVtkDO);
+	if (roi.GetPointer())
+	{
+		c2p->SetInputConnection( 0, roi->GetOutputPort(0) );
+	}
+	else
+	{
+		c2p->SetInput( tempVtkDO );
+	}
+	*/
+	c2p->SetInput( tempVtkDO );
     //c2p->Update();
 
     vtkContourFilter* contourFilter = vtkContourFilter::New();
@@ -90,10 +101,19 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
         m_surfaceFilter->Delete();
     }
 
+	// set up roi extraction if needed
     normals->Update();
+	vtkAlgorithmOutput *pout =  normals->GetOutputPort();
+	vtkSmartPointer<vtkExtractPolyDataGeometry> roi = GetRoiPoly(pout);
+	if (roi) 
+	{
+		roi->SetInputConnection( pout );
+		roi->Update();
+		pout = roi->GetOutputPort();
+	}
 
     lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
-        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
+        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pout, "vtkPolyDataMapper" ) );
     //cdpd->GetPolyDataMapper()->SetScalarModeToUsePointFieldData();
     //cdpd->GetPolyDataMapper()->UseLookupTableScalarRangeOn();
     //cdpd->GetPolyDataMapper()->SelectColorArray( m_colorByScalar.c_str() );

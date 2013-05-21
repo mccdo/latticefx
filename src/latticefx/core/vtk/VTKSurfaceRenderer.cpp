@@ -139,7 +139,7 @@ void VTKSurfaceRenderer::ExtractVTKPrimitives()
     triangleFilter->PassLinesOff();
     //triangleFilter->Update();
 
-    vtkStripper* triangleStripper = vtkStripper::New();
+    vtkStripper* triangleStripper = vtkStripper::New();  
     triangleStripper->SetInput( triangleFilter->GetOutput() );
     int stripLength = triangleStripper->GetMaximumLength();
     triangleStripper->SetMaximumLength( stripLength * 1000 );

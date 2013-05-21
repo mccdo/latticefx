@@ -66,8 +66,19 @@ lfx::core::ChannelDataPtr VTKSurfaceWrapRTP::channel( const lfx::core::ChannelDa
     vtkPolyDataNormals* normals = vtkPolyDataNormals::New();
     normals->SetInputConnection( c2p->GetOutputPort() );
 
+	// set up roi extraction if needed
+    normals->Update();
+	vtkAlgorithmOutput *pout =  normals->GetOutputPort();
+	vtkSmartPointer<vtkExtractPolyDataGeometry> roi = GetRoiPoly(pout);
+	if (roi) 
+	{
+		roi->SetInputConnection( pout );
+		roi->Update();
+		pout = roi->GetOutputPort();
+	}
+
     lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
-        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
+        new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pout, "vtkPolyDataMapper" ) );
 
     c2p->Delete();
     normals->Delete();

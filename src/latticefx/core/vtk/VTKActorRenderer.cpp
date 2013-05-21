@@ -94,7 +94,7 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
     //mapper->Update();
 
     vtkActor* actor = vtkActor::New();
-    actor->SetMapper( mapper );
+    actor->SetMapper( mapper ); 
     actor->GetProperty()->SetSpecularPower( 20.0f );
 
     lut->Delete();

@@ -71,6 +71,8 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     //c2p->Update();
     cutter->Delete();
 
+
+
     vtkTriangleFilter* tris = vtkTriangleFilter::New();
 
     if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
@@ -122,6 +124,18 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         //normals->ComputeCellNormalsOn();
         normals->FlipNormalsOn();
     }
+
+	// set up roi extraction if needed
+    normals->Update();
+	vtkAlgorithmOutput *pout =  normals->GetOutputPort();
+	vtkSmartPointer<vtkExtractPolyDataGeometry> roi = GetRoiPoly(pout);
+	if (roi) 
+	{
+		roi->SetInputConnection( pout );
+		roi->Update();
+		pout = roi->GetOutputPort();
+	}
+
     /*else if( fillType == 1 ) // banded contours
     {
         // putting the decimation routines as inputs to the bfilter
@@ -165,15 +179,13 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
     lfx::core::ChannelDataPtr cdpd;
     if( 1 )
     {
-        normals->Update();
         cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
-                   new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normals->GetOutputPort(), "vtkPolyDataMapper" ) );
+                   new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pout, "vtkPolyDataMapper" ) );
     }
     else
     {
-        normals->Update();
         cdpd = ChannelDatavtkPolyDataPtr(
-                   new lfx::core::vtk::ChannelDatavtkPolyData( normals->GetOutput(), "vtkPolyData" ) );
+                   new lfx::core::vtk::ChannelDatavtkPolyData( pout, "vtkPolyData" ) );
     }
 
     normals->Delete();
