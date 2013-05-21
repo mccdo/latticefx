@@ -81,6 +81,8 @@ lfx::core::ChannelDataPtr VTKVectorFieldGlyphRTP::channel( const lfx::core::Chan
         m_surfaceFilter->Delete();
     }
 
+    
+	// set up roi extraction if needed
     ptmask->Update();
 
     //The rest of the pipeline goes here

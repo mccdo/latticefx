@@ -111,7 +111,7 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
 		roi->Update();
 		pout = roi->GetOutputPort();
 	}
-
+ 
     lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd(
         new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pout, "vtkPolyDataMapper" ) );
     //cdpd->GetPolyDataMapper()->SetScalarModeToUsePointFieldData();

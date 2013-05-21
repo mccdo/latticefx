@@ -176,17 +176,10 @@ lfx::core::ChannelDataPtr VTKContourSliceRTP::channel( const lfx::core::ChannelD
         //normals->ComputeCellNormalsOn();
         normals->FlipNormalsOn();
     }*/
-    lfx::core::ChannelDataPtr cdpd;
-    if( 1 )
-    {
-        cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
+
+    lfx::core::ChannelDataPtr cdpd = lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr(
                    new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pout, "vtkPolyDataMapper" ) );
-    }
-    else
-    {
-        cdpd = ChannelDatavtkPolyDataPtr(
-                   new lfx::core::vtk::ChannelDatavtkPolyData( pout, "vtkPolyData" ) );
-    }
+  
 
     normals->Delete();
     c2p->Delete();
