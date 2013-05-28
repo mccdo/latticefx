@@ -58,7 +58,7 @@ Renderer::Renderer( const std::string logNameSuffix )
     info = UniformInfo( "tf1d", osg::Uniform::SAMPLER_1D, "1D transfer function sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
-    info = UniformInfo( "tf2d", osg::Uniform::SAMPLER_2D, "2D transfer function sampler unit.", UniformInfo::PRIVATE );
+    info = UniformInfo( "tf2d", osg::Uniform::SAMPLER_2D, "2D transfer function sampler unit.", UniformInfo::PUBLIC );
     registerUniform( info );
 
     info = UniformInfo( "tf3d", osg::Uniform::SAMPLER_3D, "3D transfer function sampler unit.", UniformInfo::PRIVATE );
