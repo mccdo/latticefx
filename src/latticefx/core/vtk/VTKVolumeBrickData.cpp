@@ -109,6 +109,14 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		return NULL;
 	}
 
+    {
+        // If we already generated an image for this brickNum and
+        // it's still in the cache, return the cached imaged.
+        osg::Image* image( getCachedImage( brickNum ) );
+        if( image != NULL )
+            return( image );
+    }
+
 	((VTKVolumeBrickData *)this)->debugLogBrick(brickNum);
 
 	//if (!m_pds) return NULL;
@@ -226,15 +234,20 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			//if (s_pfDebug) { fprintf(s_pfDebug, "%s\n", ss.str().c_str()); }
 
 			((VTKVolumeBrickData *)this)->m_bricksDone++;
-			return NULL;
+            // Cache a NULL Image.
+            cacheImage( brickNum, NULL );
+			return( NULL );
 		}
 	}
 
 	// create an image with our data and return it
 	osg::ref_ptr< osg::Image > image( new osg::Image() );
-        image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
-            textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
-            (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+    image->setImage( m_brickRes[0], m_brickRes[1], m_brickRes[2],
+        textureFrmt, textureFrmt, GL_UNSIGNED_BYTE,
+        (unsigned char*) data, osg::Image::USE_NEW_DELETE );
+
+    // Cache the computed Image.
+    cacheImage( brickNum, image.get() );
 
 	((VTKVolumeBrickData *)this)->m_bricksDone++;
 	return( image.release() );

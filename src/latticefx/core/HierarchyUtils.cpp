@@ -503,7 +503,8 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
 VolumeBrickData::VolumeBrickData( const bool prune )
     : _numBricks( 8, 8, 8 ),
       _depth( 4 ),
-      _prune( prune )
+      _prune( prune ),
+      _imageCacheMaxSize( 8 )
 {
 }
 VolumeBrickData::~VolumeBrickData()
@@ -547,6 +548,7 @@ void VolumeBrickData::addBrick( const osg::Vec3s& brickNum, osg::Image* image )
     else
     {
         _images[ idx ] = image;
+        cacheImage( brickNum, image );
     }
 }
 osg::Image* VolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
@@ -558,7 +560,11 @@ osg::Image* VolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
     }
     else
     {
-        return( _images[ idx ].get() );
+        osg::Image* image( getCachedImage( brickNum ) );
+        if( image != NULL )
+            return( image );
+        else
+            return( _images[ idx ].get() );
     }
 }
 osg::Image* VolumeBrickData::getBrick( const std::string& brickName ) const
@@ -804,6 +810,48 @@ osg::Image* VolumeBrickData::newBrick( const osg::Image* proto, const osg::Vec3s
 
     return( image.release() );
 }
+
+void VolumeBrickData::cacheImage( const osg::Vec3s& brickNum, osg::Image* image ) const
+{
+    // If the image is already in the cache, remove it first.
+    // Then we'll add it so that it's back-most on the std::list.
+    osg::Image* cachedImage( getCachedImage( brickNum ) );
+    if( cachedImage != NULL )
+        removeFromCache( brickNum );
+
+    _imageCache.push_back( ImageCacheData( brickNum, image ) );
+
+    // Limit the cache size. Pop old Images off the front.
+    if( _imageCache.size() > _imageCacheMaxSize )
+        _imageCache.pop_front();
+}
+osg::Image* VolumeBrickData::getCachedImage( const osg::Vec3s& brickNum ) const
+{
+    // Find an Image in the cache and return it, or return NULL
+    // if it's not in the cache. This is an O(n) search of the
+    // std::list cache, looking for a match with the brickNum key.
+    for( ImageCache::const_iterator it = _imageCache.begin();
+        it != _imageCache.end(); ++it )
+    {
+        if( it->first == brickNum )
+            return( it->second.get() );
+    }
+    return( NULL );
+}
+void VolumeBrickData::removeFromCache( const osg::Vec3s& brickNum ) const
+{
+    // Find and remove a cached Image. Do nothing if not found.
+    for( ImageCache::iterator it = _imageCache.begin();
+        it != _imageCache.end(); ++it )
+    {
+        if( it->first == brickNum )
+        {
+            _imageCache.erase( it );
+            return;
+        }
+    }
+}
+
 
 
 

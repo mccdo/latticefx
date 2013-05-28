@@ -33,6 +33,7 @@
 #include <osg/Image>
 
 #include <vector>
+#include <list>
 
 
 
@@ -308,6 +309,16 @@ protected:
 
     typedef std::vector< osg::ref_ptr< osg::Image > > ImageVector;
     ImageVector _images;
+
+
+    void cacheImage( const osg::Vec3s& brickNum, osg::Image* image ) const;
+    osg::Image* getCachedImage( const osg::Vec3s& brickNum ) const;
+    void removeFromCache( const osg::Vec3s& brickNum ) const;
+
+    typedef std::pair< osg::Vec3s, osg::ref_ptr< osg::Image > > ImageCacheData;
+    typedef std::list< ImageCacheData > ImageCache;
+    mutable ImageCache _imageCache;
+    unsigned int _imageCacheMaxSize;
 };
 
 
