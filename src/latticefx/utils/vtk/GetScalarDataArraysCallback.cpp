@@ -70,7 +70,7 @@ void GetScalarDataArraysCallback::OperateOnDataset( vtkDataSet* dataset )
                 scalarVector.push_back( scalarArray->GetTuple1( i ) );
             }
         }
-        m_pointGroup.push_back( std::make_pair< std::string, std::vector< double > >( m_scalarNames.at( j ), scalarVector ) );
+        m_pointGroup.push_back( std::make_pair( m_scalarNames.at( j ), scalarVector ) );
     }
 }
 ////////////////////////////////////////////////////////////////////////////////

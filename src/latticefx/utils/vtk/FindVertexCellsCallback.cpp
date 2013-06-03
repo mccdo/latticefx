@@ -46,7 +46,7 @@ void FindVertexCellsCallback::OperateOnDataset( vtkDataSet* dataset )
         vtkCell* tempCell = dataset->GetCell( i );
         if( VTK_VERTEX == tempCell->GetCellType() )
         {
-            std::pair< vtkIdType, double* > tempPair = std::make_pair< vtkIdType, double* >( i, 0 );
+            std::pair< vtkIdType, double* > tempPair = std::make_pair( i, (double*)0 );
             tempPair.second = new double[3];
             tempCell->GetPoints()->GetPoint( 0, &*tempPair.second );
             //double* tempData = tempPair.second;
