@@ -68,7 +68,11 @@ if( crunchstore_FOUND )
     add_definitions( -DLFX_USE_CRUNCHSTORE )
 endif()
 
+find_package( Qt4 4.8.0 COMPONENTS QtCore QtGui )
+
+
 include( CMakeMacros )
+
 
 option( LFX_DISABLE_LOGGING "If set, Lfx disables all console and log file writes." OFF )
 if( LFX_DISABLE_LOGGING )
