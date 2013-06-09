@@ -18,17 +18,16 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#include <latticefx/core/HierarchyUtils.h>
-
-#include <latticefx/core/DBDisk.h>
 #ifdef LFX_USE_CRUNCHSTORE
+#  include <crunchstore/SQLiteStore.h>
 #  include <latticefx/core/DBCrunchStore.h>
 #  include <crunchstore/DataManager.h>
 #  include <crunchstore/NullCache.h>
 #  include <crunchstore/NullBuffer.h>
-#  include <crunchstore/SQLiteStore.h>
 #endif
 
+#include <latticefx/core/HierarchyUtils.h>
+#include <latticefx/core/DBDisk.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 

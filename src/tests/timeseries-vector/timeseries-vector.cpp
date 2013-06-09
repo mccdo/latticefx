@@ -18,6 +18,14 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <crunchstore/DataManager.h>
+#  include <crunchstore/NullCache.h>
+#  include <crunchstore/NullBuffer.h>
+#  include <crunchstore/SQLiteStore.h>
+#  include <latticefx/core/DBCrunchStore.h>
+#endif
+
 #include <latticefx/core/DataSet.h>
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/ChannelDataOSGArray.h>
@@ -29,13 +37,6 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <latticefx/core/DBDisk.h>
-#ifdef LFX_USE_CRUNCHSTORE
-#  include <latticefx/core/DBCrunchStore.h>
-#  include <crunchstore/DataManager.h>
-#  include <crunchstore/NullCache.h>
-#  include <crunchstore/NullBuffer.h>
-#  include <crunchstore/SQLiteStore.h>
-#endif
 
 #include <Poco/File.h>
 
