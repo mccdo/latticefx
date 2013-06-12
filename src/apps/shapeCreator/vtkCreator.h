@@ -18,7 +18,9 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #ifndef __VTK_CREATOR_H__
-#define __VTK_CREATOR_H__ 1
+#define __VTK_CREATOR_H__
+
+#include "shapeCreatorDefines.h"
 
 #ifdef VTK_FOUND
 
@@ -32,6 +34,10 @@ class VtkCreator
 public:
 	VtkCreator(const char *plogstr, const char *ploginfo);
 	int create(osg::ArgumentParser &arguments, const std::string &csFile);
+
+    void init(const char *vtkFile);
+    int getScalars();
+    int getVectors();
 
 protected:
 	void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar);
@@ -48,6 +54,10 @@ protected:
 protected:
 	std::string logstr;
 	std::string loginfo;
+
+    vtk::DataSetPtr m_pds;
+    int m_depth;
+    int m_threads;
 };
 
 // VTK_FOUND

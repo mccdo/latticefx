@@ -1,4 +1,5 @@
 /*************** <auto-copyright.rb BEGIN do not edit this line> **************
+
  *
  * Copyright 2012-2012 by Ames Laboratory
  *
@@ -17,6 +18,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
+#include "shapeCreatorDefines.h"
+
 #ifdef VTK_FOUND
 
 #include "vtkCreator.h"
@@ -33,10 +36,33 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
+////////////////////////////////////////////////////////////////////////////////
 VtkCreator::VtkCreator(const char *plogstr, const char *ploginfo)
 {
 	logstr = plogstr;
 	loginfo = ploginfo;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VtkCreator::init(const char *vtkFile)
+{
+    m_pds.reset(new vtk::DataSet() );
+    m_pds->SetFileName(vtkFile);
+    m_pds->LoadData();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int VtkCreator::getScalars()
+{
+    if (m_pds == NULL) { return 0; }
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int VtkCreator::getVectors()
+{
+    if (m_pds == NULL) { return 0; }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

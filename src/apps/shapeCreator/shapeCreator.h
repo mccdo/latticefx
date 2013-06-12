@@ -18,7 +18,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #ifndef __SHAPE_CREATOR_H__
-#define __SHAPE_CREATOR_H__ 1
+#define __SHAPE_CREATOR_H__
 
 void createDataSet( const std::string& csFile, SaveHierarchy* saver );
 
