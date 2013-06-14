@@ -2,6 +2,7 @@
 #define CREATORTHREAD_H
 
 #include <QThread>
+#include "CreateVolume.h"
 
 class CreatorThread : public QThread
 {
@@ -11,13 +12,23 @@ public:
     
 	void run();
 
+	void setCreateVolume(boost::shared_ptr<CreateVolume> createVolume) { _createVolume = createVolume; }
+
 signals:
-	void onTestStart();
-    void onTestProgress(float percent);
-    void onTestEnd();
-    void onTestMsg(QString msg);
+	void signalTestStart();
+    void signalTestProgress(float percent);
+    void signalTestEnd();
+    void signalTestMsg(QString msg);
     
 public slots:
+	void slotOnCancel();
+
+protected:
+	bool checkCancel();
+
+protected:
+	bool _cancel;
+	boost::shared_ptr<CreateVolume> _createVolume;
     
 };
 

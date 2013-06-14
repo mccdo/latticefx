@@ -1,9 +1,12 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "UtlSettings.h"
-#include "shapeCreatorDefines.h"
-#include "shapeCreator.h"
+#include "shapeVolumes.h"
 #include <QFileDialog>
+#include <QMessageBox>
+
+const std::string logstr( "lfx.demo" );
+const std::string loginfo( logstr+".info" );
 
 ////////////////////////////////////////////////////////////////////////////////
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,17 +14,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-    m_pVtk = new VtkCreator("", "");
+    _pVtk.reset(new VtkCreator(logstr.c_str(), loginfo.c_str()));
 
     ui->setupUi(this);
 
-    m_settingsFile = QApplication::applicationDirPath() + "/settings.ini";
+    _settingsFile = QApplication::applicationDirPath() + "/settings.ini";
 
     guiSettingsInit();
     guiSettingsLoad();
     guiFeaturesInit();
 
-	m_pThread = new CreatorThread();
+	_pThread = new CreatorThread();
 
 }
 
@@ -31,8 +34,7 @@ MainWindow::~MainWindow()
     guiSettingsSave();
 
     delete ui;
-    delete m_pVtk;
-	delete m_pThread;
+	delete _pThread;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +96,7 @@ void MainWindow::guiSettingsInit()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::guiSettingsLoad()
 {
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
+    QSettings settings(_settingsFile, QSettings::IniFormat);
 
     //////////////////////////////////////////////////////////
     // standard options
@@ -130,7 +132,7 @@ void MainWindow::guiSettingsLoad()
     settings.beginGroup("Vtk");
 
     QString s = QApplication::applicationDirPath();
-    m_lastPathVtk = settings.value("vtkLastPath", QVariant(s)).toString();
+    _lastPathVtk = settings.value("vtkLastPath", QVariant(s)).toString();
 
     UtlSettings::initComboBox(&settings, ui->comboBoxVtkThreads, "vtkThreads", QVariant(32));
     UtlSettings::initCheckBox(&settings, ui->checkBoxVtkCacheOn, "vtkCacheOn", true);
@@ -141,7 +143,7 @@ void MainWindow::guiSettingsLoad()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::guiSettingsSave()
 {
-    QSettings settings(m_settingsFile, QSettings::IniFormat);
+    QSettings settings(_settingsFile, QSettings::IniFormat);
 
     //////////////////////////////////////////////////////////
     // standard options
@@ -165,7 +167,7 @@ void MainWindow::guiSettingsSave()
     // vtk options
     //
     settings.beginGroup("Vtk");
-    settings.value("vtkLastPath", m_lastPathVtk);
+    settings.value("vtkLastPath", _lastPathVtk);
     UtlSettings::saveComboBox(&settings, ui->comboBoxVtkThreads, "vtkThreads");
     UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkCacheOn, "vtkCacheOn");
     UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkHiresLod, "vtkHiResLod");
@@ -200,9 +202,57 @@ void MainWindow::guiFeaturesInit()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::loadVtkFile(QString file)
 {
-    //m_pVtk->init(file.toAscii());
+    vtkCreator()->init(file.toAscii());
 
     // get the scalars and vectors..
+    QString str;
+    int num;
+
+    num = vtkCreator()->getNumScalars();
+    ui->listWidgetVtkScalars->clear();
+    for (int i=0; i<num; i++)
+    {
+        str = vtkCreator()->getScalarName(i).c_str();
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(str);
+        item->setCheckState(Qt::Checked);
+        ui->listWidgetVtkScalars->addItem(item);
+    }
+
+	if (num > 0)
+	{
+		ui->listWidgetVtkScalars->setEnabled(true);
+	}
+	else
+	{
+		ui->listWidgetVtkScalars->setEnabled(false);
+	}
+
+    num = vtkCreator()->getNumVectors();
+    ui->listWidgetVtkVectors->clear();
+    for (int i=0; i<num; i++)
+    {
+        str = vtkCreator()->getVectorName(i).c_str();
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(str);
+        item->setCheckState(Qt::Checked);
+        ui->listWidgetVtkVectors->addItem(item);
+    }
+
+	if (num > 0)
+	{
+		ui->listWidgetVtkVectors->setEnabled(true);
+	}
+	else
+	{
+		ui->listWidgetVtkVectors->setEnabled(false);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+VtkCreator* MainWindow::vtkCreator()
+{
+	return (VtkCreator *)_pVtk.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,7 +298,7 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
 {
     QStringList list;
     QString filter = "Vtk Files (*.vtu *.vts);;All files (*.*)";
-    QFileDialog fd(this, QString("Browse for vtk file"), m_lastPathVtk, filter);
+    QFileDialog fd(this, QString("Browse for vtk file"), _lastPathVtk, filter);
 
     if (fd.exec() == QDialog::Rejected) { return; }
 
@@ -257,27 +307,95 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
 
 
     QDir fullPath = fd.directory();
-    m_lastPathVtk = fullPath.absolutePath();
+    _lastPathVtk = fullPath.absolutePath();
     ui->plainTextEditVtkFile->setPlainText(list.at(0));
+
+	loadVtkFile(list.at(0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::on_comboBoxShape_currentIndexChanged(int index)
+void MainWindow::on_comboBoxShape_currentIndexChanged(int /*index*/)
 {
-
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCreate_clicked()
 {
+	if ( _pThread->isRunning())
+    {
+        QMessageBox::information(NULL, "Volume Creation Running", "Volume creation is currently running.\nPlease wait until it finishes.");
+        return;
+    }
 
+	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
+	boost::shared_ptr<CreateVolume> createVolume(new CreateVolume(logstr.c_str(), loginfo.c_str()));
+	VolumeBrickDataPtr vbd;
+	bool prune = ui->checkBoxPrune->isChecked();
+
+	switch (shapeType)
+	{
+	case E_SHAPE_VTK:
+	{
+		if (!vtkCreator()->haveFile())
+		{
+			QMessageBox::information(NULL, "No Vtk File", "Please open a vtk file first.");
+			return;
+		}
+
+		int threads = UtlSettings::getSelectedValueInt(ui->comboBoxVtkThreads);
+		bool cacheon = ui->checkBoxVtkCacheOn->isChecked();
+		bool hireslod = ui->checkBoxVtkHiresLod->isChecked();
+
+		vtkCreator()->setThreads(threads);
+		vtkCreator()->setCache(cacheon);
+		vtkCreator()->setHiresLod(hireslod);
+
+		createVolume = _pVtk;
+		break;
+	}
+	case E_SHAPE_CUBE:
+		vbd.reset(new CubeVolumeBrickData(prune, false));
+		createVolume->setVolumeObj(vbd);
+		break;
+	case E_SHAPE_SCUBE:
+		vbd.reset(new CubeVolumeBrickData(prune, true));
+		createVolume->setVolumeObj(vbd);
+		break;
+	case E_SHAPE_CONE:
+		vbd.reset(new ConeVolumeBrickData(prune));
+		createVolume->setVolumeObj(vbd);
+		break;
+	case E_SHAPE_SPHERE:
+		vbd.reset(new SphereVolumeBrickData(prune, false));
+		createVolume->setVolumeObj(vbd);
+		break;
+	case E_SHAPE_SSPHERE:
+		vbd.reset(new SphereVolumeBrickData(prune, true));
+		break;
+	default:
+		QMessageBox::information(NULL, "UnRecognized Shape Type", "UnRecognized shape type.");
+		return;
+	}
+
+
+	int depth = UtlSettings::getSelectedValueInt(ui->comboBoxDepth);
+	bool usedb = ui->radioButtonWriteToDb->isChecked();
+
+	createVolume->setPrune(prune);
+	createVolume->setDepth(depth);
+	createVolume->setUseCrunchStore(usedb);
+
+	QString file = ui->plainTextEditDbFile->toPlainText();
+	if (!usedb)
+	{
+		file = ui->plainTextEditFileFolder->toPlainText();
+	}
+
+	createVolume->setCsFileOrFolder(file.toAscii());
 }
  
+////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCancel_clicked()
 {
 
-}
-
-
-void createDataSet( const std::string& csFile, SaveHierarchy* saver )
-{
 }

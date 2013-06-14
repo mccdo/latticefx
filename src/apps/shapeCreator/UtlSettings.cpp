@@ -51,3 +51,11 @@ void UtlSettings::saveRadioBtn(QSettings *pset, QRadioButton *pCtl, const QStrin
     bool b = pCtl->isChecked();
     pset->setValue(name, QVariant(b));
 }
+
+int UtlSettings::getSelectedValueInt(QComboBox *pCtl)
+{
+	int i = pCtl->currentIndex();
+	if (i < 0) return 0;
+
+	pCtl->itemData(i).toInt();
+}

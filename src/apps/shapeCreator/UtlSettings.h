@@ -18,6 +18,8 @@ public:
     static void savePlainText(QSettings *pset, QPlainTextEdit *pCtl, const QString &name);
     static void saveCheckBox(QSettings *pset, QCheckBox *pCtl, const QString &name);
     static void saveRadioBtn(QSettings *pset, QRadioButton *pCtl, const QString &name);
+
+	static int getSelectedValueInt(QComboBox *pCtl);
 };
 
 #endif // UTLSETTINGS_H

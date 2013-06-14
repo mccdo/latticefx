@@ -20,7 +20,8 @@
 #ifndef __VTK_CREATOR_H__
 #define __VTK_CREATOR_H__
 
-#include "shapeCreatorDefines.h"
+//#include "shapeCreatorDefines.h"
+#include "CreateVolume.h"
 
 #ifdef VTK_FOUND
 
@@ -29,17 +30,32 @@
 
 using namespace lfx::core;
 
-class VtkCreator
+class VtkCreator : public CreateVolume
 {
 public:
 	VtkCreator(const char *plogstr, const char *ploginfo);
-	int create(osg::ArgumentParser &arguments, const std::string &csFile);
+
+	virtual bool create(const std::string &csFile);
+	virtual bool create(osg::ArgumentParser &arguments, const std::string &csFile);
 
     void init(const char *vtkFile);
-    int getScalars();
-    int getVectors();
+    bool haveFile();
+
+    int getNumScalars();
+    int getNumVectors();
+    std::string getScalarName(int num);
+    std::string getVectorName(int num);
+
+	void setThreads(int count) { _threads = count; } 
+	void setHiresLod(bool on) { _hireslod = on; }
+	void setCache(bool on) { _nocache = !on; }
+
 
 protected:
+
+	virtual bool processArgs(osg::ArgumentParser &arguments);
+	
+
 	void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar);
 	void vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar);
 
@@ -52,12 +68,13 @@ protected:
 	void getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune);
 
 protected:
-	std::string logstr;
-	std::string loginfo;
 
-    vtk::DataSetPtr m_pds;
-    int m_depth;
-    int m_threads;
+    vtk::DataSetPtr _pds;
+    int _threads;
+	bool _hireslod;
+	bool _nocache;
+	std::vector<int> _scalars;
+	std::vector<int> _vectors;
 };
 
 // VTK_FOUND

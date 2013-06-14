@@ -18,12 +18,11 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#include "shapeCreatorDefines.h"
+//#include "shapeCreatorDefines.h"
 
 #ifdef VTK_FOUND
 
 #include "vtkCreator.h"
-#include "shapeCreator.h"
 
 #include <latticefx/core/HierarchyUtils.h>
 #include <latticefx/core/Log.h>
@@ -33,135 +32,116 @@
 #include <osgDB/FileUtils>
 #include <osg/io_utils>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+//#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 VtkCreator::VtkCreator(const char *plogstr, const char *ploginfo)
+	: CreateVolume(plogstr, ploginfo)
 {
-	logstr = plogstr;
-	loginfo = ploginfo;
+	_threads = 32;
+	_hireslod = false;
+	_nocache = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void VtkCreator::init(const char *vtkFile)
 {
-    m_pds.reset(new vtk::DataSet() );
-    m_pds->SetFileName(vtkFile);
-    m_pds->LoadData();
+    _pds.reset(new vtk::DataSet() );
+    _pds->SetFileName(vtkFile);
+    _pds->LoadData();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int VtkCreator::getScalars()
+bool VtkCreator::haveFile()
 {
-    if (m_pds == NULL) { return 0; }
+    if (_pds == NULL) return false;
 
-
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int VtkCreator::getVectors()
+int VtkCreator::getNumScalars()
 {
-    if (m_pds == NULL) { return 0; }
+    if (_pds == NULL) { return 0; }
+
+	return _pds->GetNumberOfScalars();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile)
+int VtkCreator::getNumVectors()
+{
+    if (_pds == NULL) { return 0; }
+
+	return _pds->GetNumberOfVectors();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::string VtkCreator::getScalarName(int num)
+{
+    if (num <0 || num >= getNumScalars()) return std::string("");
+
+    return _pds->GetScalarName(num);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::string VtkCreator::getVectorName(int num)
+{
+    if (num <0 || num >= getNumVectors()) return std::string("");
+
+    return _pds->GetVectorName(num);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+bool VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile)
+{
+	if (!processArgs(arguments))
+	{
+		return false;
+	}
+
+	if (!create(csFile))
+	{
+		return false;
+	}
+
+	return true;
+
+	
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VtkCreator::create(const std::string &csFile)
 {
 	std::ostringstream ss;
-
-	// get the vtk file
-	int iarg = arguments.find( "-vtk" );
-	if (iarg < 0 || arguments.argc() <= (iarg+1))
-    {
-		LFX_CRITICAL_STATIC( logstr, "You must specify a vtk data file." );
-        return 1;
-	}
-	iarg++;
-
-	std::string vtkFile = osgDB::findDataFile(arguments[iarg]);
-	if (!boost::filesystem::exists(vtkFile))
-	{
-		LFX_CRITICAL_STATIC( logstr, "Vtk data file could not be found." );
-        return 1;
-	}
-
-	vtk::DataSetPtr ds( new vtk::DataSet() );
-    ds->SetFileName(vtkFile);
-    ds->LoadData();
-
-    int depth( 4 );
-    arguments.read( "-depth", depth );
-    if( depth < 1 ) depth = 1;
-
-    // get the threads
-	int threads( 32 );
-	arguments.read("-threads", threads );
-	if (threads <= 0) 
-	{
-		threads = 32;
-		LFX_CRITICAL_STATIC( logstr, "Invalid number of threads using restoring default" );
-	}
-
-	ss << "Number of threads: " << threads;
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
-	ss.str( std::string() );
-	ss.clear();
-
-	bool hireslod = false;
-	if (arguments.find( "-hireslod" ) > 0) { hireslod = true; }
-
-	bool prune = false;
-	if (arguments.find( "-prune" ) > 0) { prune = true; }
-
-
-	// get scalars and vectors from commandf line
-	int countScl = ds->GetNumberOfScalars();
-	int countVec = ds->GetNumberOfVectors();
-	std::vector<int> scalars, vectors;
-
-	// find which scalars and which vectors to process
-	getVtkProcessOptions(arguments, countScl, &scalars, true);
-	getVtkProcessOptions(arguments, countVec, &vectors, false);
-
-	// no items were specified so process all
-	if (scalars.size() == 0 && vectors.size() == 0)
-	{
-		for (int i=0; i<countScl; i++)
-		{
-			scalars.push_back(i);
-		}
-		for (int i=0; i<countVec; i++)
-		{
-			vectors.push_back(i);
-		}
-	}
 
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
-	VolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads));
-    vbd->setDepth( depth );
+	VolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(_pds, _prune, 0, true, osg::Vec3s(32,32,32), _threads));
+    vbd->setDepth( _depth );
 
 	// get our depths
 	SaveHierarchy::LODVector depths;
-	getLod( &depths, vbd, ds, threads, hireslod, prune );
+	getLod( &depths, vbd, _pds, _threads, _hireslod, _prune );
 
 
-	if (arguments.find("-nocache") >= 0)
+	if (_nocache)
 	{
-		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is disabled." );
+		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is disabled." );
 		setCacheCreate(depths, false);
 		setCacheUse(depths, false);
 	}
 	else
 	{
-		LFX_CRITICAL_STATIC( loginfo, "Vtk lookup cache is enabled." );
+		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is enabled." );
 		setCacheCreate(depths, true);
 		setCacheUse(depths, true);
 	}
-	LFX_CRITICAL_STATIC( loginfo, "" );
+	LFX_CRITICAL_STATIC( _loginfo, "" );
 
 #if 0
 	// debug the cache
@@ -180,15 +160,15 @@ int VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile
 	}
 #endif
 
-	for (unsigned int i=0; i<scalars.size(); i++)
+	for (unsigned int i=0; i<_scalars.size(); i++)
 	{
-		vtkCreateBricks(depths, csFile, scalars[i], true);
+		vtkCreateBricks(depths, csFile, _scalars[i], true);
 		if (!i) { setCacheCreate(depths, false); }
 	}
 
-	for (unsigned int i=0; i<vectors.size(); i++)
+	for (unsigned int i=0; i<_vectors.size(); i++)
 	{
-		vtkCreateBricks(depths, csFile, vectors[i], false);
+		vtkCreateBricks(depths, csFile, _vectors[i], false);
 		if (!i) { setCacheCreate(depths, false); }
 	}
 
@@ -198,9 +178,85 @@ int VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile
     double createTime = diff.total_milliseconds() * 0.001;
 
 	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
+    LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
 
 	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
+{
+	std::ostringstream ss;
+
+	if (!CreateVolume::processArgs(arguments)) return false;
+
+	// get the vtk file
+	int iarg = arguments.find( "-vtk" );
+	if (iarg < 0 || arguments.argc() <= (iarg+1))
+    {
+		LFX_CRITICAL_STATIC( _logstr, "You must specify a vtk data file." );
+        return false;
+	}
+	iarg++;
+
+	std::string vtkFile = osgDB::findDataFile(arguments[iarg]);
+	if (!boost::filesystem::exists(vtkFile))
+	{
+		LFX_CRITICAL_STATIC( _logstr, "Vtk data file could not be found." );
+        return false;
+	}
+
+	_pds.reset(new vtk::DataSet() );
+    _pds->SetFileName(vtkFile);
+    _pds->LoadData();
+
+
+    // get the threads
+	_threads = 32;
+	arguments.read("-threads", _threads );
+	if (_threads <= 0) 
+	{
+		_threads = 32;
+		LFX_CRITICAL_STATIC( _logstr, "Invalid number of threads using restoring default" );
+	}
+
+	ss << "Number of threads: " << _threads;
+    LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
+	ss.str( std::string() );
+	ss.clear();
+
+	_hireslod = false;
+	if (arguments.find( "-hireslod" ) > 0) { _hireslod = true; }
+
+
+	// get scalars and vectors from commandf line
+	int countScl = getNumScalars();
+	int countVec = getNumVectors();
+
+	// find which scalars and which vectors to process
+	getVtkProcessOptions(arguments, countScl, &_scalars, true);
+	getVtkProcessOptions(arguments, countVec, &_vectors, false);
+
+	// no items were specified so process all
+	if (_scalars.size() == 0 && _vectors.size() == 0)
+	{
+		for (int i=0; i<countScl; i++)
+		{
+			_scalars.push_back(i);
+		}
+		for (int i=0; i<countVec; i++)
+		{
+			_vectors.push_back(i);
+		}
+	}
+
+	_nocache = false;
+	if (arguments.find("-nocache") >= 0)
+	{
+		_nocache = true;
+	}
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +374,7 @@ void VtkCreator::vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::st
 
     std::ostringstream ss;
 	ss << "Time to create  " << sst.str() << " = " << createTime << " secs";
-    LFX_CRITICAL_STATIC( loginfo, ss.str().c_str() );
+    LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +390,7 @@ void VtkCreator::createDataSet( const std::string& csFile, std::vector<VolumeBri
     // hires load with all depths coming from the dataset directly
 	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
 	saver->addAllLevels( depths );
-	::createDataSet( csFile, saver );
+	CreateVolume::createDataSet( csFile, saver );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,7 +399,7 @@ void VtkCreator::createDataSet( const std::string& csFile, VolumeBrickDataPtr br
     //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
 	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
 	saver->addLevel( brickData );
-	::createDataSet( csFile, saver );
+	CreateVolume::createDataSet( csFile, saver );
 }
 
 #endif

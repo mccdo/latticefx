@@ -44,6 +44,12 @@ osg::Image* CubeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			const float tVal( ( float )tIdx / ( float )_brickRes[1] * extent[1] + brickMin[1] );
 			for( int sIdx = 0; sIdx < _brickRes[0]; ++sIdx )
 			{
+
+				if (cancel())
+				{
+					throw std::exception("cube brick volume creation canceled");
+				}
+
 				const float sVal( ( float )sIdx / ( float )_brickRes[0] * extent[0] + brickMin[0] );
 
 				if( ( sVal >= _cubeMin[0] ) && ( sVal <= _cubeMax[0] ) &&
@@ -136,6 +142,12 @@ osg::Image* SphereVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			const float tVal( ( float )tIdx / ( float )_brickRes[1] * extent[1] + brickMin[1] );
 			for( int sIdx = 0; sIdx < _brickRes[0]; ++sIdx )
 			{
+				if (cancel())
+				{
+					throw std::exception("sphere brick volume creation canceled");
+				}
+
+
 				const float sVal( ( float )sIdx / ( float )_brickRes[0] * extent[0] + brickMin[0] );
 
 				const osg::Vec3f pt( sVal - _center[0], tVal - _center[1], rVal - _center[2] );
@@ -228,6 +240,12 @@ osg::Image* ConeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			const float tVal( ( float )tIdx / ( float )_brickRes[1] * extent[1] + brickMin[1] );
 			for( int sIdx = 0; sIdx < _brickRes[0]; ++sIdx )
 			{
+				if (cancel())
+				{
+					throw std::exception("cone brick volume creation canceled");
+				}
+
+
 				const float sVal( ( float )sIdx / ( float )_brickRes[0] * extent[0] + brickMin[0] );
 
 				const osg::Vec2f pt( sVal - .5f, tVal - .5f );

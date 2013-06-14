@@ -24,13 +24,14 @@ protected:
     void guiFeaturesInit();
 
     void loadVtkFile(QString file);
+	VtkCreator* vtkCreator();
 
 private:
     Ui::MainWindow *ui;
-    QString m_settingsFile;
-    QString m_lastPathVtk;
-    VtkCreator *m_pVtk;
-	CreatorThread *m_pThread;
+    QString _settingsFile;
+    QString _lastPathVtk;
+	boost::shared_ptr<CreateVolume> _pVtk;
+	CreatorThread *_pThread;
 
 protected:
     enum ShapeType
