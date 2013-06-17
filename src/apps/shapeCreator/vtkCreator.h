@@ -35,8 +35,7 @@ class VtkCreator : public CreateVolume
 public:
 	VtkCreator(const char *plogstr, const char *ploginfo);
 
-	virtual bool create(const std::string &csFile);
-	virtual bool create(osg::ArgumentParser &arguments, const std::string &csFile);
+	virtual bool create();
 
     void init(const char *vtkFile);
     bool haveFile();

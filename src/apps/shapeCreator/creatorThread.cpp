@@ -1,5 +1,8 @@
 #include "creatorThread.h"
 
+
+//using namespace lfx::core;
+
 ////////////////////////////////////////////////////////////////////////////////
 CreatorThread::CreatorThread(QObject *parent) :
     QThread(parent)
@@ -14,6 +17,9 @@ void CreatorThread::run()
 
 	if (_createVolume == NULL) return;
 
+	//_createVolume->setCallbackProgress(this);
+	emit signalStart(); 
+
 	try
 	{
 		_createVolume->create();
@@ -21,16 +27,26 @@ void CreatorThread::run()
 	catch (std::exception ex)
 	{
 	}
+
+	emit signalEnd();
 }
 
+/*
 ////////////////////////////////////////////////////////////////////////////////
 void CreatorThread::slotOnCancel()
 {
 	_cancel = true;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 bool CreatorThread::checkCancel()
 {
 	return _cancel;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void CreatorThread::updateProgress(float percent)
+{
+	emit signalProgress(percent);
 }

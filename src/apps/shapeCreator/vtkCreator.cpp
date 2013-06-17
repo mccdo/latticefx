@@ -93,27 +93,8 @@ std::string VtkCreator::getVectorName(int num)
     return _pds->GetVectorName(num);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-bool VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile)
-{
-	if (!processArgs(arguments))
-	{
-		return false;
-	}
-
-	if (!create(csFile))
-	{
-		return false;
-	}
-
-	return true;
-
-	
-}
-
-////////////////////////////////////////////////////////////////////////////////
-bool VtkCreator::create(const std::string &csFile)
+bool VtkCreator::create()
 {
 	std::ostringstream ss;
 
@@ -162,13 +143,13 @@ bool VtkCreator::create(const std::string &csFile)
 
 	for (unsigned int i=0; i<_scalars.size(); i++)
 	{
-		vtkCreateBricks(depths, csFile, _scalars[i], true);
+		vtkCreateBricks(depths, _csFileOrFolder, _scalars[i], true);
 		if (!i) { setCacheCreate(depths, false); }
 	}
 
 	for (unsigned int i=0; i<_vectors.size(); i++)
 	{
-		vtkCreateBricks(depths, csFile, _vectors[i], false);
+		vtkCreateBricks(depths, _csFileOrFolder, _vectors[i], false);
 		if (!i) { setCacheCreate(depths, false); }
 	}
 

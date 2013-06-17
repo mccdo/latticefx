@@ -3,32 +3,36 @@
 
 #include <QThread>
 #include "CreateVolume.h"
+//#include <latticefx/core/HierarchyUtils.h>
 
-class CreatorThread : public QThread
+class CreatorThread : public QThread//, //public lfx::core::ICallbackProgress
 {
     Q_OBJECT
 public:
     explicit CreatorThread(QObject *parent = 0);
     
-	void run();
+	//void setCreateVolume(boost::shared_ptr<CreateVolume> createVolume) { _createVolume = createVolume; }
+	void cancel() { _cancel = true; }
 
-	void setCreateVolume(boost::shared_ptr<CreateVolume> createVolume) { _createVolume = createVolume; }
+	virtual bool checkCancel();
+	virtual void updateProgress(float percent);
 
 signals:
-	void signalTestStart();
-    void signalTestProgress(float percent);
-    void signalTestEnd();
-    void signalTestMsg(QString msg);
+	void signalStart();
+    void signalProgress(float percent);
+    void signalEnd();
+    void signalMsg(QString msg);
     
 public slots:
-	void slotOnCancel();
+	//void slotOnCancel();
 
 protected:
-	bool checkCancel();
+	virtual void run();
 
 protected:
 	bool _cancel;
-	boost::shared_ptr<CreateVolume> _createVolume;
+	//boost::shared_ptr<CreateVolume> _createVolume;
+	CreateVolume *_createVolume;
     
 };
 

@@ -327,6 +327,7 @@ void MainWindow::on_pushButtonCreate_clicked()
         return;
     }
 
+	/*
 	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
 	boost::shared_ptr<CreateVolume> createVolume(new CreateVolume(logstr.c_str(), loginfo.c_str()));
 	VolumeBrickDataPtr vbd;
@@ -392,10 +393,23 @@ void MainWindow::on_pushButtonCreate_clicked()
 	}
 
 	createVolume->setCsFileOrFolder(file.toAscii());
+
+
+	// setup callbacks.. would do this in the thread but there is a bug in QT4 and Boost BIND.. 
+	// http://stackoverflow.com/questions/15455178/qt4-cgal-parse-error-at-boost-join
+	//VolumeBrickData::CallbackCancel cb;
+	//boost::bind(&CreatorThread::checkCancel, _pThread);
+
+	_pThread->setCreateVolume(createVolume);
+	_pThread->start();
+	*/
 }
  
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCancel_clicked()
 {
-
+	if ( _pThread->isRunning())
+    {
+        _pThread->cancel();
+    }
 }
