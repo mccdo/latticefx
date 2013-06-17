@@ -17,10 +17,13 @@ set( _sharedSources
 )
 
 file(GLOB srcs "*.cpp")
+list( REMOVE_ITEM srcs 
+    "${CMAKE_SOURCE_DIR}/src/apps/shapeCreator/main.cpp")
 list(APPEND _sharedSources ${srcs})
 
 set(qt_hdrs
-    MainWindow.h)
+    MainWindow.h
+    creatorThread.h)
 
 # All headers in this dir go with widgets, so must be processed with Qt's MOC.
 qt4_wrap_cpp(MOCCED ${qt_hdrs}  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
