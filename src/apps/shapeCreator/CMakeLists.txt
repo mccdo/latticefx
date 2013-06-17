@@ -8,11 +8,23 @@ if( VTK_FOUND )
 endif()
 
 set( _sharedSources
-    shapeCreator.h
+    #shapeCreator.h
     shapeCreator.cpp
     vtkCreator.h
     vtkCreator.cpp
 )
+
+set(hdrs
+    MainWindow.h)
+
+# All headers in this dir go with widgets, so must be processed with Qt's MOC.
+qt4_wrap_cpp(MOCCED ${hdrs}  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
+
+file(GLOB uis "*.ui")
+qt4_wrap_ui(UICED ${uis})
+
+list(APPEND _sharedSources ${MOCCED})
+list(APPEND _sharedSources ${UICED})
 
 set( _exeName shapeCreator )
 _addExecutable( App ${_exeName}
