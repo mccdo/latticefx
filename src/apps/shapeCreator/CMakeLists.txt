@@ -1,3 +1,5 @@
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set( _vtkLibs )
 if( VTK_FOUND )
     set( _vtkLibs
@@ -8,17 +10,17 @@ if( VTK_FOUND )
 endif()
 
 set( _sharedSources
-    #shapeCreator.h
-    shapeCreator.cpp
     vtkCreator.h
-    vtkCreator.cpp
 )
 
-set(hdrs
+file(GLOB srcs "*.cpp")
+list(APPEND _sharedSources ${srcs})
+
+set(qt_hdrs
     MainWindow.h)
 
 # All headers in this dir go with widgets, so must be processed with Qt's MOC.
-qt4_wrap_cpp(MOCCED ${hdrs}  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
+qt4_wrap_cpp(MOCCED ${qt_hdrs}  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 
 file(GLOB uis "*.ui")
 qt4_wrap_ui(UICED ${uis})
