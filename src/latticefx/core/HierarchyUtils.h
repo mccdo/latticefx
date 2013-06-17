@@ -43,6 +43,15 @@ namespace core
 {
 
 
+class ICallbackProgress
+{
+public:
+	ICallbackProgress() {};
+
+	virtual bool checkCancel() { return false; }
+	virtual void updateProgress(float /*percent*/) {}
+};
+
 /** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
 \brief A utility class for traversing hierarchies of ChannelData.
 \details
@@ -57,10 +66,10 @@ public:
     {
     public:
         HierarchyCallback() {}
-        HierarchyCallback( const HierarchyCallback& rhs ) {}
+        HierarchyCallback( const HierarchyCallback& /*rhs*/) {}
         virtual ~HierarchyCallback() {}
 
-        virtual void operator()( ChannelDataPtr cdp, const std::string& hierarchyNameString ) {}
+        virtual void operator()( ChannelDataPtr /*cdp*/, const std::string& /*hierarchyNameString*/) {}
 
     protected:
     };
@@ -68,7 +77,7 @@ public:
     /** Constructor */
     TraverseHierarchy( ChannelDataPtr root = ChannelDataPtr( ( ChannelData* )NULL ) );
     TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb );
-
+	 
     void setRoot( ChannelDataPtr root )
     {
         _root = root;
@@ -283,7 +292,11 @@ public:
     osg::Image* getSeamlessBrick( const osg::Vec3s& brickNum ) const;
     osg::Image* getSeamlessBrick( const std::string& brickName ) const;
 
+	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
+
 protected:
+	bool checkCancel() const;
+
     int brickIndex( const osg::Vec3s& brickNum ) const;
     osg::Vec3s nameToBrickNum( const std::string& name ) const;
 
@@ -319,6 +332,8 @@ protected:
     typedef std::list< ImageCacheData > ImageCache;
     mutable ImageCache _imageCache;
     unsigned int _imageCacheMaxSize;
+
+	ICallbackProgress *_pcbProgress;
 };
 
 

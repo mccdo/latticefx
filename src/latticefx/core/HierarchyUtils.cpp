@@ -504,7 +504,8 @@ VolumeBrickData::VolumeBrickData( const bool prune )
     : _numBricks( 8, 8, 8 ),
       _depth( 4 ),
       _prune( prune ),
-      _imageCacheMaxSize( 8 )
+      _imageCacheMaxSize( 8 ),
+	  _pcbProgress( NULL )
 {
 }
 VolumeBrickData::~VolumeBrickData()
@@ -647,6 +648,12 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const std::string& brickName ) co
     }
 
     return( getSeamlessBrick( brickNum ) );
+}
+
+bool VolumeBrickData::checkCancel() const
+{
+	if (!_pcbProgress) return false;
+	return _pcbProgress->checkCancel();
 }
 
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
