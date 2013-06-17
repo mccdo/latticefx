@@ -3,9 +3,10 @@
 
 #include <QThread>
 #include "CreateVolume.h"
-//#include <latticefx/core/HierarchyUtils.h>
 
-class CreatorThread : public QThread//, //public lfx::core::ICallbackProgress
+#include <latticefx/core/HierarchyUtils.h>
+
+class CreatorThread : public QThread, public lfx::core::ICallbackProgress
 {
     Q_OBJECT
 public:

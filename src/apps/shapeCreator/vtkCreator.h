@@ -25,8 +25,10 @@
 
 #ifdef VTK_FOUND
 
+#ifndef Q_MOC_RUN
 #  include <latticefx/core/vtk/DataSet.h>
 #  include <latticefx/core/vtk/VTKVolumeBrickData.h>
+#endif
 
 using namespace lfx::core;
 

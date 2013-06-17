@@ -24,6 +24,7 @@
 
 #include "vtkCreator.h"
 
+#ifndef Q_MOC_RUN
 #include <latticefx/core/HierarchyUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
@@ -34,6 +35,7 @@
 
 //#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 VtkCreator::VtkCreator(const char *plogstr, const char *ploginfo)

@@ -1,8 +1,11 @@
 #ifndef __CREATE_VOLUME_H__
 #define __CREATE_VOLUME_H__
 
+#ifndef Q_MOC_RUN
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <latticefx/core/HierarchyUtils.h>
+#endif
+
 #include <string>
 
 
