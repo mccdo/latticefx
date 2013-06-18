@@ -39,6 +39,8 @@
 #  include "vtkCreator.h"
 #endif
 
+#include "shapeVolumes.h"
+
 #include <latticefx/utils/CompilerGuards.h>
 DIAG_OFF(unused-parameter)
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -52,7 +54,7 @@ using namespace lfx::core;
 void createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName );
 
 
-class CubeVolumeBrickData : public VolumeBrickData
+/*class CubeVolumeBrickData : public VolumeBrickData
 {
 public:
     CubeVolumeBrickData( const bool prune, const bool soft )
@@ -342,7 +344,7 @@ protected:
 
     osg::Vec3s _brickRes;
     float _baseRad;
-};
+};*/
 
 void createDataSet( const std::string& csFile, SaveHierarchy* saver )
 {
@@ -443,7 +445,7 @@ int main( int argc, char** argv )
     else if( arguments.find( "-vtk" ) > 0 )
     {
 		VtkCreator vtk(logstr.c_str(), loginfo.c_str());
-        return vtk.create(arguments, csFile);
+        return vtk.create();//arguments, csFile);
     }
 #endif
     else
