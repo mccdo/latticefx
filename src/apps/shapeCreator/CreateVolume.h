@@ -13,6 +13,7 @@ class CreateVolume
 {
 public:
 	CreateVolume(const char *plogstr, const char *ploginfo);
+    virtual ~CreateVolume(){;}
 
 	static bool isVtk(osg::ArgumentParser &arguments);
 
@@ -27,6 +28,7 @@ public:
 	void setCallbackProgress(lfx::core::ICallbackProgress *pcp);
 
 protected:
+    
 	virtual bool processArgs(osg::ArgumentParser &arguments);
 
 	void createDataSet( const std::string& csFile, lfx::core::SaveHierarchy* saver );

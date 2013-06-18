@@ -36,6 +36,7 @@ class VtkCreator : public CreateVolume
 {
 public:
 	VtkCreator(const char *plogstr, const char *ploginfo);
+    virtual ~VtkCreator(){;}
 
 	virtual bool create();
 

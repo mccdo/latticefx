@@ -71,7 +71,7 @@ int main( int argc, char** argv )
     if( arguments.find( "-vtk" ) > 0 )
     {
 		boost::shared_ptr<VtkCreator> vtk (new VtkCreator(logstr.c_str(), loginfo.c_str()));
-		return vtk->create(arguments, csFile);
+		return vtk->create();//arguments, csFile);
     }
 #endif
 
