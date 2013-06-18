@@ -215,7 +215,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	// check if canceled
 	if (checkCancel())
 	{
-		throw std::exception("vtk brick volume creation canceled");
+		throw std::runtime_error("vtk brick volume creation canceled");
 	}
 
 	((VTKVolumeBrickData *)this)->cacheBrick(brickNum, brickCached);
