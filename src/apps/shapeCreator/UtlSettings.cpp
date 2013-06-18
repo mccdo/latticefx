@@ -57,5 +57,5 @@ int UtlSettings::getSelectedValueInt(QComboBox *pCtl)
 	int i = pCtl->currentIndex();
 	if (i < 0) return 0;
 
-	pCtl->itemData(i).toInt();
+	return pCtl->itemData(i).toInt();
 }

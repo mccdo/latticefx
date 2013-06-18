@@ -26,6 +26,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	_pThread = new CreatorThread();
 
+	QObject::connect( _pThread, SIGNAL(signalStart()), this, SLOT(slotStart()));
+	QObject::connect( _pThread, SIGNAL(signalProgress(float)), this, SLOT(slotProgress(float)));
+	QObject::connect( _pThread, SIGNAL(signalEnd()), this, SLOT(slotEnd()));
+	QObject::connect( _pThread, SIGNAL(signalMsg(std::string)), this, SLOT(slotMsg(std::string)));
+
+	ui->progressBar->setRange(0, 100);
+    ui->progressBar->setValue(0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -327,7 +334,6 @@ void MainWindow::on_pushButtonCreate_clicked()
         return;
     }
 
-	/*
 	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
 	boost::shared_ptr<CreateVolume> createVolume(new CreateVolume(logstr.c_str(), loginfo.c_str()));
 	VolumeBrickDataPtr vbd;
@@ -392,17 +398,11 @@ void MainWindow::on_pushButtonCreate_clicked()
 		file = ui->plainTextEditFileFolder->toPlainText();
 	}
 
-	createVolume->setCsFileOrFolder(file.toAscii());
-
-
-	// setup callbacks.. would do this in the thread but there is a bug in QT4 and Boost BIND.. 
-	// http://stackoverflow.com/questions/15455178/qt4-cgal-parse-error-at-boost-join
-	//VolumeBrickData::CallbackCancel cb;
-	//boost::bind(&CreatorThread::checkCancel, _pThread);
+	std::string strFileOrFolder = file.toStdString();
+	createVolume->setCsFileOrFolder(strFileOrFolder.c_str());
 
 	_pThread->setCreateVolume(createVolume);
 	_pThread->start();
-	*/
 }
  
 ////////////////////////////////////////////////////////////////////////////////
@@ -412,4 +412,58 @@ void MainWindow::on_pushButtonCancel_clicked()
     {
         _pThread->cancel();
     }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotStart()
+{
+	ui->pushButtonCreate->setEnabled(false);
+	ui->pushButtonCancel->setEnabled(true);
+	ui->progressBar->setValue(0);
+	msgClearAll();
+	msgOut(QString("Creating bricks..."));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotProgress(float percent)
+{
+	ui->progressBar->setValue((int)(100.*percent));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotEnd()
+{
+	ui->pushButtonCreate->setEnabled(true);
+	ui->pushButtonCancel->setEnabled(false);
+	msgOut(QString("Finished..."));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotMsg(std::string msg)
+{
+	QString m(msg.c_str());
+	msgOut(m);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::msgOut(const QString &msg)
+{
+    //QString shortTime = QLocale::system().toString(QTime::currentTime(), QLocale::ShortFormat);
+    //shortTime += " : ";
+    //QString out = shortTime + msg;
+    //out += "\n";
+
+	QString out = msg + "\n";
+    out = ui->textBrowserOutput->toPlainText() + out;
+
+    //QDateTime current = QDateTime::currentDateTime();
+    //current.toString()
+	ui->textBrowserOutput->setText(out);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::msgClearAll()
+{
+    ui->textBrowserOutput->setText("");
 }

@@ -22,7 +22,7 @@
 
 #ifdef VTK_FOUND
 
-#include "vtkCreator.h"
+#include "VtkCreator.h"
 
 #ifndef Q_MOC_RUN
 #include <latticefx/core/HierarchyUtils.h>
@@ -164,6 +164,12 @@ bool VtkCreator::create()
     LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
 
 	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile)
+{
+	return CreateVolume::create(arguments, csFile);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -36,6 +36,7 @@ CreateVolume::CreateVolume(const char *plogstr, const char *ploginfo)
 
 	_useCrunchStore = true;
 	_csFileOrFolder = "volume";
+	_basename = "shapevolume"; 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,8 +48,12 @@ void CreateVolume::setCallbackProgress(lfx::core::ICallbackProgress *pcp)
 ////////////////////////////////////////////////////////////////////////////////
 bool CreateVolume::create()
 {
+	if (_volumeObj == NULL) return false;
+
+	_volumeObj->setDepth(_depth);
+
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
-	createDataSet( _csFileOrFolder, _volumeObj, std::string("shapevolume") );
+	createDataSet( _csFileOrFolder, _volumeObj, _basename );
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
     boost::posix_time::time_duration diff = end_time - start_time;
     
@@ -159,7 +164,7 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
 void CreateVolume::createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
 {
     //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
-	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
-	saver->addLevel( shapeGen );
-	createDataSet( csFile, saver );
+	SaveHierarchy saver( baseName );
+	saver.addLevel( shapeGen );
+	createDataSet( csFile, &saver );
 }

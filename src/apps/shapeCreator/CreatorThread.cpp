@@ -1,4 +1,4 @@
-#include "creatorThread.h"
+#include "CreatorThread.h"
 
 
 //using namespace lfx::core;
@@ -17,7 +17,7 @@ void CreatorThread::run()
 
 	if (_createVolume == NULL) return;
 
-	//_createVolume->setCallbackProgress(this);
+	_createVolume->setCallbackProgress(this);
 	emit signalStart(); 
 
 	try
@@ -26,6 +26,7 @@ void CreatorThread::run()
 	}
 	catch (std::exception ex)
 	{
+		int idebug = 1;
 	}
 
 	emit signalEnd();

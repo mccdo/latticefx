@@ -1,12 +1,12 @@
-#include "shapeVolumes.h"
+#include "ShapeVolumes.h"
 
 using namespace lfx::core;
 
 CubeVolumeBrickData::CubeVolumeBrickData( const bool prune, const bool soft )
 	: VolumeBrickData( prune ),
 	_brickRes( 32, 32, 32 ),
-	_cubeMin( .2, .2, .2 ),
-	_cubeMax( .8, .8, .8 ),
+	_cubeMin( .2f, .2f, .2f ),
+	_cubeMax( .8f, .8f, .8f ),
 	_soft( soft )
 {
 }

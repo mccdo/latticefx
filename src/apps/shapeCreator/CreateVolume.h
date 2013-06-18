@@ -23,6 +23,7 @@ public:
 	void setPrune(bool p) { _prune = p; }
 	void setDepth(int depth) { _depth = depth; }
 	void setCsFileOrFolder(const char *str) { _csFileOrFolder = str; }
+	void setBaseName(const char *str) { _basename = str; }
 	void setUseCrunchStore(bool use) { _useCrunchStore = use; }
 	void setVolumeObj(lfx::core::VolumeBrickDataPtr volumeObj) { _volumeObj = volumeObj; }
 	void setCallbackProgress(lfx::core::ICallbackProgress *pcp);
@@ -42,6 +43,7 @@ protected:
 
 	bool _useCrunchStore;
 	std::string _csFileOrFolder;
+	std::string _basename;
 
 	lfx::core::VolumeBrickDataPtr _volumeObj;
 };

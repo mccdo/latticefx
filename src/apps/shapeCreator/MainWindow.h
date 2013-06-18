@@ -26,6 +26,9 @@ protected:
     void loadVtkFile(QString file);
 	VtkCreator* vtkCreator();
 
+	void msgOut(const QString &msg);
+	void msgClearAll();
+
 private:
     Ui::MainWindow *ui;
     QString _settingsFile;
@@ -51,6 +54,12 @@ private slots:
     void on_comboBoxShape_currentIndexChanged(int index);
     void on_pushButtonCreate_clicked();
     void on_pushButtonCancel_clicked();
+
+
+	void slotStart();
+    void slotProgress(float percent);
+    void slotEnd();
+    void slotMsg(std::string msg);
 };
 
 #endif // MAINWINDOW_H

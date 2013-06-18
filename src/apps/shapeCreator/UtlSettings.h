@@ -1,5 +1,6 @@
 #ifndef UTLSETTINGS_H
 #define UTLSETTINGS_H
+
 #include <QSettings>
 #include <QComboBox>
 #include <QPlainTextEdit>

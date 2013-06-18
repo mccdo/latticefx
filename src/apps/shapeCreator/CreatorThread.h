@@ -12,7 +12,7 @@ class CreatorThread : public QThread, public lfx::core::ICallbackProgress
 public:
     explicit CreatorThread(QObject *parent = 0);
     
-	//void setCreateVolume(boost::shared_ptr<CreateVolume> createVolume) { _createVolume = createVolume; }
+	void setCreateVolume(boost::shared_ptr<CreateVolume> createVolume) { _createVolume = createVolume; }
 	void cancel() { _cancel = true; }
 
 	virtual bool checkCancel();
@@ -22,7 +22,7 @@ signals:
 	void signalStart();
     void signalProgress(float percent);
     void signalEnd();
-    void signalMsg(QString msg);
+    void signalMsg(std::string msg);
     
 public slots:
 	//void slotOnCancel();
@@ -32,8 +32,7 @@ protected:
 
 protected:
 	bool _cancel;
-	//boost::shared_ptr<CreateVolume> _createVolume;
-	CreateVolume *_createVolume;
+	boost::shared_ptr<CreateVolume> _createVolume;
     
 };
 
