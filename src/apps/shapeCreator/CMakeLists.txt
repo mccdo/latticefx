@@ -56,11 +56,11 @@ if( QT_FOUND )
     _addExecutable( App ${_exeName}
         main.cpp
         MainWindow.cpp
-		MainWindow.h
+        MainWindow.h
         UtlSettings.cpp
         UtlSettings.h
         CreatorThread.cpp
-		CreatorThread.h
+        CreatorThread.h
         ${MOCCED}
         ${UICED}
         ${_sharedSources}
