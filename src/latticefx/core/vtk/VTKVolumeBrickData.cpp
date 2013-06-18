@@ -212,6 +212,12 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	group.join_all();
 
+	// check if canceled
+	if (checkCancel())
+	{
+		throw std::exception("vtk brick volume creation canceled");
+	}
+
 	((VTKVolumeBrickData *)this)->cacheBrick(brickNum, brickCached);
 
 	if (_prune)
@@ -293,48 +299,50 @@ void VTKVolumeBrickData::BrickThread::operator()()
 
 			for (int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++)
 			{
-if (m_pData->pVBD->m_cacheUse)
-{
-				int cacheLoc = m_pData->pVBD->getCacheLoc(x, y, z, m_pData->brickNum);
-				PTexelData cache;
+				if (m_pData->pVBD->checkCancel()) { return; } // canceled;
 
-				if (m_pData->pVBD->m_cacheCreate)
+				if (m_pData->pVBD->m_cacheUse)
 				{
-					//cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
-					cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights, m_pData->brickCached);
-				}
-				else
-				{ 
-					cache = m_pData->pVBD->m_texelDataCache[cacheLoc];
-				}
+								int cacheLoc = m_pData->pVBD->getCacheLoc(x, y, z, m_pData->brickNum);
+								PTexelData cache;
 
-				((VTKVolumeBrickData *)m_pData->pVBD)->debugLogCache(x, y, z, cacheLoc);
+								if (m_pData->pVBD->m_cacheCreate)
+								{
+									//cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
+									cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, weights, m_pData->brickCached);
+								}
+								else
+								{ 
+									cache = m_pData->pVBD->m_texelDataCache[cacheLoc];
+								}
 
-				if (!cache.get())
-				{
-					value = m_pData->pVBD->getOutSideCellValue(); 
-				}
-				else
-				{
-					value = m_pData->pVBD->lerpDataInCell(cache->pointIds, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
-					m_pData->hits++;
-				}
-}
-else
-{
-				cellId = m_pData->pVBD->findCell(curPos, pcoords, &weights, cell, &dataSetNum);
-				if (cellId < 0)
-				{
-					value = m_pData->pVBD->getOutSideCellValue(); 
+								((VTKVolumeBrickData *)m_pData->pVBD)->debugLogCache(x, y, z, cacheLoc);
+
+								if (!cache.get())
+								{
+									value = m_pData->pVBD->getOutSideCellValue(); 
+								}
+								else
+								{
+									value = m_pData->pVBD->lerpDataInCell(cache->pointIds, &cache->weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, cache->dsNum); 
+									m_pData->hits++;
+								}
 				}
 				else
 				{
-					// cell cache is not showing any signs of a speed up
-					//if (m_cellCache == cellId) haveCache = false;
-					value = m_pData->pVBD->lerpDataInCell(cell->GetPointIds(), &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, dataSetNum); 
-					m_pData->hits++;
+								cellId = m_pData->pVBD->findCell(curPos, pcoords, &weights, cell, &dataSetNum);
+								if (cellId < 0)
+								{
+									value = m_pData->pVBD->getOutSideCellValue(); 
+								}
+								else
+								{
+									// cell cache is not showing any signs of a speed up
+									//if (m_cellCache == cellId) haveCache = false;
+									value = m_pData->pVBD->lerpDataInCell(cell->GetPointIds(), &weights[0], m_pData->tuples, m_pData->pVBD->m_dataNum, m_pData->pVBD->m_isScalar, dataSetNum); 
+									m_pData->hits++;
+								}
 				}
-}
 
 				// copy values into the image buffer
 				*ptr = value[0];
