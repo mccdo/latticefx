@@ -15,10 +15,10 @@ endif()
 set( _sharedSources
     CreateVolume.cpp
     CreateVolume.h
-    shapeVolumes.cpp
-    shapeVolumes.h
-    vtkCreator.cpp
-    vtkCreator.h
+    ShapeVolumes.cpp
+    ShapeVolumes.h
+    VtkCreator.cpp
+    VtkCreator.h
 )
 
 
@@ -56,9 +56,11 @@ if( QT_FOUND )
     _addExecutable( App ${_exeName}
         main.cpp
         MainWindow.cpp
+		MainWindow.h
         UtlSettings.cpp
         UtlSettings.h
-        creatorThread.cpp
+        CreatorThread.cpp
+		CreatorThread.h
         ${MOCCED}
         ${UICED}
         ${_sharedSources}
