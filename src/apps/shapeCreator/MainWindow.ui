@@ -190,9 +190,9 @@
    <widget class="QGroupBox" name="groupBoxVtk">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>20</x>
       <y>180</y>
-      <width>521</width>
+      <width>611</width>
       <height>251</height>
      </rect>
     </property>
@@ -203,7 +203,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>20</y>
+       <y>40</y>
        <width>46</width>
        <height>13</height>
       </rect>
@@ -216,8 +216,8 @@
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>10</y>
-       <width>271</width>
+       <y>30</y>
+       <width>401</width>
        <height>31</height>
       </rect>
      </property>
@@ -225,8 +225,8 @@
     <widget class="QPushButton" name="pushButtonVtkBrowse">
      <property name="geometry">
       <rect>
-       <x>330</x>
-       <y>10</y>
+       <x>470</x>
+       <y>30</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -238,9 +238,9 @@
     <widget class="QListWidget" name="listWidgetVtkScalars">
      <property name="geometry">
       <rect>
-       <x>50</x>
-       <y>80</y>
-       <width>121</width>
+       <x>30</x>
+       <y>100</y>
+       <width>171</width>
        <height>141</height>
       </rect>
      </property>
@@ -248,8 +248,8 @@
     <widget class="QLabel" name="label_5">
      <property name="geometry">
       <rect>
-       <x>50</x>
-       <y>60</y>
+       <x>30</x>
+       <y>80</y>
        <width>46</width>
        <height>13</height>
       </rect>
@@ -261,8 +261,8 @@
     <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
-       <x>210</x>
-       <y>60</y>
+       <x>260</x>
+       <y>80</y>
        <width>46</width>
        <height>13</height>
       </rect>
@@ -274,9 +274,9 @@
     <widget class="QListWidget" name="listWidgetVtkVectors">
      <property name="geometry">
       <rect>
-       <x>210</x>
-       <y>80</y>
-       <width>121</width>
+       <x>260</x>
+       <y>100</y>
+       <width>171</width>
        <height>141</height>
       </rect>
      </property>
@@ -284,8 +284,8 @@
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>350</x>
-       <y>90</y>
+       <x>450</x>
+       <y>110</y>
        <width>46</width>
        <height>13</height>
       </rect>
@@ -297,8 +297,8 @@
     <widget class="QCheckBox" name="checkBoxVtkCacheOn">
      <property name="geometry">
       <rect>
-       <x>380</x>
-       <y>150</y>
+       <x>480</x>
+       <y>170</y>
        <width>70</width>
        <height>17</height>
       </rect>
@@ -310,8 +310,8 @@
     <widget class="QCheckBox" name="checkBoxVtkHiresLod">
      <property name="geometry">
       <rect>
-       <x>380</x>
-       <y>190</y>
+       <x>480</x>
+       <y>210</y>
        <width>81</width>
        <height>17</height>
       </rect>
@@ -323,8 +323,8 @@
     <widget class="QComboBox" name="comboBoxVtkThreads">
      <property name="geometry">
       <rect>
-       <x>400</x>
-       <y>90</y>
+       <x>500</x>
+       <y>110</y>
        <width>69</width>
        <height>22</height>
       </rect>
@@ -339,7 +339,7 @@
      <rect>
       <x>30</x>
       <y>440</y>
-      <width>561</width>
+      <width>601</width>
       <height>23</height>
      </rect>
     </property>
@@ -350,9 +350,9 @@
    <widget class="QTextBrowser" name="textBrowserOutput">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>20</x>
       <y>470</y>
-      <width>531</width>
+      <width>611</width>
       <height>192</height>
      </rect>
     </property>
@@ -360,7 +360,7 @@
    <widget class="QPushButton" name="pushButtonCreate">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>230</x>
       <y>680</y>
       <width>75</width>
       <height>23</height>
@@ -373,7 +373,7 @@
    <widget class="QPushButton" name="pushButtonCancel">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>380</x>
       <y>680</y>
       <width>75</width>
       <height>23</height>

@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	QObject::connect( _pThread, SIGNAL(signalStart()), this, SLOT(slotStart()));
 	QObject::connect( _pThread, SIGNAL(signalProgress(float)), this, SLOT(slotProgress(float)));
+	QObject::connect( _pThread, SIGNAL(signalProgressMsg(float, QString)), this, SLOT(slotProgressMsg(float, QString)));
 	QObject::connect( _pThread, SIGNAL(signalEnd()), this, SLOT(slotEnd()));
 	QObject::connect( _pThread, SIGNAL(signalMsg(std::string)), this, SLOT(slotMsg(std::string)));
 
@@ -212,9 +213,12 @@ void MainWindow::guiFeaturesInit()
 void MainWindow::setShapeType(int shapeType)
 {
 	bool enable = false;
+	bool enableCreate = true;
 	if (shapeType == E_SHAPE_VTK)
 	{
 		enable = true;
+
+		enableCreate = vtkCreator()->haveFile();
 	}
 	
 	ui->plainTextEditVtkFile->setEnabled(enable);
@@ -224,6 +228,8 @@ void MainWindow::setShapeType(int shapeType)
 	ui->checkBoxVtkHiresLod->setEnabled(enable);
 	ui->listWidgetVtkScalars->setEnabled(enable);
 	ui->listWidgetVtkVectors->setEnabled(enable);
+
+	ui->pushButtonCreate->setEnabled(enableCreate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,6 +280,8 @@ void MainWindow::loadVtkFile(QString file)
 	{
 		ui->listWidgetVtkVectors->setEnabled(false);
 	}
+
+	ui->pushButtonCreate->setEnabled(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,6 +464,13 @@ void MainWindow::slotStart()
 void MainWindow::slotProgress(float percent)
 {
 	ui->progressBar->setValue((int)(100.*percent));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotProgressMsg(float percent, QString msg)
+{
+	ui->progressBar->setValue((int)(100.*percent));
+	msgOut(msg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

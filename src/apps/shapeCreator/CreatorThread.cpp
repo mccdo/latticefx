@@ -51,3 +51,10 @@ void CreatorThread::updateProgress(float percent)
 {
 	emit signalProgress(percent);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void CreatorThread::updateProgress(float percent, const char *msg)
+{
+	QString qmsg(msg);
+	emit signalProgressMsg(percent, qmsg);
+}

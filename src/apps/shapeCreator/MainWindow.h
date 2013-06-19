@@ -60,6 +60,7 @@ private slots:
 
 	void slotStart();
     void slotProgress(float percent);
+	void slotProgressMsg(float percent, QString msg);
     void slotEnd();
     void slotMsg(std::string msg);
 };

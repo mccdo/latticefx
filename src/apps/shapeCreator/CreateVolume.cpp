@@ -37,11 +37,15 @@ CreateVolume::CreateVolume(const char *plogstr, const char *ploginfo)
 	_useCrunchStore = true;
 	_csFileOrFolder = "volume";
 	_basename = "shapevolume"; 
+
+	_pcbProgress = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void CreateVolume::setCallbackProgress(lfx::core::ICallbackProgress *pcp)
 {
+	_pcbProgress = pcp;
+
 	if (_volumeObj != NULL) _volumeObj->setCallbackProgress(pcp);
 }
 
@@ -164,7 +168,7 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
 void CreateVolume::createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
 {
     //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
-	SaveHierarchy saver( baseName );
+	SaveHierarchy saver( baseName, _pcbProgress );
 	saver.addLevel( shapeGen );
 	createDataSet( csFile, &saver );
 }

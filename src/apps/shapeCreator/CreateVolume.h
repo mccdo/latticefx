@@ -46,6 +46,7 @@ protected:
 	std::string _basename;
 
 	lfx::core::VolumeBrickDataPtr _volumeObj;
+	lfx::core::ICallbackProgress *_pcbProgress;
 };
 
 #endif

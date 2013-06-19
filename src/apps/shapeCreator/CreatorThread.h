@@ -17,10 +17,12 @@ public:
 
 	virtual bool checkCancel();
 	virtual void updateProgress(float percent);
+	virtual void updateProgress(float percent, const char *msg);
 
 signals:
 	void signalStart();
     void signalProgress(float percent);
+	void signalProgressMsg(float percent, QString msg);
     void signalEnd();
     void signalMsg(std::string msg);
     

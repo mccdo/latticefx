@@ -143,6 +143,17 @@ bool VtkCreator::create()
 	}
 #endif
 
+	// compute progress count
+	int brickCount = vbd->getBrickCount();
+	int itemCount = brickCount*8; // see VolumeBrickData::getSeamlessBrick (8 create image calls), and SaveHierarchy::recurseSaveBricks(1 call for each brick)
+	int totalCount = _scalars.size() * itemCount + _vectors.size() * itemCount;
+	if (_pcbProgress)
+	{
+		_pcbProgress->clearProg();
+		_pcbProgress->addToProgTot(totalCount);
+	}
+
+
 	for (unsigned int i=0; i<_scalars.size(); i++)
 	{
 		vtkCreateBricks(depths, _csFileOrFolder, _scalars[i], true);
@@ -269,6 +280,8 @@ void VtkCreator::setCacheUse(SaveHierarchy::LODVector &depths, bool use)
 ////////////////////////////////////////////////////////////////////////////////
 void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune)
 {
+	hilod->setCallbackProgress(_pcbProgress);
+
 	pdepths->clear();
 	if (!hireslod)
 	{
@@ -290,6 +303,7 @@ void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hi
 	{
 		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads) );
 		vbd->setDepth( i+1 );
+		vbd->setCallbackProgress(_pcbProgress);
 		(*pdepths)[i] = vbd;
 	}
 }
@@ -377,9 +391,9 @@ void VtkCreator::createDataSet( const std::string& csFile, std::vector<VolumeBri
 	}
 
     // hires load with all depths coming from the dataset directly
-	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
-	saver->addAllLevels( depths );
-	CreateVolume::createDataSet( csFile, saver );
+	SaveHierarchy saver( baseName, _pcbProgress );
+	saver.addAllLevels( depths );
+	CreateVolume::createDataSet( csFile, &saver );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
