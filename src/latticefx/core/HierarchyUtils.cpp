@@ -48,7 +48,8 @@ namespace core
 
 ICallbackProgress::ICallbackProgress()
 	: _progCountTot ( 0 ),
-	  _progCountCur ( 0 )
+	  _progCountCur ( 0 ),
+	  _lastProg ( -1 )
 {
 }
 
@@ -56,6 +57,7 @@ void ICallbackProgress::clearProg()
 {
 	_progCountTot = 0;
 	_progCountCur = 0;
+	_lastProg = -1;
 }
 
 void ICallbackProgress::addToProgTot(int add) 
@@ -63,24 +65,25 @@ void ICallbackProgress::addToProgTot(int add)
 	_progCountTot += add; 
 }
 
-void ICallbackProgress::computeProg(int add)
+void ICallbackProgress::computeProgAndUpdate(int add)
 {
 	_progCountCur += add;
-	updateProgress(computeProg());
+	validateProgUpdate(computeProg());
 }
 
-void ICallbackProgress::computeProg(int add, const char *msg)
-{
-	_progCountCur += add;
-	updateProgress(computeProg(), msg);
-}
-
-float ICallbackProgress::computeProg()
+int ICallbackProgress::computeProg()
 {
 	float prog = (float)_progCountCur / (float)_progCountTot;
 	if (prog > 1.0f) prog = 1.0f;
 
-	return prog;
+	return (int)(prog * 100.);
+}
+
+void ICallbackProgress::validateProgUpdate(int newProg)
+{
+	if (newProg == _lastProg) return;
+	_lastProg = newProg;
+	updateProgress(newProg);
 }
 
 TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb )
@@ -663,7 +666,7 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
 
 		if (checkCancel())
 		{
-			throw std::runtime_error("volume brick creation canceled");
+			return NULL;
 		}
 
         osg::ref_ptr< osg::Image > srcBrick( getBrick( current ) );
@@ -675,6 +678,8 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
             }
             overlap( dest.get(), srcBrick.get(), idx );
         }
+
+		computeProgAndUpdate(1);
     }
 
     if( dest.valid() )
@@ -701,6 +706,26 @@ bool VolumeBrickData::checkCancel() const
 {
 	if (!_pcbProgress) return false;
 	return _pcbProgress->checkCancel();
+}
+
+void VolumeBrickData::computeProgAndUpdate(int add) const
+{
+	if (!_pcbProgress) return;
+	_pcbProgress->computeProgAndUpdate(add);
+}
+
+void VolumeBrickData::sendProgMsg(const char *frmt, ...) const
+{
+	if (!_pcbProgress) return;
+
+	char buffer[4096];
+	va_list args;
+
+	va_start(args, frmt);
+	sprintf_s(buffer, 4096, frmt, args);
+	va_end(args);
+
+	_pcbProgress->sendMsg(buffer);
 }
 
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
@@ -946,6 +971,11 @@ VolumeBrickDataPtr Downsampler::getLow() const
                 osg::Image* image( sample( i0.get(), i1.get(), i2.get(), i3.get(),
                                            i4.get(), i5.get(), i6.get(), i7.get() ) );
                 _low->addBrick( osg::Vec3s( sIdx, tIdx, rIdx ), image );
+
+				// do we need to cancel
+				if (_hi->checkCancel()) return VolumeBrickDataPtr();
+				_hi->computeProgAndUpdate(1);
+
             }
         }
     }
@@ -1154,6 +1184,7 @@ void SaveHierarchy::addLevel( unsigned int level, VolumeBrickDataPtr base, bool 
 		{
 			Downsampler ds( _lodVec[ depthIdx ] );
 			_lodVec[ depthIdx - 1 ] = ds.getLow();
+			if (base->checkCancel()) return;
 		}
     }
 
@@ -1191,11 +1222,12 @@ bool SaveHierarchy::save( DBBasePtr db )
 
 void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName )
 {
-	checkCancel();
-
     const int depth( brickName.length() );
     VolumeBrickDataPtr vbd( _lodVec[ depth ] );
+
+	if (vbd->checkCancel()) return;
     osg::Image* image( vbd->getSeamlessBrick( brickName ) );
+	if (vbd->checkCancel()) return;
 
     if( image != NULL )
     {
@@ -1212,26 +1244,22 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
     if( depth < _depth - 1 )
     {
         recurseSaveBricks( db, brickName + std::string( "0" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "1" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "2" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "3" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "4" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "5" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "6" ) );
+		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "7" ) );
     }
 }
-
-void SaveHierarchy::checkCancel()
-{
-	if (!_pcbProgress) return;
-	if (!_pcbProgress->checkCancel()) return;
-
-	throw std::runtime_error("save hierarchy brick volume creation canceled");
-}
-
-
-
 
 LoadHierarchy::LoadHierarchy()
     : _load( false )

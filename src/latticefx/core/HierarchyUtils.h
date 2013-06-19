@@ -49,21 +49,22 @@ public:
 	ICallbackProgress();
 
 	virtual bool checkCancel() { return false; }
-	virtual void updateProgress(float /*percent*/) {}
-	virtual void updateProgress(float /*percent*/, const char* /*msg*/) {}
+	virtual void updateProgress(int /*0-100*/) {}
+	virtual void sendMsg(const char* /*msg*/) {}
 
 	void clearProg();
 	void addToProgTot(int add);
 
-	void computeProg(int add);
-	void computeProg(int add, const char *msg);
+	void computeProgAndUpdate(int add);
 
 protected:
-	float computeProg();
+	int computeProg();
+	void validateProgUpdate(int newProg);
 
 protected:
 	int _progCountTot;
 	int _progCountCur;
+	int _lastProg;
 };
 
 /** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
@@ -308,10 +309,12 @@ public:
     osg::Image* getSeamlessBrick( const std::string& brickName ) const;
 
 	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
+	bool checkCancel() const;
+	void computeProgAndUpdate(int add) const;
+	void sendProgMsg(const char *frmt, ...) const;
 
 protected:
-	bool checkCancel() const;
-
+	
     int brickIndex( const osg::Vec3s& brickNum ) const;
     osg::Vec3s nameToBrickNum( const std::string& name ) const;
 
@@ -431,11 +434,8 @@ public:
 	bool save( DBBasePtr db, VolumeBrickDataPtr base );
     bool save( DBBasePtr db );
 
-	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
-
 protected:
     void recurseSaveBricks( DBBasePtr db, const std::string brickName );
-	void checkCancel();
 
     unsigned int _depth;
 
