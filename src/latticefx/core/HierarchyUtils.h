@@ -43,13 +43,27 @@ namespace core
 {
 
 
-class ICallbackProgress
+class LATTICEFX_EXPORT ICallbackProgress
 {
 public:
-	ICallbackProgress() {};
+	ICallbackProgress();
 
 	virtual bool checkCancel() { return false; }
 	virtual void updateProgress(float /*percent*/) {}
+	virtual void updateProgress(float /*percent*/, const char* /*msg*/) {}
+
+	void clearProg();
+	void addToProgTot(int add);
+
+	void computeProg(int add);
+	void computeProg(int add, const char *msg);
+
+protected:
+	float computeProg();
+
+protected:
+	int _progCountTot;
+	int _progCountCur;
 };
 
 /** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
@@ -267,6 +281,7 @@ public:
     virtual void setDepth( const unsigned int depth );
     unsigned int getDepth() const;
     osg::Vec3s getNumBricks() const;
+	unsigned int getBrickCount() const;
 
     /** \brief Add a brick to the \c _images vector of bricks.
     \details This is used
@@ -405,7 +420,7 @@ public:
 	typedef std::vector< VolumeBrickDataPtr > LODVector;
 
 public:
-    SaveHierarchy( const std::string baseName );
+    SaveHierarchy( const std::string baseName, ICallbackProgress *pcb=NULL );
     virtual ~SaveHierarchy();
 
 	static unsigned int computeLevel( unsigned short numbricksX );
@@ -416,14 +431,18 @@ public:
 	bool save( DBBasePtr db, VolumeBrickDataPtr base );
     bool save( DBBasePtr db );
 
+	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
+
 protected:
     void recurseSaveBricks( DBBasePtr db, const std::string brickName );
+	void checkCancel();
 
     unsigned int _depth;
 
     LODVector _lodVec;
 
     std::string _baseName;
+	ICallbackProgress *_pcbProgress;
 };
 
 

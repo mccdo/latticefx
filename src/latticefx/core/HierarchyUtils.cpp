@@ -46,6 +46,43 @@ namespace core
 {
 
 
+ICallbackProgress::ICallbackProgress()
+	: _progCountTot ( 0 ),
+	  _progCountCur ( 0 )
+{
+}
+
+void ICallbackProgress::clearProg()
+{
+	_progCountTot = 0;
+	_progCountCur = 0;
+}
+
+void ICallbackProgress::addToProgTot(int add) 
+{ 
+	_progCountTot += add; 
+}
+
+void ICallbackProgress::computeProg(int add)
+{
+	_progCountCur += add;
+	updateProgress(computeProg());
+}
+
+void ICallbackProgress::computeProg(int add, const char *msg)
+{
+	_progCountCur += add;
+	updateProgress(computeProg(), msg);
+}
+
+float ICallbackProgress::computeProg()
+{
+	float prog = (float)_progCountCur / (float)_progCountTot;
+	if (prog > 1.0f) prog = 1.0f;
+
+	return prog;
+}
+
 TraverseHierarchy::TraverseHierarchy( ChannelDataPtr root, HierarchyCallback& cb )
     : _root( root ),
       _cb( cb )
@@ -539,6 +576,11 @@ osg::Vec3s VolumeBrickData::getNumBricks() const
     return( _numBricks );
 }
 
+unsigned int VolumeBrickData::getBrickCount() const
+{
+	return (_numBricks[0]) * (_numBricks[1]) * (_numBricks[2]);
+}
+
 void VolumeBrickData::addBrick( const osg::Vec3s& brickNum, osg::Image* image )
 {
     const int idx( brickIndex( brickNum ) );
@@ -618,6 +660,11 @@ osg::Image* VolumeBrickData::getSeamlessBrick( const osg::Vec3s& brickNum ) cons
 
         // TBD we might be outside the boundary defined by _numBricks.
         // I think we should 'continue' here if that's the case.
+
+		if (checkCancel())
+		{
+			throw std::runtime_error("volume brick creation canceled");
+		}
 
         osg::ref_ptr< osg::Image > srcBrick( getBrick( current ) );
         if( srcBrick.valid() )
@@ -1035,10 +1082,10 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
     return( validData ? image.release() : NULL );
 }
 
-// SaveHierarchy::SaveHierarchy( VolumeBrickDataPtr base, const std::string baseName )
-SaveHierarchy::SaveHierarchy( const std::string baseName )
+SaveHierarchy::SaveHierarchy( const std::string baseName, ICallbackProgress *pcb )
     : _depth( 0 ),
-      _baseName( baseName ) 
+      _baseName( baseName ),
+	  _pcbProgress( pcb )
 {
 	/*
     short xDim( base->getNumBricks().x() );
@@ -1144,6 +1191,8 @@ bool SaveHierarchy::save( DBBasePtr db )
 
 void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName )
 {
+	checkCancel();
+
     const int depth( brickName.length() );
     VolumeBrickDataPtr vbd( _lodVec[ depth ] );
     osg::Image* image( vbd->getSeamlessBrick( brickName ) );
@@ -1171,6 +1220,14 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
         recurseSaveBricks( db, brickName + std::string( "6" ) );
         recurseSaveBricks( db, brickName + std::string( "7" ) );
     }
+}
+
+void SaveHierarchy::checkCancel()
+{
+	if (!_pcbProgress) return;
+	if (!_pcbProgress->checkCancel()) return;
+
+	throw std::runtime_error("save hierarchy brick volume creation canceled");
 }
 
 
