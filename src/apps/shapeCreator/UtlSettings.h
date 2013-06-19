@@ -6,6 +6,7 @@
 #include <QPlainTextEdit>
 #include <QCheckBox>
 #include <QRadioButton>
+#include <QListWidget>
 
 class UtlSettings
 {
@@ -21,6 +22,7 @@ public:
     static void saveRadioBtn(QSettings *pset, QRadioButton *pCtl, const QString &name);
 
 	static int getSelectedValueInt(QComboBox *pCtl);
+	static int getCheckedItems(QListWidget *pCtl, std::vector<int> *pIndexs);
 };
 
 #endif // UTLSETTINGS_H

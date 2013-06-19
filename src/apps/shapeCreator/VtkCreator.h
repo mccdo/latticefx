@@ -20,7 +20,6 @@
 #ifndef __VTK_CREATOR_H__
 #define __VTK_CREATOR_H__
 
-//#include "shapeCreatorDefines.h"
 #include "CreateVolume.h"
 
 
@@ -52,12 +51,13 @@ public:
 	void setThreads(int count) { _threads = count; } 
 	void setHiresLod(bool on) { _hireslod = on; }
 	void setCache(bool on) { _nocache = !on; }
+	void setScalarsToProcess(const std::vector<int> &indexs) { _scalars = indexs; }
+	void setVectorsToProcess(const std::vector<int> &indexs) { _vectors = indexs; }
 
 
 protected:
 
 	virtual bool processArgs(osg::ArgumentParser &arguments);
-	
 
 	void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar);
 	void vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar);

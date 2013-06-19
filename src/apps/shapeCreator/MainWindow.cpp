@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	ui->progressBar->setRange(0, 100);
     ui->progressBar->setValue(0);
+
+	setShapeType(UtlSettings::getSelectedValueInt(ui->comboBoxShape));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +189,7 @@ void MainWindow::guiFeaturesInit()
 #ifndef CRUNCHSTORE_FOUND
     ui->groupBoxCrunchstore->setTitle("Crunchstore - Not Available");
     on_radioButtonWriteToFiles_clicked();
-
+	ui->radioButtonWriteToDb->setEnabled(false);
 #endif
 
 #ifndef VTK_FOUND
@@ -204,6 +206,24 @@ void MainWindow::guiFeaturesInit()
     ui->checkBoxVtkHiresLod->setEnabled(false);
     */
 #endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::setShapeType(int shapeType)
+{
+	bool enable = false;
+	if (shapeType == E_SHAPE_VTK)
+	{
+		enable = true;
+	}
+	
+	ui->plainTextEditVtkFile->setEnabled(enable);
+	ui->pushButtonVtkBrowse->setEnabled(enable);
+	ui->comboBoxVtkThreads->setEnabled(enable);
+	ui->checkBoxVtkCacheOn->setEnabled(enable);
+	ui->checkBoxVtkHiresLod->setEnabled(enable);
+	ui->listWidgetVtkScalars->setEnabled(enable);
+	ui->listWidgetVtkVectors->setEnabled(enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,8 +341,9 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::on_comboBoxShape_currentIndexChanged(int /*index*/)
+void MainWindow::on_comboBoxShape_currentIndexChanged(int index)
 {
+	setShapeType(ui->comboBoxShape->itemData(index).toInt());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,10 +370,16 @@ void MainWindow::on_pushButtonCreate_clicked()
 			return;
 		}
 
+		std::vector<int> scalars, vectors;
+		UtlSettings::getCheckedItems(ui->listWidgetVtkScalars, &scalars);
+		UtlSettings::getCheckedItems(ui->listWidgetVtkVectors, &vectors);
+
 		int threads = UtlSettings::getSelectedValueInt(ui->comboBoxVtkThreads);
 		bool cacheon = ui->checkBoxVtkCacheOn->isChecked();
 		bool hireslod = ui->checkBoxVtkHiresLod->isChecked();
 
+		vtkCreator()->setScalarsToProcess(scalars);
+		vtkCreator()->setVectorsToProcess(vectors);
 		vtkCreator()->setThreads(threads);
 		vtkCreator()->setCache(cacheon);
 		vtkCreator()->setHiresLod(hireslod);

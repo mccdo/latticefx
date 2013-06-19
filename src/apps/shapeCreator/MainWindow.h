@@ -23,6 +23,8 @@ protected:
     void guiSettingsSave();
     void guiFeaturesInit();
 
+	void setShapeType(int type);
+
     void loadVtkFile(QString file);
 	VtkCreator* vtkCreator();
 

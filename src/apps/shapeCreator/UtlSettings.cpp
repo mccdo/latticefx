@@ -59,3 +59,20 @@ int UtlSettings::getSelectedValueInt(QComboBox *pCtl)
 
 	return pCtl->itemData(i).toInt();
 }
+
+int UtlSettings::getCheckedItems(QListWidget *pCtl, std::vector<int> *pIndexs)
+{
+	int count = 0;
+
+	for (int i=0; i<pCtl->count(); i++)
+	{
+		QListWidgetItem *pItem = pCtl->item(i);
+		if (pItem->checkState() == Qt::CheckState::Checked)
+		{
+			pIndexs->push_back(i);
+			count++;
+		}
+	}
+
+	return count;
+}
