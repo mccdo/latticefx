@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    _settingsFile = QApplication::applicationDirPath() + "/settings.ini";
+    _settingsFile = QApplication::applicationDirPath() + "/shapecreator_settings.ini";
 
     guiSettingsInit();
     guiSettingsLoad();
@@ -27,10 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	_pThread = new CreatorThread();
 
 	QObject::connect( _pThread, SIGNAL(signalStart()), this, SLOT(slotStart()));
-	QObject::connect( _pThread, SIGNAL(signalProgress(float)), this, SLOT(slotProgress(float)));
-	QObject::connect( _pThread, SIGNAL(signalProgressMsg(float, QString)), this, SLOT(slotProgressMsg(float, QString)));
+	QObject::connect( _pThread, SIGNAL(signalProgress(int)), this, SLOT(slotProgress(int)));
 	QObject::connect( _pThread, SIGNAL(signalEnd()), this, SLOT(slotEnd()));
-	QObject::connect( _pThread, SIGNAL(signalMsg(std::string)), this, SLOT(slotMsg(std::string)));
+	QObject::connect( _pThread, SIGNAL(signalMsg(QString)), this, SLOT(slotMsg(QString)));
 
 	ui->progressBar->setRange(0, 100);
     ui->progressBar->setValue(0);
@@ -177,7 +176,7 @@ void MainWindow::guiSettingsSave()
     // vtk options
     //
     settings.beginGroup("Vtk");
-    settings.value("vtkLastPath", _lastPathVtk);
+    settings.setValue("vtkLastPath", QVariant(_lastPathVtk));
     UtlSettings::saveComboBox(&settings, ui->comboBoxVtkThreads, "vtkThreads");
     UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkCacheOn, "vtkCacheOn");
     UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkHiresLod, "vtkHiResLod");
@@ -413,6 +412,7 @@ void MainWindow::on_pushButtonCreate_clicked()
 		break;
 	case E_SHAPE_SSPHERE:
 		vbd.reset(new SphereVolumeBrickData(prune, true));
+		createVolume->setVolumeObj(vbd);
 		break;
 	default:
 		QMessageBox::information(NULL, "UnRecognized Shape Type", "UnRecognized shape type.");
@@ -431,6 +431,20 @@ void MainWindow::on_pushButtonCreate_clicked()
 	if (!usedb)
 	{
 		file = ui->plainTextEditFileFolder->toPlainText();
+		if (file.length() <= 0) 
+		{
+			QMessageBox::information(NULL, "Output Folder", "Please specify and output folder first.");
+			return;
+		}
+
+		if (!QDir(file).exists())
+		{
+			QString out("The path: ");
+			out += file;
+			out += " doesn't exist.\nPlease specifly a valid output folder first.";
+			QMessageBox::information(NULL, "Output Folder", out);
+			return;
+		}
 	}
 
 	std::string strFileOrFolder = file.toStdString();
@@ -438,6 +452,7 @@ void MainWindow::on_pushButtonCreate_clicked()
 
 	_pThread->setCreateVolume(createVolume);
 	_pThread->start();
+	_pThread->setPriority(QThread::TimeCriticalPriority);
 }
  
 ////////////////////////////////////////////////////////////////////////////////
@@ -445,6 +460,7 @@ void MainWindow::on_pushButtonCancel_clicked()
 {
 	if ( _pThread->isRunning())
     {
+		msgOut(QString("Canceling..."));
         _pThread->cancel();
     }
 }
@@ -461,16 +477,9 @@ void MainWindow::slotStart()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::slotProgress(float percent)
+void MainWindow::slotProgress(int percent)
 {
-	ui->progressBar->setValue((int)(100.*percent));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void MainWindow::slotProgressMsg(float percent, QString msg)
-{
-	ui->progressBar->setValue((int)(100.*percent));
-	msgOut(msg);
+	ui->progressBar->setValue(percent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -478,14 +487,14 @@ void MainWindow::slotEnd()
 {
 	ui->pushButtonCreate->setEnabled(true);
 	ui->pushButtonCancel->setEnabled(false);
+	finishProgress();
 	msgOut(QString("Finished..."));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::slotMsg(std::string msg)
+void MainWindow::slotMsg(QString msg)
 {
-	QString m(msg.c_str());
-	msgOut(m);
+	msgOut(msg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -499,7 +508,7 @@ void MainWindow::msgOut(const QString &msg)
 	QString out = msg + "\n";
     out = ui->textBrowserOutput->toPlainText() + out;
 
-    //QDateTime current = QDateTime::currentDateTime();
+    //QDateTime current = QDateTime::currentDateTime(); 
     //current.toString()
 	ui->textBrowserOutput->setText(out);
 }
@@ -508,4 +517,16 @@ void MainWindow::msgOut(const QString &msg)
 void MainWindow::msgClearAll()
 {
     ui->textBrowserOutput->setText("");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::finishProgress()
+{
+	int v = ui->progressBar->value();
+	if (v < 0) v = 0;
+	while (v < 100)
+	{
+		v++;
+		ui->progressBar->setValue(v);
+	}
 }

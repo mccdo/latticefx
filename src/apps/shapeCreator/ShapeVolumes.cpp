@@ -47,7 +47,7 @@ osg::Image* CubeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 				if (checkCancel())
 				{
-					throw std::runtime_error("cube brick volume creation canceled");
+					return NULL;
 				}
 
 				const float sVal( ( float )sIdx / ( float )_brickRes[0] * extent[0] + brickMin[0] );
@@ -144,7 +144,7 @@ osg::Image* SphereVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			{
 				if (checkCancel())
 				{
-					throw std::runtime_error("sphere brick volume creation canceled");
+					return NULL;
 				}
 
 
@@ -242,7 +242,7 @@ osg::Image* ConeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			{
 				if (checkCancel())
 				{
-					throw std::runtime_error("cone brick volume creation canceled");
+					return NULL;
 				}
 
 

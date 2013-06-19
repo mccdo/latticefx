@@ -31,6 +31,8 @@ protected:
 	void msgOut(const QString &msg);
 	void msgClearAll();
 
+	void finishProgress();
+
 private:
     Ui::MainWindow *ui;
     QString _settingsFile;
@@ -59,10 +61,9 @@ private slots:
 
 
 	void slotStart();
-    void slotProgress(float percent);
-	void slotProgressMsg(float percent, QString msg);
+    void slotProgress(int percent);
     void slotEnd();
-    void slotMsg(std::string msg);
+    void slotMsg(QString msg);
 };
 
 #endif // MAINWINDOW_H

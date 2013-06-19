@@ -115,12 +115,14 @@ bool VtkCreator::create()
 	if (_nocache)
 	{
 		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is disabled." );
+		if (_pcbProgress) _pcbProgress->sendMsg("Vtk lookup cache is disabled.");
 		setCacheCreate(depths, false);
 		setCacheUse(depths, false);
 	}
 	else
 	{
 		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is enabled." );
+		if (_pcbProgress) _pcbProgress->sendMsg("Vtk lookup cache is enabled.");
 		setCacheCreate(depths, true);
 		setCacheUse(depths, true);
 	}
@@ -146,7 +148,7 @@ bool VtkCreator::create()
 	// compute progress count
 	int brickCount = vbd->getBrickCount();
 	int itemCount = brickCount*8; // see VolumeBrickData::getSeamlessBrick (8 create image calls), and SaveHierarchy::recurseSaveBricks(1 call for each brick)
-	int totalCount = _scalars.size() * itemCount + _vectors.size() * itemCount;
+	int totalCount = _scalars.size() * itemCount + _vectors.size() * itemCount + 10;
 	if (_pcbProgress)
 	{
 		_pcbProgress->clearProg();
@@ -156,12 +158,33 @@ bool VtkCreator::create()
 
 	for (unsigned int i=0; i<_scalars.size(); i++)
 	{
+		if (_pcbProgress)
+		{
+			if (_pcbProgress->checkCancel()) return 0;
+			std::string name = getScalarName(_scalars[i]);
+
+			std::ostringstream oss;
+			oss << "Creating bricks for scalar " << name << "...";
+			_pcbProgress->sendMsg(oss.str().c_str());
+		}
+
 		vtkCreateBricks(depths, _csFileOrFolder, _scalars[i], true);
 		if (!i) { setCacheCreate(depths, false); }
 	}
 
 	for (unsigned int i=0; i<_vectors.size(); i++)
 	{
+		if (_pcbProgress)
+		{
+			if (_pcbProgress->checkCancel()) return 0;
+			std::string name = getVectorName(_vectors[i]);
+
+			std::ostringstream oss;
+			oss << "Creating bricks for vector " << name << "...";
+			_pcbProgress->sendMsg(oss.str().c_str());
+		}
+		
+
 		vtkCreateBricks(depths, _csFileOrFolder, _vectors[i], false);
 		if (!i) { setCacheCreate(depths, false); }
 	}
@@ -173,6 +196,7 @@ bool VtkCreator::create()
 
 	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
     LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
+	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
 
 	return 0;
 }
@@ -378,6 +402,7 @@ void VtkCreator::vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::st
     std::ostringstream ss;
 	ss << "Time to create  " << sst.str() << " = " << createTime << " secs";
     LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
+	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -56,6 +56,15 @@ bool CreateVolume::create()
 
 	_volumeObj->setDepth(_depth);
 
+	// compute progress count
+	int brickCount = _volumeObj->getBrickCount();
+	int totalCount = brickCount*8; // see Downsampler::getLow
+	if (_pcbProgress)
+	{
+		_pcbProgress->clearProg();
+		_pcbProgress->addToProgTot(totalCount);
+	}
+
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 	createDataSet( _csFileOrFolder, _volumeObj, _basename );
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
@@ -129,6 +138,8 @@ bool CreateVolume::isVtk(osg::ArgumentParser &arguments)
 ////////////////////////////////////////////////////////////////////////////////
 void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* saver )
 {
+	if (_pcbProgress && _pcbProgress->checkCancel()) return;
+
 	 // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
     if( !( csFile.empty() ) && _useCrunchStore)

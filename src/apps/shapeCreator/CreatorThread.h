@@ -16,15 +16,14 @@ public:
 	void cancel() { _cancel = true; }
 
 	virtual bool checkCancel();
-	virtual void updateProgress(float percent);
-	virtual void updateProgress(float percent, const char *msg);
+	virtual void updateProgress(int percent);
+	virtual void sendMsg(const char* msg);
 
 signals:
 	void signalStart();
-    void signalProgress(float percent);
-	void signalProgressMsg(float percent, QString msg);
+    void signalProgress(int percent);
     void signalEnd();
-    void signalMsg(std::string msg);
+    void signalMsg(QString msg);
     
 public slots:
 	//void slotOnCancel();

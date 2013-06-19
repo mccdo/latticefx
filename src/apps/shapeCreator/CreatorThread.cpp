@@ -26,7 +26,12 @@ void CreatorThread::run()
 	}
 	catch (std::exception ex)
 	{
-		int idebug = 1;
+		sendMsg("UnExpected Exception.. brick creation aborted.");
+	}
+
+	if (checkCancel())
+	{
+		sendMsg("Brick creation canceled.");
 	}
 
 	emit signalEnd();
@@ -47,14 +52,14 @@ bool CreatorThread::checkCancel()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreatorThread::updateProgress(float percent)
+void CreatorThread::updateProgress(int percent)
 {
 	emit signalProgress(percent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreatorThread::updateProgress(float percent, const char *msg)
+void CreatorThread::sendMsg(const char* msg)
 {
 	QString qmsg(msg);
-	emit signalProgressMsg(percent, qmsg);
+	emit signalMsg(qmsg);
 }
