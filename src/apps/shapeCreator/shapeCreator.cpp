@@ -24,7 +24,7 @@
 #include "CreateVolume.h"
 
 #ifdef VTK_FOUND
-#  include "vtkCreator.h"
+#  include "VtkCreator.h"
 #endif
 
 const std::string logstr( "lfx.demo" );

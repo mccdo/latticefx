@@ -1,6 +1,5 @@
 #include "UtlSettings.h"
 
-
 void UtlSettings::initComboBox(QSettings *pset, QComboBox *pCtl, const QString &name, const QVariant &def)
 {
     QVariant v = pset->value(name, def);
@@ -67,7 +66,7 @@ int UtlSettings::getCheckedItems(QListWidget *pCtl, std::vector<int> *pIndexs)
 	for (int i=0; i<pCtl->count(); i++)
 	{
 		QListWidgetItem *pItem = pCtl->item(i);
-		if (pItem->checkState() == Qt::CheckState::Checked)
+		if (pItem->checkState() == Qt::Checked)
 		{
 			pIndexs->push_back(i);
 			count++;

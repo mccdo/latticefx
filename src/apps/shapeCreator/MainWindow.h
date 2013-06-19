@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "vtkCreator.h"
-#include "creatorThread.h"
+#include "VtkCreator.h"
+#include "CreatorThread.h"
 
 namespace Ui {
 class MainWindow;

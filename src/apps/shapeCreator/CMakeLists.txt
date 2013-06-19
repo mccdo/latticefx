@@ -21,7 +21,6 @@ set( _sharedSources
     VtkCreator.h
 )
 
-
 #
 # Always build the command line executable
 #
@@ -44,7 +43,7 @@ set_property( TARGET ${_exeName} PROPERTY FOLDER "App")
 if( QT_FOUND )
     set(qt_hdrs
         MainWindow.h
-        creatorThread.h)
+        CreatorThread.h)
     # All headers go with widgets, so must be processed with Qt's MOC.
     qt4_wrap_cpp(MOCCED ${qt_hdrs}  OPTIONS -DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED)
 

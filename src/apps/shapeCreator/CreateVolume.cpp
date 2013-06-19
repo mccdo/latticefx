@@ -1,5 +1,5 @@
 #include "CreateVolume.h"
-#include "shapeVolumes.h"
+#include "ShapeVolumes.h"
 
 #include <osg/ArgumentParser>
 #include <osgDB/FileUtils>

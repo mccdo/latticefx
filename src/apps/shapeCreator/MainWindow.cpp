@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "UtlSettings.h"
-#include "shapeVolumes.h"
+#include "ShapeVolumes.h"
 #include <QFileDialog>
 #include <QMessageBox>
 
