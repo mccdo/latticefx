@@ -83,7 +83,7 @@ int main( int argc, char** argv )
 
 
 
-/** \page AppShapeCreator Application shapeCreator
+/** \page AppShapeCreator Application  shapeCreator
 
 shapeCreator generates sample volumetric data for use with the page-volume
 and page-volume-rt test programs.

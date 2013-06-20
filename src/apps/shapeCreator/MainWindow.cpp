@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     _pVtk.reset(new VtkCreator(logstr.c_str(), loginfo.c_str()));
+	_pThread = new CreatorThread();
 
     ui->setupUi(this);
 
@@ -23,8 +24,6 @@ MainWindow::MainWindow(QWidget *parent) :
     guiSettingsInit();
     guiSettingsLoad();
     guiFeaturesInit();
-
-	_pThread = new CreatorThread();
 
 	QObject::connect( _pThread, SIGNAL(signalStart()), this, SLOT(slotStart()));
 	QObject::connect( _pThread, SIGNAL(signalProgress(int)), this, SLOT(slotProgress(int)));
@@ -132,7 +131,7 @@ void MainWindow::guiSettingsLoad()
     }
 
     UtlSettings::initPlainText(&settings, ui->plainTextEditDbFile, "dbfile", QString(""));
-    UtlSettings::initPlainText(&settings, ui->plainTextEditFileFolder, "fileFolder", QString(""));
+    UtlSettings::initPlainText(&settings, ui->plainTextEditFileFolder, "fileFolder", QApplication::applicationDirPath());
     settings.endGroup();
 
     //////////////////////////////////////////////////////////
@@ -186,7 +185,7 @@ void MainWindow::guiSettingsSave()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::guiFeaturesInit()
 {
-#ifndef CRUNCHSTORE_FOUND
+#ifndef LFX_USE_CRUNCHSTORE
     ui->groupBoxCrunchstore->setTitle("Crunchstore - Not Available");
     on_radioButtonWriteToFiles_clicked();
 	ui->radioButtonWriteToDb->setEnabled(false);
@@ -212,12 +211,9 @@ void MainWindow::guiFeaturesInit()
 void MainWindow::setShapeType(int shapeType)
 {
 	bool enable = false;
-	bool enableCreate = true;
 	if (shapeType == E_SHAPE_VTK)
 	{
 		enable = true;
-
-		enableCreate = vtkCreator()->haveFile();
 	}
 	
 	ui->plainTextEditVtkFile->setEnabled(enable);
@@ -228,7 +224,7 @@ void MainWindow::setShapeType(int shapeType)
 	ui->listWidgetVtkScalars->setEnabled(enable);
 	ui->listWidgetVtkVectors->setEnabled(enable);
 
-	ui->pushButtonCreate->setEnabled(enableCreate);
+	enableCreateButton();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,13 +276,54 @@ void MainWindow::loadVtkFile(QString file)
 		ui->listWidgetVtkVectors->setEnabled(false);
 	}
 
-	ui->pushButtonCreate->setEnabled(true);
+	enableCreateButton();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 VtkCreator* MainWindow::vtkCreator()
 {
 	return (VtkCreator *)_pVtk.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::enableCreateButton()
+{
+	if (_pThread->isRunning())
+    {
+		return;
+	}
+
+	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
+	if (shapeType == E_SHAPE_VTK)
+	{
+		if (!vtkCreator()->haveFile())
+		{
+			ui->pushButtonCreate->setEnabled(false);
+			return;
+		}
+	}
+
+
+	if (ui->radioButtonWriteToFiles->isChecked())
+	{
+		QString folder = ui->plainTextEditFileFolder->toPlainText();
+		if (folder.length() <= 0 || !QDir(folder).exists())
+		{
+			ui->pushButtonCreate->setEnabled(false);
+			return;
+		}
+	}
+	else
+	{
+		QString dbfile = ui->plainTextEditDbFile->toPlainText();
+		if (dbfile.length() <= 0)
+		{
+			ui->pushButtonCreate->setEnabled(false);
+			return;
+		}
+	}
+
+	ui->pushButtonCreate->setEnabled(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +335,8 @@ void MainWindow::on_radioButtonWriteToDb_clicked()
     ui->plainTextEditDbFile->setEnabled(true);
     ui->plainTextEditFileFolder->setEnabled(false);
     ui->pushButtonBrowseFolder->setEnabled(false);
+
+	enableCreateButton();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -309,6 +348,8 @@ void MainWindow::on_radioButtonWriteToFiles_clicked()
     ui->plainTextEditDbFile->setEnabled(false);
     ui->plainTextEditFileFolder->setEnabled(true);
     ui->pushButtonBrowseFolder->setEnabled(true);
+
+	enableCreateButton();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -463,6 +504,18 @@ void MainWindow::on_pushButtonCancel_clicked()
 		msgOut(QString("Canceling..."));
         _pThread->cancel();
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::on_plainTextEditFileFolder_textChanged()
+{
+	enableCreateButton();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::on_plainTextEditDbFile_textChanged()
+{
+	enableCreateButton();
 }
 
 

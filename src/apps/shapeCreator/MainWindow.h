@@ -28,6 +28,8 @@ protected:
     void loadVtkFile(QString file);
 	VtkCreator* vtkCreator();
 
+	void enableCreateButton();
+
 	void msgOut(const QString &msg);
 	void msgClearAll();
 
@@ -58,6 +60,8 @@ private slots:
     void on_comboBoxShape_currentIndexChanged(int index);
     void on_pushButtonCreate_clicked();
     void on_pushButtonCancel_clicked();
+	void on_plainTextEditFileFolder_textChanged();
+	void on_plainTextEditDbFile_textChanged();
 
 
 	void slotStart();
