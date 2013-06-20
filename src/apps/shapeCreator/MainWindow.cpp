@@ -304,16 +304,14 @@ void MainWindow::enableCreateButton()
 	}
 
 
-	if (ui->radioButtonWriteToFiles->isChecked())
+	QString folder = ui->plainTextEditFileFolder->toPlainText();
+	if (folder.length() <= 0 || !QDir(folder).exists())
 	{
-		QString folder = ui->plainTextEditFileFolder->toPlainText();
-		if (folder.length() <= 0 || !QDir(folder).exists())
-		{
-			ui->pushButtonCreate->setEnabled(false);
-			return;
-		}
+		ui->pushButtonCreate->setEnabled(false);
+		return;
 	}
-	else
+
+	if (ui->radioButtonWriteToDb->isChecked())
 	{
 		QString dbfile = ui->plainTextEditDbFile->toPlainText();
 		if (dbfile.length() <= 0)
@@ -332,9 +330,11 @@ void MainWindow::on_radioButtonWriteToDb_clicked()
     ui->radioButtonWriteToDb->setChecked(true);
     ui->radioButtonWriteToFiles->setChecked(false);
 
+	/*
     ui->plainTextEditDbFile->setEnabled(true);
     ui->plainTextEditFileFolder->setEnabled(false);
     ui->pushButtonBrowseFolder->setEnabled(false);
+	*/
 
 	enableCreateButton();
 }
@@ -345,9 +345,11 @@ void MainWindow::on_radioButtonWriteToFiles_clicked()
     ui->radioButtonWriteToDb->setChecked(false);
     ui->radioButtonWriteToFiles->setChecked(true);
 
+	/*
     ui->plainTextEditDbFile->setEnabled(false);
     ui->plainTextEditFileFolder->setEnabled(true);
     ui->pushButtonBrowseFolder->setEnabled(true);
+	*/
 
 	enableCreateButton();
 }
@@ -468,27 +470,28 @@ void MainWindow::on_pushButtonCreate_clicked()
 	createVolume->setDepth(depth);
 	createVolume->setUseCrunchStore(usedb);
 
-	QString file = ui->plainTextEditDbFile->toPlainText();
-	if (!usedb)
-	{
-		file = ui->plainTextEditFileFolder->toPlainText();
-		if (file.length() <= 0) 
-		{
-			QMessageBox::information(NULL, "Output Folder", "Please specify and output folder first.");
-			return;
-		}
+	QString path = ui->plainTextEditFileFolder->toPlainText();
 
-		if (!QDir(file).exists())
-		{
-			QString out("The path: ");
-			out += file;
-			out += " doesn't exist.\nPlease specifly a valid output folder first.";
-			QMessageBox::information(NULL, "Output Folder", out);
-			return;
-		}
+	if (!QDir(path).exists()) 
+	{
+		QMessageBox::information(NULL, "Output Folder", "Please specify and output folder first.");
+		return;
 	}
 
-	std::string strFileOrFolder = file.toStdString();
+	if (usedb)
+	{
+		QString file = ui->plainTextEditDbFile->toPlainText();
+		
+		if (file.length() <= 0)
+		{
+			QMessageBox::information(NULL, "Output Database File", "You must specify a database file first.");
+			return;
+		}
+
+		path = QDir::cleanPath(path + QDir::separator() + file);
+	}
+
+	std::string strFileOrFolder = path.toStdString();
 	createVolume->setCsFileOrFolder(strFileOrFolder.c_str());
 
 	_pThread->setCreateVolume(createVolume);
