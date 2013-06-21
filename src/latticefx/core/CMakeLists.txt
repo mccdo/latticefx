@@ -12,6 +12,7 @@ endif()
 set( _headerFiles
     Export.h
     BoundUtils.h
+	CallbackProgress.h
     ChannelData.h
     ChannelDataComposite.h
     ChannelDataImageSet.h
@@ -51,6 +52,7 @@ set( _headerFiles
 
 set( _sourceFiles
     BoundUtils.cpp
+	CallbackProgress.cpp
     ChannelData.cpp
     ChannelDataComposite.cpp
     ChannelDataImageSet.cpp

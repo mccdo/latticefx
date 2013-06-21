@@ -26,6 +26,7 @@
 #include <latticefx/core/DBBase.h>
 #include <latticefx/core/Preprocess.h>
 #include <latticefx/core/VolumeBrickDataPtr.h>
+#include <latticefx/core/CallbackProgress.h>
 
 #include <osg/Vec3>
 #include <osg/Vec3s>
@@ -41,31 +42,6 @@ namespace lfx
 {
 namespace core
 {
-
-
-class LATTICEFX_EXPORT ICallbackProgress
-{
-public:
-	ICallbackProgress();
-
-	virtual bool checkCancel() { return false; }
-	virtual void updateProgress(int /*0-100*/) {}
-	virtual void sendMsg(const char* /*msg*/) {}
-
-	void clearProg();
-	void addToProgTot(int add);
-
-	void computeProgAndUpdate(int add);
-
-protected:
-	int computeProg();
-	void validateProgUpdate(int newProg);
-
-protected:
-	int _progCountTot;
-	int _progCountCur;
-	int _lastProg;
-};
 
 /** \class TraverseHierarchy HierarchyUtils <latticefx/core/HierarchyUtils.h>
 \brief A utility class for traversing hierarchies of ChannelData.
