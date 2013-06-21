@@ -714,20 +714,6 @@ void VolumeBrickData::computeProgAndUpdate(int add) const
 	_pcbProgress->computeProgAndUpdate(add);
 }
 
-void VolumeBrickData::sendProgMsg(const char *frmt, ...) const
-{
-	if (!_pcbProgress) return;
-
-	char buffer[4096];
-	va_list args;
-
-	va_start(args, frmt);
-	sprintf_s(buffer, 4096, frmt, args);
-	va_end(args);
-
-	_pcbProgress->sendMsg(buffer);
-}
-
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
 {
     if( ( brickNum[0] >= _numBricks[0] ) || ( brickNum[0] < 0 ) ||

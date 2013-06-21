@@ -311,7 +311,6 @@ public:
 	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
 	bool checkCancel() const;
 	void computeProgAndUpdate(int add) const;
-	void sendProgMsg(const char *frmt, ...) const;
 
 protected:
 	
