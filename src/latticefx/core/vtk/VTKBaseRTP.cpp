@@ -68,7 +68,11 @@ void VTKBaseRTP::SetRoiBox(const std::vector<double> &roiBox)
 ////////////////////////////////////////////////////////////////////////////////
 vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkDataObject *pdo)
 {
-	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractGeometry>();
+	if (m_roiBox.size() < 6)
+    {
+        std::cout << "VTKBaseRTP::GetRoi : No bounding box set." << std::endl;
+        return vtkSmartPointer<vtkExtractGeometry>();
+    }
 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(&m_roiBox[0]);
@@ -88,7 +92,11 @@ vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkDataObject *pdo)
 ////////////////////////////////////////////////////////////////////////////////
 vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkAlgorithmOutput* pOutPin)
 {
-	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractGeometry>();
+	if (m_roiBox.size() < 6)
+    {
+        std::cout << "VTKBaseRTP::GetRoi : No bounding box set." << std::endl;
+        return vtkSmartPointer<vtkExtractGeometry>();
+    }
 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(&m_roiBox[0]);
@@ -108,7 +116,11 @@ vtkSmartPointer<vtkExtractGeometry> VTKBaseRTP::GetRoi(vtkAlgorithmOutput* pOutP
 ////////////////////////////////////////////////////////////////////////////////
 vtkSmartPointer<vtkExtractPolyDataGeometry> VTKBaseRTP::GetRoiPoly(vtkAlgorithmOutput* pOutPin)
 {
-	if (m_roiBox.size() < 6) return vtkSmartPointer<vtkExtractPolyDataGeometry>();
+	if (m_roiBox.size() < 6)
+    {
+        std::cout << "VTKBaseRTP::GetRoiPoly : No bounding box set." << std::endl;
+        return vtkSmartPointer<vtkExtractPolyDataGeometry>();
+    }
 
 	vtkSmartPointer<vtkBox> boxExtract = vtkSmartPointer<vtkBox>::New();
 	boxExtract->SetBounds(&m_roiBox[0]);
