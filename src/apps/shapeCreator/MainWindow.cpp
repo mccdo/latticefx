@@ -462,7 +462,6 @@ void MainWindow::on_pushButtonCreate_clicked()
 		return;
 	}
 
-
 	int depth = UtlSettings::getSelectedValueInt(ui->comboBoxDepth);
 	bool usedb = ui->radioButtonWriteToDb->isChecked();
 

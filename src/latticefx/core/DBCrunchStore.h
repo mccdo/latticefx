@@ -25,6 +25,7 @@
 #include <latticefx/core/DBBase.h>
 
 #include <crunchstore/DataManagerPtr.h>
+#include <crunchstore/TransactionKey.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -56,6 +57,7 @@ public:
     void setDataManager( crunchstore::DataManagerPtr dm );
     crunchstore::DataManagerPtr getDataManager();
 
+	void setTransactionKey(crunchstore::TransactionKey *transKey);
 
     virtual bool storeImage( const osg::Image* image, const DBKey& dbKey );
     virtual osg::Image* loadImage( const DBKey& dbKey );
@@ -70,7 +72,7 @@ protected:
     void loadUUIDMap();
 
     crunchstore::DataManagerPtr _dm;
-
+	const crunchstore::TransactionKey *_transKey;
     typedef std::map< std::string, std::string > UUIDMap;
     UUIDMap _uuidMap;
 };

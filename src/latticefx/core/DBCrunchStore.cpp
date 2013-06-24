@@ -41,15 +41,20 @@ namespace core
 
 
 DBCrunchStore::DBCrunchStore()
-    : DBBase( CRUNCHSTORE )
+    : DBBase( CRUNCHSTORE ),
+	  _transKey( NULL )
 {
 }
+
 DBCrunchStore::DBCrunchStore( const DBCrunchStore& rhs )
     : DBBase( rhs ),
       _dm( rhs._dm ),
-      _uuidMap( rhs._uuidMap )
+      _uuidMap( rhs._uuidMap ),
+	  _transKey( rhs._transKey )
+
 {
 }
+
 DBCrunchStore::~DBCrunchStore()
 {
     storeUUIDMap();
@@ -68,6 +73,12 @@ crunchstore::DataManagerPtr DBCrunchStore::getDataManager()
 
 
 typedef std::vector< char > CharVec;
+
+
+void DBCrunchStore::setTransactionKey(crunchstore::TransactionKey *transKey)
+{
+	_transKey = transKey;
+}
 
 bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
 {
@@ -105,7 +116,15 @@ bool DBCrunchStore::storeImage( const osg::Image* image, const DBKey& dbKey )
     _uuidMap[ keyString ] = uuidString;
 
     LFX_TRACE( "storeImage(): Saving key \"" + keyString + "\", uuid: " + uuidString );
-    _dm->Save( persist );
+	if (_transKey)
+	{
+		_dm->Save( persist, crunchstore::Store::DEFAULT_ROLE, *_transKey );
+	}
+	else
+	{
+		_dm->Save( persist );
+	}
+
 
     return( true );
 }

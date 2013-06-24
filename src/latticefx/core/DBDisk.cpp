@@ -75,7 +75,6 @@ const std::string& DBDisk::getRootPath() const
     return( _rootPath );
 }
 
-
 bool DBDisk::storeImage( const osg::Image* image, const DBKey& dbKey )
 {
     std::string fileName( fileNameFromDBKey( dbKey ) );

@@ -75,6 +75,7 @@ bool CreateVolume::create()
     std::ostringstream ss;
     ss << "Time to create data set = " << createTime << " secs" << std::endl;
     LFX_CRITICAL_STATIC( _logstr, ss.str().c_str() );
+	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
 
 	return true;
 }
@@ -154,6 +155,7 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
         crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
         sqstore->SetStorePath( csFile );
         manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+	
         try
         {
             cs->setDataManager( manager );
@@ -165,7 +167,14 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
             exit( 1 );
         }
 
+		// start a transaction
+		crunchstore::SQLiteTransactionKey key = sqstore->BeginTransaction();
+		cs->setTransactionKey(&key);
+
         saver->save( ( DBBasePtr )cs );
+
+		// end the transaction
+		sqstore->EndTransaction(key);
     }
 #endif
     if( csFile.empty() || !_useCrunchStore )
