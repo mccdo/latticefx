@@ -161,6 +161,20 @@ int main( int argc, char** argv )
         vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::Y_PLANE );
         vectorRTP->SetRequestedValue( 50.0 );
         vectorRTP->addInput( "vtkDataObject" );
+
+#if 1
+		// test roi
+		std::vector<double> bounds;
+		bounds.resize(6);
+		tempDataSet->GetBounds(&bounds[0]);
+        
+		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2.;
+		//bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/5.;
+		//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/5.;
+		vectorRTP->SetRoiBox(bounds);
+		vectorRTP->ExtractBoundaryCells(true);
+#endif
+
         dsp1->addOperation( vectorRTP );
 
         //Try the vtkActor renderer
@@ -196,18 +210,18 @@ int main( int argc, char** argv )
 		bounds.resize(6);
 		tempDataSet->GetBounds(&bounds[0]);
 
-		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/5.;
-		bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/5.;
-		bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/5.;
-		//isosurfaceRTP->SetRoiBox(bounds);
+		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2;
+		bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/2.;
+		//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/2.;
+		isosurfaceRTP->SetRoiBox(bounds);
 		isosurfaceRTP->ExtractBoundaryCells(true);
 #endif
 #if 0
         isosurfaceRTP->SetRequestedValue( 500.0 );
         isosurfaceRTP->SetActiveScalar( "200_to_1000" );
 #else
-        //isosurfaceRTP->SetRequestedValue( 0.0 );
-        //isosurfaceRTP->SetActiveScalar( "StagnationEnergy" );
+        isosurfaceRTP->SetRequestedValue( 150.0 );
+        isosurfaceRTP->SetActiveScalar( "Momentum_magnitude" );
 #endif
         isosurfaceRTP->addInput( "vtkDataObject" );
         dsp->addOperation( isosurfaceRTP );
@@ -218,8 +232,8 @@ int main( int argc, char** argv )
         renderOp2->SetActiveVector( "steve's_vector" );
         renderOp2->SetActiveScalar( "200_to_1000" );
 #else
-        //renderOp2->SetActiveVector( "Momentum" );
-        //renderOp2->SetActiveScalar( "StagnationEnergy" );
+        renderOp2->SetActiveVector( "Momentum" );
+        renderOp2->SetActiveScalar( "Momentum_magnitude" );
 #endif
         renderOp2->addInput( "vtkPolyDataMapper" );
         renderOp2->addInput( "vtkDataObject" );
