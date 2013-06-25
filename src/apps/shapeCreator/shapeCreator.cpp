@@ -96,7 +96,7 @@ at near viewing distances, but large values also create more data
 files and increase shapeCreator runtime duration. Use the -depth command
 line argument to control the hierarchy depth:
 
-\li-depth <d> Hierarchy levels. Default is 4.
+\li -depth <d> Hierarchy levels. Default is 4.
 
 Valid values are >= 1.
 
