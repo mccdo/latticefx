@@ -21,6 +21,7 @@
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 #include <osg/ArgumentParser>
+#include <boost/filesystem.hpp>
 #include "CreateVolume.h"
 
 #ifdef VTK_FOUND
@@ -34,7 +35,7 @@ using namespace lfx::core;
 
 int main( int argc, char** argv )
 {
-    Log::instance()->setPriority( Log::PrioSilent, Log::Console );
+	Log::instance()->setPriority( Log::PrioFatal, Log::Console );
 	Log::instance()->setPriority( Log::PrioInfo, loginfo );
 
     // Please document all options using Doxygen at the bottom of this file.
@@ -62,21 +63,41 @@ int main( int argc, char** argv )
 
     osg::ArgumentParser arguments( &argc, argv );
 
+	// validate database file
 	std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
     arguments.read( "-cs", csFile );
+
+	// make sure the directory exists if a file was specified
+	if (csFile.size() > 0)
+	{
+		std::string dir = csFile.substr( 0, csFile.find_last_of( "/\\" ) );
+		if ( dir.size() <= 0 )
+		{
+			LFX_FATAL_STATIC( logstr, "You must specify the full path of your database file." );
+			return( 0 );
+		}
+
+		if ( !boost::filesystem::is_directory( dir ) )
+		{
+			std::ostringstream ss;
+			ss << "Database folder doesn't exist: " << dir;
+			LFX_FATAL_STATIC( logstr, ss.str().c_str() );
+			return( 0 );
+		}
+	}
 #endif
 
 #ifdef VTK_FOUND
     if( arguments.find( "-vtk" ) > 0 )
     {
-		boost::shared_ptr<VtkCreator> vtk (new VtkCreator(logstr.c_str(), loginfo.c_str()));
+		boost::shared_ptr<VtkCreator> vtk ( new VtkCreator( logstr.c_str(), loginfo.c_str() ) );
 		return vtk->create();//arguments, csFile);
     }
 #endif
 
-	CreateVolume createVolume(logstr.c_str(), loginfo.c_str());
-	createVolume.create(arguments, csFile);
+	CreateVolume createVolume( logstr.c_str(), loginfo.c_str() );
+	createVolume.create( arguments, csFile );
 
     return( 0 );
 }
@@ -131,7 +152,7 @@ DBDisk. Files are written to the current working directory. To view the data,
 run page-volume or page-volume-rt with the -dp option to specify the directory.
 
 If LatticeFX is built with crunchstore, use the \c -cs option to specify the
-database file name.
+database file full path. The path must exist but if the file does not it will be created.
 \li -cs <dbFile> Write volume image data files using DBCrunchStore.
 
 To view the data, run page-volume or page-volume-rt with the -cs option to

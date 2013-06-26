@@ -26,7 +26,7 @@
 using namespace lfx::core;
 
 ////////////////////////////////////////////////////////////////////////////////
-CreateVolume::CreateVolume(const char *plogstr, const char *ploginfo)
+CreateVolume::CreateVolume( const char *plogstr, const char *ploginfo )
 {
 	_logstr = plogstr;
 	_loginfo = ploginfo;
@@ -42,11 +42,11 @@ CreateVolume::CreateVolume(const char *plogstr, const char *ploginfo)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreateVolume::setCallbackProgress(lfx::core::ICallbackProgress *pcp)
+void CreateVolume::setCallbackProgress( lfx::core::ICallbackProgress *pcp )
 {
 	_pcbProgress = pcp;
 
-	if (_volumeObj != NULL) _volumeObj->setCallbackProgress(pcp);
+	if (_volumeObj != NULL) _volumeObj->setCallbackProgress( pcp );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ bool CreateVolume::create()
 	}
 
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
-	createDataSet( _csFileOrFolder, _volumeObj, _basename );
+	if (!createDataSet( _csFileOrFolder, _volumeObj, _basename )) return false;
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
     boost::posix_time::time_duration diff = end_time - start_time;
     
@@ -75,13 +75,13 @@ bool CreateVolume::create()
     std::ostringstream ss;
     ss << "Time to create data set = " << createTime << " secs" << std::endl;
     LFX_CRITICAL_STATIC( _logstr, ss.str().c_str() );
-	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
+	if (_pcbProgress) _pcbProgress->sendMsg( ss.str().c_str() );
 
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool CreateVolume::create(osg::ArgumentParser &arguments, const std::string &csFile)
+bool CreateVolume::create( osg::ArgumentParser &arguments, const std::string &csFile )
 {
 	if (!processArgs(arguments)) return false;
 
@@ -90,7 +90,7 @@ bool CreateVolume::create(osg::ArgumentParser &arguments, const std::string &csF
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool CreateVolume::processArgs(osg::ArgumentParser &arguments)
+bool CreateVolume::processArgs( osg::ArgumentParser &arguments )
 {
 	_prune = false;
 	if (arguments.find( "-prune" ) > 0) { _prune = true; }
@@ -124,7 +124,7 @@ bool CreateVolume::processArgs(osg::ArgumentParser &arguments)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool CreateVolume::isVtk(osg::ArgumentParser &arguments)
+bool CreateVolume::isVtk( osg::ArgumentParser &arguments )
 {
 #ifdef VTK_FOUND
     if( arguments.find( "-vtk" ) > 0 )
@@ -137,9 +137,9 @@ bool CreateVolume::isVtk(osg::ArgumentParser &arguments)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* saver )
+bool CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* saver )
 {
-	if (_pcbProgress && _pcbProgress->checkCancel()) return;
+	if (_pcbProgress && _pcbProgress->checkCancel()) return false;
 
 	 // Configure database to use
 #ifdef LFX_USE_CRUNCHSTORE
@@ -162,9 +162,12 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
         }
         catch( std::exception exc )
         {
+			std::ostringstream ss;
+			ss << "Unable to set DataManager. Make sure the db file exists: " << csFile;
             LFX_FATAL_STATIC( _logstr, std::string( exc.what() ) );
-            LFX_FATAL_STATIC( _logstr, "Unable to set DataManager." );
-            exit( 1 );
+            LFX_FATAL_STATIC( _logstr, ss.str().c_str() );
+			if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
+            return false;
         }
 
 		// start a transaction
@@ -182,13 +185,15 @@ void CreateVolume::createDataSet( const std::string& csFile, SaveHierarchy* save
         DBDiskPtr disk( DBDiskPtr( new DBDisk(csFile) ) );
         saver->save( ( DBBasePtr )disk );
     }
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreateVolume::createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
+bool CreateVolume::createDataSet( const std::string& csFile, VolumeBrickDataPtr shapeGen, const std::string &baseName )
 {
     //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
-	SaveHierarchy saver( baseName, _pcbProgress );
-	saver.addLevel( shapeGen );
-	createDataSet( csFile, &saver );
+	SaveHierarchy saver( baseName );
+	saver.addLevel( shapeGen ); 
+	return createDataSet( csFile, &saver );
 }

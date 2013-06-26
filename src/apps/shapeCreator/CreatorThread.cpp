@@ -4,8 +4,8 @@
 //using namespace lfx::core;
 
 ////////////////////////////////////////////////////////////////////////////////
-CreatorThread::CreatorThread(QObject *parent) :
-    QThread(parent)
+CreatorThread::CreatorThread( QObject *parent ) :
+    QThread( parent )
 {
 	_cancel = false;
 }
@@ -17,21 +17,21 @@ void CreatorThread::run()
 
 	if (_createVolume == NULL) return;
 
-	_createVolume->setCallbackProgress(this);
+	_createVolume->setCallbackProgress( this );
 	emit signalStart(); 
 
 	try
 	{
 		_createVolume->create();
 	}
-	catch (std::exception ex)
+	catch ( std::exception ex )
 	{
-		sendMsg("UnExpected Exception.. brick creation aborted.");
+		sendMsg( "UnExpected Exception.. brick creation aborted." );
 	}
 
 	if (checkCancel())
 	{
-		sendMsg("Brick creation canceled.");
+		sendMsg( "Brick creation canceled." );
 	}
 
 	emit signalEnd();
@@ -52,14 +52,14 @@ bool CreatorThread::checkCancel()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreatorThread::updateProgress(int percent)
+void CreatorThread::updateProgress( int percent )
 {
-	emit signalProgress(percent);
+	emit signalProgress( percent );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void CreatorThread::sendMsg(const char* msg)
+void CreatorThread::sendMsg( const char* msg )
 {
-	QString qmsg(msg);
-	emit signalMsg(qmsg);
+	QString qmsg( msg );
+	emit signalMsg( qmsg );
 }

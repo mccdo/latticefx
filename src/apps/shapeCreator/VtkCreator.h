@@ -35,40 +35,40 @@ using namespace lfx::core;
 class VtkCreator : public CreateVolume
 {
 public:
-	VtkCreator(const char *plogstr, const char *ploginfo);
+	VtkCreator( const char *plogstr, const char *ploginfo );
 
 	virtual bool create();
-	virtual bool create(osg::ArgumentParser &arguments, const std::string &csFile);
+	virtual bool create( osg::ArgumentParser &arguments, const std::string &csFile );
 
-    void init(const char *vtkFile);
+    void init( const char *vtkFile );
     bool haveFile();
 
     int getNumScalars();
     int getNumVectors();
-    std::string getScalarName(int num);
-    std::string getVectorName(int num);
+    std::string getScalarName( int num );
+    std::string getVectorName( int num );
 
-	void setThreads(int count) { _threads = count; } 
-	void setHiresLod(bool on) { _hireslod = on; }
-	void setCache(bool on) { _nocache = !on; }
-	void setScalarsToProcess(const std::vector<int> &indexs) { _scalars = indexs; }
-	void setVectorsToProcess(const std::vector<int> &indexs) { _vectors = indexs; }
+	void setThreads( int count ) { _threads = count; } 
+	void setHiresLod( bool on ) { _hireslod = on; }
+	void setCache( bool on ) { _nocache = !on; }
+	void setScalarsToProcess( const std::vector<int> &indexs ) { _scalars = indexs; }
+	void setVectorsToProcess( const std::vector<int> &indexs ) { _vectors = indexs; }
 
 
 protected:
 
-	virtual bool processArgs(osg::ArgumentParser &arguments);
+	virtual bool processArgs( osg::ArgumentParser &arguments );
 
-	void getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar);
-	void vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar);
+	void getVtkProcessOptions( osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar );
+	bool vtkCreateBricks( SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar );
 
-	void createDataSet( const std::string& csFile, SaveHierarchy::LODVector &depths, const std::string &baseName );
-	void createDataSet( const std::string& csFile, VolumeBrickDataPtr brickData, const std::string &baseName );
+	bool createDataSet( const std::string& csFile, SaveHierarchy::LODVector &depths, const std::string &baseName );
+	bool createDataSet( const std::string& csFile, VolumeBrickDataPtr brickData, const std::string &baseName );
 
-	void setCacheCreate(SaveHierarchy::LODVector &depths, bool create);
-	void setCacheUse(SaveHierarchy::LODVector &depths, bool use);
+	void setCacheCreate( SaveHierarchy::LODVector &depths, bool create );
+	void setCacheUse( SaveHierarchy::LODVector &depths, bool use );
 
-	void getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune);
+	void getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune );
 
 protected:
 

@@ -38,7 +38,7 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-VtkCreator::VtkCreator(const char *plogstr, const char *ploginfo)
+VtkCreator::VtkCreator( const char *plogstr, const char *ploginfo )
 	: CreateVolume(plogstr, ploginfo)
 {
 	_threads = 32;
@@ -47,7 +47,7 @@ VtkCreator::VtkCreator(const char *plogstr, const char *ploginfo)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::init(const char *vtkFile)
+void VtkCreator::init( const char *vtkFile )
 {
     _pds.reset(new vtk::DataSet() );
     _pds->SetFileName(vtkFile);
@@ -80,9 +80,9 @@ int VtkCreator::getNumVectors()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-std::string VtkCreator::getScalarName(int num)
+std::string VtkCreator::getScalarName( int num )
 {
-    if (num <0 || num >= getNumScalars()) return std::string("");
+    if (num <0 || num >= getNumScalars()) return std::string( "" );
 
     return _pds->GetScalarName(num);
 }
@@ -90,7 +90,7 @@ std::string VtkCreator::getScalarName(int num)
 ////////////////////////////////////////////////////////////////////////////////
 std::string VtkCreator::getVectorName(int num)
 {
-    if (num <0 || num >= getNumVectors()) return std::string("");
+    if (num <0 || num >= getNumVectors()) return std::string( "" );
 
     return _pds->GetVectorName(num);
 }
@@ -104,7 +104,7 @@ bool VtkCreator::create()
 
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
-	VolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(_pds, _prune, 0, true, osg::Vec3s(32,32,32), _threads));
+	VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData( _pds, _prune, 0, true, osg::Vec3s(32,32,32), _threads ) );
     vbd->setDepth( _depth );
 
 	// get our depths
@@ -115,16 +115,16 @@ bool VtkCreator::create()
 	if (_nocache)
 	{
 		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is disabled." );
-		if (_pcbProgress) _pcbProgress->sendMsg("Vtk lookup cache is disabled.");
-		setCacheCreate(depths, false);
-		setCacheUse(depths, false);
+		if (_pcbProgress) _pcbProgress->sendMsg( "Vtk lookup cache is disabled." );
+		setCacheCreate( depths, false );
+		setCacheUse( depths, false );
 	}
 	else
 	{
 		LFX_CRITICAL_STATIC( _loginfo, "Vtk lookup cache is enabled." );
-		if (_pcbProgress) _pcbProgress->sendMsg("Vtk lookup cache is enabled.");
-		setCacheCreate(depths, true);
-		setCacheUse(depths, true);
+		if (_pcbProgress) _pcbProgress->sendMsg( "Vtk lookup cache is enabled." );
+		setCacheCreate( depths, true );
+		setCacheUse( depths, true );
 	}
 	LFX_CRITICAL_STATIC( _loginfo, "" );
 
@@ -149,44 +149,44 @@ bool VtkCreator::create()
 	int brickCount = vbd->getBrickCount();
 	int itemCount = brickCount*8; // see VolumeBrickData::getSeamlessBrick (8 create image calls), and SaveHierarchy::recurseSaveBricks(1 call for each brick)
 	int totalCount = _scalars.size() * itemCount + _vectors.size() * itemCount + 10;
-	if (_pcbProgress)
+	if ( _pcbProgress )
 	{
 		_pcbProgress->clearProg();
-		_pcbProgress->addToProgTot(totalCount);
+		_pcbProgress->addToProgTot( totalCount );
 	}
 
 
-	for (unsigned int i=0; i<_scalars.size(); i++)
+	for ( unsigned int i=0; i<_scalars.size(); i++ )
 	{
-		if (_pcbProgress)
+		if ( _pcbProgress )
 		{
 			if (_pcbProgress->checkCancel()) return 0;
-			std::string name = getScalarName(_scalars[i]);
+			std::string name = getScalarName( _scalars[i] );
 
 			std::ostringstream oss;
 			oss << "Creating bricks for scalar " << name << "...";
 			_pcbProgress->sendMsg(oss.str().c_str());
 		}
 
-		vtkCreateBricks(depths, _csFileOrFolder, _scalars[i], true);
-		if (!i) { setCacheCreate(depths, false); }
+		if ( !vtkCreateBricks( depths, _csFileOrFolder, _scalars[i], true ) ) return false;
+		if (!i) { setCacheCreate( depths, false ); }
 	}
 
-	for (unsigned int i=0; i<_vectors.size(); i++)
+	for ( unsigned int i=0; i<_vectors.size(); i++ )
 	{
-		if (_pcbProgress)
+		if ( _pcbProgress )
 		{
 			if (_pcbProgress->checkCancel()) return 0;
-			std::string name = getVectorName(_vectors[i]);
+			std::string name = getVectorName( _vectors[i] );
 
 			std::ostringstream oss;
 			oss << "Creating bricks for vector " << name << "...";
-			_pcbProgress->sendMsg(oss.str().c_str());
+			_pcbProgress->sendMsg( oss.str().c_str() );
 		}
 		
 
-		vtkCreateBricks(depths, _csFileOrFolder, _vectors[i], false);
-		if (!i) { setCacheCreate(depths, false); }
+		if ( !vtkCreateBricks( depths, _csFileOrFolder, _vectors[i], false ) ) return false;
+		if ( !i ) { setCacheCreate( depths, false ); }
 	}
 
 	boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
@@ -196,23 +196,23 @@ bool VtkCreator::create()
 
 	ss << "Total time to process dataset = " << createTime << " secs" << std::endl;
     LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
-	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
+	if ( _pcbProgress ) _pcbProgress->sendMsg( ss.str().c_str() );
 
-	return 0;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool VtkCreator::create(osg::ArgumentParser &arguments, const std::string &csFile)
+bool VtkCreator::create( osg::ArgumentParser &arguments, const std::string &csFile )
 {
-	return CreateVolume::create(arguments, csFile);
+	return CreateVolume::create( arguments, csFile );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
+bool VtkCreator::processArgs( osg::ArgumentParser &arguments )
 {
 	std::ostringstream ss;
 
-	if (!CreateVolume::processArgs(arguments)) return false;
+	if ( !CreateVolume::processArgs( arguments ) ) return false;
 
 	// get the vtk file
 	int iarg = arguments.find( "-vtk" );
@@ -223,22 +223,22 @@ bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
 	}
 	iarg++;
 
-	std::string vtkFile = osgDB::findDataFile(arguments[iarg]);
-	if (!boost::filesystem::exists(vtkFile))
+	std::string vtkFile = osgDB::findDataFile( arguments[iarg] );
+	if ( !boost::filesystem::exists( vtkFile ) )
 	{
 		LFX_CRITICAL_STATIC( _logstr, "Vtk data file could not be found." );
         return false;
 	}
 
-	_pds.reset(new vtk::DataSet() );
-    _pds->SetFileName(vtkFile);
+	_pds.reset( new vtk::DataSet() );
+    _pds->SetFileName( vtkFile );
     _pds->LoadData();
 
 
     // get the threads
 	_threads = 32;
-	arguments.read("-threads", _threads );
-	if (_threads <= 0) 
+	arguments.read( "-threads", _threads );
+	if ( _threads <= 0 ) 
 	{
 		_threads = 32;
 		LFX_CRITICAL_STATIC( _logstr, "Invalid number of threads using restoring default" );
@@ -250,7 +250,7 @@ bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
 	ss.clear();
 
 	_hireslod = false;
-	if (arguments.find( "-hireslod" ) > 0) { _hireslod = true; }
+	if ( arguments.find( "-hireslod" ) > 0 ) { _hireslod = true; }
 
 
 	// get scalars and vectors from commandf line
@@ -258,24 +258,24 @@ bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
 	int countVec = getNumVectors();
 
 	// find which scalars and which vectors to process
-	getVtkProcessOptions(arguments, countScl, &_scalars, true);
-	getVtkProcessOptions(arguments, countVec, &_vectors, false);
+	getVtkProcessOptions( arguments, countScl, &_scalars, true );
+	getVtkProcessOptions( arguments, countVec, &_vectors, false );
 
 	// no items were specified so process all
-	if (_scalars.size() == 0 && _vectors.size() == 0)
+	if ( _scalars.size() == 0 && _vectors.size() == 0 )
 	{
-		for (int i=0; i<countScl; i++)
+		for ( int i=0; i<countScl; i++ )
 		{
-			_scalars.push_back(i);
+			_scalars.push_back( i );
 		}
-		for (int i=0; i<countVec; i++)
+		for ( int i=0; i<countVec; i++ )
 		{
-			_vectors.push_back(i);
+			_vectors.push_back( i );
 		}
 	}
 
 	_nocache = false;
-	if (arguments.find("-nocache") >= 0)
+	if ( arguments.find("-nocache") >= 0 )
 	{
 		_nocache = true;
 	}
@@ -284,56 +284,56 @@ bool VtkCreator::processArgs(osg::ArgumentParser &arguments)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::setCacheCreate(SaveHierarchy::LODVector &depths, bool create)
+void VtkCreator::setCacheCreate( SaveHierarchy::LODVector &depths, bool create )
 {
 	for (unsigned int i=0; i<depths.size(); i++)
 	{
-		((vtk::VTKVolumeBrickData *)depths[i].get())->cacheCreate(create);
+		((vtk::VTKVolumeBrickData *)depths[i].get())->cacheCreate( create );
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::setCacheUse(SaveHierarchy::LODVector &depths, bool use)
+void VtkCreator::setCacheUse( SaveHierarchy::LODVector &depths, bool use )
 {
-	for (unsigned int i=0; i<depths.size(); i++)
+	for ( unsigned int i=0; i<depths.size(); i++ )
 	{
-		((vtk::VTKVolumeBrickData *)depths[i].get())->cacheUse(use);
+		((vtk::VTKVolumeBrickData *)depths[i].get())->cacheUse( use );
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::getLod(SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune)
+void VtkCreator::getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune )
 {
-	hilod->setCallbackProgress(_pcbProgress);
+	hilod->setCallbackProgress( _pcbProgress );
 
 	pdepths->clear();
-	if (!hireslod)
+	if ( !hireslod )
 	{
-		pdepths->push_back(hilod);
+		pdepths->push_back( hilod );
 		return;
 	}
 
 	int depth = hilod->getDepth();
-	if (depth == 1) // only a single depth, not likely
+	if ( depth == 1 ) // only a single depth, not likely
 	{
-		pdepths->push_back(hilod);
+		pdepths->push_back( hilod );
 		return;
 	}
 
-	pdepths->resize(depth);
+	pdepths->resize( depth );
 	(*pdepths)[depth-1] = hilod;
 
-	for (int i=0; i<depth-1; i++)
+	for ( int i=0; i<depth-1; i++ )
 	{
 		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads) );
 		vbd->setDepth( i+1 );
-		vbd->setCallbackProgress(_pcbProgress);
+		vbd->setCallbackProgress( _pcbProgress );
 		(*pdepths)[i] = vbd;
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::getVtkProcessOptions(osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar)
+void VtkCreator::getVtkProcessOptions( osg::ArgumentParser &arguments, int totalItems, std::vector<int> *pItems, bool scalar )
 {
 	int iarg = 0;
 	std::string cmd = "-s";
@@ -345,11 +345,11 @@ void VtkCreator::getVtkProcessOptions(osg::ArgumentParser &arguments, int totalI
 	
 	// do they want all items
 	iarg = arguments.find(cmd);
-	if (iarg >= 0 && iarg < arguments.argc())
+	if ( iarg >= 0 && iarg < arguments.argc() )
 	{
-		for (int i=0; i< totalItems; i++)
+		for ( int i=0; i< totalItems; i++ )
 		{
-			pItems->push_back(i);
+			pItems->push_back( i );
 		}
 
 		return;
@@ -357,22 +357,21 @@ void VtkCreator::getVtkProcessOptions(osg::ArgumentParser &arguments, int totalI
 
 	
 	// look for individual scalars
-	for (int i=0; i<totalItems; i++)
+	for ( int i=0; i<totalItems; i++ )
 	{
 		std::ostringstream ss;
 		ss << cmd << i;
 
 		iarg = arguments.find(ss.str());
-		if (iarg >= 0 && iarg < arguments.argc())
+		if ( iarg >= 0 && iarg < arguments.argc() )
 		{
-			//pItems->insert(pItems->begin(), i);
-			pItems->push_back(i);
+			pItems->push_back( i );
 		}
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar)
+bool VtkCreator::vtkCreateBricks( SaveHierarchy::LODVector &depths, const std::string csFile, int item, bool scalar )
 {
 	std::ostringstream sst;
 	if (scalar)
@@ -386,13 +385,13 @@ void VtkCreator::vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::st
 
 	boost::posix_time::ptime start_time( boost::posix_time::microsec_clock::local_time() );
 
-	for (int i=0; i<depths.size(); i++)
+	for ( int i=0; i<depths.size(); i++ )
 	{
-		((vtk::VTKVolumeBrickData *)depths[i].get())->setDataNumber(item);
-		((vtk::VTKVolumeBrickData *)depths[i].get())->setIsScalar(scalar);
+		((vtk::VTKVolumeBrickData *)depths[i].get())->setDataNumber( item );
+		((vtk::VTKVolumeBrickData *)depths[i].get())->setIsScalar( scalar );
 	}
 
-	createDataSet(csFile, depths, sst.str());
+	if ( !createDataSet( csFile, depths, sst.str() ) ) return false;
 
     boost::posix_time::ptime end_time( boost::posix_time::microsec_clock::local_time() );
     boost::posix_time::time_duration diff = end_time - start_time;
@@ -402,32 +401,32 @@ void VtkCreator::vtkCreateBricks(SaveHierarchy::LODVector &depths, const std::st
     std::ostringstream ss;
 	ss << "Time to create  " << sst.str() << " = " << createTime << " secs";
     LFX_CRITICAL_STATIC( _loginfo, ss.str().c_str() );
-	if (_pcbProgress) _pcbProgress->sendMsg(ss.str().c_str());
+	if ( _pcbProgress ) _pcbProgress->sendMsg( ss.str().c_str() );
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::createDataSet( const std::string& csFile, std::vector<VolumeBrickDataPtr> &depths, const std::string &baseName )
+bool VtkCreator::createDataSet( const std::string& csFile, std::vector<VolumeBrickDataPtr> &depths, const std::string &baseName )
 {
-	if (!depths.size()) return; // no depths then there is a problem
-	if (depths.size() == 1) // only 1 depth then this is not a hires lod, create standard fast lod
+	if ( !depths.size() ) return false; // no depths then there is a problem
+	if ( depths.size() == 1 ) // only 1 depth then this is not a hires lod, create standard fast lod
 	{
-		createDataSet(csFile, depths[0], baseName);
-		return;
+		return createDataSet( csFile, depths[0], baseName );
 	}
 
     // hires load with all depths coming from the dataset directly
-	SaveHierarchy saver( baseName, _pcbProgress );
+	SaveHierarchy saver( baseName );
 	saver.addAllLevels( depths );
-	CreateVolume::createDataSet( csFile, &saver );
+	return CreateVolume::createDataSet( csFile, &saver );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::createDataSet( const std::string& csFile, VolumeBrickDataPtr brickData, const std::string &baseName )
+bool VtkCreator::createDataSet( const std::string& csFile, VolumeBrickDataPtr brickData, const std::string &baseName )
 {
-    //SaveHierarchy* saver( new SaveHierarchy( shapeGen, "shapevolume" ) );
 	SaveHierarchy* saver( new SaveHierarchy( baseName ) );
 	saver->addLevel( brickData );
-	CreateVolume::createDataSet( csFile, saver );
+	return CreateVolume::createDataSet( csFile, saver );
 }
 
 #endif

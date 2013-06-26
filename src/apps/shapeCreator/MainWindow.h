@@ -29,6 +29,7 @@ protected:
 	VtkCreator* vtkCreator();
 
 	void enableCreateButton();
+	bool validDbFile( const QString &path, const QString &file, QString *pfullpath=NULL, QString *pmsg=NULL );
 
 	void msgOut(const QString &msg);
 	void msgClearAll();

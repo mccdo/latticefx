@@ -9,12 +9,12 @@ const std::string logstr( "lfx.demo" );
 const std::string loginfo( logstr+".info" );
 
 ////////////////////////////////////////////////////////////////////////////////
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow( QWidget *parent ) :
+    QMainWindow( parent ),
+    ui( new Ui::MainWindow )
 {
 
-    _pVtk.reset(new VtkCreator(logstr.c_str(), loginfo.c_str()));
+    _pVtk.reset( new VtkCreator( logstr.c_str(), loginfo.c_str() ) );
 	_pThread = new CreatorThread();
 
     ui->setupUi(this);
@@ -25,15 +25,15 @@ MainWindow::MainWindow(QWidget *parent) :
     guiSettingsLoad();
     guiFeaturesInit();
 
-	QObject::connect( _pThread, SIGNAL(signalStart()), this, SLOT(slotStart()));
-	QObject::connect( _pThread, SIGNAL(signalProgress(int)), this, SLOT(slotProgress(int)));
-	QObject::connect( _pThread, SIGNAL(signalEnd()), this, SLOT(slotEnd()));
-	QObject::connect( _pThread, SIGNAL(signalMsg(QString)), this, SLOT(slotMsg(QString)));
+	QObject::connect( _pThread, SIGNAL( signalStart() ), this, SLOT( slotStart() ) );
+	QObject::connect( _pThread, SIGNAL( signalProgress( int ) ), this, SLOT( slotProgress( int ) ) );
+	QObject::connect( _pThread, SIGNAL( signalEnd() ), this, SLOT(slotEnd() ) );
+	QObject::connect( _pThread, SIGNAL( signalMsg( QString ) ), this, SLOT( slotMsg( QString ) ) );
 
-	ui->progressBar->setRange(0, 100);
-    ui->progressBar->setValue(0);
+	ui->progressBar->setRange( 0, 100 );
+    ui->progressBar->setValue( 0 );
 
-	setShapeType(UtlSettings::getSelectedValueInt(ui->comboBoxShape));
+	setShapeType( UtlSettings::getSelectedValueInt( ui->comboBoxShape ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,23 +53,23 @@ void MainWindow::guiSettingsInit()
     //////////////////////////////////////////////////////////
     // standard options
     //
-    ui->checkBoxPrune->setChecked(true);
+    ui->checkBoxPrune->setChecked( true );
 
     // init shape type
     i=0;
-    ui->comboBoxShape->insertItem(i++, QString("Vtk"), QVariant(E_SHAPE_VTK));
-    ui->comboBoxShape->insertItem(i++, QString("Cube"), QVariant(E_SHAPE_CUBE));
-    ui->comboBoxShape->insertItem(i++, QString("Soft Cube"), QVariant(E_SHAPE_SCUBE));
-    ui->comboBoxShape->insertItem(i++, QString("Cone"), QVariant(E_SHAPE_CONE));
-    ui->comboBoxShape->insertItem(i++, QString("Sphere"), QVariant(E_SHAPE_SPHERE));
-    ui->comboBoxShape->insertItem(i++, QString("Soft Sphere"), QVariant(E_SHAPE_SSPHERE));
+    ui->comboBoxShape->insertItem( i++, QString("Vtk"), QVariant(E_SHAPE_VTK) );
+    ui->comboBoxShape->insertItem( i++, QString("Cube"), QVariant(E_SHAPE_CUBE) );
+    ui->comboBoxShape->insertItem( i++, QString("Soft Cube"), QVariant(E_SHAPE_SCUBE) );
+    ui->comboBoxShape->insertItem( i++, QString("Cone"), QVariant(E_SHAPE_CONE) );
+    ui->comboBoxShape->insertItem( i++, QString("Sphere"), QVariant(E_SHAPE_SPHERE) );
+    ui->comboBoxShape->insertItem( i++, QString("Soft Sphere"), QVariant(E_SHAPE_SSPHERE) );
 
     // init depths
     i=0;
-    ui->comboBoxDepth->insertItem(i++, QString("4"), QVariant(4));
-    ui->comboBoxDepth->insertItem(i++, QString("3"), QVariant(3));
-    ui->comboBoxDepth->insertItem(i++, QString("2"), QVariant(2));
-    ui->comboBoxDepth->insertItem(i++, QString("1"), QVariant(1));
+    ui->comboBoxDepth->insertItem( i++, QString("4"), QVariant(4) );
+    ui->comboBoxDepth->insertItem( i++, QString("3"), QVariant(3) );
+    ui->comboBoxDepth->insertItem( i++, QString("2"), QVariant(2) );
+    ui->comboBoxDepth->insertItem( i++, QString("1"), QVariant(1) );
 
     //////////////////////////////////////////////////////////
     // crunchstore options
@@ -80,47 +80,47 @@ void MainWindow::guiSettingsInit()
     //////////////////////////////////////////////////////////
     // vtk options
     //
-    ui->checkBoxVtkCacheOn->setChecked(true);
-    ui->checkBoxVtkHiresLod->setChecked(true);
-    ui->listWidgetVtkScalars->setEnabled(false);
-    ui->listWidgetVtkVectors->setEnabled(false);
+    ui->checkBoxVtkCacheOn->setChecked( true );
+    ui->checkBoxVtkHiresLod->setChecked( true );
+    ui->listWidgetVtkScalars->setEnabled( false );
+    ui->listWidgetVtkVectors->setEnabled( false );
 
     // init threads
     i=0;
-    ui->comboBoxVtkThreads->insertItem(i++, QString("128"), QVariant(128));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("64"), QVariant(64));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("32"), QVariant(32));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("16"), QVariant(16));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("8"), QVariant(8));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("4"), QVariant(4));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("2"), QVariant(2));
-    ui->comboBoxVtkThreads->insertItem(i++, QString("1"), QVariant(1));
-    ui->comboBoxVtkThreads->setCurrentIndex(2);
+    ui->comboBoxVtkThreads->insertItem( i++, QString("128"), QVariant(128) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("64"), QVariant(64) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("32"), QVariant(32) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("16"), QVariant(16) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("8"), QVariant(8) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("4"), QVariant(4) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("2"), QVariant(2) );
+    ui->comboBoxVtkThreads->insertItem( i++, QString("1"), QVariant(1) );
+    ui->comboBoxVtkThreads->setCurrentIndex( 2 );
 
-    ui->pushButtonCancel->setEnabled(false);
+    ui->pushButtonCancel->setEnabled( false );
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::guiSettingsLoad()
 {
-    QSettings settings(_settingsFile, QSettings::IniFormat);
+    QSettings settings( _settingsFile, QSettings::IniFormat );
 
     //////////////////////////////////////////////////////////
     // standard options
     //
-    settings.beginGroup("standard");
-    UtlSettings::initCheckBox(&settings, ui->checkBoxPrune, "prune", true);
-    UtlSettings::initComboBox(&settings, ui->comboBoxShape, "shapeType", QVariant(E_SHAPE_VTK));
-    UtlSettings::initComboBox(&settings, ui->comboBoxDepth, "depth", QVariant(4));
+    settings.beginGroup( "standard" );
+    UtlSettings::initCheckBox( &settings, ui->checkBoxPrune, "prune", true );
+    UtlSettings::initComboBox( &settings, ui->comboBoxShape, "shapeType", QVariant(E_SHAPE_VTK) );
+    UtlSettings::initComboBox( &settings, ui->comboBoxDepth, "depth", QVariant(4) );
     settings.endGroup();
 
     //////////////////////////////////////////////////////////
     // crunchstore options
     //
-    settings.beginGroup("cruchstore");
+    settings.beginGroup( "cruchstore" );
 
-    bool b = settings.value("useCrunchstore", QVariant(true)).toBool();
+    bool b = settings.value( "useCrunchstore", QVariant(true) ).toBool();
     if (b)
     {
         on_radioButtonWriteToDb_clicked();
@@ -130,36 +130,36 @@ void MainWindow::guiSettingsLoad()
         on_radioButtonWriteToFiles_clicked();
     }
 
-    UtlSettings::initPlainText(&settings, ui->plainTextEditDbFile, "dbfile", QString(""));
-    UtlSettings::initPlainText(&settings, ui->plainTextEditFileFolder, "fileFolder", QApplication::applicationDirPath());
+    UtlSettings::initPlainText( &settings, ui->plainTextEditDbFile, "dbfile", QString("") );
+    UtlSettings::initPlainText( &settings, ui->plainTextEditFileFolder, "fileFolder", QApplication::applicationDirPath() );
     settings.endGroup();
 
     //////////////////////////////////////////////////////////
     // vtk options
     //
-    settings.beginGroup("Vtk");
+    settings.beginGroup( "Vtk" );
 
     QString s = QApplication::applicationDirPath();
-    _lastPathVtk = settings.value("vtkLastPath", QVariant(s)).toString();
+    _lastPathVtk = settings.value( "vtkLastPath", QVariant(s) ).toString();
 
-    UtlSettings::initComboBox(&settings, ui->comboBoxVtkThreads, "vtkThreads", QVariant(32));
-    UtlSettings::initCheckBox(&settings, ui->checkBoxVtkCacheOn, "vtkCacheOn", true);
-    UtlSettings::initCheckBox(&settings, ui->checkBoxVtkHiresLod, "vtkHiResLod", true);
+    UtlSettings::initComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads", QVariant(32) );
+    UtlSettings::initCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn", true );
+    UtlSettings::initCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod", true );
     settings.endGroup();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::guiSettingsSave()
 {
-    QSettings settings(_settingsFile, QSettings::IniFormat);
+    QSettings settings( _settingsFile, QSettings::IniFormat );
 
     //////////////////////////////////////////////////////////
     // standard options
     //
-    settings.beginGroup("standard");
-    UtlSettings::saveCheckBox(&settings, ui->checkBoxPrune, "prune");
-    UtlSettings::saveComboBox(&settings, ui->comboBoxShape, "shapeType");
-    UtlSettings::saveComboBox(&settings, ui->comboBoxDepth, "depth");
+    settings.beginGroup( "standard");
+    UtlSettings::saveCheckBox( &settings, ui->checkBoxPrune, "prune" );
+    UtlSettings::saveComboBox( &settings, ui->comboBoxShape, "shapeType" );
+    UtlSettings::saveComboBox( &settings, ui->comboBoxDepth, "depth" );
     settings.endGroup();
 
     //////////////////////////////////////////////////////////
@@ -174,11 +174,11 @@ void MainWindow::guiSettingsSave()
     //////////////////////////////////////////////////////////
     // vtk options
     //
-    settings.beginGroup("Vtk");
-    settings.setValue("vtkLastPath", QVariant(_lastPathVtk));
-    UtlSettings::saveComboBox(&settings, ui->comboBoxVtkThreads, "vtkThreads");
-    UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkCacheOn, "vtkCacheOn");
-    UtlSettings::saveCheckBox(&settings, ui->checkBoxVtkHiresLod, "vtkHiResLod");
+    settings.beginGroup( "Vtk" );
+    settings.setValue( "vtkLastPath", QVariant(_lastPathVtk) );
+    UtlSettings::saveComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads" );
+    UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn" );
+    UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod" );
     settings.endGroup();
 }
 
@@ -186,24 +186,15 @@ void MainWindow::guiSettingsSave()
 void MainWindow::guiFeaturesInit()
 {
 #ifndef LFX_USE_CRUNCHSTORE
-    ui->groupBoxCrunchstore->setTitle("Crunchstore - Not Available");
+    ui->groupBoxCrunchstore->setTitle( "Crunchstore - Not Available" );
     on_radioButtonWriteToFiles_clicked();
-	ui->radioButtonWriteToDb->setEnabled(false);
+	ui->radioButtonWriteToDb->setEnabled( false );
 #endif
 
 #ifndef VTK_FOUND
-    ui->groupBoxVtk->setEnabled(false);
-    ui->groupBoxVtk->setTitle("VTK - Not Available");
-    ui->comboBoxShape->removeItem(0);
-    /*
-    ui->plainTextEditVtkFile->setEnabled(false);
-    ui->pushButtonVtkBrowse->setEnabled(false);
-    ui->listWidgetVtkScalars->setEnabled(false);
-    ui->listWidgetVtkVectors->setEnabled(false);
-    ui->comboBoxVtkThreads->setEnabled(false);
-    ui->checkBoxVtkCacheOn->setEnabled(false);
-    ui->checkBoxVtkHiresLod->setEnabled(false);
-    */
+    ui->groupBoxVtk->setEnabled( false );
+    ui->groupBoxVtk->setTitle( "VTK - Not Available" );
+    ui->comboBoxShape->removeItem( 0 );
 #endif
 }
 
@@ -216,13 +207,13 @@ void MainWindow::setShapeType(int shapeType)
 		enable = true;
 	}
 	
-	ui->plainTextEditVtkFile->setEnabled(enable);
-	ui->pushButtonVtkBrowse->setEnabled(enable);
-	ui->comboBoxVtkThreads->setEnabled(enable);
-	ui->checkBoxVtkCacheOn->setEnabled(enable);
-	ui->checkBoxVtkHiresLod->setEnabled(enable);
-	ui->listWidgetVtkScalars->setEnabled(enable);
-	ui->listWidgetVtkVectors->setEnabled(enable);
+	ui->plainTextEditVtkFile->setEnabled( enable );
+	ui->pushButtonVtkBrowse->setEnabled( enable );
+	ui->comboBoxVtkThreads->setEnabled( enable );
+	ui->checkBoxVtkCacheOn->setEnabled( enable );
+	ui->checkBoxVtkHiresLod->setEnabled( enable );
+	ui->listWidgetVtkScalars->setEnabled( enable );
+	ui->listWidgetVtkVectors->setEnabled( enable );
 
 	enableCreateButton();
 }
@@ -230,7 +221,7 @@ void MainWindow::setShapeType(int shapeType)
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::loadVtkFile(QString file)
 {
-    vtkCreator()->init(file.toAscii());
+    vtkCreator()->init( file.toAscii() );
 
     // get the scalars and vectors..
     QString str;
@@ -238,42 +229,42 @@ void MainWindow::loadVtkFile(QString file)
 
     num = vtkCreator()->getNumScalars();
     ui->listWidgetVtkScalars->clear();
-    for (int i=0; i<num; i++)
+    for ( int i=0; i<num; i++ )
     {
         str = vtkCreator()->getScalarName(i).c_str();
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText(str);
-        item->setCheckState(Qt::Checked);
-        ui->listWidgetVtkScalars->addItem(item);
+        item->setText( str );
+        item->setCheckState( Qt::Checked );
+        ui->listWidgetVtkScalars->addItem( item );
     }
 
 	if (num > 0)
 	{
-		ui->listWidgetVtkScalars->setEnabled(true);
+		ui->listWidgetVtkScalars->setEnabled( true );
 	}
 	else
 	{
-		ui->listWidgetVtkScalars->setEnabled(false);
+		ui->listWidgetVtkScalars->setEnabled( false );
 	}
 
     num = vtkCreator()->getNumVectors();
     ui->listWidgetVtkVectors->clear();
-    for (int i=0; i<num; i++)
+    for ( int i=0; i<num; i++ )
     {
         str = vtkCreator()->getVectorName(i).c_str();
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText(str);
-        item->setCheckState(Qt::Checked);
-        ui->listWidgetVtkVectors->addItem(item);
+        item->setText( str );
+        item->setCheckState( Qt::Checked );
+        ui->listWidgetVtkVectors->addItem( item );
     }
 
 	if (num > 0)
 	{
-		ui->listWidgetVtkVectors->setEnabled(true);
+		ui->listWidgetVtkVectors->setEnabled( true );
 	}
 	else
 	{
-		ui->listWidgetVtkVectors->setEnabled(false);
+		ui->listWidgetVtkVectors->setEnabled( false );
 	}
 
 	enableCreateButton();
@@ -288,54 +279,72 @@ VtkCreator* MainWindow::vtkCreator()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::enableCreateButton()
 {
-	if (_pThread->isRunning())
+	if ( _pThread->isRunning() )
     {
 		return;
 	}
 
-	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
-	if (shapeType == E_SHAPE_VTK)
+	int shapeType = UtlSettings::getSelectedValueInt( ui->comboBoxShape );
+	if ( shapeType == E_SHAPE_VTK)
 	{
-		if (!vtkCreator()->haveFile())
+		if ( !vtkCreator()->haveFile() )
 		{
-			ui->pushButtonCreate->setEnabled(false);
+			ui->pushButtonCreate->setEnabled( false );
 			return;
 		}
 	}
 
-
+	// check data folder
 	QString folder = ui->plainTextEditFileFolder->toPlainText();
-	if (folder.length() <= 0 || !QDir(folder).exists())
+	if ( folder.length() <= 0 || !QDir( folder ).exists() )
 	{
-		ui->pushButtonCreate->setEnabled(false);
+		ui->pushButtonCreate->setEnabled( false );
 		return;
 	}
 
-	if (ui->radioButtonWriteToDb->isChecked())
+	// check db file and full path
+	if ( ui->radioButtonWriteToDb->isChecked() )
 	{
 		QString dbfile = ui->plainTextEditDbFile->toPlainText();
-		if (dbfile.length() <= 0)
+		if ( dbfile.length() <= 0 )
 		{
-			ui->pushButtonCreate->setEnabled(false);
+			ui->pushButtonCreate->setEnabled( false );
+			return;
+		}
+
+		if ( !validDbFile( folder, dbfile ) )
+		{
+			ui->pushButtonCreate->setEnabled( false );
 			return;
 		}
 	}
 
-	ui->pushButtonCreate->setEnabled(true);
+	ui->pushButtonCreate->setEnabled( true );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool MainWindow::validDbFile( const QString &path, const QString &file, QString *pfullpath, QString *pmsg )
+{
+	QString fullpath = QDir::cleanPath( path + QDir::separator() + file );
+
+	// make sure the directory of the file exists
+	QDir dir = QFileInfo(fullpath).absoluteDir();
+	if ( !dir.exists() )
+	{
+		if ( pmsg ) *pmsg = QString( "The directory for the database file does not exist: " ) + dir.absolutePath();
+		return false;
+	}
+
+	if (pfullpath) *pfullpath = fullpath;
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_radioButtonWriteToDb_clicked()
 {
-    ui->radioButtonWriteToDb->setChecked(true);
-    ui->radioButtonWriteToFiles->setChecked(false);
-
-	/*
-    ui->plainTextEditDbFile->setEnabled(true);
-    ui->plainTextEditFileFolder->setEnabled(false);
-    ui->pushButtonBrowseFolder->setEnabled(false);
-	*/
-
+    ui->radioButtonWriteToDb->setChecked( true );
+    ui->radioButtonWriteToFiles->setChecked( false );
 	enableCreateButton();
 }
 
@@ -344,13 +353,6 @@ void MainWindow::on_radioButtonWriteToFiles_clicked()
 {
     ui->radioButtonWriteToDb->setChecked(false);
     ui->radioButtonWriteToFiles->setChecked(true);
-
-	/*
-    ui->plainTextEditDbFile->setEnabled(false);
-    ui->plainTextEditFileFolder->setEnabled(true);
-    ui->pushButtonBrowseFolder->setEnabled(true);
-	*/
-
 	enableCreateButton();
 }
 
@@ -359,15 +361,15 @@ void MainWindow::on_pushButtonBrowseFolder_clicked()
 {
     QStringList list;
     QString folderStart = ui->plainTextEditFileFolder->toPlainText();
-    QFileDialog fd(this, QString("Browse for file output folder"), folderStart, "");
-    fd.setFileMode(QFileDialog::DirectoryOnly);
-    if (fd.exec() == QDialog::Rejected) { return; }
+    QFileDialog fd( this, QString( "Browse for file output folder" ), folderStart, "" );
+    fd.setFileMode( QFileDialog::DirectoryOnly );
+    if ( fd.exec() == QDialog::Rejected ) { return; }
 
     list = fd.selectedFiles();
-    if (list.count() <= 0) { return; }
+    if ( list.count() <= 0 ) { return; }
 
     QString folder = list.at(0);
-    ui->plainTextEditFileFolder->setPlainText(folder);
+    ui->plainTextEditFileFolder->setPlainText( folder );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -375,38 +377,38 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
 {
     QStringList list;
     QString filter = "Vtk Files (*.vtu *.vts);;All files (*.*)";
-    QFileDialog fd(this, QString("Browse for vtk file"), _lastPathVtk, filter);
+    QFileDialog fd( this, QString("Browse for vtk file"), _lastPathVtk, filter );
 
-    if (fd.exec() == QDialog::Rejected) { return; }
+    if ( fd.exec() == QDialog::Rejected ) { return; }
 
     list = fd.selectedFiles();
-    if (list.count() <= 0) { return; }
+    if ( list.count() <= 0 ) { return; }
 
 
     QDir fullPath = fd.directory();
     _lastPathVtk = fullPath.absolutePath();
-    ui->plainTextEditVtkFile->setPlainText(list.at(0));
+    ui->plainTextEditVtkFile->setPlainText( list.at(0) );
 
-	loadVtkFile(list.at(0));
+	loadVtkFile( list.at(0) );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_comboBoxShape_currentIndexChanged(int index)
 {
-	setShapeType(ui->comboBoxShape->itemData(index).toInt());
+	setShapeType( ui->comboBoxShape->itemData(index).toInt() );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCreate_clicked()
 {
-	if ( _pThread->isRunning())
+	if ( _pThread->isRunning() )
     {
-        QMessageBox::information(NULL, "Volume Creation Running", "Volume creation is currently running.\nPlease wait until it finishes.");
+        QMessageBox::information( NULL, "Volume Creation Running", "Volume creation is currently running.\nPlease wait until it finishes." );
         return;
     }
 
-	int shapeType = UtlSettings::getSelectedValueInt(ui->comboBoxShape);
-	boost::shared_ptr<CreateVolume> createVolume(new CreateVolume(logstr.c_str(), loginfo.c_str()));
+	int shapeType = UtlSettings::getSelectedValueInt (ui->comboBoxShape );
+	boost::shared_ptr<CreateVolume> createVolume( new CreateVolume( logstr.c_str(), loginfo.c_str() ) );
 	VolumeBrickDataPtr vbd;
 	bool prune = ui->checkBoxPrune->isChecked();
 
@@ -414,96 +416,102 @@ void MainWindow::on_pushButtonCreate_clicked()
 	{
 	case E_SHAPE_VTK:
 	{
-		if (!vtkCreator()->haveFile())
+		if ( !vtkCreator()->haveFile() )
 		{
-			QMessageBox::information(NULL, "No Vtk File", "Please open a vtk file first.");
+			QMessageBox::information( NULL, "No Vtk File", "Please open a vtk file first." );
 			return;
 		}
 
 		std::vector<int> scalars, vectors;
-		UtlSettings::getCheckedItems(ui->listWidgetVtkScalars, &scalars);
-		UtlSettings::getCheckedItems(ui->listWidgetVtkVectors, &vectors);
+		UtlSettings::getCheckedItems( ui->listWidgetVtkScalars, &scalars );
+		UtlSettings::getCheckedItems( ui->listWidgetVtkVectors, &vectors );
 
-		int threads = UtlSettings::getSelectedValueInt(ui->comboBoxVtkThreads);
+		int threads = UtlSettings::getSelectedValueInt( ui->comboBoxVtkThreads );
 		bool cacheon = ui->checkBoxVtkCacheOn->isChecked();
 		bool hireslod = ui->checkBoxVtkHiresLod->isChecked();
 
-		vtkCreator()->setScalarsToProcess(scalars);
-		vtkCreator()->setVectorsToProcess(vectors);
-		vtkCreator()->setThreads(threads);
-		vtkCreator()->setCache(cacheon);
-		vtkCreator()->setHiresLod(hireslod);
+		vtkCreator()->setScalarsToProcess( scalars );
+		vtkCreator()->setVectorsToProcess( vectors );
+		vtkCreator()->setThreads( threads );
+		vtkCreator()->setCache( cacheon );
+		vtkCreator()->setHiresLod( hireslod );
 
 		createVolume = _pVtk;
 		break;
 	}
 	case E_SHAPE_CUBE:
-		vbd.reset(new CubeVolumeBrickData(prune, false));
+		vbd.reset( new CubeVolumeBrickData( prune, false ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_SCUBE:
-		vbd.reset(new CubeVolumeBrickData(prune, true));
+		vbd.reset( new CubeVolumeBrickData( prune, true ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_CONE:
-		vbd.reset(new ConeVolumeBrickData(prune));
+		vbd.reset( new ConeVolumeBrickData (prune ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_SPHERE:
-		vbd.reset(new SphereVolumeBrickData(prune, false));
-		createVolume->setVolumeObj(vbd);
+		vbd.reset( new SphereVolumeBrickData( prune, false ) );
+		createVolume->setVolumeObj( vbd );
 		break;
 	case E_SHAPE_SSPHERE:
-		vbd.reset(new SphereVolumeBrickData(prune, true));
+		vbd.reset( new SphereVolumeBrickData( prune, true ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	default:
-		QMessageBox::information(NULL, "UnRecognized Shape Type", "UnRecognized shape type.");
+		QMessageBox::information( NULL, "UnRecognized Shape Type", "UnRecognized shape type." );
 		return;
 	}
 
-	int depth = UtlSettings::getSelectedValueInt(ui->comboBoxDepth);
+	int depth = UtlSettings::getSelectedValueInt( ui->comboBoxDepth );
 	bool usedb = ui->radioButtonWriteToDb->isChecked();
 
-	createVolume->setPrune(prune);
-	createVolume->setDepth(depth);
-	createVolume->setUseCrunchStore(usedb);
+	createVolume->setPrune( prune );
+	createVolume->setDepth( depth );
+	createVolume->setUseCrunchStore( usedb );
 
 	QString path = ui->plainTextEditFileFolder->toPlainText();
 
-	if (!QDir(path).exists()) 
+	if ( !QDir(path).exists() ) 
 	{
-		QMessageBox::information(NULL, "Output Folder", "Please specify and output folder first.");
+		QMessageBox::information( NULL, "Output Folder", "Please specify and output folder first." );
 		return;
 	}
 
-	if (usedb)
+	if ( usedb )
 	{
 		QString file = ui->plainTextEditDbFile->toPlainText();
 		
-		if (file.length() <= 0)
+		if ( file.length() <= 0 )
 		{
-			QMessageBox::information(NULL, "Output Database File", "You must specify a database file first.");
+			QMessageBox::information( NULL, "Output Database File", "You must specify a database file first." );
 			return;
 		}
 
-		path = QDir::cleanPath(path + QDir::separator() + file);
+		// make sure the directory of the file exists
+		QString msg;
+		if ( !validDbFile( path, file, &path, &msg ) )
+		{
+			QMessageBox::information( NULL, "Output Database Directory", msg );
+			return;
+		}
 	}
 
 	std::string strFileOrFolder = path.toStdString();
-	createVolume->setCsFileOrFolder(strFileOrFolder.c_str());
+	createVolume->setCsFileOrFolder( strFileOrFolder.c_str() );
 
-	_pThread->setCreateVolume(createVolume);
+	_pThread->setCreateVolume( createVolume );
 	_pThread->start();
-	_pThread->setPriority(QThread::TimeCriticalPriority);
+	_pThread->setPriority( QThread::TimeCriticalPriority );
 }
  
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCancel_clicked()
 {
-	if ( _pThread->isRunning())
+	if ( _pThread->isRunning() )
     {
-		msgOut(QString("Canceling..."));
+		msgOut( QString("Canceling...") );
         _pThread->cancel();
     }
 }
@@ -524,48 +532,43 @@ void MainWindow::on_plainTextEditDbFile_textChanged()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::slotStart()
 {
-	ui->pushButtonCreate->setEnabled(false);
-	ui->pushButtonCancel->setEnabled(true);
-	ui->progressBar->setValue(0);
+	ui->pushButtonCreate->setEnabled( false );
+	ui->pushButtonCancel->setEnabled( true );
+	ui->progressBar->setValue( 0 );
 	msgClearAll();
-	msgOut(QString("Creating bricks..."));
+	msgOut( QString("Creating bricks...") );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::slotProgress(int percent)
+void MainWindow::slotProgress(int percent )
 {
-	ui->progressBar->setValue(percent);
+	ui->progressBar->setValue( percent );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::slotEnd()
 {
-	ui->pushButtonCreate->setEnabled(true);
-	ui->pushButtonCancel->setEnabled(false);
+	ui->pushButtonCreate->setEnabled( true );
+	ui->pushButtonCancel->setEnabled( false );
 	finishProgress();
-	msgOut(QString("Finished..."));
+	msgOut( QString("Finished...") );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::slotMsg(QString msg)
+void MainWindow::slotMsg( QString msg )
 {
 	msgOut(msg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MainWindow::msgOut(const QString &msg)
+void MainWindow::msgOut( const QString &msg )
 {
-    //QString shortTime = QLocale::system().toString(QTime::currentTime(), QLocale::ShortFormat);
-    //shortTime += " : ";
-    //QString out = shortTime + msg;
-    //out += "\n";
-
 	QString out = msg + "\n";
     out = ui->textBrowserOutput->toPlainText() + out;
 
     //QDateTime current = QDateTime::currentDateTime(); 
     //current.toString()
-	ui->textBrowserOutput->setText(out);
+	ui->textBrowserOutput->setText( out );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,9 +582,9 @@ void MainWindow::finishProgress()
 {
 	int v = ui->progressBar->value();
 	if (v < 0) v = 0;
-	while (v < 100)
+	while ( v < 100 )
 	{
 		v++;
-		ui->progressBar->setValue(v);
+		ui->progressBar->setValue (v );
 	}
 }
