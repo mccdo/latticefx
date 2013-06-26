@@ -667,10 +667,10 @@ bool VolumeBrickData::checkCancel() const
 	return _pcbProgress->checkCancel();
 }
 
-void VolumeBrickData::computeProgAndUpdate(int add) const
+void VolumeBrickData::computeProgAndUpdate( int add ) const
 {
 	if (!_pcbProgress) return;
-	_pcbProgress->computeProgAndUpdate(add);
+	_pcbProgress->computeProgAndUpdate( add );
 }
 
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
@@ -1057,28 +1057,10 @@ osg::Image* Downsampler::sample( const osg::Image* i0, const osg::Image* i1, con
     return( validData ? image.release() : NULL );
 }
 
-SaveHierarchy::SaveHierarchy( const std::string baseName, ICallbackProgress *pcb )
+SaveHierarchy::SaveHierarchy( const std::string baseName )
     : _depth( 0 ),
-      _baseName( baseName ),
-	  _pcbProgress( pcb )
+      _baseName( baseName )
 {
-	/*
-    short xDim( base->getNumBricks().x() );
-    _depth = 0;
-    while( xDim > 0 )
-    {
-        ++_depth;
-        xDim >>= 1;
-    }
-    _lodVec.resize( _depth );
-
-    _lodVec[ _depth - 1 ] = base;
-    for( int depthIdx = _depth - 1; depthIdx > 0; --depthIdx )
-    {
-        Downsampler ds( _lodVec[ depthIdx ] );
-        _lodVec[ depthIdx - 1 ] = ds.getLow();
-    }
-	*/
 }
 
 SaveHierarchy::~SaveHierarchy()
@@ -1086,7 +1068,7 @@ SaveHierarchy::~SaveHierarchy()
     _lodVec.clear();
 }
 
-unsigned int SaveHierarchy::computeLevel(unsigned short numBricksX)
+unsigned int SaveHierarchy::computeLevel( unsigned short numBricksX )
 {
 	unsigned int depth = 0;
     while( numBricksX > 0 )

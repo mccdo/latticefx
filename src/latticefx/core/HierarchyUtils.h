@@ -284,9 +284,9 @@ public:
     osg::Image* getSeamlessBrick( const osg::Vec3s& brickNum ) const;
     osg::Image* getSeamlessBrick( const std::string& brickName ) const;
 
-	void setCallbackProgress(ICallbackProgress *pcp) { _pcbProgress = pcp; }
+	void setCallbackProgress( ICallbackProgress *pcp ) { _pcbProgress = pcp; }
 	bool checkCancel() const;
-	void computeProgAndUpdate(int add) const;
+	void computeProgAndUpdate( int add ) const;
 
 protected:
 	
@@ -398,7 +398,7 @@ public:
 	typedef std::vector< VolumeBrickDataPtr > LODVector;
 
 public:
-    SaveHierarchy( const std::string baseName, ICallbackProgress *pcb=NULL );
+    SaveHierarchy( const std::string baseName );
     virtual ~SaveHierarchy();
 
 	static unsigned int computeLevel( unsigned short numbricksX );
@@ -417,7 +417,6 @@ protected:
     LODVector _lodVec;
 
     std::string _baseName;
-	ICallbackProgress *_pcbProgress;
 };
 
 
