@@ -47,18 +47,19 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 									   int dataNum,
 									   bool isScalar,
 									   osg::Vec3s brickRes,
-									   int threadCount)
-    :
-    VolumeBrickData(prune)
+									   int threadCount,
+									   bool resPruneOn)
+    : VolumeBrickData( prune ),
+		m_dataSet( dataSet ),
+		m_dataNum( dataNum ),
+		m_isScalar( isScalar ),
+		m_brickRes( brickRes ),
+		m_threadCount( threadCount ),
+		m_resPruneOn( resPruneOn )
 {
-	m_dataSet = dataSet;
-	m_dataNum = dataNum;
-	m_isScalar = isScalar;
-	m_brickRes = brickRes;
 	m_maxPts = 0; 
 	m_bbox.init();
 
-	m_threadCount = threadCount;
 	if (m_threadCount <= 0) m_threadCount = 1;
 
 	if (!initCellTrees()) return;
@@ -122,6 +123,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	//if (!m_pds) return NULL;
 	if (!m_cellLocators.size()) return NULL;
 
+
 	bool brickCached = isBrickCached(brickNum);
 
 	int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
@@ -142,8 +144,6 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		textureFrmt = GL_RGBA;
 		bytesPerPixel = 4;
 	}
-	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
-	unsigned char* ptr( data );
 
 	// 0,0,0 is the left, top, front cube and we have 8x8x8 boxes
 	// or whatever m_totalNumBoxes is set to
@@ -173,8 +173,20 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	// compute brick delta for each thread (how much of the brick will each thread work on
 	double brickThreadDeltaX = (double)m_brickRes[0] / (double)m_threadCount;	
 	double curBrickEndX = 0;
-	boost::thread_group group;
 
+	// run prune test if needed
+	if (getDepth() > 1 && m_resPruneOn)
+	{
+		if (resolutionPruneTest(min, max, brickNum, brickCached))
+		{
+			return NULL;
+		}	
+	}
+
+	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
+	unsigned char* ptr( data );
+
+	boost::thread_group group;
 	std::vector<SThreadDataPtr> theadData;
 	for (int i=0; i<m_threadCount; i++)
 	{
@@ -260,8 +272,248 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	return( image.release() );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVolumeBrickData::resolutionPruneTest( const osg::Vec3d &vtkMin, const osg::Vec3d &vtkMax, const osg::Vec3s& brickNum, bool brickCached ) const
+{
+	SVtkLookupData lookup( brickNum, brickCached, m_maxPts );
+	osg::Vec4ub colorPrev;
+	int threshold = 2;
+	const osg::Vec3d vtkCenter(vtkMin + ((vtkMax - vtkMin) * .5));
+
+	// start at left, bottom, back
+	lookup.brickPos[0] = 0;
+	lookup.brickPos[1] = 0; 
+	lookup.brickPos[2] = 0;
+	lookup.vtkPos[0] = vtkMin.x();
+	lookup.vtkPos[1] = vtkMin.y();  
+	lookup.vtkPos[2] = vtkMin.z();
+
+	computeColor( &lookup );
+	colorPrev = lookup.color;
+
+	for ( int i=0; i<8; i++ )
+	{
+		switch (i)
+		{
+		case 0:
+			// right bottom back
+			lookup.brickPos[0] = m_brickRes[0] - 1;
+			lookup.brickPos[1] = 0; 
+			lookup.brickPos[2] = 0;
+			lookup.vtkPos[0] = vtkMax.x();
+			lookup.vtkPos[1] = vtkMin.y();  
+			lookup.vtkPos[2] = vtkMin.z();
+			break;
+		case 1:
+			// right top back
+			lookup.brickPos[0] = m_brickRes[0] - 1;
+			lookup.brickPos[1] = m_brickRes[1] - 1; 
+			lookup.brickPos[2] = 0;
+			lookup.vtkPos[0] = vtkMax.x();
+			lookup.vtkPos[1] = vtkMax.y();  
+			lookup.vtkPos[2] = vtkMin.z();
+			break;
+		case 2:
+			// left top back
+			lookup.brickPos[0] = 0;
+			lookup.brickPos[1] = m_brickRes[1] - 1;  
+			lookup.brickPos[2] = 0;
+			lookup.vtkPos[0] = vtkMin.x();
+			lookup.vtkPos[1] = vtkMax.y();  
+			lookup.vtkPos[2] = vtkMin.z();
+			break;
+		case 3:
+			// center
+			lookup.brickPos[0] = m_brickRes[0] * .5f;
+			lookup.brickPos[1] = m_brickRes[1] * .5f; 
+			lookup.brickPos[2] = m_brickRes[2] * .5f;
+			lookup.vtkPos[0] = vtkCenter.x();
+			lookup.vtkPos[1] = vtkCenter.y();  
+			lookup.vtkPos[2] = vtkCenter.z();
+			break;
+		case 4:
+			// left bottom front
+			lookup.brickPos[0] = 0;
+			lookup.brickPos[1] = 0; 
+			lookup.brickPos[2] = m_brickRes[2] -1;
+			lookup.vtkPos[0] = vtkMin.x();
+			lookup.vtkPos[1] = vtkMin.y();  
+			lookup.vtkPos[2] = vtkMax.z();
+			break;
+		case 5:
+			// right bottom front
+			lookup.brickPos[0] = m_brickRes[0] - 1;
+			lookup.brickPos[1] = 0; 
+			lookup.brickPos[2] = m_brickRes[2] -1;
+			lookup.vtkPos[0] = vtkMax.x();
+			lookup.vtkPos[1] = vtkMin.y();  
+			lookup.vtkPos[2] = vtkMax.z();
+			break;
+
+		case 6:
+			// right top front
+			lookup.brickPos[0] = m_brickRes[0] - 1;
+			lookup.brickPos[1] = m_brickRes[1] - 1;
+			lookup.brickPos[2] = m_brickRes[2] - 1;
+			lookup.vtkPos[0] = vtkMax.x();
+			lookup.vtkPos[1] = vtkMax.y();  
+			lookup.vtkPos[2] = vtkMax.z();
+			break;
+		case 7:
+			// left top front
+			lookup.brickPos[0] = 0;
+			lookup.brickPos[1] = m_brickRes[1] - 1;
+			lookup.brickPos[2] = m_brickRes[2] - 1;
+			lookup.vtkPos[0] = vtkMin.x();
+			lookup.vtkPos[1] = vtkMax.y();  
+			lookup.vtkPos[2] = vtkMax.z();
+			break;
+		}
+
+		computeColor( &lookup );
+
+		if ( abs(colorPrev[0] - lookup.color[0]) > threshold )
+		{
+			return false; // no prune
+		}
+
+		if ( !m_isScalar )
+		{
+			if ( abs(colorPrev[1] - lookup.color[1]) > threshold || 
+				 abs(colorPrev[2] - lookup.color[2]) > threshold ||
+				 abs(colorPrev[3] - lookup.color[3]) > threshold )
+			{
+				return false; // no prune
+			}
+		}
+		
+
+		colorPrev = lookup.color;
+	}
+
+
+	return true; // prune			
+}
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::BrickThread::operator()()
+{
+	if ( !m_pData.get() ) return;
+
+	SVtkLookupData lookup( m_pData->brickNum, m_pData->brickCached, m_pData->pVBD->m_maxPts );
+	int debugNumPts = 0;
+	unsigned char* ptr = NULL;
+
+	// start at left, bottom, back
+	lookup.vtkPos[2] = m_pData->vtkMin.z() + (m_pData->vtkDelta.z() * m_pData->brickStart.z());
+	for ( int z = m_pData->brickStart.z(); z < m_pData->brickEnd.z(); z++ )
+	{
+		// new depth slice so start at the bottom most point
+		lookup.vtkPos[1] = m_pData->vtkMin.y() + (m_pData->vtkDelta.y() * m_pData->brickStart.y());
+
+
+		for ( int y = m_pData->brickStart.y(); y < m_pData->brickEnd.y(); y++ )
+		{
+			// new scanline start back at left most point;
+			lookup.vtkPos[0] = m_pData->vtkMin.x() + (m_pData->vtkDelta.x() * m_pData->brickStart.x());
+
+			// get the correct line
+			ptr = m_pData->ptrPixels + (z * m_pData->pVBD->m_brickRes[0]*m_pData->pVBD->m_brickRes[1] * m_pData->bytesPerPixel); // get to the correct slice;
+			ptr += y * m_pData->pVBD->m_brickRes[0] * m_pData->bytesPerPixel; // get to the correct line in the slice
+			ptr += m_pData->brickStart.x() * m_pData->bytesPerPixel; // get to the correct x starting position;
+
+
+			for ( int x = m_pData->brickStart.x(); x < m_pData->brickEnd.x(); x++ )
+			{
+				if ( m_pData->pVBD->checkCancel() ) { return; } // canceled;
+
+				lookup.brickPos[0] = x;
+				lookup.brickPos[1] = y;
+				lookup.brickPos[2] = z;
+				m_pData->pVBD->computeColor( &lookup );
+
+				// copy values into the image buffer
+				*ptr = lookup.color[0];
+				ptr++;
+
+				if ( !m_pData->pVBD->m_isScalar )
+				{
+					*ptr = lookup.color[1];
+					ptr++;
+					*ptr = lookup.color[2];
+					ptr++;
+					*ptr = lookup.color[3];
+					ptr++;
+				}
+				
+
+				lookup.vtkPos[0] += m_pData->vtkDelta[0];
+				debugNumPts++;
+			}
+
+			// jump to next vertical scanline
+			lookup.vtkPos[1] += m_pData->vtkDelta[1];
+			
+		}
+
+		// jump to next depth slice
+		lookup.vtkPos[2] += m_pData->vtkDelta[2];
+	}
+
+	m_pData->hits = lookup.hits;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::computeColor( SVtkLookupData *pld ) const
+{
+	int dataSetNum = 0;
+
+	// cache not on
+	if ( !m_cacheUse )
+	{
+		pld->cellId = findCell( pld->vtkPos, pld->pcoords, &pld->weights, pld->cell, &dataSetNum );
+		if (pld->cellId < 0)
+		{
+			pld->color = getOutSideCellValue(); 
+		}
+		else
+		{
+			// cell cache is not showing any signs of a speed up
+			//if (m_cellCache == cellId) haveCache = false;
+			pld->color = lerpDataInCell( pld->cell->GetPointIds(), &pld->weights[0], pld->tuples, m_dataNum, m_isScalar, dataSetNum ); 
+			pld->hits++;
+		}
+
+		return;
+	}
+
+	// work with cache system for optimal speed
+	int cacheLoc = getCacheLoc( pld->brickPos[0], pld->brickPos[1], pld->brickPos[2], pld->brickNum );
+	PTexelData cache;
+
+	if ( m_cacheCreate )
+	{
+		//cache = m_pData->pVBD->findCell(curPos, cacheLoc, cell, pdata);
+		cache = findCell( pld->vtkPos, cacheLoc,  pld->cell,  pld->weights, pld->brickCached );
+	}
+	else
+	{ 
+		cache = m_texelDataCache[cacheLoc];
+	} 
+
+	//((VTKVolumeBrickData *)m_pData->pVBD)->debugLogCache(x, y, z, cacheLoc);
+	if (!cache.get())
+	{
+		pld->color = getOutSideCellValue(); 
+	}
+	else
+	{
+		pld->color = lerpDataInCell( cache->pointIds, &cache->weights[0], pld->tuples, m_dataNum, m_isScalar, cache->dsNum ); 
+		pld->hits++;
+	}
+}
+
+/*
 void VTKVolumeBrickData::BrickThread::operator()()
 {
 	if (!m_pData.get()) return;
@@ -372,6 +624,7 @@ void VTKVolumeBrickData::BrickThread::operator()()
 		curPos[2] += m_pData->vtkDelta[2];
 	}
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 void VTKVolumeBrickData::debugLogBrick(const osg::Vec3s& brickNum)

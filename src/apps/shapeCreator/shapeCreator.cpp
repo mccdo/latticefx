@@ -58,6 +58,7 @@ int main( int argc, char** argv )
 	LFX_CRITICAL_STATIC( logstr, "-threads number will specify the number of threads to use for VTK brick creation, if left out the default of 32 is used" );
 	LFX_CRITICAL_STATIC( logstr, "-nocache will create VTK bricks with out storing or using a cache system. The cache system is much faster for mutliple scalars and vectors, but uses lots of memory" );
 	LFX_CRITICAL_STATIC( logstr, "-hireslod will create a seperate VTK brick object for each level of detail. This should create a better quality rendering, but is slower to create." );
+	LFX_CRITICAL_STATIC( logstr, "-rp will prune bricks once the resolution is maxed out an not further detail is being provided." );
 #endif
     LFX_CRITICAL_STATIC( logstr, "-prune Do not generate empty subvolumes." );
 

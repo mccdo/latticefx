@@ -50,6 +50,7 @@ public:
 
 	void setThreads( int count ) { _threads = count; } 
 	void setHiresLod( bool on ) { _hireslod = on; }
+	void setResPrune( bool on ) { _resPrune = on; }
 	void setCache( bool on ) { _nocache = !on; }
 	void setScalarsToProcess( const std::vector<int> &indexs ) { _scalars = indexs; }
 	void setVectorsToProcess( const std::vector<int> &indexs ) { _vectors = indexs; }
@@ -68,13 +69,14 @@ protected:
 	void setCacheCreate( SaveHierarchy::LODVector &depths, bool create );
 	void setCacheUse( SaveHierarchy::LODVector &depths, bool use );
 
-	void getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune );
+	void getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune, bool resPrune );
 
 protected:
 
     vtk::DataSetPtr _pds;
     int _threads;
 	bool _hireslod;
+	bool _resPrune;
 	bool _nocache;
 	std::vector<int> _scalars;
 	std::vector<int> _vectors;

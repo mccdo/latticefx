@@ -1160,7 +1160,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
     {
         const std::string fileName( _baseName + "-" + brickName + "-.ive" );
         image->setFileName( fileName );
-        db->storeImage( image, fileName );
+        bool ret = db->storeImage( image, fileName );
         LFX_INFO_STATIC( "lfx.core.hier", "Saved brick " + fileName );
     }
     else

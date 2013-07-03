@@ -61,18 +61,15 @@ protected:
 		osg::Vec3s brickEnd;
 		osg::Vec3d vtkDelta;
 		osg::Vec3d vtkMin;
-		vtkDoubleArray* tuples;
 		int hits;
 		
 		SThreadData()
 		{
-			tuples = vtkDoubleArray::New();
 			hits = 0;
 		}
 
 		~SThreadData()
 		{
-			tuples->Delete();
 		}
 
 	};
@@ -118,6 +115,40 @@ protected:
 	};
 	typedef boost::shared_ptr< STexelData > PTexelData;
 
+	struct SVtkLookupData
+	{
+		vtkSmartPointer<vtkGenericCell> cell;
+		vtkIdType cellId;
+		vtkDoubleArray* tuples;
+		double pcoords[3];
+		double vtkPos[3];
+		int brickPos[3];
+		std::vector<double> weights;
+		PTexelData pdata;
+		bool brickCached;
+		osg::Vec3s brickNum;
+		osg::Vec4ub color;
+		int hits;
+
+		SVtkLookupData(const osg::Vec3s &brickNumber, bool isBrickCached, int maxPts)
+		{
+			brickNum = brickNumber;
+			brickCached = isBrickCached;
+			
+			tuples = vtkDoubleArray::New();
+
+			cell = vtkSmartPointer<vtkGenericCell>::New();
+			weights.resize(maxPts); // need to find out max points in a cell for the whole dataset
+			pdata.reset(new STexelData(maxPts));
+			hits = 0;
+		}
+
+		~SVtkLookupData()
+		{
+			tuples->Delete();
+		}
+	};
+
 	typedef std::vector< vtkDataArray* > DataArrayVector;
     typedef boost::shared_ptr< DataArrayVector > PDataArrayVectorPtr;
 
@@ -127,7 +158,8 @@ public:
 						int dataNum = 0, 
 						bool isScalar = true, 
 						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
-						int threadCount=4);
+						int threadCount=4,
+						bool resPruneOn=true);
 	virtual ~VTKVolumeBrickData();
 
 	virtual void setDepth( const unsigned int depth );
@@ -149,6 +181,8 @@ public:
 	void debugLog(const char *msg);
 
 protected:
+
+	void computeColor(SVtkLookupData *pld) const;
 
 	osg::Vec4ub lerpDataInCell(vtkIdList* pointIds, double* weights, vtkDataArray* tuples, int whichValue, bool isScalar, int dsNum) const;
 	osg::Vec4ub lerpPixelData(vtkDataArray* ptArray, double* weights, int npts, int whichValue, bool isScalar) const;
@@ -175,6 +209,8 @@ protected:
 	void cacheBrick(const osg::Vec3s &brickNum, bool isCached);
 	unsigned int getBrickId(const osg::Vec3s &brickNum) const;
 
+	bool resolutionPruneTest(const osg::Vec3d &vtkMin, const osg::Vec3d &vtkMax, const osg::Vec3s& brickNum, bool brickCached) const;
+
 protected:
 	osg::BoundingBoxd m_bbox;
 	DataSetPtr m_dataSet;
@@ -195,6 +231,8 @@ protected:
 	std::map<unsigned int, bool> m_mapBricksDone;
 	bool m_cacheUse;
 	bool m_cacheCreate;
+
+	bool m_resPruneOn;
 	FILE *m_pstLogDbg;
 };
 

@@ -39,11 +39,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 VtkCreator::VtkCreator( const char *plogstr, const char *ploginfo )
-	: CreateVolume(plogstr, ploginfo)
+	: CreateVolume(plogstr, ploginfo),
+	_threads( 32 ),
+	_hireslod( false ),
+	_nocache( false ),
+	_resPrune( false )
 {
-	_threads = 32;
-	_hireslod = false;
-	_nocache = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,12 +105,12 @@ bool VtkCreator::create()
 
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(32,32,32), threads));
 	//vtk::VTKVolumeBrickDataPtr vbd(new vtk::VTKVolumeBrickData(ds, true, 0, true, osg::Vec3s(8,8,8), threads));
-	VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData( _pds, _prune, 0, true, osg::Vec3s(32,32,32), _threads ) );
+	VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData( _pds, _prune, 0, true, osg::Vec3s(32,32,32), _threads, _resPrune ) );
     vbd->setDepth( _depth );
 
 	// get our depths
 	SaveHierarchy::LODVector depths;
-	getLod( &depths, vbd, _pds, _threads, _hireslod, _prune );
+	getLod( &depths, vbd, _pds, _threads, _hireslod, _prune, _resPrune );
 
 
 	if (_nocache)
@@ -252,6 +253,9 @@ bool VtkCreator::processArgs( osg::ArgumentParser &arguments )
 	_hireslod = false;
 	if ( arguments.find( "-hireslod" ) > 0 ) { _hireslod = true; }
 
+	_resPrune = false;
+	if ( arguments.find( "-rp" ) > 0 ) { _resPrune = true; }
+
 
 	// get scalars and vectors from commandf line
 	int countScl = getNumScalars();
@@ -302,7 +306,7 @@ void VtkCreator::setCacheUse( SaveHierarchy::LODVector &depths, bool use )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VtkCreator::getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune )
+void VtkCreator::getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr hilod, vtk::DataSetPtr ds, int threads, bool hireslod, bool prune, bool resPrune )
 {
 	hilod->setCallbackProgress( _pcbProgress );
 
@@ -325,7 +329,7 @@ void VtkCreator::getLod( SaveHierarchy::LODVector* pdepths, VolumeBrickDataPtr h
 
 	for ( int i=0; i<depth-1; i++ )
 	{
-		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads) );
+		VolumeBrickDataPtr vbd( new vtk::VTKVolumeBrickData(ds, prune, 0, true, osg::Vec3s(32,32,32), threads, resPrune) );
 		vbd->setDepth( i+1 );
 		vbd->setCallbackProgress( _pcbProgress );
 		(*pdepths)[i] = vbd;

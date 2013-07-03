@@ -82,6 +82,7 @@ void MainWindow::guiSettingsInit()
     //
     ui->checkBoxVtkCacheOn->setChecked( true );
     ui->checkBoxVtkHiresLod->setChecked( true );
+	ui->checkBoxVtkResPrune->setChecked( true );
     ui->listWidgetVtkScalars->setEnabled( false );
     ui->listWidgetVtkVectors->setEnabled( false );
 
@@ -145,6 +146,7 @@ void MainWindow::guiSettingsLoad()
     UtlSettings::initComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads", QVariant(32) );
     UtlSettings::initCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn", true );
     UtlSettings::initCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod", true );
+	UtlSettings::initCheckBox( &settings, ui->checkBoxVtkResPrune, "vtkResPrune", true );
     settings.endGroup();
 }
 
@@ -168,10 +170,10 @@ void MainWindow::guiSettingsSave()
     settings.beginGroup("cruchstore");
     UtlSettings::saveRadioBtn(&settings, ui->radioButtonWriteToDb, "useCrunchstore");
     UtlSettings::savePlainText(&settings, ui->plainTextEditDbFile, "dbfile");
-    UtlSettings::savePlainText(&settings, ui->plainTextEditFileFolder, "fileFolder");
+    UtlSettings::savePlainText(&settings, ui->plainTextEditFileFolder, "fileFolder"); 
     settings.endGroup();
 
-    //////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////// 
     // vtk options
     //
     settings.beginGroup( "Vtk" );
@@ -179,6 +181,8 @@ void MainWindow::guiSettingsSave()
     UtlSettings::saveComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads" );
     UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn" );
     UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod" );
+	UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkResPrune, "vtkResPrune" );
+
     settings.endGroup();
 }
 
@@ -212,6 +216,7 @@ void MainWindow::setShapeType(int shapeType)
 	ui->comboBoxVtkThreads->setEnabled( enable );
 	ui->checkBoxVtkCacheOn->setEnabled( enable );
 	ui->checkBoxVtkHiresLod->setEnabled( enable );
+	ui->checkBoxVtkResPrune->setEnabled( enable );
 	ui->listWidgetVtkScalars->setEnabled( enable );
 	ui->listWidgetVtkVectors->setEnabled( enable );
 
@@ -429,12 +434,14 @@ void MainWindow::on_pushButtonCreate_clicked()
 		int threads = UtlSettings::getSelectedValueInt( ui->comboBoxVtkThreads );
 		bool cacheon = ui->checkBoxVtkCacheOn->isChecked();
 		bool hireslod = ui->checkBoxVtkHiresLod->isChecked();
+		bool resPrune = ui->checkBoxVtkResPrune->isChecked();
 
 		vtkCreator()->setScalarsToProcess( scalars );
 		vtkCreator()->setVectorsToProcess( vectors );
 		vtkCreator()->setThreads( threads );
 		vtkCreator()->setCache( cacheon );
 		vtkCreator()->setHiresLod( hireslod );
+		vtkCreator()->setResPrune( resPrune );
 
 		createVolume = _pVtk;
 		break;
@@ -552,7 +559,7 @@ void MainWindow::slotEnd()
 	ui->pushButtonCancel->setEnabled( false );
 	finishProgress();
 	msgOut( QString("Finished...") );
-}
+} 
 
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::slotMsg( QString msg )
