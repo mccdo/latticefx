@@ -673,6 +673,12 @@ void VolumeBrickData::computeProgAndUpdate( int add ) const
 	_pcbProgress->computeProgAndUpdate( add );
 }
 
+void VolumeBrickData::sendProgressMsg(const char* msg) const
+{
+	if (!_pcbProgress) return;
+	_pcbProgress->sendMsg( msg );
+}
+
 int VolumeBrickData::brickIndex( const osg::Vec3s& brickNum ) const
 {
     if( ( brickNum[0] >= _numBricks[0] ) || ( brickNum[0] < 0 ) ||
@@ -1151,9 +1157,16 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
 {
     const int depth( brickName.length() );
     VolumeBrickDataPtr vbd( _lodVec[ depth ] );
+	bool resPrune = false;
+	osg::Image* image = NULL;
+
+	resPrune = resPruneTest( brickName );
 
 	if (vbd->checkCancel()) return;
-    osg::Image* image( vbd->getSeamlessBrick( brickName ) );
+
+	osg::Vec3s brickNum = vbd->nameToBrickNum(brickName);
+	image = vbd->getSeamlessBrick( brickName );
+
 	if (vbd->checkCancel()) return;
 
     if( image != NULL )
@@ -1165,8 +1178,19 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
     }
     else
     {
-        LFX_INFO_STATIC( "lfx.core.hier", "NULL brick " + brickName );
+		LFX_INFO_STATIC( "lfx.core.hier", "NULL brick " + brickName );
+		return; // if parent brick is null, should be no need to go into child bricks
     }
+
+	if (resPrune)
+	{
+		LFX_INFO_STATIC( "lfx.core.hier", "Max Resolution brick " + brickName );
+
+		std::stringstream ss;
+		ss << "Max Resolution brick " << brickName;
+		vbd->sendProgressMsg(ss.str().c_str());
+		return;
+	}
 
     if( depth < _depth - 1 )
     {
@@ -1186,6 +1210,103 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
 		if (vbd->checkCancel()) return;
         recurseSaveBricks( db, brickName + std::string( "7" ) );
     }
+}
+
+bool SaveHierarchy::resPruneTest( const std::string brickNameParent )
+{
+	const int depthParent( brickNameParent.length() );
+	if (depthParent < 1) return false;
+	if( depthParent >= _depth - 1 ) return false;
+
+	/*
+	// begin debug
+	
+	VolumeBrickDataPtr vbdp( _lodVec[ depthParent ] );
+	osg::Vec3s brickNumParent = vbdp->nameToBrickNum(brickNameParent);
+	osg::Vec3d pmin, pmax, childMin, childMax;
+	vbdp->getDataBoundingBox(brickNumParent, pmin, pmax);
+
+	std::stringstream ssd;
+	ssd << "parent brick: " << brickNameParent << "\n";
+	ssd << "min (" << pmin[0] << ", " << pmin[1] << ", " << pmin[2] << ")\n";
+	ssd << "max (" << pmax[0] << ", " << pmax[1] << ", " << pmax[2] << ")\n";
+
+	LFX_INFO_STATIC( "lfx.core.hier", ssd.str().c_str() );
+
+	// test all child bricks
+	for (int i=0; i<8; i++)
+	{
+		osg::Vec3d min, max;
+
+		std::stringstream ss;
+		ss << brickNameParent << i;
+		std::string brickName = ss.str();
+
+		int depth( brickName.length() );
+		VolumeBrickDataPtr vbd( _lodVec[ depth ] );
+		osg::Vec3s brickNum = vbd->nameToBrickNum(brickName);
+
+		vbd->getDataBoundingBox(brickNum, min, max);
+		ssd = std::stringstream();
+		ssd << "child brick: " << brickName << "\n";
+		ssd << " min (" << min[0] << ", " << min[1] << ", " << min[2] << ")\n";
+		ssd << " max (" << max[0] << ", " << max[1] << ", " << max[2] << ")\n";
+		LFX_INFO_STATIC( "lfx.core.hier", ssd.str().c_str() );
+
+		if (vbd->checkCancel()) return false;
+
+		if (i == 0)
+		{
+			childMin = min;
+			childMax = max;
+			continue;
+		}
+
+		for (int s=0; s<3; s++)
+		{
+			if (min[s] < childMin[s]) childMin[s] = min[s]; 
+			if (max[s] > childMax[s]) childMax[s] = max[s];
+		}
+	}
+
+	ssd = std::stringstream();
+	ssd << "childs bounding box: \n";
+	ssd << " min (" << childMin[0] << ", " << childMin[1] << ", " << childMin[2] << ")\n";
+	ssd << " max (" << childMax[0] << ", " << childMax[1] << ", " << childMax[2] << ")\n\n";
+	LFX_INFO_STATIC( "lfx.core.hier", ssd.str().c_str() );
+
+	for (int s=0; s<3; s++)
+	{
+		if (fabs(pmin[s] - childMin[s]) > .001 || fabs(pmax[s] - childMax[s]) > .001)
+		{
+			ssd << "parent child bounding box problem on parent brick: " << brickNameParent << "\n";
+			break;
+		}
+	}
+
+	// end debug
+	*/
+
+	// test all child bricks
+	for (int i=0; i<8; i++)
+	{
+		std::stringstream ss;
+		ss << brickNameParent << i;
+		std::string brickName = ss.str();
+
+		int depth( brickName.length() );
+		VolumeBrickDataPtr vbd( _lodVec[ depth ] );
+		osg::Vec3s brickNum = vbd->nameToBrickNum(brickName);
+
+		if (vbd->checkCancel()) return false;
+
+		if ( !vbd->resolutionPrune( brickNum ) ) 
+		{
+			return false;
+		}
+	}
+
+	return true;    
 }
 
 LoadHierarchy::LoadHierarchy()

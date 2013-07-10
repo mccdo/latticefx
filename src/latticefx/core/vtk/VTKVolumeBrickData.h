@@ -164,6 +164,10 @@ public:
 
 	virtual void setDepth( const unsigned int depth );
 
+	virtual void getDataBoundingBox(const osg::Vec3s& brickNum, osg::Vec3d &min, osg::Vec3d &max) const;
+
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum ) const;
+
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 	
 

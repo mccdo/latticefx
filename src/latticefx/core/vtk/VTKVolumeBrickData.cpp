@@ -102,6 +102,85 @@ bool VTKVolumeBrickData::isValid()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVolumeBrickData::getDataBoundingBox(const osg::Vec3s& brickNum, osg::Vec3d &min, osg::Vec3d &max) const
+{
+	osg::Vec3d vtkBrickSize;
+	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / (_numBricks.x());
+	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / (_numBricks.y());
+	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / (_numBricks.z());
+
+	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
+    //vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
+	//vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
+	//vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
+
+	// need to compute the bounding box for this brick in the vtk dataset coordinate space
+	min[0] = m_bbox.xMin() + brickNum[0] * vtkBrickSize[0];
+	min[1] = m_bbox.yMin() + brickNum[1] * vtkBrickSize[1];
+	min[2] = m_bbox.zMin() + brickNum[2] * vtkBrickSize[2];
+	max = min + vtkBrickSize;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum ) const
+{
+	if (!m_resPruneOn || getDepth() <= 1) return false;
+
+	// make sure the brick is in range
+	if (brickNum[0] >= _numBricks[0] || brickNum[1] >= _numBricks[1] || brickNum[2] >= _numBricks[2])
+	{
+		return false;
+	}
+
+    
+    // If we already generated an image for this brickNum and
+    // it's still in the cache, return the cached imaged.
+    osg::Image* image( getCachedImage( brickNum ) );
+    if( image != NULL ) return  false;
+
+	//if (!m_pds) return NULL;
+	if (!m_cellLocators.size()) return false;
+
+
+	bool brickCached = isBrickCached(brickNum);
+
+	int totbricks = (_numBricks[0] * _numBricks[1] * _numBricks[2]) - 1;
+
+	/*
+	std::string logname = "lfx.core.hier.vtk";
+	std::stringstream ss;
+	ss << "brick: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks << ", cached: " << brickCached;
+	LFX_INFO_STATIC( logname, ss.str() );
+	*/
+	// 0,0,0 is the left, top, front cube and we have 8x8x8 boxes
+	// or whatever m_totalNumBoxes is set to
+		
+	//a bounding box
+	//double bbox[6] = {0,0,0,0,0,0};
+	//m_pds->GetBounds(bbox);
+
+	// vtkBrickSize - the size of our brick in vtk coordniates
+	osg::Vec3d vtkBrickSize, vtkDelta;
+	vtkBrickSize.x() = fabs(m_bbox.xMax() - m_bbox.xMin()) / (_numBricks.x());
+	vtkBrickSize.y() = fabs(m_bbox.yMax() - m_bbox.yMin()) / (_numBricks.y());
+	vtkBrickSize.z() = fabs(m_bbox.zMax() - m_bbox.zMin()) / (_numBricks.z());
+
+	// vtkDelta  - the abount of space to move in vtk coorniates for each pixel, or m_brickRes
+    vtkDelta.x()   = vtkBrickSize.x() / m_brickRes.x();
+	vtkDelta.y()   = vtkBrickSize.y() / m_brickRes.y();
+	vtkDelta.z()   = vtkBrickSize.z() / m_brickRes.z();
+
+	// need to compute the bounding box for this brick in the vtk dataset coordinate space
+	osg::Vec3d min, max;
+	min[0] = m_bbox.xMin() + brickNum[0] * vtkBrickSize[0];
+	min[1] = m_bbox.yMin() + brickNum[1] * vtkBrickSize[1];
+	min[2] = m_bbox.zMin() + brickNum[2] * vtkBrickSize[2];
+	max = min + vtkBrickSize;
+
+	return resolutionPruneTest(min, max, brickNum, brickCached);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 {
 	// make sure the brick is in range
@@ -174,6 +253,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	double brickThreadDeltaX = (double)m_brickRes[0] / (double)m_threadCount;	
 	double curBrickEndX = 0;
 
+	/*
 	// run prune test if needed
 	if (getDepth() > 1 && m_resPruneOn)
 	{
@@ -182,6 +262,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 			return NULL;
 		}	
 	}
+	*/
 
 	unsigned char* data( new unsigned char[ m_brickRes[0] * m_brickRes[1] * m_brickRes[2] * bytesPerPixel ] );
 	unsigned char* ptr( data );

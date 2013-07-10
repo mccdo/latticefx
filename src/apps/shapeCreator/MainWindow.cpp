@@ -4,15 +4,22 @@
 #include "ShapeVolumes.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <latticefx/core/Log.h>
+#include <latticefx/core/LogMacros.h>
 
 const std::string logstr( "lfx.demo" );
 const std::string loginfo( logstr+".info" );
+
+using namespace lfx::core;
 
 ////////////////////////////////////////////////////////////////////////////////
 MainWindow::MainWindow( QWidget *parent ) :
     QMainWindow( parent ),
     ui( new Ui::MainWindow )
 {
+
+	Log::instance()->setPriority( Log::PrioFatal, Log::Console );
+	Log::instance()->setPriority( Log::PrioInfo, Log::Console );
 
     _pVtk.reset( new VtkCreator( logstr.c_str(), loginfo.c_str() ) );
 	_pThread = new CreatorThread();

@@ -260,6 +260,9 @@ public:
     osg::Vec3s getNumBricks() const;
 	unsigned int getBrickCount() const;
 
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum ) const { return false; }
+	virtual void getDataBoundingBox( const osg::Vec3s& brickNum, osg::Vec3d &min, osg::Vec3d &max ) const { return; }
+
     /** \brief Add a brick to the \c _images vector of bricks.
     \details This is used
     by the Downsample class to create lower LODs. It can also be used
@@ -284,14 +287,16 @@ public:
     osg::Image* getSeamlessBrick( const osg::Vec3s& brickNum ) const;
     osg::Image* getSeamlessBrick( const std::string& brickName ) const;
 
+	osg::Vec3s nameToBrickNum( const std::string& name ) const;
+
 	void setCallbackProgress( ICallbackProgress *pcp ) { _pcbProgress = pcp; }
 	bool checkCancel() const;
 	void computeProgAndUpdate( int add ) const;
+	void sendProgressMsg(const char* msg) const;
 
 protected:
 	
     int brickIndex( const osg::Vec3s& brickNum ) const;
-    osg::Vec3s nameToBrickNum( const std::string& name ) const;
 
     /** \brief Copy texels for proper brick overlap.
     \details Copy texels from \c source to \c dest to eliminate seams between bricks.
@@ -411,6 +416,7 @@ public:
 
 protected:
     void recurseSaveBricks( DBBasePtr db, const std::string brickName );
+	bool resPruneTest( const std::string brickNameParent );
 
     unsigned int _depth;
 
