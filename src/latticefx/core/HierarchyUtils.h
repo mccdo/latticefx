@@ -416,7 +416,7 @@ public:
 
 protected:
     void recurseSaveBricks( DBBasePtr db, const std::string brickName );
-	bool resPruneTest( const std::string brickNameParent );
+	bool resolutionPruneTest( const std::string brickNameParent );
 
     unsigned int _depth;
 

@@ -128,6 +128,21 @@ int PruneHierarchy::traverse( ChannelDataPtr cdp )
                 comp->removeChannel( idx - 1 );
             }
         }
+
+		// resolution prune check.
+		// if the child nodes were pruned out because they added no resolution value..
+		// we need to adjust the lod distance so this node doesn't get switched out and cause popping, 
+		// it needs to stay visible.
+		//
+		if( comp->getNumChannels() == 1 )
+		{
+			ChannelDataLOD *pLod = comp->getAsLOD();
+			if (pLod != NULL)
+			{
+				pLod->getRange( 0 ).second = FLT_MAX;
+			}
+		}
+
         return( comp->getNumChannels() );
     }
     else
@@ -1160,7 +1175,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
 	bool resPrune = false;
 	osg::Image* image = NULL;
 
-	resPrune = resPruneTest( brickName );
+	resPrune = resolutionPruneTest( brickName );
 
 	if (vbd->checkCancel()) return;
 
@@ -1212,7 +1227,7 @@ void SaveHierarchy::recurseSaveBricks( DBBasePtr db, const std::string brickName
     }
 }
 
-bool SaveHierarchy::resPruneTest( const std::string brickNameParent )
+bool SaveHierarchy::resolutionPruneTest( const std::string brickNameParent )
 {
 	const int depthParent( brickNameParent.length() );
 	if (depthParent < 1) return false;
