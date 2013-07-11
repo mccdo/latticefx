@@ -561,7 +561,7 @@ void MainWindow::on_pushButtonCreate_clicked()
 	_pThread->setPriority( QThread::TimeCriticalPriority );
 }
  
-
+////////////////////////////////////////////////////////////////////////////////
 void MainWindow::closeEvent(QCloseEvent * event)
 {
 	if (_pLoadingDlg != NULL)
@@ -570,6 +570,38 @@ void MainWindow::closeEvent(QCloseEvent * event)
 
 		QMessageBox::information( NULL, "Vtk File Loading", "Vtk File is currently loading.\nPlease wait until it finishes." );
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::on_pushButtonVtkClearAll_clicked()
+{
+    for ( int i=0; i<ui->listWidgetVtkScalars->count(); i++ )
+    {
+        QListWidgetItem *item = ui->listWidgetVtkScalars->item(i);
+        item->setCheckState( Qt::Unchecked );
+    }
+
+	for ( int i=0; i<ui->listWidgetVtkVectors->count(); i++ )
+    {
+        QListWidgetItem *item = ui->listWidgetVtkVectors->item(i);
+        item->setCheckState( Qt::Unchecked );
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::on_pushButtonVtkSelectAll_clicked()
+{
+	for ( int i=0; i<ui->listWidgetVtkScalars->count(); i++ )
+    {
+        QListWidgetItem *item = ui->listWidgetVtkScalars->item(i);
+        item->setCheckState( Qt::Checked );
+    }
+
+	for ( int i=0; i<ui->listWidgetVtkVectors->count(); i++ )
+    {
+        QListWidgetItem *item = ui->listWidgetVtkVectors->item(i);
+        item->setCheckState( Qt::Checked );
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

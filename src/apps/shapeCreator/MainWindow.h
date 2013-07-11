@@ -74,6 +74,9 @@ private slots:
 	void on_plainTextEditFileFolder_textChanged();
 	void on_plainTextEditDbFile_textChanged();
 
+	void on_pushButtonVtkClearAll_clicked();
+	void on_pushButtonVtkSelectAll_clicked();
+
 
 	void slotStart();
     void slotProgress(int percent);
