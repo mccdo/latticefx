@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDialog>
 #include "VtkCreator.h"
 #include "CreatorThread.h"
 
@@ -17,21 +18,24 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     
+	void loadVtkFile( QString file );
+
+	virtual void closeEvent(QCloseEvent * event);
+
 protected:
     void guiSettingsInit();
     void guiSettingsLoad();
     void guiSettingsSave();
     void guiFeaturesInit();
 
-	void setShapeType(int type);
+	void setShapeType( int type );
 
-    void loadVtkFile(QString file);
 	VtkCreator* vtkCreator();
 
 	void enableCreateButton();
 	bool validDbFile( const QString &path, const QString &file, QString *pfullpath=NULL, QString *pmsg=NULL );
 
-	void msgOut(const QString &msg);
+	void msgOut( const QString &msg );
 	void msgClearAll();
 
 	void finishProgress();
@@ -42,6 +46,8 @@ private:
     QString _lastPathVtk;
 	boost::shared_ptr<CreateVolume> _pVtk;
 	CreatorThread *_pThread;
+	boost::shared_ptr<QDialog> _pLoadingDlg;
+
 
 protected:
     enum ShapeType
@@ -53,6 +59,10 @@ protected:
         E_SHAPE_SPHERE,
         E_SHAPE_SSPHERE,
     };
+
+signals:
+	void signalVtkLoadDone();
+
 private slots:
     void on_radioButtonWriteToDb_clicked();
     void on_radioButtonWriteToFiles_clicked();
@@ -69,6 +79,8 @@ private slots:
     void slotProgress(int percent);
     void slotEnd();
     void slotMsg(QString msg);
+
+	void slotVtkLoadDone();
 };
 
 #endif // MAINWINDOW_H

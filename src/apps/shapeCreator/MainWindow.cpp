@@ -4,6 +4,10 @@
 #include "ShapeVolumes.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTimer>
+#include <QtCore>
+#include <QVBoxLayout>
+#include <QLabel>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -36,6 +40,7 @@ MainWindow::MainWindow( QWidget *parent ) :
 	QObject::connect( _pThread, SIGNAL( signalProgress( int ) ), this, SLOT( slotProgress( int ) ) );
 	QObject::connect( _pThread, SIGNAL( signalEnd() ), this, SLOT(slotEnd() ) );
 	QObject::connect( _pThread, SIGNAL( signalMsg( QString ) ), this, SLOT( slotMsg( QString ) ) );
+	QObject::connect( this, SIGNAL( signalVtkLoadDone() ), this, SLOT( slotVtkLoadDone() ) );
 
 	ui->progressBar->setRange( 0, 100 );
     ui->progressBar->setValue( 0 );
@@ -234,8 +239,14 @@ void MainWindow::setShapeType(int shapeType)
 void MainWindow::loadVtkFile(QString file)
 {
     vtkCreator()->init( file.toAscii() );
+    emit signalVtkLoadDone();
+}
 
-    // get the scalars and vectors..
+
+////////////////////////////////////////////////////////////////////////////////
+void MainWindow::slotVtkLoadDone()
+{
+	// get the scalars and vectors..
     QString str;
     int num;
 
@@ -280,6 +291,9 @@ void MainWindow::loadVtkFile(QString file)
 	}
 
 	enableCreateButton();
+	ui->pushButtonVtkBrowse->setEnabled( true );
+
+	_pLoadingDlg.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,8 +401,14 @@ void MainWindow::on_pushButtonBrowseFolder_clicked()
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonVtkBrowse_clicked()
 {
-    QStringList list;
-    QString filter = "Vtk Files (*.vtu *.vts);;All files (*.*)";
+	if ( _pThread->isRunning() )
+    {
+        QMessageBox::information( NULL, "Volume Creation Running", "Volume creation is currently running.\nPlease wait until it finishes." );
+        return;
+    }
+
+	QStringList list;
+    QString filter = "Vtk Files (*.vtm *.vtu *.vts);;All files (*.*)";
     QFileDialog fd( this, QString("Browse for vtk file"), _lastPathVtk, filter );
 
     if ( fd.exec() == QDialog::Rejected ) { return; }
@@ -397,11 +417,32 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
     if ( list.count() <= 0 ) { return; }
 
 
-    QDir fullPath = fd.directory();
+	QDir fullPath = fd.directory();
     _lastPathVtk = fullPath.absolutePath();
     ui->plainTextEditVtkFile->setPlainText( list.at(0) );
 
-	loadVtkFile( list.at(0) );
+	_pLoadingDlg.reset ( new QDialog(this, Qt::FramelessWindowHint) );
+
+	QVBoxLayout *layout = new QVBoxLayout();
+	QLabel *label = new QLabel(QString("Loading vtk file. Please wait..."));
+	label->setFixedSize(400, 200);
+
+	//QFont f( "Arial", 20, QFont::Bold);
+	QFont f( "Arial", 20);
+	label->setFont(f);
+
+	layout->addWidget(label, 0, Qt::AlignCenter);
+	_pLoadingDlg->setLayout(layout);
+
+	_pLoadingDlg->setAttribute(Qt::WA_TranslucentBackground);
+	_pLoadingDlg->show();
+    _pLoadingDlg->raise();
+    _pLoadingDlg->activateWindow();
+
+	ui->pushButtonCreate->setEnabled( false );
+	ui->pushButtonVtkBrowse->setEnabled( false );
+
+	QtConcurrent::run(this, &MainWindow::loadVtkFile, list.at(0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -520,6 +561,17 @@ void MainWindow::on_pushButtonCreate_clicked()
 	_pThread->setPriority( QThread::TimeCriticalPriority );
 }
  
+
+void MainWindow::closeEvent(QCloseEvent * event)
+{
+	if (_pLoadingDlg != NULL)
+	{
+		event->ignore();
+
+		QMessageBox::information( NULL, "Vtk File Loading", "Vtk File is currently loading.\nPlease wait until it finishes." );
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_pushButtonCancel_clicked()
 {
