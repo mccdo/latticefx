@@ -294,6 +294,7 @@ void MainWindow::slotVtkLoadDone()
 	ui->pushButtonVtkBrowse->setEnabled( true );
 
 	_pLoadingDlg.reset();
+	this->setCursor(Qt::ArrowCursor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +443,7 @@ void MainWindow::on_pushButtonVtkBrowse_clicked()
 	ui->pushButtonCreate->setEnabled( false );
 	ui->pushButtonVtkBrowse->setEnabled( false );
 
+	this->setCursor(Qt::WaitCursor);
 	QtConcurrent::run(this, &MainWindow::loadVtkFile, list.at(0));
 }
 
