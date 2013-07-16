@@ -38,9 +38,9 @@ namespace core
 {
 
 
-Renderer::Renderer( const std::string logNameSuffix )
+Renderer::Renderer( const std::string logNameSuffix, const std::string& logName )
     : OperationBase( OperationBase::RendererType ),
-      LogBase( "lfx.core." + logNameSuffix ),
+      LogBase( logName.empty() ? std::string( "lfx.core." ) + logNameSuffix : logName ),
       _baseUnit( 4 ),
       _unitAssignmentCounter( 8 ),
       _tfRange( 0.f, 1.f ),

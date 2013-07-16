@@ -45,7 +45,7 @@ namespace core
 class LATTICEFX_EXPORT ChannelDataOSGImage : public ChannelData
 {
 public:
-    ChannelDataOSGImage( const std::string& name = std::string( "" ), osg::Image* Image = NULL );
+    ChannelDataOSGImage( const std::string& name = std::string( "" ), osg::Image* Image = NULL, const std::string& logName = std::string( "" ) );
     ChannelDataOSGImage( const ChannelDataOSGImage& rhs );
     virtual ~ChannelDataOSGImage();
 

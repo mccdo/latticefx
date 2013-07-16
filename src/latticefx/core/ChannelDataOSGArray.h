@@ -52,7 +52,7 @@ vertices) are supported. */
 class LATTICEFX_EXPORT ChannelDataOSGArray : public ChannelData
 {
 public:
-    ChannelDataOSGArray( const std::string& name = std::string( "" ), osg::Array* data = NULL );
+    ChannelDataOSGArray( const std::string& name = std::string( "" ), osg::Array* data = NULL, const std::string& logName = std::string( "" ) );
     ChannelDataOSGArray( const ChannelDataOSGArray& rhs );
     virtual ~ChannelDataOSGArray();
 

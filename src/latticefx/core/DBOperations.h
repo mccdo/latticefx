@@ -43,7 +43,8 @@ namespace core
 class LATTICEFX_EXPORT DBLoad : public Preprocess, protected LogBase
 {
 public:
-    DBLoad( const DBBasePtr db, const DBKey& key, const std::string& channelName );
+    DBLoad( const DBBasePtr db, const DBKey& key, const std::string& channelName,
+            const std::string& logName = std::string( "" ) );
     DBLoad( const DBLoad& rhs );
     virtual ~DBLoad();
 
@@ -69,7 +70,7 @@ typedef boost::shared_ptr< DBLoad > DBLoadPtr;
 class LATTICEFX_EXPORT DBSave : public RTPOperation, protected LogBase
 {
 public:
-    DBSave( DBBasePtr db );
+    DBSave( DBBasePtr db, const std::string& logName = std::string( "" ) );
     DBSave( const DBSave& rhs );
     virtual ~DBSave();
 

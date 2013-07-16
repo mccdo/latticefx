@@ -44,7 +44,8 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkAlgorithmOutput : public lfx::core
 {
 public:
 
-    ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* const pd, const std::string& name = std::string( "" ) );
+    ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* const pd, const std::string& name = std::string( "" ),
+            const std::string& logName = std::string( "" ) );
     ChannelDatavtkAlgorithmOutput( const ChannelDatavtkAlgorithmOutput& rhs );
     virtual ~ChannelDatavtkAlgorithmOutput();
 

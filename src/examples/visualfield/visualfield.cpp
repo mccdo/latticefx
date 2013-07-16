@@ -50,8 +50,8 @@ const std::string logstr( "lfx.demo" );
 class ChannelDataVisualFieldSample : public ChannelData
 {
 public:
-    ChannelDataVisualFieldSample( const std::string& name = std::string( "" ) )
-        : ChannelData( name ),
+    ChannelDataVisualFieldSample( const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) )
+        : ChannelData( name, logName ),
           _timeValid( false )
     {}
     ~ChannelDataVisualFieldSample()

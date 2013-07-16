@@ -57,7 +57,7 @@ ChannelData. */
 class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObject : public lfx::core::ChannelData
 {
 public:
-    ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name = std::string( "" ) );
+    ChannelDatavtkDataObject( vtkDataObject* const dobj, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDatavtkDataObject( const ChannelDatavtkDataObject& rhs );
     virtual ~ChannelDatavtkDataObject();
 

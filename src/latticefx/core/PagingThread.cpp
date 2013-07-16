@@ -37,8 +37,8 @@ namespace core
 {
 
 
-PagingThread::PagingThread()
-    : LogBase( "lfx.core.page.thread" ),
+PagingThread::PagingThread( const std::string& logName )
+    : LogBase( logName.empty() ? "lfx.core.page.thread" : logName ),
       _haltRequest( false )
 {
     _thread = new boost::thread( boost::ref( *this ) );

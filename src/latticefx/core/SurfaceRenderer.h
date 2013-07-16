@@ -115,7 +115,7 @@ Warping can be toggled on/off with the warpEnabled uniform variable.
 class LATTICEFX_EXPORT SurfaceRenderer : public Renderer
 {
 public:
-    SurfaceRenderer();
+    SurfaceRenderer( const std::string& logName = std::string( "" ) );
     SurfaceRenderer( const SurfaceRenderer& rhs );
     virtual ~SurfaceRenderer();
 

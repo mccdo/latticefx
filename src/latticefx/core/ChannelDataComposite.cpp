@@ -33,8 +33,8 @@ namespace core
 {
 
 
-ChannelDataComposite::ChannelDataComposite( const CompositeType compositeType, const std::string& name )
-    : ChannelData( name ),
+ChannelDataComposite::ChannelDataComposite( const CompositeType compositeType, const std::string& name, const std::string& logName )
+    : ChannelData( name, logName ),
       _compositeType( compositeType )
 {
 }

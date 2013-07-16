@@ -34,9 +34,9 @@ namespace core
 namespace vtk
 {
 ////////////////////////////////////////////////////////////////////////////////
-ChannelDatavtkDataObjectVector::ChannelDatavtkDataObjectVector( std::vector< vtkDataObject* > dobj, const std::string& name )
+ChannelDatavtkDataObjectVector::ChannelDatavtkDataObjectVector( std::vector< vtkDataObject* > dobj, const std::string& name, const std::string& logName )
     :
-    ChannelData( name ),
+    ChannelData( name, logName ),
     m_dobj( dobj )
 {
     m_bounds[0] =  100000;

@@ -31,8 +31,8 @@ namespace core
 {
 
 
-ChannelDataLOD::ChannelDataLOD( const std::string& name )
-    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_LOD, name )
+ChannelDataLOD::ChannelDataLOD( const std::string& name, const std::string& logName )
+    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_LOD, name, logName )
 {
 }
 ChannelDataLOD::ChannelDataLOD( const ChannelDataLOD& rhs )

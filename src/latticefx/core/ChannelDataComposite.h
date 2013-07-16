@@ -70,7 +70,7 @@ public:
         COMPOSITE_SET
     } CompositeType;
 
-    ChannelDataComposite( const CompositeType compositeType, const std::string& name = std::string( "" ) );
+    ChannelDataComposite( const CompositeType compositeType, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDataComposite( const ChannelDataComposite& rhs );
     virtual ~ChannelDataComposite();
 

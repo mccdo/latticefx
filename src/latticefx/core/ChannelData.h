@@ -66,7 +66,7 @@ class LATTICEFX_EXPORT ChannelData : protected LogBase,
     public boost::enable_shared_from_this< ChannelData >
 {
 public:
-    ChannelData( const std::string& name = std::string( "" ) );
+    ChannelData( const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelData( const ChannelData& rhs );
     virtual ~ChannelData();
 

@@ -43,7 +43,7 @@ namespace core
 class LATTICEFX_EXPORT ChannelDataLOD : public ChannelDataComposite
 {
 public:
-    ChannelDataLOD( const std::string& name = std::string( "" ) );
+    ChannelDataLOD( const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDataLOD( const ChannelDataLOD& rhs );
     virtual ~ChannelDataLOD();
 

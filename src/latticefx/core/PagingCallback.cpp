@@ -73,9 +73,9 @@ namespace core
 {
 
 
-PagingCallback::PagingCallback()
+PagingCallback::PagingCallback( const std::string& logName )
     : osg::NodeCallback(),
-      LogBase( "lfx.core.page.cb" ),
+      LogBase( logName.empty() ? "lfx.core.page.cb" : logName ),
       _animationTime( 0. ),
       _timeRange( RangeValues( -0.5, 0.5 ) )
 {

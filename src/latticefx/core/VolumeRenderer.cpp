@@ -83,8 +83,8 @@ osg::Vec3 SpatialVolume::getVolumeOrigin() const
 
 
 
-VolumeRenderer::VolumeRenderer()
-    : Renderer( "vol" ),
+VolumeRenderer::VolumeRenderer( const std::string& logName )
+    : Renderer( "vol", logName ),
       _renderMode( SLICES ),
       _numPlanes( 100.f ),
       _maxSamples( 100.f ),

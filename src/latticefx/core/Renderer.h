@@ -123,7 +123,8 @@ However, the implementation might be more complex, depending on the rendering al
 class LATTICEFX_EXPORT Renderer : public OperationBase, protected LogBase
 {
 public:
-    Renderer( const std::string logNameSuffix = std::string( "unknown" ) );
+    Renderer( const std::string logNameSuffix = std::string( "unknown" ),
+            const std::string& logName = std::string( "" ) );
     Renderer( const Renderer& rhs );
     virtual ~Renderer();
 

@@ -82,7 +82,7 @@ class LATTICEFX_EXPORT DataSet : protected LogBase
 {
 public:
     ///Constructor
-    DataSet();
+    DataSet( const std::string& logName = std::string( "" ) );
     ///Copy constructor
     DataSet( const DataSet& rhs );
     ///Destructor

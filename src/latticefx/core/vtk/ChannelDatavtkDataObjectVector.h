@@ -41,7 +41,7 @@ namespace vtk
 class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkDataObjectVector : public lfx::core::ChannelData
 {
 public:
-    ChannelDatavtkDataObjectVector( std::vector< vtkDataObject* > dobj, const std::string& name = std::string( "" ) );
+    ChannelDatavtkDataObjectVector( std::vector< vtkDataObject* > dobj, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDatavtkDataObjectVector( const ChannelDatavtkDataObjectVector& rhs );
     virtual ~ChannelDatavtkDataObjectVector();
 

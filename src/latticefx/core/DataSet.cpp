@@ -39,8 +39,8 @@ namespace core
 {
 
 
-DataSet::DataSet()
-    : LogBase( "lfx.core.dataset" ),
+DataSet::DataSet( const std::string& logName)
+    : LogBase( logName.empty() ? "lfx.core.dataset" : logName ),
       _sceneGraph( new osg::Group ),
       _dirty( ALL_DIRTY )
 {

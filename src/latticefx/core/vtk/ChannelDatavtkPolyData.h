@@ -58,7 +58,7 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkPolyData : public lfx::core::Chann
 {
 public:
 
-    ChannelDatavtkPolyData( vtkPolyData* const pd, const std::string& name = std::string( "" ) );
+    ChannelDatavtkPolyData( vtkPolyData* const pd, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDatavtkPolyData( const ChannelDatavtkPolyData& rhs );
     virtual ~ChannelDatavtkPolyData();
 

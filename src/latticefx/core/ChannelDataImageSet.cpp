@@ -32,8 +32,8 @@ namespace core
 {
 
 
-ChannelDataImageSet::ChannelDataImageSet( const std::string& name )
-    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name ),
+ChannelDataImageSet::ChannelDataImageSet( const std::string& name, const std::string& logName )
+    : ChannelDataComposite( ChannelDataComposite::COMPOSITE_SET, name, logName ),
       _offsets( new osg::Vec3Array )
 {
 }

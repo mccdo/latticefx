@@ -110,7 +110,7 @@ directly in the scene graph, and no paging occurs at tuntime. */
 class LATTICEFX_EXPORT VectorRenderer : public Renderer
 {
 public:
-    VectorRenderer();
+    VectorRenderer( const std::string& logName = std::string( "" ) );
     VectorRenderer( const VectorRenderer& rhs );
     virtual ~VectorRenderer();
 

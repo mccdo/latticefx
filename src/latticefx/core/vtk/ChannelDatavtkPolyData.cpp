@@ -32,9 +32,9 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-ChannelDatavtkPolyData::ChannelDatavtkPolyData( vtkPolyData* pd, const std::string& name )
+ChannelDatavtkPolyData::ChannelDatavtkPolyData( vtkPolyData* pd, const std::string& name, const std::string& logName )
     :
-    ChannelData( name ),
+    ChannelData( name, logName ),
     m_pd( 0 )
 {
     m_pd = vtkPolyData::New();

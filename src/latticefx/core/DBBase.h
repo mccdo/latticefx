@@ -66,7 +66,7 @@ public:
         CRUNCHSTORE
     } ImplementationType;
 
-    DBBase( const ImplementationType implType );
+    DBBase( const ImplementationType implType, const std::string& logName = std::string( "" ) );
     DBBase( const DBBase& rhs );
     virtual ~DBBase();
 

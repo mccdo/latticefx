@@ -109,7 +109,7 @@ contention that might occur if multiple paging threads were active.
 class LATTICEFX_EXPORT PagingThread : protected LogBase
 {
 protected:
-    PagingThread();
+    PagingThread( const std::string& logName = std::string( "" ) );
 
 public:
     static PagingThread* instance();

@@ -37,9 +37,9 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const std::string& name )
+ChannelDatavtkDataObject::ChannelDatavtkDataObject( vtkDataObject* dobj, const std::string& name, const std::string& logName )
     :
-    ChannelData( name ),
+    ChannelData( name, logName ),
     m_dobj( dobj )
 {
     m_bounds[0] = 100000;

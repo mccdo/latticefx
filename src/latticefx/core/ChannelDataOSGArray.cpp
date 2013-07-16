@@ -41,8 +41,8 @@ namespace core
 
 
 
-ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* data )
-    : ChannelData( name )
+ChannelDataOSGArray::ChannelDataOSGArray( const std::string& name, osg::Array* data, const std::string& logName )
+    : ChannelData( name, logName )
 {
     if( data != NULL )
     {

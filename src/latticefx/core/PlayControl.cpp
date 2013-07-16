@@ -31,8 +31,8 @@ namespace core
 {
 
 
-PlayControl::PlayControl( osg::Node* scene )
-    : LogBase( "lfx.core.play" ),
+PlayControl::PlayControl( osg::Node* scene, const std::string& logName )
+    : LogBase( logName.empty() ? "lfx.core.play" : logName ),
       _time( 0. ),
       _playRate( 1. ),
       _minTime( 0. ),

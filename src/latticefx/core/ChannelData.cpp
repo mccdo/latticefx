@@ -33,8 +33,8 @@ namespace core
 {
 
 
-ChannelData::ChannelData( const std::string& name )
-    : LogBase( "lfx.core.channel" ),
+ChannelData::ChannelData( const std::string& name, const std::string& logName )
+    : LogBase( logName.empty() ? "lfx.core.channel" : logName ),
       _name( name ),
       _dbKey( "" )
 {

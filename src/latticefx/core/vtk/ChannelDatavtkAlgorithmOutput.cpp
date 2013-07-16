@@ -32,9 +32,9 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-ChannelDatavtkAlgorithmOutput::ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* ao, const std::string& name )
+ChannelDatavtkAlgorithmOutput::ChannelDatavtkAlgorithmOutput( vtkAlgorithmOutput* ao, const std::string& name, const std::string& logName )
     :
-    ChannelData( name ),
+    ChannelData( name, logName ),
     m_ao( ao )
 {
     //m_ao = vtkAlgorithmOutput::New();

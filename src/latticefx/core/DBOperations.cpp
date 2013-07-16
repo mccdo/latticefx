@@ -33,9 +33,10 @@ namespace core
 {
 
 
-DBLoad::DBLoad( DBBasePtr db, const DBKey& key, const std::string& channelName )
+DBLoad::DBLoad( DBBasePtr db, const DBKey& key, const std::string& channelName,
+               const std::string& logName )
     : Preprocess(),
-      LogBase( "lfx.core.db.load" ),
+      LogBase( logName.empty() ? "lfx.core.db.load" : logName ),
       _key( key ),
       _channelName( channelName )
 {
@@ -91,9 +92,9 @@ ChannelDataPtr DBLoad::operator()()
 
 
 
-DBSave::DBSave( DBBasePtr db )
+DBSave::DBSave( DBBasePtr db, const std::string& logName )
     : RTPOperation( RTPOperation::Filter ),
-      LogBase( "lfx.core.db.save" )
+      LogBase( logName.empty() ? "lfx.core.db.save" : logName )
 {
     setDB( db );
 }

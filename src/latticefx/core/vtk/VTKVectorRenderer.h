@@ -44,9 +44,9 @@ class LATTICEFX_CORE_VTK_EXPORT VTKVectorRenderer : public lfx::core::VectorRend
 public:
     ///Default constructor
     ///We are really a fancy lfx::core::VectorRenderer specific to VTK data
-    VTKVectorRenderer()
+    VTKVectorRenderer( const std::string& logName = std::string( "" ) )
         :
-        lfx::core::VectorRenderer()
+        lfx::core::VectorRenderer( logName )
     {
         ;
     }

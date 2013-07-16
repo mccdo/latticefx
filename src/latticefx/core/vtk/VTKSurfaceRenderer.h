@@ -48,9 +48,9 @@ class LATTICEFX_CORE_VTK_EXPORT VTKSurfaceRenderer : public lfx::core::SurfaceRe
 public:
     ///Default constructor
     ///We are really a fancy lfx::core::VectorRenderer specific to VTK data
-    VTKSurfaceRenderer()
+    VTKSurfaceRenderer( const std::string& logName = std::string( "" ) )
         :
-        lfx::core::SurfaceRenderer(),
+        lfx::core::SurfaceRenderer( logName ),
         m_pd( 0 )
     {
         ;

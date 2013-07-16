@@ -77,7 +77,7 @@ volumetric data.
 class LATTICEFX_EXPORT PagingCallback : public osg::NodeCallback, protected LogBase
 {
 public:
-    PagingCallback();
+    PagingCallback( const std::string& logName = std::string( "" ) );
     PagingCallback( const PagingCallback& rhs );
 
 

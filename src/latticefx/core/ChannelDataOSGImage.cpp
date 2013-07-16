@@ -31,8 +31,8 @@ namespace core
 {
 
 
-ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* image )
-    : ChannelData( name )
+ChannelDataOSGImage::ChannelDataOSGImage( const std::string& name, osg::Image* image, const std::string& logName )
+    : ChannelData( name, logName )
 {
     if( image != NULL )
     {

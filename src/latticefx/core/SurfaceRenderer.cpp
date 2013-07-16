@@ -41,8 +41,8 @@ namespace core
 {
 
 
-SurfaceRenderer::SurfaceRenderer()
-    : Renderer( "surf" )
+SurfaceRenderer::SurfaceRenderer( const std::string& logName )
+    : Renderer( "surf", logName )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( VERTEX, "positions" );

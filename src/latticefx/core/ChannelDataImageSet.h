@@ -48,7 +48,7 @@ namespace core
 class LATTICEFX_EXPORT ChannelDataImageSet : public ChannelDataComposite
 {
 public:
-    ChannelDataImageSet( const std::string& name = std::string( "" ) );
+    ChannelDataImageSet( const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDataImageSet( const ChannelDataImageSet& rhs );
     virtual ~ChannelDataImageSet();
 

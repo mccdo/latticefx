@@ -73,7 +73,7 @@ range limit: loop, stop, reverse, etc.
 class LATTICEFX_EXPORT PlayControl : protected LogBase
 {
 public:
-    PlayControl( osg::Node* scene = NULL );
+    PlayControl( osg::Node* scene = NULL, const std::string& logName = std::string( "" ) );
     PlayControl( const PlayControl& rhs );
     ~PlayControl();
 

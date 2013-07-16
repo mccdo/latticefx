@@ -32,9 +32,9 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* ao, const std::string& name )
+ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* ao, const std::string& name, const std::string& logName )
     :
-    ChannelData( name ),
+    ChannelData( name, logName ),
     m_pdm( vtkPolyDataMapper::New() )
 {
     m_pdm->SetInputConnection( ao );

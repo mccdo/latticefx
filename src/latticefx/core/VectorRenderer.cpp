@@ -50,8 +50,8 @@ namespace lfx
 namespace core
 {
 ////////////////////////////////////////////////////////////////////////////////
-VectorRenderer::VectorRenderer()
-    : Renderer( "vec" ),
+VectorRenderer::VectorRenderer( const std::string& logName )
+    : Renderer( "vec", logName ),
       _pointStyle( SIMPLE_POINTS )
 {
     // Specify default ChannelData name aliases for the required inputs.

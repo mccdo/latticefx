@@ -34,10 +34,12 @@ namespace core
 {
 
 
-DBBase::DBBase( const ImplementationType implType )
-    : LogBase( ( implType == CRUNCHSTORE ) ? "lfx.core.db.cs" :
-               ( ( implType == DISK ) ? "lfx.core.db.disk" :
-                 "lfx.core.db.base" ) ),
+DBBase::DBBase( const ImplementationType implType, const std::string& logName )
+    : LogBase( logName.empty() ?
+               ( implType == CRUNCHSTORE ) ? "lfx.core.db.cs" :
+                 ( ( implType == DISK ) ? "lfx.core.db.disk" :
+                   "lfx.core.db.base" )
+               : logName ),
     _implType( implType )
 {
 }

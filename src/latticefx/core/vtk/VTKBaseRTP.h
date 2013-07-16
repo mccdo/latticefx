@@ -51,9 +51,9 @@ class LATTICEFX_CORE_VTK_EXPORT VTKBaseRTP : protected lfx::core::LogBase, publi
 public:
 
     ///Default constructor
-    VTKBaseRTP( const RTPOpType rtpOpType )
+    VTKBaseRTP( const RTPOpType rtpOpType, const std::string& logName=std::string( "" ) )
         :
-        lfx::core::LogBase( "lfx.core.vtk.VTKBaseRTP" ),
+        lfx::core::LogBase( logName.empty() ? "lfx.core.vtk.VTKBaseRTP" : logName ),
         lfx::core::RTPOperation( rtpOpType ),
         m_requestedValue( 0.2 ),
         m_minScalarValue( 0.0 ),

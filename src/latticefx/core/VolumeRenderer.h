@@ -98,7 +98,7 @@ typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
 class LATTICEFX_EXPORT VolumeRenderer : public Renderer, public SpatialVolume
 {
 public:
-    VolumeRenderer();
+    VolumeRenderer( const std::string& logName = std::string( "" ) );
     VolumeRenderer( const VolumeRenderer& rhs );
     virtual ~VolumeRenderer();
 
