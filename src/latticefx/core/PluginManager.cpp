@@ -20,6 +20,12 @@
 
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/Preprocess.h>
+#include <latticefx/core/RTPOperation.h>
+#include <latticefx/core/SurfaceRenderer.h>
+#include <latticefx/core/VectorRenderer.h>
+#include <latticefx/core/VolumeRenderer.h>
+#include <latticefx/core/DataSet.h>
 #include <latticefx/core/LogMacros.h>
 
 #include <Poco/Glob.h>
@@ -55,6 +61,8 @@ OperationInfo::OperationInfo( OperationBasePtr instance, const std::string& clas
     _opInstance( instance )
 {
     PluginManager::instance()->addOperation( *this );
+
+	if( instance ) instance->setPluginData( _pluginName, _className );
 }
 
 bool operator<( const OperationInfo& lhs, const OperationInfo& rhs )
@@ -305,7 +313,12 @@ OperationBasePtr PluginManager::createOperation( const std::string& pluginName, 
         if( ( opInfo._pluginName == pluginName ) &&
                 ( opInfo._className == className ) )
         {
-            return( OperationBasePtr( opInfo._opInstance->create() ) );
+			OperationBasePtr ptr( opInfo._opInstance->create() );
+			if( ptr )
+			{
+				ptr->setPluginData( opInfo._pluginName, opInfo._className );
+				return ptr;
+			}
         }
     }
     return( OperationBasePtr( ( OperationBase* )( NULL ) ) );
@@ -377,6 +390,68 @@ bool operator<( const PluginManager::PluginInfo& lhs, const PluginManager::Plugi
     }
 }
 
+ObjBasePtr PluginManager::createObj(const std::string &typeName, const ObjBase::KeyDataMap &map, std::string *perr)
+{
+	ObjBase::KeyDataMap::const_iterator itName = map.find( "pluginName" );
+	ObjBase::KeyDataMap::const_iterator itClass = map.find( "pluginClassName" );
+	if( itName != map.end() &&  itClass != map.end() )
+	{
+		OperationBasePtr p = createOperation( itName->second, itClass->second );
+		if(!p)
+		{
+			if (perr)
+			{
+				std::stringstream ss;
+				ss << "Failed to create plugin object with name: " << itName->second << " and class: " << itClass->second;
+				*perr = ss.str();
+			}
+
+			return ObjBasePtr();
+		}
+
+		return boost::static_pointer_cast<ObjBase>( p );
+	}
+
+	// must not be a plugin so just create the operation type
+	if( !typeName.compare( "OperationBase" ) )
+	{
+		return ObjBasePtr( new OperationBase() );
+	}
+	else if( !typeName.compare( "Preprocess" ) )
+	{
+		return ObjBasePtr( new Preprocess() );
+	}
+	else if( !typeName.compare( "RTPOperation" ) )
+	{
+		return ObjBasePtr( new RTPOperation() );
+	}
+	else if( !typeName.compare( "SurfaceRenderer" ) )
+	{
+		return ObjBasePtr( new SurfaceRenderer() );
+	}
+	else if( !typeName.compare( "VectorRenderer" ) )
+	{
+		return ObjBasePtr( new VectorRenderer() );
+	}
+	else if( !typeName.compare( "VolumeRenderer" ) )
+	{
+		return ObjBasePtr( new VolumeRenderer() );
+	}
+	else if( !typeName.compare( "DataSet" ) )
+	{
+		return ObjBasePtr( new DataSet() );
+	}
+
+
+	if (perr)
+	{
+		std::stringstream ss;
+		ss << "Failed to create object with typename: " << typeName;
+		*perr = ss.str();
+	}
+
+	return ObjBasePtr();
+}
 
 // core
 }

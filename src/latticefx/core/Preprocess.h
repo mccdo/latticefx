@@ -54,6 +54,8 @@ public:
     Preprocess( const Preprocess& rhs );
     virtual ~Preprocess();
 
+	virtual std::string getClassName() const { return "Preprocess"; }
+
     /** \brief Indicates how DataSet should handle the newly created ChannelData.
     \details The operator() function returns a ChannelDataPtr of preprocessed data.
     The ActionType indicates how DataSet should handle the newly created data.
@@ -68,6 +70,9 @@ public:
         REPLACE_DATA,
         IGNORE_DATA
     } ActionType;
+
+	std::string getEnumName( ActionType e ) const;
+	ActionType getEnumFromName( const std::string &name ) const;
 
     /** \brief TBD
     \details The default is IGNORE_DATA. */
@@ -87,10 +92,17 @@ public:
     }
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
+protected:
     ActionType _action;
 
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -99,6 +111,7 @@ private:
         ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
         ar& BOOST_SERIALIZATION_NVP( _action );
     }
+	*/
 };
 
 typedef boost::shared_ptr< Preprocess > PreprocessPtr;

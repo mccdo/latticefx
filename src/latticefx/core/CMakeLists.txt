@@ -26,10 +26,12 @@ set( _headerFiles
 #    DBUtils.h
     DBOperations.h
     HierarchyUtils.h
+    JsonSerializer.h
     LoadRequest.h
     Log.h
     LogBase.h
     LogMacros.h
+    ObjBase.h
     OctreeGroup.h
     OperationBase.h
     OperationValue.h
@@ -65,8 +67,10 @@ set( _sourceFiles
 #    DBUtils.cpp
     DBOperations.cpp
     HierarchyUtils.cpp
+    JsonSerializer.cpp
     LoadRequest.cpp
     Log.cpp
+    ObjBase.cpp
     OctreeGroup.cpp
     OperationBase.cpp
     OperationValue.cpp

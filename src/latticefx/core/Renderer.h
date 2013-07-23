@@ -128,6 +128,8 @@ public:
     Renderer( const Renderer& rhs );
     virtual ~Renderer();
 
+	virtual std::string getClassName() const { return std::string( "Renderer" ); }
+
     /** \brief Create a scene graph from the base class ChannelData.
     \details Override this function in derived classes and add your own code to
     create a scene graph. Input ChannelData is stored in OperationBase::_inputs.
@@ -388,6 +390,9 @@ Renderer::addInput( "scalar-string-name" );
     /** \brief Get the transfer function destination. */
     TransferFunctionDestination getTransferFunctionDestination() const;
 
+	std::string getEnumName( TransferFunctionDestination e ) const;
+	TransferFunctionDestination getEnumFromNameTrans( const std::string &name ) const;
+
     /**@}*/
 
 
@@ -436,6 +441,9 @@ Renderer::addInput( "scalar-string-name" );
     void setHardwareMaskInputSource( const HardwareMaskInputSource source );
     /** \brief Get the input source setting. */
     const HardwareMaskInputSource& getHardwareMaskInputSource() const;
+
+	std::string getEnumName( HardwareMaskInputSource e ) const;
+	HardwareMaskInputSource getEnumFromNameMaskInput( const std::string &name ) const;
 
     /** \brief Specify the hardware mask input ChannelData.
     \details Specifies the ChannelData to use as the hardware mask source input when
@@ -486,6 +494,14 @@ Renderer::addInput( "scalar-string-name" );
     /** \brief Get the hardware mask comparison operatos. */
     unsigned int getHardwareMaskOperator() const;
 
+	virtual void serialize( JsonSerializer *json ) const { OperationBase::serialize( json ); }
+	static void serialize( JsonSerializer *json, const std::string &name, const osg::Vec2f &v );
+	static void serialize( JsonSerializer *json, const std::string &name, const osg::Vec3f &v );
+	static void serialize( JsonSerializer *json, const std::string &name, const osg::Vec4f &v );
+	static bool load( JsonSerializer *json, const std::string &name, osg::Vec2f &v );
+	static bool load( JsonSerializer *json, const std::string &name, osg::Vec3f &v );
+	static bool load( JsonSerializer *json, const std::string &name, osg::Vec4f &v );
+
     /**@}*/
 
 protected:
@@ -533,6 +549,8 @@ protected:
     \details This method is useful for setting the value of the UniformInfo::_prototype. */
     UniformInfo& getUniform( const std::string& name );
 
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     UniformInfoVector _uniformInfo;
 
@@ -555,6 +573,8 @@ protected:
 
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -571,6 +591,7 @@ private:
         ar& BOOST_SERIALIZATION_NVP( _hmReference );
         ar& BOOST_SERIALIZATION_NVP( _hmOperator );
     }
+	*/
 };
 
 

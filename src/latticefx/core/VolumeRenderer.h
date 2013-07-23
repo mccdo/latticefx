@@ -60,6 +60,8 @@ public:
     SpatialVolume( const SpatialVolume& rhs );
     virtual ~SpatialVolume();
 
+	virtual std::string getClassName() const { return "SpatialVolume"; }
+
     // volume dims and origin
     /** \brief Set dimensions (in world units) of the volume box.
     \details This can be varied on every draw. */
@@ -74,6 +76,10 @@ public:
     osg::Vec3f getVolumeOrigin() const;
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     osg::Vec3f _volumeDims, _volumeOrigin;
 
 private:
@@ -102,6 +108,8 @@ public:
     VolumeRenderer( const VolumeRenderer& rhs );
     virtual ~VolumeRenderer();
 
+	virtual std::string getClassName() const { return "VolumeRenderer"; }
+
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
@@ -129,6 +137,9 @@ public:
         SLICES,
         RAY_TRACED,
     } RenderMode;
+
+	std::string getEnumName( RenderMode e ) const;
+	RenderMode getEnumFromName( const std::string &name ) const;
 
     /** \brief Set the rendering style.
     \details The default is SLICES.
@@ -219,6 +230,9 @@ public:
 protected:
     static osg::Texture3D* createTexture( const DBKey& key, osg::Image* image );
     virtual bool validInputs() const;
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     osg::Geometry* createDAIGeometry( int nInstances );
     osg::Geometry* createCubeGeometry();

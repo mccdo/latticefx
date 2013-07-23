@@ -59,7 +59,7 @@ Derive from this class and override the function call operator to implement
 your own PrimitiveSet generation code. The function call operator is
 responsible for adding the PrimitiveSets to the \c geom Geometry object.
 */
-class LATTICEFX_EXPORT PrimitiveSetGenerator
+class LATTICEFX_EXPORT PrimitiveSetGenerator : public ObjBase
 {
 public:
     /** Constructor */
@@ -68,6 +68,8 @@ public:
     PrimitiveSetGenerator( const PrimitiveSetGenerator& rhs );
     /** Destructor */
     virtual ~PrimitiveSetGenerator();
+
+	virtual std::string getClassName() const { return "PrimitiveSetGenerator"; }
 
     /** \brief Creates and attaches PrimitiveSets to the specified \c geom.
     \details Derived classed must override this function, generate PrimitiveSets
@@ -78,6 +80,11 @@ public:
     \param numElements is the number of vertecies in the \c geom vertex array.
     */
     virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom ) = 0;
+
+protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 };
 
 
@@ -119,6 +126,8 @@ public:
     SurfaceRenderer( const SurfaceRenderer& rhs );
     virtual ~SurfaceRenderer();
 
+	virtual std::string getClassName() const { return "SurfaceRenderer"; }
+
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
     typedef enum
@@ -140,6 +149,10 @@ public:
     PrimitiveSetGeneratorPtr getPrimitiveSetGenerator();
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     PrimitiveSetGeneratorPtr _primitiveSetGenerator;
 
 private:
@@ -177,7 +190,12 @@ public:
     SimpleTrianglePrimitiveSetGenerator( const SimpleTrianglePrimitiveSetGenerator& rhs );
     virtual ~SimpleTrianglePrimitiveSetGenerator();
 
+	virtual std::string getClassName() const { return "SimpleTrianglePrimitiveSetGenerator"; }
+
     virtual void operator()( const SurfaceRenderer* /* surfaceRenderer */, osg::Geometry* geom );
+
+protected:
+	virtual void serializeData( JsonSerializer *json ) const;
 
 private:
     friend class boost::serialization::access;

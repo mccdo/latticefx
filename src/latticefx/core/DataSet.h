@@ -31,6 +31,7 @@
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/LogBase.h>
 #include <latticefx/core/types.h>
+#include <latticefx/core/ObjBase.h>
 
 #include <latticefx/core/DataSetPtr.h>
 
@@ -61,6 +62,7 @@ namespace lfx
 namespace core
 {
 
+class PluginManager;
 
 /** An ordered set of time values. */
 typedef std::set< TimeValue > TimeSet;
@@ -78,7 +80,7 @@ are arrays of data such as xyz vertex values or other scalar data. The data set
 can also contain 0 or more RTPOperation objects, which are mask, filter, or
 channel creation functions. An example is the MyMask RTPOperation.
 */
-class LATTICEFX_EXPORT DataSet : protected LogBase
+class LATTICEFX_EXPORT DataSet : public ObjBase, protected LogBase
 {
 public:
     ///Constructor
@@ -88,6 +90,10 @@ public:
     ///Destructor
     virtual ~DataSet();
 
+	virtual std::string getClassName() const { return std::string( "DataSet" ); }
+
+	virtual bool loadPipeline( PluginManager *pm, const std::string &filePath, std::string *perr=NULL );
+	virtual bool savePipeline( const std::string &filePath, std::string *perr=NULL );
 
     /** \name Data Section
     \details TBD */
@@ -307,6 +313,8 @@ protected:
 
     ChannelDataOSGArrayPtr createSizedMask( const ChannelDataList& dataList );
 
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     typedef std::map< TimeValue, ChannelDataList > ChannelDataTimeMap;
     ChannelDataTimeMap _data;
@@ -329,6 +337,8 @@ protected:
 
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -338,6 +348,7 @@ private:
         ar& BOOST_SERIALIZATION_NVP( _ops );
         ar& BOOST_SERIALIZATION_NVP( _renderer );
     }
+	*/
 };
 
 typedef std::list< DataSetPtr > DataSetList;

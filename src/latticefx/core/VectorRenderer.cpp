@@ -23,6 +23,7 @@
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/BoundUtils.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -483,6 +484,32 @@ osg::StateSet* VectorRenderer::getRootState()
 
     return( stateSet.release() );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+std::string VectorRenderer::getEnumName( PointStyle e ) const
+{
+	switch( e )
+	{
+	case SIMPLE_POINTS:
+		return "SIMPLE_POINTS";
+	case POINT_SPRITES:
+		return "POINT_SPRITES";
+    case SPHERES:
+		return "SPHERES";
+	}
+
+	return "DIRECTION_VECTORS";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+VectorRenderer::PointStyle VectorRenderer::getEnumFromName( const std::string &name ) const
+{
+	if( !name.compare( "SIMPLE_POINTS" )) return SIMPLE_POINTS;
+	else if( !name.compare( "POINT_SPRITES" )) return POINT_SPRITES;
+	else if( !name.compare( "SPHERES" )) return SPHERES;
+	return DIRECTION_VECTORS;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void VectorRenderer::setPointStyle( const PointStyle& pointStyle )
 {
@@ -529,6 +556,39 @@ osg::Texture3D* VectorRenderer::createTexture( ChannelDataPtr data )
 
     return( tex.release() );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VectorRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	Renderer::serializeData( json );
+
+	json->insertObj( VectorRenderer::getClassName(), true );
+	json->insertObjValue( "pointStyle", getEnumName(  _pointStyle ) );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VectorRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !Renderer::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VectorRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VectorRenderer data";
+		return false;
+	}
+
+	std::string name;
+	json->getValue( "pointStyle", &name, getEnumName( _pointStyle ) );
+	_pointStyle = getEnumFromName( name );
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // core
 }

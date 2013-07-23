@@ -20,6 +20,7 @@
 
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/DataSet.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -78,16 +79,38 @@ int main()
         }
 
         opName = "MyPreprocess";
-        op = plug->createOperation( pluginName, opName );
+        OperationBasePtr pr = plug->createOperation( pluginName, opName );
         if( op == NULL )
         {
-            LFX_ERROR_STATIC( logstr, "Failute: " + opName + ": createOperation() returned NULL." );
+            LFX_ERROR_STATIC( logstr, "Failure: " + opName + ": createOperation() returned NULL." );
             return( 1 );
         }
         else
         {
             LFX_NOTICE_STATIC( logstr, opName + ": loaded and created successfully." );
         }
+
+		RTPOperationPtr rtpOp = boost::dynamic_pointer_cast<RTPOperation>( op );
+		PreprocessPtr prePr = boost::dynamic_pointer_cast<Preprocess>( pr );
+		DataSet set;
+		set.addOperation( rtpOp );
+		set.addPreprocess( prePr );
+
+		std::string err, file( "multiop_pipeline.json" );
+		if( !set.savePipeline( file, &err) )
+		{
+			 LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to save the pipeline: " + err );
+			 return( 1 );
+		}
+
+		if( !set.loadPipeline( plug, file, &err ) )
+		{
+			 LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to load the pipeline: " + err );
+			 return( 1 );
+		}
+
+		LFX_NOTICE_STATIC( logstr, "Json Serialization: saved and loaded successfully." );
+
     }
 
     LFX_CRITICAL_STATIC( logstr, "Pass." );

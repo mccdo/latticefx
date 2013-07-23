@@ -38,6 +38,8 @@ public:
     virtual ~MyMask()
     {}
 
+	virtual std::string getClassName() const { return std::string( "MyMask" ); }
+
     virtual OperationBase* create()
     {
         return( new MyMask );
@@ -71,6 +73,8 @@ public:
     {}
     virtual ~MyPreprocess()
     {}
+
+	virtual std::string getClassName() const { return std::string( "MyPreprocess" ); }
 
     virtual OperationBase* create()
     {

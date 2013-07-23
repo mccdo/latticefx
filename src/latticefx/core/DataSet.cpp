@@ -26,11 +26,14 @@
 #include <latticefx/core/OctreeGroup.h>
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <osg/Group>
 #include <osg/MatrixTransform>
 
 #include <boost/foreach.hpp>
+//#include <iostream>
+#include <fstream>
 
 
 namespace lfx
@@ -766,6 +769,203 @@ void DataSet::createFallbackMaskList()
 bool DataSet::isTemporalData() const
 {
     return( !getTimeSet().empty() );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std::string *perr )
+{
+
+	/*
+	// TODO: ifstream seems to be an issue is osg, where using ifstream it creates a link problem
+	// need to sort that out at some point, for now just going to use c style FILE
+	//
+	std::ifstream file( filePath );
+	if (!file.is_open())
+	{
+		if (perr) *perr =  std::string( "Failed to open the file: " ) + filePath;
+		return false;
+	}
+
+	std::stringstream strJson;
+	strJson << file.rdbuf();
+	file.close();
+	*/
+	 
+	FILE *fp = fopen( filePath.c_str(), "rb" );
+	if (!fp)
+	{ 
+		if (perr) *perr =  std::string( "Failed to open the file: " ) + filePath;
+		return false;
+	}
+
+	fseek(fp, 0, SEEK_END);
+    long int size = ftell(fp);
+    rewind(fp);
+	if( size <= 0 )
+	{
+		if (perr) *perr =  std::string( "The file is empty: " ) + filePath;
+		return false;
+	}
+
+	std::vector<char> vec( size );
+	fread( &vec[0], 1, size, fp);
+	std::string strJson(vec.begin(), vec.end());
+
+
+	try
+	{
+		JsonSerializer js;
+		if( !js.load( strJson ) )
+		{ 
+			if (perr) *perr =  std::string( "Json does not appear to be valid in file: " ) + filePath;
+			return false;
+		}
+
+		
+		std::string err;
+		ObjBasePtr p = ObjBase::loadObj( &js, (IObjFactory *)pm, &err );
+		if( !p )
+		{
+			if (perr) *perr = std::string("Failed to load the pipeline: ") + err;
+			return false;
+		}
+
+		DataSetPtr ds = boost::dynamic_pointer_cast<DataSet>( p );
+		if( !ds )
+		{
+			if (perr) *perr = "UnExpected Error: serialized root object is not of type DataSet";
+			return false;
+		}
+
+		// copy over loaded data into this 
+		_preprocess = ds->_preprocess;
+		_ops = ds->_ops;
+		_renderer = ds->_renderer;
+		return true;
+	}
+	catch( Poco::JSON::JSONException je)
+	{
+		if (perr)
+		{
+			*perr =  std::string( "UnExpected JSON Exception: " ) +  je.message();
+		}
+
+		return false;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool DataSet::savePipeline( const std::string &filePath, std::string *perr )
+{
+	std::ofstream file;
+	try
+	{
+		file.open( filePath, std::ios::out );
+		if (!file.is_open())
+		{
+			if (perr) *perr =  std::string( "Failed to create the file: " ) + filePath;
+			return false;
+		}
+
+		JsonSerializer js;
+		serialize( &js );
+
+		js.toStream( &file );
+		file.close();
+
+		std::string debug = js.toString();
+		return true;
+	}
+	catch( Poco::JSON::JSONException je)
+	{
+		if (perr)
+		{
+			*perr =  std::string( "UnExpected JSON Exception: " ) +  je.message();
+		}
+
+		file.close();
+		return false;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void DataSet::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	ObjBase::serializeData( json );
+
+	json->insertObj( DataSet::getClassName(), true );
+
+	json->insertArray( "preprocessList", true );
+	BOOST_FOREACH( PreprocessPtr pre, _preprocess )
+    {
+		if( pre ) pre->serialize( json );
+    }
+	json->popParent();
+
+	json->insertArray( "rtpOperationList", true );
+	BOOST_FOREACH( RTPOperationPtr op, _ops )
+    {
+		if( op ) op->serialize( json );
+    }
+	json->popParent();
+
+	json->insertObj( "renderer", true );
+	if( _renderer ) _renderer->serialize( json );
+	json->popParent();
+
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool DataSet::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if( !ObjBase::loadData( json, pfactory, perr ) ) return false;
+
+	bool ret = false;
+
+	json->markParentStack();
+
+	while( true )
+	{
+		// get to this classes data
+		if ( !json->getObj( DataSet::getClassName() ) )
+		{
+			if (perr) *perr = "Json: Failed to get DataSet data";
+			break;
+		}
+
+		_preprocess.clear();
+		_ops.clear();
+		_renderer.reset();
+
+		if( !loadArrListType<PreprocessPtr, Preprocess>( json, pfactory, "preprocessList", &_preprocess, perr) ) break;
+		if( !loadArrListType<RTPOperationPtr, RTPOperation>( json, pfactory, "rtpOperationList", &_ops, perr) ) break;
+
+		// renderer object
+		if ( !json->getObj( "renderer" ) )
+		{
+			if (perr) *perr = "Json: Failed to get renderer";
+			return false;
+		} 
+
+		// may not be a renderer
+		ObjBasePtr p = loadObj( json, pfactory, perr );
+		if( p ) 
+		{
+			_renderer = boost::dynamic_pointer_cast<Renderer>( p );
+			if( !_renderer ) break;
+		
+			json->popParent();
+		}
+
+		ret = true;
+		break;
+	}
+	
+	json->popMark();
+	return ret;
 }
 
 // core

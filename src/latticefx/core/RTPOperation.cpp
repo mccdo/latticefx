@@ -19,13 +19,12 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/RTPOperation.h>
-
+#include <latticefx/core/JsonSerializer.h>
 
 namespace lfx
 {
 namespace core
 {
-
 
 RTPOperation::RTPOperation( const RTPOpType rtpOpType )
     : OperationBase( OperationBase::RunTimeProcessingType ),
@@ -41,6 +40,57 @@ RTPOperation::~RTPOperation()
 {
 }
 
+std::string RTPOperation::getEnumName( RTPOpType e ) const
+{
+	switch (e)
+	{
+	case Mask:
+		return "Mask";
+	case Filter:
+		return "Filter";
+	case Channel:
+		return "Channel";
+	}	
+	return "Undefined";
+}
+
+RTPOperation::RTPOpType RTPOperation::getEnumFromName( const std::string &name ) const
+{
+	if( !name.compare( "Mask" )) return Mask;
+	else if( !name.compare( "Filter" )) return Filter;
+	else if( !name.compare( "Channel" )) return Channel;
+	return Undefined;
+}
+
+void RTPOperation::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	OperationBase::serializeData( json );
+
+	json->insertObj( RTPOperation::getClassName(), true);
+	json->insertObjValue( "rtpOpType",  getEnumName( _rtpOpType ) );
+	json->popParent();
+}
+
+bool RTPOperation::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !OperationBase::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( RTPOperation::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get RTPOperation data";
+		return false;
+	}
+
+	std::string name;
+	json->getValue( "rtpOpType", &name, getEnumName( _rtpOpType ) );
+	_rtpOpType = getEnumFromName( name );
+
+	json->popParent();
+	return true;
+}
 
 // core
 }

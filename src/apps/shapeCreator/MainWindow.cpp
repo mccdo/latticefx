@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
+//#include <latticefx/core/JsonSerializer.h>
 
 const std::string logstr( "lfx.demo" );
 const std::string loginfo( logstr+".info" );
@@ -46,6 +47,22 @@ MainWindow::MainWindow( QWidget *parent ) :
     ui->progressBar->setValue( 0 );
 
 	setShapeType( UtlSettings::getSelectedValueInt( ui->comboBoxShape ) );
+
+	/*
+	JsonSerializer js;
+	js.insertObjValue( "key1", "value1" );
+	js.insertObjValue( "key2", "value2" );
+	js.insertObj( "obj1", true );
+	js.insertObjValue( "sub1", "subval1");
+	js.popParent();
+	js.insertArray("vector");
+	js.insertArrValue(1);
+	js.insertArrValue(2);
+	js.insertArrValue(3);
+	js.popParent();
+	std::string str = js.toString();
+	QMessageBox::information( NULL, "Json", QString(str.c_str()) );
+	*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////

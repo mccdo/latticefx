@@ -20,6 +20,7 @@
 
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <osg/Image>
 #include <osg/Texture1D>
@@ -380,6 +381,25 @@ Renderer::TransferFunctionDestination Renderer::getTransferFunctionDestination()
     return( _tfDest );
 }
 
+std::string Renderer::getEnumName( TransferFunctionDestination e ) const
+{ 
+	switch( e )
+	{
+	case TF_RGB:
+		return "TF_RGB";
+	case TF_RGBA:
+		return "TF_RGBA";
+	}
+
+	return "TF_ALPHA";
+}
+
+Renderer::TransferFunctionDestination Renderer::getEnumFromNameTrans( const std::string &name ) const
+{
+	if( !name.compare( "TF_RGB" )) return TF_RGB;
+	else if( !name.compare( "TF_RGBA" )) return TF_RGBA;
+	return TF_ALPHA;
+}
 
 void Renderer::setHardwareMaskInputSource( const HardwareMaskInputSource source )
 {
@@ -389,6 +409,27 @@ const Renderer::HardwareMaskInputSource& Renderer::getHardwareMaskInputSource() 
 {
     return( _hmSource );
 }
+
+std::string Renderer::getEnumName( HardwareMaskInputSource e ) const
+{ 
+	switch( e )
+	{
+	case HM_SOURCE_ALPHA:
+		return "HM_SOURCE_ALPHA";
+	case HM_SOURCE_RED:
+		return "HM_SOURCE_RED";
+	}
+
+	return "HM_SOURCE_SCALAR";
+}
+
+Renderer::HardwareMaskInputSource Renderer::getEnumFromNameMaskInput( const std::string &name ) const
+{
+	if( !name.compare( "HM_SOURCE_ALPHA" )) return HM_SOURCE_ALPHA;
+	else if( !name.compare( "HM_SOURCE_ALPHA" )) return HM_SOURCE_RED;
+	return HM_SOURCE_SCALAR;
+}
+
 
 void Renderer::setHardwareMaskInput( const std::string& inputName )
 {
@@ -609,6 +650,169 @@ osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::stri
     return( shader.release() );
 }
 
+void Renderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	OperationBase::serializeData( json );
+
+	json->insertObj( Renderer::getClassName(), true);
+	json->insertObjValue( "baseUnit",  _baseUnit );
+	json->insertObjValue( "tfInputName",  _tfInputName );
+	serialize( json, "tfRange", _tfRange );
+	json->insertObjValue( "tfDest",  getEnumName( _tfDest ) );
+	serialize( json, "tfDestMask", _tfDestMask );
+	json->insertObjValue( "hmSource",  getEnumName( _hmSource ) );
+	json->insertObjValue( "_hmInputName",  _hmInputName );
+	json->insertObjValue( "_hmReference",  _hmReference );
+	json->insertObjValue( "_hmOperator",  _hmOperator );
+	json->popParent();
+}
+
+bool Renderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !OperationBase::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( Renderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get Renderer data";
+		return false;
+	}
+
+	json->getValue( "baseUnit",  &_baseUnit, _baseUnit );
+	json->getValue( "tfInputName", &_tfInputName, _tfInputName );
+	json->getValue( "_hmInputName",  &_hmInputName, _hmInputName );
+	json->getValue( "_hmReference",  &_hmReference, _hmReference );
+	json->getValue( "_hmOperator",  &_hmOperator, _hmOperator );
+
+	std::string name;
+	json->getValue( "tfDest", &name, getEnumName( _tfDest ) );
+	_tfDest = getEnumFromNameTrans( name );
+
+	json->getValue( "hmSource", &name, getEnumName( _hmSource ) );
+	_hmSource = getEnumFromNameMaskInput( name );
+
+
+	if( !load( json, "tfRange", _tfRange ) )
+	{
+		if (perr) *perr = "Json: Failed to load tfRange vector";
+		json->popParent();
+		return false;
+	}
+
+	if( !load( json, "tfDestMask", _tfDestMask ) )
+	{
+		if (perr) *perr = "Json: Failed to load tfDestMask vector";
+		json->popParent();
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
+
+void Renderer::serialize( JsonSerializer *json, const std::string &name, const osg::Vec2f &v )
+{
+	json->insertObj( name, true);
+	json->insertObj( "vec2f", true);
+	json->insertObjValue( "x", v.x() );
+	json->insertObjValue( "y", v.y() );
+	json->popParent();
+	json->popParent();
+}
+
+void Renderer::serialize( JsonSerializer *json, const std::string &name, const osg::Vec3f &v )
+{
+	json->insertObj( name, true);
+	json->insertObj( "vec3f", true);
+	json->insertObjValue( "x", v.x() );
+	json->insertObjValue( "y", v.y() );
+	json->insertObjValue( "z", v.z() );
+	json->popParent();
+	json->popParent();
+}
+
+void Renderer::serialize( JsonSerializer *json, const std::string &name, const osg::Vec4f &v ) 
+{
+	json->insertObj( name, true);
+	json->insertObj( "vec4f", true);
+	json->insertObjValue( "x", v.x() );
+	json->insertObjValue( "y", v.y() );
+	json->insertObjValue( "z", v.z() );
+	json->insertObjValue( "w", v.w() );
+	json->popParent();
+	json->popParent();
+}
+
+bool Renderer::load( JsonSerializer *json, const std::string &name, osg::Vec2f &v )
+{
+	json->markParentStack();
+
+	if ( !json->getObj( name ) )
+	{
+		json->popMark();
+		return false;
+	}
+	if ( !json->getObj( "vec2f" ) )
+	{
+		json->popMark();
+		return false;
+	}
+
+	json->getValue( "x", &v[0], v[0] );
+	json->getValue( "y", &v[1], v[1] );
+
+	json->popMark();
+	return true;
+}
+
+bool Renderer::load( JsonSerializer *json, const std::string &name, osg::Vec3f &v )
+{
+	json->markParentStack();
+
+	if ( !json->getObj( name ) )
+	{
+		json->popMark();
+		return false;
+	}
+	if ( !json->getObj( "vec3f" ) )
+	{
+		json->popMark();
+		return false;
+	}
+
+	json->getValue( "x", &v[0], v[0] );
+	json->getValue( "y", &v[1], v[1] );
+	json->getValue( "z", &v[2], v[2] );
+
+	json->popMark();
+	return true;
+}
+
+bool Renderer::load( JsonSerializer *json, const std::string &name, osg::Vec4f &v ) 
+{
+	json->markParentStack();
+
+	if ( !json->getObj( name ) )
+	{
+		json->popMark();
+		return false;
+	}
+	if ( !json->getObj( "vec3f" ) )
+	{
+		json->popMark();
+		return false;
+	}
+
+	json->getValue( "x", &v[0], v[0] );
+	json->getValue( "y", &v[1], v[1] );
+	json->getValue( "z", &v[2], v[2] );
+	json->getValue( "w", &v[3], v[3] );
+
+	json->popMark();
+	return true;
+}
 
 // core
 }

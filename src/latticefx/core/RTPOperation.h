@@ -62,6 +62,10 @@ public:
         Filter,
         Channel
     } RTPOpType;
+
+	std::string getEnumName( RTPOpType e ) const;
+	RTPOpType getEnumFromName( const std::string &name ) const;
+
     /** \brief */
     RTPOpType getRTPOpType() const
     {
@@ -76,6 +80,7 @@ public:
     RTPOperation( const RTPOpType rtpOpType );
     RTPOperation( const RTPOperation& rhs );
 
+	virtual std::string getClassName() const { return std::string( "RTPOperation" ); }
 
     /** \brief Override to implement a mask operation. */
     virtual ChannelDataPtr mask( const ChannelDataPtr )
@@ -95,16 +100,21 @@ public:
         return( ChannelDataPtr() );
     }
 
-
     // 'public' required for plugin access?? TBD.
     //protected:
     virtual ~RTPOperation();
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     RTPOpType _rtpOpType;
 
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -113,6 +123,7 @@ private:
         ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
         ar& BOOST_SERIALIZATION_NVP( _rtpOpType );
     }
+	*/
 };
 
 

@@ -23,6 +23,7 @@
 #include <latticefx/core/ChannelDataOSGImage.h>
 #include <latticefx/core/TextureUtils.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -47,42 +48,80 @@ namespace lfx
 namespace core
 {
 
-
+////////////////////////////////////////////////////////////////////////////////
 SpatialVolume::SpatialVolume()
     : _volumeDims( osg::Vec3f( 1., 1., 1. ) ),
       _volumeOrigin( osg::Vec3f( 0., 0., 0. ) )
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
 SpatialVolume::SpatialVolume( const SpatialVolume& rhs )
     : _volumeDims( rhs._volumeDims ),
       _volumeOrigin( rhs._volumeOrigin )
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
 SpatialVolume::~SpatialVolume()
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void SpatialVolume::setVolumeDims( const osg::Vec3& volDims )
 {
     _volumeDims = volDims;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 osg::Vec3 SpatialVolume::getVolumeDims() const
 {
     return( _volumeDims );
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void SpatialVolume::setVolumeOrigin( const osg::Vec3& volOrigin )
 {
     _volumeOrigin = volOrigin;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 osg::Vec3 SpatialVolume::getVolumeOrigin() const
 {
     return( _volumeOrigin );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void SpatialVolume::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	//Renderer::serializeData( json );
+
+	json->insertObj( SpatialVolume::getClassName(), true );
+	Renderer::serialize( json, "volumeDims", _volumeDims );
+	Renderer::serialize( json, "volumeOrigin", _volumeOrigin );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool SpatialVolume::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// get to this classes data
+	if ( !json->getObj( SpatialVolume::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get SpatialVolume data";
+		return false;
+	}
+
+	Renderer::load( json, "volumeDims", _volumeDims );
+	Renderer::load( json, "volumeOrigin", _volumeOrigin );
+
+	json->popParent();
+	return true;
+}
 
 
-
+////////////////////////////////////////////////////////////////////////////////
 VolumeRenderer::VolumeRenderer( const std::string& logName )
     : Renderer( "vol", logName ),
       _renderMode( SLICES ),
@@ -135,6 +174,8 @@ VolumeRenderer::VolumeRenderer( const std::string& logName )
     info = UniformInfo( "volumeClipPlaneEnable5", osg::Uniform::INT, "Clip plane 5: 1=enabled, 0=disabled." );
     registerUniform( info );
 }
+
+////////////////////////////////////////////////////////////////////////////////
 VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
     : Renderer( rhs ),
       _renderMode( rhs._renderMode ),
@@ -144,11 +185,15 @@ VolumeRenderer::VolumeRenderer( const VolumeRenderer& rhs )
       _transparencyEnable( rhs._transparencyEnable )
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////
 VolumeRenderer::~VolumeRenderer()
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // Used for SLICES mode.
+////////////////////////////////////////////////////////////////////////////////
 osg::Geometry* VolumeRenderer::createDAIGeometry( int nInstances )
 {
     osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
@@ -174,7 +219,9 @@ osg::Geometry* VolumeRenderer::createDAIGeometry( int nInstances )
     return( geom.release() );
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // Used for RAY_TRACED mode.
+////////////////////////////////////////////////////////////////////////////////
 osg::Geometry* VolumeRenderer::createCubeGeometry()
 {
     osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
@@ -228,7 +275,7 @@ osg::Geometry* VolumeRenderer::createCubeGeometry()
     return( geom.release() );
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
@@ -298,7 +345,7 @@ osg::Node* VolumeRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     return( geode.release() );
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 osg::StateSet* VolumeRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
@@ -404,6 +451,22 @@ osg::StateSet* VolumeRenderer::getRootState()
     return( stateSet.release() );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+std::string VolumeRenderer::getEnumName( RenderMode e ) const
+{
+	if( e == RAY_TRACED) return "RAY_TRACED";
+
+	return "SLICES";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+VolumeRenderer::RenderMode VolumeRenderer::getEnumFromName( const std::string &name ) const
+{
+	if( !name.compare( "RAY_TRACED" )) return RAY_TRACED;
+	return SLICES;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void VolumeRenderer::setNumPlanes( const float& numPlanes )
 {
     if( numPlanes <= 0. )
@@ -416,12 +479,14 @@ void VolumeRenderer::setNumPlanes( const float& numPlanes )
         _numPlanes = numPlanes;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 float VolumeRenderer::getNumPlanes() const
 {
     return( _numPlanes );
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 osg::Texture3D* VolumeRenderer::createTexture( const DBKey& key, osg::Image* image )
 {
     // Create dummy Texture / Image as placeholder until real image data is paged in.
@@ -453,12 +518,54 @@ osg::Texture3D* VolumeRenderer::createTexture( const DBKey& key, osg::Image* ima
     return( tex.release() );
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 bool VolumeRenderer::validInputs() const
 {
     return( getInput( getInputNameAlias( VOLUME_DATA ) ) != NULL );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void VolumeRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	Renderer::serializeData( json );
+	SpatialVolume::serializeData( json );
+
+	json->insertObj( VolumeRenderer::getClassName(), true );
+	json->insertObjValue( "renderMode", getEnumName( _renderMode ) );
+	json->insertObjValue( "numPlanes", _numPlanes );
+	json->insertObjValue( "maxSamples", _maxSamples );
+	json->insertObjValue( "transparencyScalar", _transparencyScalar );
+	json->insertObjValue( "transparencyEnable", _transparencyEnable );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VolumeRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !Renderer::loadData( json, pfactory, perr )) return false;
+	if ( !SpatialVolume::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VolumeRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VolumeRenderer data";
+		return false;
+	}
+
+	std::string name;
+	json->getValue( "renderMode", &name, getEnumName( _renderMode ) );
+	_renderMode = getEnumFromName( name );
+
+	json->getValue( "numPlanes", &_numPlanes, _numPlanes );
+	json->getValue( "maxSamples", &_maxSamples, _maxSamples );
+	json->getValue( "transparencyScalar", &_transparencyScalar, _transparencyScalar );
+	json->getValue( "transparencyEnable", &_transparencyEnable, _transparencyEnable );
+
+	json->popParent();
+	return true;
+}
 
 // core
 }

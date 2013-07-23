@@ -26,6 +26,7 @@
 #include <latticefx/core/OperationValue.h>
 #include <latticefx/core/ChannelData.h>
 #include <latticefx/core/DBBase.h>
+#include <latticefx/core/ObjBase.h>
 
 #include <osg/Vec3>
 
@@ -81,7 +82,7 @@ specify an aloas as follows:
 \endcode
 
 */
-class LATTICEFX_EXPORT OperationBase
+class LATTICEFX_EXPORT OperationBase : public ObjBase
 {
 public:
     typedef enum
@@ -91,6 +92,10 @@ public:
         RunTimeProcessingType,
         RendererType
     } OperationType;
+
+	std::string getEnumName( OperationType e ) const;
+	OperationType getEnumFromName( const std::string &name ) const;
+
     /** \brief */
     OperationType getType() const
     {
@@ -101,6 +106,9 @@ public:
     OperationBase( const OperationBase& rhs );
     virtual ~OperationBase();
 
+	virtual std::string getClassName() const { return std::string( "OperationBase" ); }
+	virtual void setPluginData( const std::string &pluginName, const std::string &pluginClassName );
+
 
     /** \brief Create and return a new instance.
     \details Called by PluginManager to create an instance of classes
@@ -110,7 +118,6 @@ public:
     {
         return( NULL );
     }
-
 
     /**\name ChannelData input support.
     */
@@ -212,6 +219,10 @@ protected:
     }
     virtual ChannelDataList getInputs();
 
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     /** List of actual inputs. During data processing, DataSet assigns ChannelData
     objects to this array based on names stored in _inputNames. */
     ChannelDataList _inputs;
@@ -229,8 +240,9 @@ protected:
 
     DBBasePtr _db;
 
-
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -241,6 +253,7 @@ private:
         // TBD serialize - need to serialize OperationValue first.
         //ar & BOOST_SERIALIZATION_NVP( _nameValueMap );
     }
+	*/
 };
 
 typedef boost::shared_ptr< OperationBase > OperationBasePtr;

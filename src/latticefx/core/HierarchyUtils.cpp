@@ -139,7 +139,10 @@ int PruneHierarchy::traverse( ChannelDataPtr cdp )
 			ChannelDataLOD *pLod = comp->getAsLOD();
 			if (pLod != NULL)
 			{
+				std::string name = pLod->getName();
+				LFX_DEBUG_STATIC( "lfx.core.hier", "Resolution Prune at Brick: " + name );
 				pLod->getRange( 0 ).second = FLT_MAX;
+				//pLod->getRange( 1 ).first = FLT_MAX;
 			}
 		}
 
@@ -206,7 +209,7 @@ AssembleHierarchy::~AssembleHierarchy()
 }
 
 void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string nameString,
-                                        const osg::Vec3& offset, const unsigned int depth )
+                                        const osg::Vec3& offset, const unsigned int depth, const std::string namePrev )
 {
     if( depth == 0 )
         // Special-case the initial condition.
@@ -328,7 +331,13 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
         }
 
         _iterator = imageData->getChannel( childIndex );
-        addChannelData( cdp, newName, localOffset, depth + 1 );
+
+		if (_iterator != NULL)
+		{
+			_iterator->setName( namePrev ); // TODO: REMOVE
+		}
+
+        addChannelData( cdp, newName, localOffset, depth + 1, nameString );
     }
 }
 

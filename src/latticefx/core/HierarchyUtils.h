@@ -184,7 +184,7 @@ public:
     ///example of these values is listed above.
     ///\param depth Do not use this value. It is for internal processing only.
     void addChannelData( ChannelDataPtr cdp, const std::string nameString,
-                         const osg::Vec3& offset = osg::Vec3( 0., 0., 0. ), const unsigned int depth = 0 );
+                         const osg::Vec3& offset = osg::Vec3( 0., 0., 0. ), const unsigned int depth = 0, const std::string namePrev=std::string("") );
 
     /** \brief Prune empty branches from the hierarchy.
     \detauls Call this function after adding all ChannelData objects, and just

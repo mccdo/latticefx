@@ -19,21 +19,27 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/OperationBase.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <boost/foreach.hpp>
-
 
 namespace lfx
 {
 namespace core
 {
 
-
 OperationBase::OperationBase( const OperationType opType )
     : _opType( opType ),
       _enable( true )
 {
+
+
+
+	//_opTypes[(int)UnspecifiedType] = std::string("UnspecifiedType");
+
+	//((int)PreprocessCacheType, "PreprocessCacheType")(RunTimeProcessingType, "RunTimeProcessingType")(RendererType, "RendererType");
 }
+
 OperationBase::OperationBase( const OperationBase& rhs )
     : _inputs( rhs._inputs ),
       _inputNames( rhs._inputNames ),
@@ -48,6 +54,29 @@ OperationBase::~OperationBase()
 {
 }
 
+std::string OperationBase::getEnumName( OperationType e ) const
+{
+	switch (e)
+	{
+	case PreprocessCacheType:
+		return "PreprocessCacheType";
+	case RunTimeProcessingType:
+		return "RunTimeProcessingType";
+	case RendererType:
+		return "RendererType";
+	}
+	
+	return "UnspecifiedType";
+}
+
+ OperationBase::OperationType OperationBase::getEnumFromName( const std::string &name ) const
+{
+	if( !name.compare( "PreprocessCacheType" ) ) return PreprocessCacheType;
+	else if( !name.compare( "RunTimeProcessingType" ) ) return RunTimeProcessingType;
+	else if( !name.compare( "RendererType" ) ) return RendererType;
+	
+	return UnspecifiedType;
+}
 
 void OperationBase::addInput( ChannelDataPtr input )
 {
@@ -149,6 +178,44 @@ const OperationValue* OperationBase::getValue( const std::string& name ) const
     }
 }
 
+void OperationBase::setPluginData( const std::string &pluginName, const std::string &pluginClassName )
+{
+	_dataMapObj["pluginName"] = pluginName;
+	_dataMapObj["pluginClassName"] = pluginClassName;
+}
+
+void OperationBase::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	ObjBase::serializeData( json );
+
+	json->insertObj( OperationBase::getClassName(), true);
+	json->insertObjValue( "opType",  getEnumName( _opType ) );
+	json->insertObjValue( "enable", _enable );
+	json->popParent();
+}
+
+bool OperationBase::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !ObjBase::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( OperationBase::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get OperationBase data";
+		return false;
+	}
+
+	std::string name;
+	json->getValue( "opType", &name, getEnumName( _opType ) );
+	_opType = getEnumFromName( name );
+
+	json->getValue( "enable", &_enable, _enable );
+
+	json->popParent();
+	return true;
+}
 
 // core
 }

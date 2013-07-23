@@ -114,6 +114,8 @@ public:
     VectorRenderer( const VectorRenderer& rhs );
     virtual ~VectorRenderer();
 
+	virtual std::string getClassName() const { return "VectorRenderer"; }
+
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
@@ -147,6 +149,9 @@ public:
         DIRECTION_VECTORS
     } PointStyle;
 
+	std::string getEnumName( PointStyle e ) const;
+	PointStyle getEnumFromName( const std::string &name ) const;
+
     /** \brief Set the rendering style.
     \details The default is SIMPLE_POINTS. */
     void setPointStyle( const PointStyle& pointStyle );
@@ -155,6 +160,9 @@ public:
 
 protected:
     osg::Texture3D* createTexture( ChannelDataPtr data );
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     PointStyle _pointStyle;
 

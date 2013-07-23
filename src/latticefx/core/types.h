@@ -24,7 +24,6 @@
 #include <string>
 #include <list>
 
-
 namespace lfx
 {
 namespace core

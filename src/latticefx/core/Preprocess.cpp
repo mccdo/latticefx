@@ -19,13 +19,12 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/Preprocess.h>
-
+#include <latticefx/core/JsonSerializer.h>
 
 namespace lfx
 {
 namespace core
 {
-
 
 Preprocess::Preprocess()
     : OperationBase( OperationBase::PreprocessCacheType ),
@@ -41,6 +40,25 @@ Preprocess::~Preprocess()
 {
 }
 
+std::string Preprocess::getEnumName( ActionType e ) const
+{
+	switch (e)
+	{
+	case ADD_DATA:
+		return "ADD_DATA";
+	case REPLACE_DATA:
+		return "REPLACE_DATA";
+	}
+	return "IGNORE_DATA";
+}
+
+Preprocess::ActionType Preprocess::getEnumFromName( const std::string &name ) const
+{
+	if( !name.compare( "ADD_DATA" )) return ADD_DATA;
+	else if( !name.compare( "REPLACE_DATA" )) return REPLACE_DATA;
+	return IGNORE_DATA;
+}
+
 void Preprocess::setActionType( const ActionType& action )
 {
     _action = action;
@@ -48,6 +66,36 @@ void Preprocess::setActionType( const ActionType& action )
 Preprocess::ActionType Preprocess::getActionType() const
 {
     return( _action );
+}
+
+void Preprocess::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	OperationBase::serializeData( json );
+
+	json->insertObj( Preprocess::getClassName(), true);
+	json->insertObjValue( "action",  getEnumName( _action ) );
+	json->popParent();
+}
+
+bool Preprocess::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !OperationBase::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( Preprocess::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get Preprocess data";
+		return false;
+	}
+
+	std::string name;
+	json->getValue( "action", &name, getEnumName( _action ) );
+	_action = getEnumFromName( name );
+
+	json->popParent();
+	return true;
 }
 
 

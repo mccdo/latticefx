@@ -22,6 +22,7 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/BoundUtils.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/JsonSerializer.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -207,7 +208,47 @@ PrimitiveSetGeneratorPtr SurfaceRenderer::getPrimitiveSetGenerator()
 }
 
 
+void SurfaceRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	Renderer::serializeData( json );
 
+	json->insertObj( SurfaceRenderer::getClassName(), true );
+	_primitiveSetGenerator->serialize( json );
+	json->popParent();
+}
+
+bool SurfaceRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !Renderer::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( SurfaceRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get SurfaceRenderer data";
+		return false;
+	}
+
+	ObjBasePtr p = loadObj( json, pfactory, perr );
+	if( !p )
+	{
+		if (perr) *perr = "Json: Failed to load the primitiveSetGenerator";
+		json->popParent();
+		return false;
+	}
+
+	_primitiveSetGenerator = boost::dynamic_pointer_cast<PrimitiveSetGenerator>( p );
+	if( !_primitiveSetGenerator )
+	{
+		if (perr) *perr = "Json: Failed to convert the primitiveSetGenerator";
+		json->popParent();
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
 
 
 PrimitiveSetGenerator::PrimitiveSetGenerator()
@@ -219,6 +260,34 @@ PrimitiveSetGenerator::PrimitiveSetGenerator( const PrimitiveSetGenerator& rhs )
 PrimitiveSetGenerator::~PrimitiveSetGenerator()
 {
 }
+
+void PrimitiveSetGenerator::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	ObjBase::serializeData( json );
+
+	json->insertObj( PrimitiveSetGenerator::getClassName(), true );
+	json->popParent();
+}
+
+bool PrimitiveSetGenerator::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !ObjBase::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( PrimitiveSetGenerator::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get PrimitiveSetGenerator data";
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
+
+
+//virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
 SimpleTrianglePrimitiveSetGenerator::SimpleTrianglePrimitiveSetGenerator()
     : PrimitiveSetGenerator()
@@ -239,6 +308,16 @@ void SimpleTrianglePrimitiveSetGenerator::operator()( const SurfaceRenderer* /* 
     geom->addPrimitiveSet( da );
 }
 
+void SimpleTrianglePrimitiveSetGenerator::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	PrimitiveSetGenerator::serializeData( json );
+
+	json->insertObj( SimpleTrianglePrimitiveSetGenerator::getClassName(), true );
+	json->popParent();
+}
+
+//virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
 // core
 }
