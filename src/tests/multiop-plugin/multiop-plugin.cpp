@@ -1,22 +1,22 @@
 /*************** <auto-copyright.rb BEGIN do not edit this line> **************
- *
- * Copyright 2012-2012 by Ames Laboratory
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License version 2.1 as published by the Free Software Foundation.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- *
- *************** <auto-copyright.rb END do not edit this line> ***************/
+*
+* Copyright 2012-2012 by Ames Laboratory
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Library General Public
+* License version 2.1 as published by the Free Software Foundation.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Library General Public License for more details.
+*
+* You should have received a copy of the GNU Library General Public
+* License along with this library; if not, write to the
+* Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+* Boston, MA 02111-1307, USA.
+*
+*************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
@@ -25,6 +25,7 @@
 #include <latticefx/core/LogMacros.h>
 
 #include <iostream>
+#include <sstream>
 
 
 using namespace lfx::core;
@@ -90,26 +91,49 @@ int main()
             LFX_NOTICE_STATIC( logstr, opName + ": loaded and created successfully." );
         }
 
-		RTPOperationPtr rtpOp = boost::dynamic_pointer_cast<RTPOperation>( op );
-		PreprocessPtr prePr = boost::dynamic_pointer_cast<Preprocess>( pr );
-		DataSet set;
-		set.addOperation( rtpOp );
-		set.addPreprocess( prePr );
+        RTPOperationPtr rtpOp = boost::dynamic_pointer_cast<RTPOperation>( op );
+        PreprocessPtr prePr = boost::dynamic_pointer_cast<Preprocess>( pr );
+        DataSet set;
+        set.addOperation( rtpOp );
+        set.addPreprocess( prePr );
 
-		std::string err, file( "multiop_pipeline.json" );
-		if( !set.savePipeline( file, &err) )
-		{
-			 LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to save the pipeline: " + err );
-			 return( 1 );
-		}
+        std::string err, file( "multiop_pipeline.json" );
+        if( !set.savePipeline( file, &err) )
+        {
+            LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to save the pipeline: " + err );
+            return( 1 );
+        }
 
-		if( !set.loadPipeline( plug, file, &err ) )
-		{
-			 LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to load the pipeline: " + err );
-			 return( 1 );
-		}
+        DataSet newDataSet;
+        if( !newDataSet.loadPipeline( plug, file, &err ) )
+        {
+            LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to load the pipeline: " + err );
+            return( 1 );
+        }
+        if( newDataSet.getNumPreprocess() != 1 )
+        {
+            std::ostringstream ostr; ostr << newDataSet.getNumPreprocess();
+            LFX_ERROR_STATIC( logstr, "Json serialization failed: Expected 1 Preprocess, got " + ostr.str() );
+            return( 1 );
+        }
+        if( newDataSet.getPreprocess( 0 )->getClassName() != prePr->getClassName() )
+        {
+            LFX_ERROR_STATIC( logstr, "Json serialization failed: Incorrect Preprocess class name: " + newDataSet.getPreprocess( 0 )->getClassName() );
+            return( 1 );
+        }
+        if( newDataSet.getNumOperations() != 1 )
+        {
+            std::ostringstream ostr; ostr << newDataSet.getNumOperations();
+            LFX_ERROR_STATIC( logstr, "Json serialization failed: Expected 1 RTPOperation, got " + ostr.str() );
+            return( 1 );
+        }
+        if( newDataSet.getOperation( 0 )->getClassName() != rtpOp->getClassName() )
+        {
+            LFX_ERROR_STATIC( logstr, "Json serialization failed: Incorrect RTPOperation class name: " + newDataSet.getOperation( 0 )->getClassName() );
+            return( 1 );
+        }
 
-		LFX_NOTICE_STATIC( logstr, "Json Serialization: saved and loaded successfully." );
+        LFX_NOTICE_STATIC( logstr, "Json Serialization: saved and loaded successfully." );
 
     }
 
