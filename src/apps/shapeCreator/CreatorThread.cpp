@@ -26,7 +26,7 @@ void CreatorThread::run()
 	}
 	catch ( std::exception ex )
 	{
-		sendMsg( "UnExpected Exception.. brick creation aborted." );
+		sendMsg( "Unexpected exception.. brick creation aborted." );
 	}
 
 	if (checkCancel())

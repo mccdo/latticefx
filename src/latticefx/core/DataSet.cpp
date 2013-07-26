@@ -43,13 +43,15 @@ namespace core
 
 
 DataSet::DataSet( const std::string& logName)
-    : LogBase( logName.empty() ? "lfx.core.dataset" : logName ),
+    : ObjBase(),
+      LogBase( logName.empty() ? "lfx.core.dataset" : logName ),
       _sceneGraph( new osg::Group ),
       _dirty( ALL_DIRTY )
 {
 }
 DataSet::DataSet( const DataSet& rhs )
-    : LogBase( rhs ),
+    : ObjBase( rhs ),
+      LogBase( rhs ),
       _data( rhs._data ),
       _dataNames( rhs._dataNames ),
       _db( rhs._db ),
@@ -774,8 +776,7 @@ bool DataSet::isTemporalData() const
 ////////////////////////////////////////////////////////////////////////////////
 bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std::string *perr )
 {
-
-	/*
+    /*
 	// TODO: ifstream seems to be an issue is osg, where using ifstream it creates a link problem
 	// need to sort that out at some point, for now just going to use c style FILE
 	//
@@ -789,8 +790,8 @@ bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std:
 	std::stringstream strJson;
 	strJson << file.rdbuf();
 	file.close();
-	*/
-	 
+    */
+
 	FILE *fp = fopen( filePath.c_str(), "rb" );
 	if (!fp)
 	{ 
@@ -833,7 +834,7 @@ bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std:
 		DataSetPtr ds = boost::dynamic_pointer_cast<DataSet>( p );
 		if( !ds )
 		{
-			if (perr) *perr = "UnExpected Error: serialized root object is not of type DataSet";
+			if (perr) *perr = "Unexpected error: serialized root object is not of type DataSet";
 			return false;
 		}
 
@@ -847,7 +848,7 @@ bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std:
 	{
 		if (perr)
 		{
-			*perr =  std::string( "UnExpected JSON Exception: " ) +  je.message();
+			*perr =  std::string( "Unexpected JSON exception: " ) +  je.message();
 		}
 
 		return false;
@@ -880,7 +881,7 @@ bool DataSet::savePipeline( const std::string &filePath, std::string *perr )
 	{
 		if (perr)
 		{
-			*perr =  std::string( "UnExpected JSON Exception: " ) +  je.message();
+			*perr =  std::string( "Unexpected JSON exception: " ) +  je.message();
 		}
 
 		file.close();

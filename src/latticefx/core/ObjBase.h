@@ -18,8 +18,8 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#ifndef __LFX_CORE_OBJBASE_H__
-#define __LFX_CORE_OBJBASE_H__ 1
+#ifndef __LFX_CORE_OBJ_BASE_H__
+#define __LFX_CORE_OBJ_BASE_H__ 1
 
 #include <latticefx/core/Export.h>
 #include <boost/shared_ptr.hpp>
@@ -41,17 +41,19 @@ class ObjBase;
 typedef boost::shared_ptr<ObjBase> ObjBasePtr;
 
 /** \class ObjBase ObjBase.h <latticefx/core/ObjBase.h>
-\brief Base class for objects.
+\brief Base class for serializable objects.
 */
 class LATTICEFX_EXPORT ObjBase
 {
 public:
+	ObjBase();
+	ObjBase( const ObjBase& rhs );
+	~ObjBase();
+
+
 	typedef std::map< std::string, std::string > KeyDataMap;
 
-public:
-	ObjBase();
-
-	virtual std::string getClassName() const { return "ObjBase"; }
+    virtual std::string getClassName() const { return "ObjBase"; }
 
 	static ObjBasePtr loadObj( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 	static ObjBasePtr loadObj( JsonSerializer *json, IObjFactory *pfactory, unsigned int arrIdx, std::string *perr=NULL );
@@ -73,7 +75,6 @@ protected:
 	static bool loadObjInfo( JsonSerializer *json, std::string *ptypeName, KeyDataMap *pmap, std::string *perr=NULL );
 
 	KeyDataMap _dataMapObj; // written into the ObjBase group, here you can provide object specific info, such as plugin path to load the object from
-	
 };
 
 template <typename TPtr, typename TObj>
@@ -102,6 +103,11 @@ bool ObjBase::loadArrListType( JsonSerializer *json, IObjFactory *pfactory, cons
 }
 
 
+
+/** \class IObjFactory ObjBase.h <latticefx/core/ObjBase.h>
+\brief TBD
+\details TBD
+*/
 class LATTICEFX_EXPORT IObjFactory
 {
 public:
@@ -109,11 +115,13 @@ public:
 
 	virtual ObjBasePtr createObj(const std::string &typeName, const ObjBase::KeyDataMap &map, std::string *perr=NULL) = 0;
 };
+
+
 // core
 }
 // lfx
 }
 
 
-// __LFX_CORE_OBJBASE_H__
+// __LFX_CORE_OBJ_BASE_H__
 #endif

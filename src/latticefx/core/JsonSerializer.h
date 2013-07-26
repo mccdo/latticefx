@@ -1,6 +1,6 @@
 /*************** <auto-copyright.rb BEGIN do not edit this line> **************
  *
- * Copyright 2012-2012 by Ames Laboratory
+ * Copyright 2012-2013 by Ames Laboratory
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -18,8 +18,8 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
-#ifndef __LFX_CORE_JSONSERIALIZER_H__
-#define __LFX_CORE_JSONSERIALIZER_H__ 1
+#ifndef __LFX_CORE_JSON_SERIALIZER_H__
+#define __LFX_CORE_JSON_SERIALIZER_H__ 1
 
 
 #include <latticefx/core/Export.h>
@@ -124,7 +124,6 @@ public:
 	void toStream( std::ostream *pos ) const;
 
 protected:
-
 	bool getObjArr( const std::string &name, bool push, bool obj);
 	
 	void insertObj( const std::string &name, Poco::JSON::Object::Ptr obj, bool push=false );
@@ -188,5 +187,5 @@ bool JsonSerializer::getValue( unsigned int idx, T *pvalue, T def ) const
 }
 
 
-// __LFX_CORE_JSONSERIALIZER_H__
+// __LFX_CORE_JSON_SERIALIZER_H__
 #endif

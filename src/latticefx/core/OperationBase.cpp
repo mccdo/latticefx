@@ -29,7 +29,8 @@ namespace core
 {
 
 OperationBase::OperationBase( const OperationType opType )
-    : _opType( opType ),
+    : ObjBase(),
+      _opType( opType ),
       _enable( true )
 {
 
@@ -41,7 +42,8 @@ OperationBase::OperationBase( const OperationType opType )
 }
 
 OperationBase::OperationBase( const OperationBase& rhs )
-    : _inputs( rhs._inputs ),
+    : ObjBase( rhs ),
+      _inputs( rhs._inputs ),
       _inputNames( rhs._inputNames ),
       _inputTypeMap( rhs._inputTypeMap ),
       _opType( rhs._opType ),
