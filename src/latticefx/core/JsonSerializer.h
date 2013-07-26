@@ -21,8 +21,16 @@
 #ifndef __LFX_CORE_JSON_SERIALIZER_H__
 #define __LFX_CORE_JSON_SERIALIZER_H__ 1
 
-
 #include <latticefx/core/Export.h>
+
+#include <Poco/Foundation.h>
+#if( POCO_OS == POCO_OS_MAC_OS_X )
+// Include this first to work around OSX gcc 4.2 build issue
+// Put isinf(), isnan() in global namespace, which Poco assumes.
+#include <cmath>
+using std::isinf;
+using std::isnan;
+#endif
 
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/JSONException.h>

@@ -19,7 +19,6 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/ObjBase.h>
-#include <latticefx/core/JsonSerializer.h>
 
 
 namespace lfx
@@ -83,7 +82,7 @@ ObjBasePtr ObjBase::loadObj( JsonSerializer *json, IObjFactory *pfactory, const 
 	if( !json->getObj( "data" ) )
 	{
 		if (perr) *perr = "Json: Failed to get data object";
-		return false;
+		return ObjBasePtr();
 	}
 
 	if( !p->loadData( json, pfactory, perr ) )

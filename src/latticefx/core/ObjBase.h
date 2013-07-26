@@ -22,18 +22,21 @@
 #define __LFX_CORE_OBJ_BASE_H__ 1
 
 #include <latticefx/core/Export.h>
+
 #include <boost/shared_ptr.hpp>
+
 #include <string>
 #include <map>
 #include <vector>
 #include <list>
+
+#include <latticefx/core/JsonSerializer.h>
 
 namespace lfx
 {
 namespace core
 {
 
-class JsonSerializer;
 class IObjFactory;
 
 

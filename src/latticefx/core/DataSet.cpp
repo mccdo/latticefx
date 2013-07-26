@@ -861,7 +861,7 @@ bool DataSet::savePipeline( const std::string &filePath, std::string *perr )
 	std::ofstream file;
 	try
 	{
-		file.open( filePath, std::ios::out );
+		file.open( filePath.c_str(), std::ios::out );
 		if (!file.is_open())
 		{
 			if (perr) *perr =  std::string( "Failed to create the file: " ) + filePath;
