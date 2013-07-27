@@ -16,14 +16,17 @@ set( LATTICEFX_SUB_VERSION 1 )
 zeroPad( LATTICEFX_MINOR_VERSION __minorPad )
 zeroPad( LATTICEFX_SUB_VERSION __patchPad )
 set( LATTICEFX_VERSION ${LATTICEFX_MAJOR_VERSION}.${__minorPad}.${__patchPad} )
+set(VES_PACKAGE_VERSION ${LATTICEFX_VERSION})
 
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}" )
+
+include(VESBinAndLibDirs)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${VES_INSTALL_ARCHIVEDIR} )
 
 
 if( WIN32 AND MSVC )
@@ -128,7 +131,7 @@ endif()
 if( MSVC )
     install(
         DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/\${CMAKE_INSTALL_CONFIG_NAME}/
-        DESTINATION lib
+        DESTINATION ${VES_INSTALL_LIBDIR}
         USE_SOURCE_PERMISSIONS
         COMPONENT latticefx-dev
         FILES_MATCHING PATTERN "*.pdb"
@@ -140,45 +143,14 @@ endif()
 # =============================================
 
 # Add all targets to the build-tree export set
-set( _targets latticefx_core )
+set( VES_EXPORT_LIBRARY_TARGETS latticefx_core )
 if( VTK_FOUND )
-    list( APPEND _targets latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk )
+    list( APPEND VES_EXPORT_LIBRARY_TARGETS latticefx_core_vtk latticefx_translators_vtk latticefx_utils_vtk )
 endif()
-export(TARGETS ${_targets}
+export(TARGETS ${VES_EXPORT_LIBRARY_TARGETS}
   FILE "${PROJECT_BINARY_DIR}/lib/latticefxLibraryDepends.cmake")
 
-# Export the package for use from the build-tree
-# (this registers the build-tree with a global CMake-registry)
-export(PACKAGE latticefx)
-
-# Create a latticefxBuildTreeSettings.cmake file for the use from the build tree
-configure_file(latticefxBuildTreeSettings.cmake.in
-  "${PROJECT_BINARY_DIR}/lib/latticefxBuildTreeSettings.cmake" @ONLY)
-
-#configure_file(latticefxConfig.cmake.in
-#  "${PROJECT_BINARY_DIR}/lib/latticefxConfig.cmake" @ONLY)
-configure_file(latticefxConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/lib/latticefxConfigVersion.cmake" @ONLY)
-configure_file(Uselatticefx.cmake.in
-  "${PROJECT_BINARY_DIR}/lib/Uselatticefx.cmake" @ONLY)
-
-# Install the export set for use with the install-tree
-install(EXPORT latticefx-targets DESTINATION lib)
-
-include( CMakePackageConfigHelpers )
-# Create the latticefxConfig.cmake and latticefxConfigVersion files
-file(RELATIVE_PATH CONF_REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-   "${CMAKE_INSTALL_PREFIX}/include")
-
-configure_package_config_file( 
-    latticefxConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfig.cmake
-    INSTALL_DESTINATION lib
-    PATH_VARS CONF_REL_INCLUDE_DIR )
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfig.cmake 
-              ${CMAKE_CURRENT_BINARY_DIR}/lib/latticefxConfigVersion.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/lib/Uselatticefx.cmake
-        DESTINATION lib )
+include(VESInstallAutoDiscoveryTools)
 
 #
 # Setup the fpc auto detection files
