@@ -21,6 +21,7 @@ public:
 	virtual bool create( osg::ArgumentParser &arguments, const std::string &csFile );
 
 	void setPrune( bool p ) { _prune = p; }
+	void setResPrune( bool on ) { _resPrune = on; }
 	void setDepth( int depth ) { _depth = depth; }
 	void setCsFileOrFolder( const char *str ) { _csFileOrFolder = str; }
 	void setBaseName( const char *str ) { _basename = str; }
@@ -39,6 +40,7 @@ protected:
 	std::string _logstr;
 	std::string _loginfo;
 	bool _prune;
+	bool _resPrune;
 	int _depth;
 
 	bool _useCrunchStore;

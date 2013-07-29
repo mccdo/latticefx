@@ -26,19 +26,17 @@
 using namespace lfx::core;
 
 ////////////////////////////////////////////////////////////////////////////////
-CreateVolume::CreateVolume( const char *plogstr, const char *ploginfo )
+CreateVolume::CreateVolume( const char *plogstr, const char *ploginfo ) :
+	_logstr( plogstr ),
+	_loginfo( ploginfo ),
+	_prune( false ),
+	_resPrune( false ),
+	_depth( 4 ),
+	_useCrunchStore( true ),
+	_csFileOrFolder( "volume" ),
+	_basename( "shapevolume" ),
+	_pcbProgress( NULL )
 {
-	_logstr = plogstr;
-	_loginfo = ploginfo;
-
-	_prune = false;
-	_depth = 4;
-
-	_useCrunchStore = true;
-	_csFileOrFolder = "volume";
-	_basename = "shapevolume"; 
-
-	_pcbProgress = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,6 +93,9 @@ bool CreateVolume::processArgs( osg::ArgumentParser &arguments )
 	_prune = false;
 	if (arguments.find( "-prune" ) > 0) { _prune = true; }
 
+	_resPrune = false;
+	if ( arguments.find( "-rp" ) > 0 ) { _resPrune = true; }
+
 	_depth = 4;
     arguments.read( "-depth", _depth );
     if( _depth < 1 ) _depth = 1;
@@ -104,11 +105,11 @@ bool CreateVolume::processArgs( osg::ArgumentParser &arguments )
 
     if( ( arguments.find( "-sphere" ) > 0 ) || softSphere )
     {
-        _volumeObj.reset(new SphereVolumeBrickData( _prune, softSphere ));
+        _volumeObj.reset(new SphereVolumeBrickData( _prune, softSphere, _resPrune ));
     }
     else if( arguments.find( "-cone" ) > 0 )
     {
-		_volumeObj.reset(new ConeVolumeBrickData( _prune ));
+		_volumeObj.reset(new ConeVolumeBrickData( _prune, _resPrune ));
     }
 #ifdef VTK_FOUND
     else if( arguments.find( "-vtk" ) > 0 )
@@ -117,7 +118,7 @@ bool CreateVolume::processArgs( osg::ArgumentParser &arguments )
 #endif
     else
     {
-        _volumeObj.reset(new CubeVolumeBrickData( _prune, softCube ));
+        _volumeObj.reset(new CubeVolumeBrickData( _prune, softCube, _resPrune ));
     }
 
 	return true;

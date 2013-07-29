@@ -2,8 +2,8 @@
 
 using namespace lfx::core;
 
-CubeVolumeBrickData::CubeVolumeBrickData( const bool prune, const bool soft )
-	: VolumeBrickData( prune ),
+CubeVolumeBrickData::CubeVolumeBrickData( bool prune, bool soft, bool resPrune )
+	: VolumeBrickData( prune, resPrune ),
 	_brickRes( 32, 32, 32 ),
 	_cubeMin( .2f, .2f, .2f ),
 	_cubeMax( .8f, .8f, .8f ),
@@ -96,10 +96,8 @@ bool CubeVolumeBrickData::pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& b
 		);
 }
 
-
-
-SphereVolumeBrickData::SphereVolumeBrickData( const bool prune, const bool soft )
-	: VolumeBrickData( prune ),
+SphereVolumeBrickData::SphereVolumeBrickData( bool prune, bool soft, bool resPrune )
+	: VolumeBrickData( prune, resPrune ),
 	_brickRes( 32, 32, 32 ),
 	_center( .5, .5, .5 ),
 	_minRad( soft ? .1f : .45f ),
@@ -199,8 +197,8 @@ bool SphereVolumeBrickData::pruneTest( const osg::Vec3f& bMin, const osg::Vec3f&
 		);
 }
 
-ConeVolumeBrickData::ConeVolumeBrickData( const bool prune )
-	: VolumeBrickData( prune ),
+ConeVolumeBrickData::ConeVolumeBrickData( bool prune, bool resPrune )
+	: VolumeBrickData( prune, resPrune ),
 	_brickRes( 32, 32, 32 ),
 	_baseRad( .475f )
 {}

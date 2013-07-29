@@ -251,7 +251,7 @@ return NULL. (However, see Downsampler for implementation details.) */
 class LATTICEFX_EXPORT VolumeBrickData
 {
 public:
-    VolumeBrickData( const bool prune = false );
+    VolumeBrickData( const bool prune = false, const bool resPrune=false );
     virtual ~VolumeBrickData();
 
 
@@ -317,6 +317,7 @@ protected:
     osg::Vec3s _numBricks;
     unsigned int _depth;
     bool _prune;
+	bool _resPrune;
 
     typedef std::vector< osg::ref_ptr< osg::Image > > ImageVector;
     ImageVector _images;

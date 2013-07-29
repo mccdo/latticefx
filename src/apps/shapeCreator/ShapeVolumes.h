@@ -6,7 +6,7 @@
 class CubeVolumeBrickData : public lfx::core::VolumeBrickData
 {
 public:
-    CubeVolumeBrickData( const bool prune, const bool soft );
+    CubeVolumeBrickData( bool prune, bool soft, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 
@@ -19,10 +19,11 @@ protected:
     bool _soft;
 };
 
+
 class SphereVolumeBrickData : public lfx::core::VolumeBrickData
 {
 public:
-    SphereVolumeBrickData( const bool prune, const bool soft );
+    SphereVolumeBrickData( bool prune, bool soft, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
     
@@ -38,7 +39,7 @@ protected:
 class ConeVolumeBrickData : public lfx::core::VolumeBrickData
 {
 public:
-    ConeVolumeBrickData( const bool prune );
+    ConeVolumeBrickData( bool prune, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 

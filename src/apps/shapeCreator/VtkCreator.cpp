@@ -42,8 +42,7 @@ VtkCreator::VtkCreator( const char *plogstr, const char *ploginfo )
 	: CreateVolume(plogstr, ploginfo),
 	_threads( 32 ),
 	_hireslod( false ),
-	_nocache( false ),
-	_resPrune( false )
+	_nocache( false )
 {
 }
 
@@ -252,10 +251,6 @@ bool VtkCreator::processArgs( osg::ArgumentParser &arguments )
 
 	_hireslod = false;
 	if ( arguments.find( "-hireslod" ) > 0 ) { _hireslod = true; }
-
-	_resPrune = false;
-	if ( arguments.find( "-rp" ) > 0 ) { _resPrune = true; }
-
 
 	// get scalars and vectors from commandf line
 	int countScl = getNumScalars();

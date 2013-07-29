@@ -159,7 +159,7 @@ public:
 						bool isScalar = true, 
 						osg::Vec3s brickRes = osg::Vec3s(32,32,32), 
 						int threadCount=4,
-						bool resPruneOn=true);
+						bool resPrune=true);
 	virtual ~VTKVolumeBrickData();
 
 	virtual void setDepth( const unsigned int depth );
@@ -236,7 +236,7 @@ protected:
 	bool m_cacheUse;
 	bool m_cacheCreate;
 
-	bool m_resPruneOn;
+	//bool m_resPruneOn;
 	FILE *m_pstLogDbg;
 };
 

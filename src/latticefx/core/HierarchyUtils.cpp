@@ -523,10 +523,11 @@ std::string NameStringGenerator::getNameString( osg::Vec3s& offset, const osg::V
 
 
 
-VolumeBrickData::VolumeBrickData( const bool prune )
+VolumeBrickData::VolumeBrickData( const bool prune, bool resPrune )
     : _numBricks( 8, 8, 8 ),
       _depth( 4 ),
       _prune( prune ),
+	  _resPrune( resPrune ),
       _imageCacheMaxSize( 8 ),
 	  _pcbProgress( NULL )
 {

@@ -83,6 +83,7 @@ void MainWindow::guiSettingsInit()
     // standard options
     //
     ui->checkBoxPrune->setChecked( true );
+	ui->checkBoxResPrune->setChecked( true );
 
     // init shape type
     i=0;
@@ -111,7 +112,6 @@ void MainWindow::guiSettingsInit()
     //
     ui->checkBoxVtkCacheOn->setChecked( true );
     ui->checkBoxVtkHiresLod->setChecked( true );
-	ui->checkBoxVtkResPrune->setChecked( true );
     ui->listWidgetVtkScalars->setEnabled( false );
     ui->listWidgetVtkVectors->setEnabled( false );
 
@@ -141,6 +141,7 @@ void MainWindow::guiSettingsLoad()
     //
     settings.beginGroup( "standard" );
     UtlSettings::initCheckBox( &settings, ui->checkBoxPrune, "prune", true );
+	UtlSettings::initCheckBox( &settings, ui->checkBoxResPrune, "resPrune", true );
     UtlSettings::initComboBox( &settings, ui->comboBoxShape, "shapeType", QVariant(E_SHAPE_VTK) );
     UtlSettings::initComboBox( &settings, ui->comboBoxDepth, "depth", QVariant(4) );
     settings.endGroup();
@@ -175,7 +176,6 @@ void MainWindow::guiSettingsLoad()
     UtlSettings::initComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads", QVariant(32) );
     UtlSettings::initCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn", true );
     UtlSettings::initCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod", true );
-	UtlSettings::initCheckBox( &settings, ui->checkBoxVtkResPrune, "vtkResPrune", true );
     settings.endGroup();
 }
 
@@ -189,6 +189,7 @@ void MainWindow::guiSettingsSave()
     //
     settings.beginGroup( "standard");
     UtlSettings::saveCheckBox( &settings, ui->checkBoxPrune, "prune" );
+	UtlSettings::saveCheckBox( &settings, ui->checkBoxResPrune, "resPrune" );
     UtlSettings::saveComboBox( &settings, ui->comboBoxShape, "shapeType" );
     UtlSettings::saveComboBox( &settings, ui->comboBoxDepth, "depth" );
     settings.endGroup();
@@ -210,8 +211,6 @@ void MainWindow::guiSettingsSave()
     UtlSettings::saveComboBox( &settings, ui->comboBoxVtkThreads, "vtkThreads" );
     UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkCacheOn, "vtkCacheOn" );
     UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkHiresLod, "vtkHiResLod" );
-	UtlSettings::saveCheckBox( &settings, ui->checkBoxVtkResPrune, "vtkResPrune" );
-
     settings.endGroup();
 }
 
@@ -245,7 +244,7 @@ void MainWindow::setShapeType(int shapeType)
 	ui->comboBoxVtkThreads->setEnabled( enable );
 	ui->checkBoxVtkCacheOn->setEnabled( enable );
 	ui->checkBoxVtkHiresLod->setEnabled( enable );
-	ui->checkBoxVtkResPrune->setEnabled( enable );
+	//ui->checkBoxResPrune->setEnabled( enable );
 	ui->listWidgetVtkScalars->setEnabled( enable );
 	ui->listWidgetVtkVectors->setEnabled( enable );
 
@@ -483,6 +482,7 @@ void MainWindow::on_pushButtonCreate_clicked()
 	boost::shared_ptr<CreateVolume> createVolume( new CreateVolume( logstr.c_str(), loginfo.c_str() ) );
 	VolumeBrickDataPtr vbd;
 	bool prune = ui->checkBoxPrune->isChecked();
+	bool resPrune = ui->checkBoxResPrune->isChecked();
 
 	switch (shapeType)
 	{
@@ -501,7 +501,6 @@ void MainWindow::on_pushButtonCreate_clicked()
 		int threads = UtlSettings::getSelectedValueInt( ui->comboBoxVtkThreads );
 		bool cacheon = ui->checkBoxVtkCacheOn->isChecked();
 		bool hireslod = ui->checkBoxVtkHiresLod->isChecked();
-		bool resPrune = ui->checkBoxVtkResPrune->isChecked();
 
 		vtkCreator()->setScalarsToProcess( scalars );
 		vtkCreator()->setVectorsToProcess( vectors );
@@ -514,23 +513,23 @@ void MainWindow::on_pushButtonCreate_clicked()
 		break;
 	}
 	case E_SHAPE_CUBE:
-		vbd.reset( new CubeVolumeBrickData( prune, false ) );
+		vbd.reset( new CubeVolumeBrickData( prune, false, resPrune ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_SCUBE:
-		vbd.reset( new CubeVolumeBrickData( prune, true ) );
+		vbd.reset( new CubeVolumeBrickData( prune, true, resPrune ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_CONE:
-		vbd.reset( new ConeVolumeBrickData (prune ) );
+		vbd.reset( new ConeVolumeBrickData (prune, resPrune ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	case E_SHAPE_SPHERE:
-		vbd.reset( new SphereVolumeBrickData( prune, false ) );
+		vbd.reset( new SphereVolumeBrickData( prune, false, resPrune ) );
 		createVolume->setVolumeObj( vbd );
 		break;
 	case E_SHAPE_SSPHERE:
-		vbd.reset( new SphereVolumeBrickData( prune, true ) );
+		vbd.reset( new SphereVolumeBrickData( prune, true, resPrune ) );
 		createVolume->setVolumeObj(vbd);
 		break;
 	default:
@@ -542,6 +541,7 @@ void MainWindow::on_pushButtonCreate_clicked()
 	bool usedb = ui->radioButtonWriteToDb->isChecked();
 
 	createVolume->setPrune( prune );
+	createVolume->setResPrune( resPrune );
 	createVolume->setDepth( depth );
 	createVolume->setUseCrunchStore( usedb );
 

@@ -48,14 +48,13 @@ VTKVolumeBrickData::VTKVolumeBrickData(DataSetPtr dataSet,
 									   bool isScalar,
 									   osg::Vec3s brickRes,
 									   int threadCount,
-									   bool resPruneOn)
-    : VolumeBrickData( prune ),
+									   bool resPrune)
+    : VolumeBrickData( prune, resPrune ),
 		m_dataSet( dataSet ),
 		m_dataNum( dataNum ),
 		m_isScalar( isScalar ),
 		m_brickRes( brickRes ),
-		m_threadCount( threadCount ),
-		m_resPruneOn( resPruneOn )
+		m_threadCount( threadCount )
 {
 	m_maxPts = 0; 
 	m_bbox.init();
@@ -124,7 +123,7 @@ void VTKVolumeBrickData::getDataBoundingBox(const osg::Vec3s& brickNum, osg::Vec
 ////////////////////////////////////////////////////////////////////////////////
 bool VTKVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum ) const
 {
-	if (!m_resPruneOn || getDepth() <= 1) return false;
+	if (!_resPrune || getDepth() <= 1) return false;
 
 	// make sure the brick is in range
 	if (brickNum[0] >= _numBricks[0] || brickNum[1] >= _numBricks[1] || brickNum[2] >= _numBricks[2])
@@ -255,7 +254,7 @@ osg::Image* VTKVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 
 	/*
 	// run prune test if needed
-	if (getDepth() > 1 && m_resPruneOn)
+	if (getDepth() > 1 && m_resPrune)
 	{
 		if (resolutionPruneTest(min, max, brickNum, brickCached))
 		{
