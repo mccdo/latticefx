@@ -71,8 +71,8 @@ protected:
 		bool get( unsigned int idx, Poco::Dynamic::Var *var ) const;
 		bool getKey( unsigned int idx, std::string *pkey ) const;
 
-		std::string toString() const;
-		void toStream( std::ostream *pos ) const;
+		std::string toString( unsigned int indent=2 ) const;
+		void toStream( std::ostream *pos, unsigned int indent=2 ) const;
 
 		Poco::JSON::Object::Ptr _obj;
 		Poco::JSON::Array::Ptr _arr;
@@ -128,8 +128,8 @@ public:
 	void popMark();
 	void popParent();
 
-	std::string toString() const;
-	void toStream( std::ostream *pos ) const;
+	std::string toString( unsigned int indent=2 ) const;
+	void toStream( std::ostream *pos, unsigned int indent=2 ) const;
 
 protected:
 	bool getObjArr( const std::string &name, bool push, bool obj);

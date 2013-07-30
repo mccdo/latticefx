@@ -114,32 +114,32 @@ bool JsonSerializer::JsonParent::getKey( unsigned int idx, std::string *pkey ) c
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-std::string JsonSerializer::JsonParent::toString() const
+std::string JsonSerializer::JsonParent::toString( unsigned int indent ) const
 {
 	std::stringstream ss;
 
 	if( _obj )
 	{
-		_obj->stringify( ss );	
+		_obj->stringify( ss, indent );	
 	}
 	else if( _arr )
 	{
-		_arr->stringify( ss, 0U );
+		_arr->stringify( ss, indent );
 	}
 
 	return ss.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void JsonSerializer::JsonParent::toStream( std::ostream *pos ) const
+void JsonSerializer::JsonParent::toStream( std::ostream *pos, unsigned int indent ) const
 {
 	if( _obj )
 	{
-		_obj->stringify( *pos );	
+		_obj->stringify( *pos, indent );	
 	}
 	else if( _arr )
 	{
-		_arr->stringify( *pos, 0U );
+		_arr->stringify( *pos, indent );
 	}
 }
 
@@ -520,19 +520,19 @@ void JsonSerializer::popParent()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-std::string JsonSerializer::toString() const
+std::string JsonSerializer::toString( unsigned int indent ) const
 {
 	if (!_root) return std::string();
 
-	return _root->toString();
+	return _root->toString( indent );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void JsonSerializer::toStream( std::ostream *pos ) const
+void JsonSerializer::toStream( std::ostream *pos, unsigned int indent ) const
 {
 	if (!_root) return;
 
-	_root->toStream( pos );
+	_root->toStream( pos, indent );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
