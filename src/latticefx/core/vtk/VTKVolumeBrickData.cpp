@@ -121,7 +121,7 @@ void VTKVolumeBrickData::getDataBoundingBox(const osg::Vec3s& brickNum, osg::Vec
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool VTKVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum ) const
+bool VTKVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const
 {
 	if (!_resPrune || getDepth() <= 1) return false;
 

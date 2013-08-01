@@ -1312,6 +1312,8 @@ bool SaveHierarchy::resolutionPruneTest( const std::string brickNameParent )
 	// end debug
 	*/
 
+	osg::Vec3s parentBrickNum = _lodVec[ depthParent ]->nameToBrickNum( brickNameParent );
+
 	// test all child bricks
 	for (int i=0; i<8; i++)
 	{
@@ -1321,11 +1323,11 @@ bool SaveHierarchy::resolutionPruneTest( const std::string brickNameParent )
 
 		int depth( brickName.length() );
 		VolumeBrickDataPtr vbd( _lodVec[ depth ] );
-		osg::Vec3s brickNum = vbd->nameToBrickNum(brickName);
+		osg::Vec3s brickNum = vbd->nameToBrickNum( brickName );
 
 		if (vbd->checkCancel()) return false;
 
-		if ( !vbd->resolutionPrune( brickNum ) ) 
+		if ( !vbd->resolutionPrune( brickNum, parentBrickNum ) ) 
 		{
 			return false;
 		}

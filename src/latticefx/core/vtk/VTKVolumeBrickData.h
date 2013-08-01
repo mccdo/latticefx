@@ -166,7 +166,7 @@ public:
 
 	virtual void getDataBoundingBox(const osg::Vec3s& brickNum, osg::Vec3d &min, osg::Vec3d &max) const;
 
-	virtual bool resolutionPrune( const osg::Vec3s& brickNum ) const;
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const;
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
 	

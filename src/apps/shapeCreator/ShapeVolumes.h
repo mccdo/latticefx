@@ -9,6 +9,7 @@ public:
     CubeVolumeBrickData( bool prune, bool soft, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const;
 
 protected:
     bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const;
@@ -26,6 +27,7 @@ public:
     SphereVolumeBrickData( bool prune, bool soft, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const;
     
 protected:
     bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const;
@@ -42,6 +44,7 @@ public:
     ConeVolumeBrickData( bool prune, bool resPrune );
 
     virtual osg::Image* getBrick( const osg::Vec3s& brickNum ) const;
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const;
 
 protected:
     bool pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const;

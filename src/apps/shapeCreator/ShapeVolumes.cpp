@@ -2,6 +2,25 @@
 
 using namespace lfx::core;
 
+bool resolutionPruneTest( bool resPrune, int depth, const osg::Vec3s& numBricks, const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent )
+{
+	if (!resPrune || depth <= 1) return false;
+
+	// make sure the brick is in range
+	if (brickNum[0] >= numBricks[0] || brickNum[1] >= numBricks[1] || brickNum[2] >= numBricks[2])
+	{
+		return false;
+	} 
+	  
+	// hmmm lets remove all x==1 bricks
+	if (brickNumParent[0] == 1) 
+	{
+		return true;
+	}
+
+	return false;
+}
+
 CubeVolumeBrickData::CubeVolumeBrickData( bool prune, bool soft, bool resPrune )
 	: VolumeBrickData( prune, resPrune ),
 	_brickRes( 32, 32, 32 ),
@@ -17,7 +36,7 @@ osg::Image* CubeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 	if( ( idx < 0 ) || ( idx >= _images.size() ) )
 	{
 		return( NULL );
-	}
+	} 
 
 
 	const osg::Vec3f brick( brickNum[0], brickNum[1], brickNum[2] );
@@ -83,6 +102,11 @@ osg::Image* CubeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
 		( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
 	return( image.release() );
+}
+
+bool CubeVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const 
+{ 
+	return resolutionPruneTest( _resPrune, getDepth(), _numBricks, brickNum, brickNumParent );
 }
 
 bool CubeVolumeBrickData::pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const
@@ -173,6 +197,11 @@ osg::Image* SphereVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
 		( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
 	return( image.release() );
+}
+
+bool SphereVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const 
+{ 
+	return resolutionPruneTest( _resPrune, getDepth(), _numBricks, brickNum, brickNumParent );
 }
 
 bool SphereVolumeBrickData::pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const
@@ -266,6 +295,11 @@ osg::Image* ConeVolumeBrickData::getBrick( const osg::Vec3s& brickNum ) const
 		GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
 		( unsigned char* ) data, osg::Image::USE_NEW_DELETE );
 	return( image.release() );
+}
+
+bool ConeVolumeBrickData::resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const 
+{ 
+	return resolutionPruneTest( _resPrune, getDepth(), _numBricks, brickNum, brickNumParent );
 }
 
 bool ConeVolumeBrickData::pruneTest( const osg::Vec3f& bMin, const osg::Vec3f& bMax ) const

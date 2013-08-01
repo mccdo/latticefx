@@ -260,7 +260,7 @@ public:
     osg::Vec3s getNumBricks() const;
 	unsigned int getBrickCount() const;
 
-	virtual bool resolutionPrune( const osg::Vec3s& brickNum ) const { return false; }
+	virtual bool resolutionPrune( const osg::Vec3s& brickNum, const osg::Vec3s& brickNumParent ) const { return false; }
 	virtual void getDataBoundingBox( const osg::Vec3s& brickNum, osg::Vec3d &min, osg::Vec3d &max ) const { return; }
 
     /** \brief Add a brick to the \c _images vector of bricks.
