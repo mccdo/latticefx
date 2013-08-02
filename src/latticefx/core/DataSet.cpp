@@ -842,6 +842,20 @@ bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std:
 		_preprocess = ds->_preprocess;
 		_ops = ds->_ops;
 		_renderer = ds->_renderer;
+
+		// initialize the database
+		BOOST_FOREACH( PreprocessPtr pre, _preprocess )
+		{
+			if( pre ) pre->setDB( getDB() );
+		}
+
+		BOOST_FOREACH( RTPOperationPtr op, _ops )
+		{
+			if( op ) op->setDB( getDB() );
+		}
+
+		if( _renderer ) _renderer->setDB( getDB() );
+
 		return true;
 	}
 	catch( Poco::JSON::JSONException je)
