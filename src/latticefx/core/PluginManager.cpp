@@ -21,6 +21,7 @@
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
 #include <latticefx/core/Preprocess.h>
+#include <latticefx/core/HierarchyUtils.h>
 #include <latticefx/core/RTPOperation.h>
 #include <latticefx/core/SurfaceRenderer.h>
 #include <latticefx/core/VectorRenderer.h>
@@ -420,6 +421,10 @@ ObjBasePtr PluginManager::createObj(const std::string &typeName, const ObjBase::
 	else if( !typeName.compare( "Preprocess" ) )
 	{
 		return ObjBasePtr( new Preprocess() );
+	}
+	else if( !typeName.compare( "LoadHierarchy" ) )
+	{
+		return ObjBasePtr( new LoadHierarchy() );
 	}
 	else if( !typeName.compare( "RTPOperation" ) )
 	{

@@ -1445,6 +1445,34 @@ bool LoadHierarchy::valid( const std::string& fileName )
     }
 }
 
+void LoadHierarchy::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	Preprocess::serializeData( json );
+
+	json->insertObj( LoadHierarchy::getClassName(), true);
+	json->insertObjValue( "load",  _load );
+	json->popParent();
+}
+
+bool LoadHierarchy::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !LoadHierarchy::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( LoadHierarchy::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get LoadHierarchy data";
+		return false;
+	}
+
+	json->getValue( "load", &_load, false );
+
+	json->popParent();
+	return true;
+}
+
 
 // core
 }

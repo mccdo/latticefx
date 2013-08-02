@@ -447,6 +447,8 @@ public:
     LoadHierarchy();
     virtual ~LoadHierarchy();
 
+	virtual std::string getClassName() const { return "LoadHierarchy"; }
+
     virtual ChannelDataPtr operator()();
 
     /** \brief Set whether to actually load the data into memory.
@@ -461,6 +463,9 @@ public:
 
 protected:
     static bool valid( const std::string& fileName );
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     bool _load;
 };
