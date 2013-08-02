@@ -1458,7 +1458,7 @@ void LoadHierarchy::serializeData( JsonSerializer *json ) const
 bool LoadHierarchy::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
 {
 	// let the parent load its data
-	if ( !LoadHierarchy::loadData( json, pfactory, perr )) return false;
+	if ( !Preprocess::loadData( json, pfactory, perr )) return false;
 
 	// get to this classes data
 	if ( !json->getObj( LoadHierarchy::getClassName() ) )
