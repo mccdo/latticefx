@@ -799,7 +799,7 @@ bool Renderer::load( JsonSerializer *json, const std::string &name, osg::Vec4f &
 		json->popMark();
 		return false;
 	}
-	if ( !json->getObj( "vec3f" ) )
+	if ( !json->getObj( "vec4f" ) )
 	{
 		json->popMark();
 		return false;
