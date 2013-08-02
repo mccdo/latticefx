@@ -194,6 +194,14 @@ void OperationBase::serializeData( JsonSerializer *json ) const
 	json->insertObj( OperationBase::getClassName(), true);
 	json->insertObjValue( "opType",  getEnumName( _opType ) );
 	json->insertObjValue( "enable", _enable );
+
+	json->insertArray( "inputNames" );
+	BOOST_FOREACH( std::string name, _inputNames )
+	{
+		json->insertArrValue( name );
+	}
+	json->popParent();
+
 	json->popParent();
 }
 
@@ -214,6 +222,29 @@ bool OperationBase::loadData( JsonSerializer *json, IObjFactory *pfactory, std::
 	_opType = getEnumFromName( name );
 
 	json->getValue( "enable", &_enable, _enable );
+
+	// start get input names
+	_inputNames.clear();
+	if( !json->getArray( "inputNames", true ) )
+	{
+		if (perr) *perr = "Json: Failed to get OperationBase inputNames";
+		return false;
+	}
+
+	for( unsigned int i=0; i<json->size(); i++ )
+	{
+		std::string s;
+		if( !json->getValue( i, &s ) )
+		{
+			if (perr) *perr = "Json: Failed to get OperationBase inputNames string";
+			return false;
+		}
+
+		_inputNames.push_back( s );
+	}
+
+	json->popParent();
+	// end get input names
 
 	json->popParent();
 	return true;
