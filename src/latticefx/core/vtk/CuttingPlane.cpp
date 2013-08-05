@@ -223,6 +223,25 @@ void CuttingPlane::IncrementOrigin()
     this->origin[this->type] += this->dx;
 }
 
+std::string CuttingPlane::getEnumName( SliceDirection e )
+{
+	switch (e)
+	{
+	case X_PLANE:
+		return "X_PLANE";
+	case Y_PLANE:
+		return "Y_PLANE";
+	}	
+	return "Z_PLANE";
+}
+
+CuttingPlane::SliceDirection CuttingPlane::getEnumFromName( const std::string &name )
+{
+	if( !name.compare( "X_PLANE" )) return X_PLANE;
+	else if( !name.compare( "Y_PLANE" )) return Y_PLANE;
+	return Z_PLANE;
+}
+
 }
 }
 }

@@ -21,6 +21,7 @@
 #define LFX_CUTTING_PLANE
 
 #include <latticefx/core/vtk/Export.h>
+#include <string>
 
 class vtkPlane;
 class vtkDataSet;
@@ -48,6 +49,9 @@ public:
         Y_PLANE,
         Z_PLANE
     } SliceDirection;
+
+	static std::string getEnumName( SliceDirection e );
+	SliceDirection getEnumFromName( const std::string &name );
 
     ///Constructor
     CuttingPlane( const double* bounds, SliceDirection xyz,
