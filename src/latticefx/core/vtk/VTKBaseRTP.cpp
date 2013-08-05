@@ -140,6 +140,70 @@ vtkSmartPointer<vtkExtractPolyDataGeometry> VTKBaseRTP::GetRoiPoly(vtkAlgorithmO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	RTPOperation::serializeData( json );
+
+	json->insertObj( VTKBaseRTP::getClassName(), true);
+	json->insertObjValue( "requestedValue",  m_requestedValue );
+	json->insertObjValue( "minScalarValue",  m_minScalarValue );
+	json->insertObjValue( "maxScalarValue",  m_maxScalarValue );
+	json->insertObjValue( "activeScalar",  m_activeScalar );
+	json->insertObjValue( "activeVector",  m_activeVector );
+	json->insertObjValue( "mask",  m_mask );
+	json->insertObjValue( "planeDirection",  CuttingPlane::getEnumName( m_planeDirection ) );
+	json->insertObjValue( "roiExtractBoundaryCells",  m_roiExtractBoundaryCells );
+	json->insertArray( "roiBox", true );
+	for( unsigned int i=0; i < m_roiBox.size(); i++ )
+	{
+		json->insertArrValue( m_roiBox[i] );
+	}
+
+	json->popParent();
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKBaseRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !RTPOperation::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKBaseRTP::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKBaseRTP data";
+		return false;
+	}
+
+	json->getValue( "requestedValue",  &m_requestedValue );
+	json->getValue( "minScalarValue",  &m_minScalarValue );
+	json->getValue( "maxScalarValue",  &m_maxScalarValue );
+	json->getValue( "activeScalar",  &m_activeScalar );
+	json->getValue( "activeVector",  &m_activeVector );
+	json->getValue( "mask",  &m_mask );
+	json->getValue( "roiExtractBoundaryCells",  &m_roiExtractBoundaryCells );
+
+	std::string name;
+	json->getValue( "planeDirection", &name, CuttingPlane::getEnumName( m_planeDirection ) );
+	m_planeDirection = CuttingPlane::getEnumFromName( name );
+
+	m_roiBox.clear();
+	json->getArray( "roiBox", true );
+	for( unsigned int i=0; i<json->size(); i++)
+	{
+		double d=0;
+		json->getValue( i, &d );
+		m_roiBox.push_back( d );
+	}
+
+	json->popParent();
+	json->popParent();
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

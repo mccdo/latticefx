@@ -24,7 +24,6 @@
 #include <latticefx/core/LogBase.h>
 
 #include <latticefx/core/vtk/Export.h>
-
 #include <latticefx/core/vtk/CuttingPlane.h>
 
 #include <vtkSmartPointer.h>
@@ -71,6 +70,9 @@ public:
         ;
     }
 
+	///Get a string name for this class
+	virtual std::string getClassName() const { return std::string( "VTKBaseRTP" ); }
+
     ///Set the value for a plane location or scalar value for an isosurface
     void SetRequestedValue( double const value );
 
@@ -101,6 +103,9 @@ protected:
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkDataObject *pdo);
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkAlgorithmOutput* pOutPin);
 	vtkSmartPointer<vtkExtractPolyDataGeometry> GetRoiPoly(vtkAlgorithmOutput* pOutPin);
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
 protected:
     ///Value for setting the position or value for an iso surface
