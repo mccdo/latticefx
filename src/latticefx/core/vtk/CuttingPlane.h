@@ -51,7 +51,7 @@ public:
     } SliceDirection;
 
 	static std::string getEnumName( SliceDirection e );
-	SliceDirection getEnumFromName( const std::string &name );
+	static SliceDirection getEnumFromName( const std::string &name );
 
     ///Constructor
     CuttingPlane( const double* bounds, SliceDirection xyz,
