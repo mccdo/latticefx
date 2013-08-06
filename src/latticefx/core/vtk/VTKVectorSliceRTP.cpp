@@ -112,6 +112,35 @@ lfx::core::ChannelDataPtr VTKVectorSliceRTP::channel( const lfx::core::ChannelDa
 
     return( cdpd );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorSliceRTP::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	VTKBaseRTP::serializeData( json );
+
+	json->insertObj( VTKVectorSliceRTP::getClassName(), true);
+	// store any class specific data here
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorSliceRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !VTKBaseRTP::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKVectorSliceRTP::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKVectorSliceRTP data";
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

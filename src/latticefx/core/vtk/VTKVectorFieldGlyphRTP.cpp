@@ -100,6 +100,36 @@ void VTKVectorFieldGlyphRTP::SetMaskValue( double value )
 {
     m_mask = value;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorFieldGlyphRTP::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	VTKBaseRTP::serializeData( json );
+
+	json->insertObj( VTKVectorFieldGlyphRTP::getClassName(), true );
+	json->insertObjValue( "mask", m_mask );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorFieldGlyphRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !VTKBaseRTP::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKVectorFieldGlyphRTP::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKVectorFieldGlyphRTP data";
+		return false;
+	}
+
+	json->getValue( "mask", &m_mask );
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

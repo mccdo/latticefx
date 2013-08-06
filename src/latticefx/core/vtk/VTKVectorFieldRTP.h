@@ -57,11 +57,18 @@ public:
         ;
     }
 
+	///Get a string name for this class
+	virtual std::string getClassName() const { return std::string( "VTKVectorFieldRTP" ); }
+
     ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     double m_mask;
 };
 

@@ -124,6 +124,35 @@ lfx::core::ChannelDataPtr VTKIsoSurfaceRTP::channel( const lfx::core::ChannelDat
 
     return( cdpd );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKIsoSurfaceRTP::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	VTKBaseRTP::serializeData( json );
+
+	json->insertObj( VTKIsoSurfaceRTP::getClassName(), true);
+	// store any class specific data here
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKIsoSurfaceRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !VTKBaseRTP::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKIsoSurfaceRTP::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKIsoSurfaceRTP data";
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

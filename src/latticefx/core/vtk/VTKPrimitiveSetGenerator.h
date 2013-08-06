@@ -67,9 +67,15 @@ public:
     ///Copy constructor
     VTKPrimitiveSetGenerator( const VTKPrimitiveSetGenerator& rhs );
 
+	virtual std::string getClassName() const { return "VTKPrimitiveSetGenerator"; }
+
     virtual void operator()( const SurfaceRenderer* surfaceRenderer, osg::Geometry* geom );
 
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     ///The triangle strips from vtkPolyData
     vtkCellArray* m_triStrips;
     ///Store the raw OSG primitives

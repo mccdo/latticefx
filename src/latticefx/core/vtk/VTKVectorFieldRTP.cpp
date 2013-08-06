@@ -89,6 +89,36 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::channel( const lfx::core::ChannelDa
 
     return( cdpd );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorFieldRTP::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	VTKBaseRTP::serializeData( json );
+
+	json->insertObj( VTKVectorFieldRTP::getClassName(), true );
+	json->insertObjValue( "mask", m_mask );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorFieldRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !VTKBaseRTP::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKVectorFieldRTP::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKVectorFieldRTP data";
+		return false;
+	}
+
+	json->getValue( "mask", &m_mask );
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

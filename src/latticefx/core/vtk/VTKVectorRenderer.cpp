@@ -157,6 +157,42 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
 
     return( lfx::core::VectorRenderer::getSceneGraph( maskIn ) );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKVectorRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	VectorRenderer::serializeData( json );
+
+	json->insertObj( VTKVectorRenderer::getClassName(), true);
+	json->insertObjValue( "activeVector", m_activeVector );
+	json->insertObjValue( "activeScalar", m_activeScalar );
+    //vtkPolyData* m_pd;
+    //std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
+    //lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !VectorRenderer::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKVectorRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKVectorRenderer data";
+		return false;
+	}
+
+	json->getValue( "activeVector", &m_activeVector);
+	json->getValue( "activeScalar", &m_activeScalar );
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

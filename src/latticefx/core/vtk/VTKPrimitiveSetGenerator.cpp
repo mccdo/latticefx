@@ -75,6 +75,35 @@ void VTKPrimitiveSetGenerator::operator()( const SurfaceRenderer*, osg::Geometry
         m_primitives.push_back( deui.get() );
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKPrimitiveSetGenerator::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	PrimitiveSetGenerator::serializeData( json );
+
+	json->insertObj( VTKPrimitiveSetGenerator::getClassName(), true);
+	// store any class specific data here
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKPrimitiveSetGenerator::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !PrimitiveSetGenerator::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKPrimitiveSetGenerator::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKPrimitiveSetGenerator data";
+		return false;
+	}
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

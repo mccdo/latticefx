@@ -275,6 +275,44 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	SurfaceRenderer::serializeData( json );
+
+	json->insertObj( VTKSurfaceRenderer::getClassName(), true);
+	json->insertObjValue( "activeVector", m_activeVector );
+	json->insertObjValue( "activeScalar", m_activeScalar );
+	json->insertObjValue( "colorByScalar", m_colorByScalar ); 
+    //vtkPolyData* m_pd;
+    //std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
+    //lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKSurfaceRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !SurfaceRenderer::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKSurfaceRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKSurfaceRenderer data";
+		return false;
+	}
+
+	json->getValue( "activeVector", &m_activeVector);
+	json->getValue( "activeScalar", &m_activeScalar );
+	json->getValue( "colorByScalar", &m_colorByScalar );
+
+	json->popParent();
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }

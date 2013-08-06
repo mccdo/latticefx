@@ -62,6 +62,9 @@ public:
         ;
     }
 
+	///Get a string name for this class
+	virtual std::string getClassName() const { return std::string( "VTKSurfaceRenderer" ); }
+
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use
     void SetActiveVector( const std::string& activeVector );
@@ -88,6 +91,9 @@ protected:
     
     ///Setup the osg color arrays
     void SetupColorArrays( vtkPolyData* pd );
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     ///The active vector to set which vector to use for rendering
     std::string m_activeVector;
