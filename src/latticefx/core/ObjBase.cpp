@@ -304,6 +304,28 @@ void ObjBase::serializeEnd( JsonSerializer *json ) const
 	json->popParent(); // object
 } 
 
+////////////////////////////////////////////////////////////////////////////////
+void ObjBase::dumpState( std::ostream &os )
+{
+	dumpStateStart( "ObjBase", os );
+	dumpStateEnd( "ObjBase", os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ObjBase::dumpStateStart( const std::string &name, std::ostream &os )
+{
+	os << "===============================================" << std::endl;
+	os << name << " Start" << std::endl;
+	os << "===============================================" << std::endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ObjBase::dumpStateEnd( const std::string &name, std::ostream &os )
+{
+	os << "===============================================" << std::endl;
+	os << name << " End" << std::endl;
+}
+
 // core
 }
 // lfx

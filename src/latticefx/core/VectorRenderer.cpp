@@ -590,6 +590,16 @@ bool VectorRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std:
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VectorRenderer::dumpState( std::ostream &os )
+{
+	Renderer::dumpState( os );
+
+	dumpStateStart( VectorRenderer::getClassName(), os );
+	os << "_pointStyle: " << getEnumName( _pointStyle ) << std::endl;
+	dumpStateEnd( VectorRenderer::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // core
 }
 // lfx

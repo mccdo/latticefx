@@ -502,6 +502,8 @@ Renderer::addInput( "scalar-string-name" );
 	static bool load( JsonSerializer *json, const std::string &name, osg::Vec3f &v );
 	static bool load( JsonSerializer *json, const std::string &name, osg::Vec4f &v );
 
+	virtual void dumpState( std::ostream &os );
+
     /**@}*/
 
 protected:

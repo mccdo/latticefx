@@ -91,6 +91,8 @@ public:
         return( ChannelDataPtr( ( ChannelData* )NULL ) );
     }
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
 
 	virtual void serializeData( JsonSerializer *json ) const;

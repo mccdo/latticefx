@@ -120,6 +120,17 @@ bool SpatialVolume::loadData( JsonSerializer *json, IObjFactory *pfactory, std::
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void SpatialVolume::dumpState( std::ostream &os )
+{
+	ObjBase::dumpStateStart( SpatialVolume::getClassName(), os );
+
+	os << "_volumeDims: (" << _volumeDims.x() << ", " << _volumeDims.y() << ", " << _volumeDims.z() << ")" << std::endl;
+	os << "_volumeOrigin: (" << _volumeOrigin.x() << ", " << _volumeOrigin.y() << ", " << _volumeOrigin.z() << ")" << std::endl;
+
+	ObjBase::dumpStateEnd( SpatialVolume::getClassName(), os );
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 VolumeRenderer::VolumeRenderer( const std::string& logName )
@@ -565,6 +576,23 @@ bool VolumeRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std:
 
 	json->popParent();
 	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VolumeRenderer::dumpState( std::ostream &os )
+{
+	Renderer::dumpState( os );
+	SpatialVolume::dumpState( os );
+
+	dumpStateStart( VolumeRenderer::getClassName(), os );
+
+	os << "_renderMode: " << getEnumName( _renderMode ) << std::endl;
+	os << "_numPlanes: " << _numPlanes << std::endl;
+	os << "_maxSamples: " << _maxSamples << std::endl;
+	os << "_transparencyScalar: " << _transparencyScalar << std::endl;
+	os << "_transparencyEnable: " << _transparencyEnable << std::endl;
+
+	dumpStateEnd( VolumeRenderer::getClassName(), os );
 }
 
 // core

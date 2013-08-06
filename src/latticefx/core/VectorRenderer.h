@@ -158,6 +158,8 @@ public:
     /** \brief Get the rendering style. */
     PointStyle getPointStyle() const;
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
     osg::Texture3D* createTexture( ChannelDataPtr data );
 

@@ -250,6 +250,74 @@ bool OperationBase::loadData( JsonSerializer *json, IObjFactory *pfactory, std::
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void OperationBase::dumpState( std::ostream &os )
+{
+	ObjBase::dumpState( os );
+
+	dumpStateStart( OperationBase::getClassName(), os );
+
+	// TODO:
+	// ChannelDataList _inputs;
+
+	os << "_inputNames count: " << _inputNames.size() << std::endl; 
+	BOOST_FOREACH( std::string s, _inputNames )
+	{
+		os << s << std::endl; 
+	}
+
+	os << "_inputTypeMap count: " << _inputTypeMap.size() << std::endl; 
+	BOOST_FOREACH( const InputTypeMap::value_type& pair, _inputTypeMap )
+	{
+		os << pair.second << std::endl; 
+	}
+
+	os << "_opType: " << getEnumName( _opType ) << std::endl; 
+ 
+	os << "_enable" << _enable << std::endl;
+    
+
+	os << "_nameValueMap count: " << _nameValueMap.size() << std::endl;
+	BOOST_FOREACH( const NameValueMap::value_type& pair, _nameValueMap )
+	{
+		if( pair.second.IsBool( pair.second.GetValue() ) )
+		{
+			os << "bool: " << boost::any_cast<bool>( pair.second.GetValue() ) << std::endl; 
+		}
+		else if( pair.second.IsInt( pair.second.GetValue() ) )
+		{
+			os << "int: " << boost::any_cast<int>( pair.second.GetValue() ) << std::endl; 
+		}
+		else if( pair.second.IsFloat( pair.second.GetValue() ) )
+		{
+			os << "float: " << boost::any_cast<float>( pair.second.GetValue() ) << std::endl; 
+		}
+		else if( pair.second.IsDouble( pair.second.GetValue() ) )
+		{
+			os << "double: " << boost::any_cast<double>( pair.second.GetValue() ) << std::endl; 
+		}
+		else if( pair.second.IsString( pair.second.GetValue() ) )
+		{
+			os << "string: " << boost::any_cast<std::string>( pair.second.GetValue() ) << std::endl; 
+		}
+
+		// TODO:
+		/*
+		bool IsIntVector( const boost::any& value ) const;
+		bool IsFloatVector( const boost::any& value ) const;
+		bool IsDoubleVector( const boost::any& value ) const;
+		bool IsStringVector( const boost::any& value ) const;
+		bool IsBLOB( const boost::any& value ) const;
+		*/
+		
+	}
+
+	// TODO:
+    //DBBasePtr _db;
+
+	dumpStateEnd( OperationBase::getClassName(), os );
+}
+
 // core
 }
 // lfx

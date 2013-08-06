@@ -983,6 +983,56 @@ bool DataSet::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string
 	return ret;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void DataSet::dumpState( std::ostream &os )
+{
+	ObjBase::dumpState( os );
+
+	dumpStateStart( DataSet::getClassName(), os );
+
+	// TODO:
+	//typedef std::map< TimeValue, ChannelDataList > ChannelDataTimeMap;
+    //ChannelDataTimeMap _data;
+
+	os << "_dataNames count: " << _dataNames.size() << std::endl;
+	BOOST_FOREACH( std::string s, _dataNames )
+	{
+		os << "data name: " << s << std::endl;
+	}
+		
+	// TODO:
+    // DBBasePtr _db;
+
+	os << "_preprocess count: " << _preprocess.size() << std::endl;
+	BOOST_FOREACH( PreprocessPtr p, _preprocess )
+	{
+		p->dumpState( os );
+	}
+
+	os << "_ops count: " << _ops.size() << std::endl;
+	BOOST_FOREACH( RTPOperationPtr p, _ops )
+	{
+		p->dumpState( os );
+	}
+
+	if( _renderer )
+	{
+			_renderer->dumpState( os );
+	}
+	else 
+	{
+		os << "_renderer: NULL" << std::endl;
+	}
+
+    // TODO:
+    //ChannelDataList _maskList;
+    //osg::ref_ptr< osg::Group > _sceneGraph;
+
+	os << "_dirty: " << _dirty << std::endl;
+
+	dumpStateEnd( DataSet::getClassName(), os );
+}
+
 // core
 }
 // lfx

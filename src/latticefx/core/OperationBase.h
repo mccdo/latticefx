@@ -207,6 +207,8 @@ public:
         return( _db );
     }
 
+	virtual void dumpState( std::ostream &os );
+
     /**@}*/
 
 protected:

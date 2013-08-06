@@ -75,6 +75,8 @@ public:
     /** \brief Get the location (in world units) of the center of the volume box. */
     osg::Vec3f getVolumeOrigin() const;
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
 
 	virtual void serializeData( JsonSerializer *json ) const;
@@ -83,6 +85,8 @@ protected:
     osg::Vec3f _volumeDims, _volumeOrigin;
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -91,6 +95,7 @@ private:
         ar& BOOST_SERIALIZATION_NVP( _volumeDims );
         ar& BOOST_SERIALIZATION_NVP( _volumeOrigin );
     }
+	*/
 };
 
 typedef boost::shared_ptr< SpatialVolume > SpatialVolumePtr;
@@ -227,6 +232,8 @@ public:
         return( _transparencyEnable );
     }
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
     static osg::Texture3D* createTexture( const DBKey& key, osg::Image* image );
     virtual bool validInputs() const;
@@ -247,6 +254,8 @@ protected:
     bool _transparencyEnable;
 
 private:
+
+	/*
     friend class boost::serialization::access;
 
     template< class Archive >
@@ -260,6 +269,7 @@ private:
         ar& BOOST_SERIALIZATION_NVP( _transparencyScalar );
         ar& BOOST_SERIALIZATION_NVP( _transparencyEnable );
     }
+	*/
 };
 
 

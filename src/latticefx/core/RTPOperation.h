@@ -104,6 +104,8 @@ public:
     //protected:
     virtual ~RTPOperation();
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
 
 	virtual void serializeData( JsonSerializer *json ) const;
@@ -114,16 +116,6 @@ protected:
 
 private:
 
-	/*
-    friend class boost::serialization::access;
-
-    template< class Archive >
-    void serialize( Archive& ar, const unsigned int version )
-    {
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
-        ar& BOOST_SERIALIZATION_NVP( _rtpOpType );
-    }
-	*/
 };
 
 

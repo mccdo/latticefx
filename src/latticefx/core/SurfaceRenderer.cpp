@@ -319,6 +319,17 @@ void SimpleTrianglePrimitiveSetGenerator::serializeData( JsonSerializer *json ) 
 
 //virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
+////////////////////////////////////////////////////////////////////////////////
+void SurfaceRenderer::dumpState( std::ostream &os )
+{
+	Renderer::dumpState( os );
+
+	dumpStateStart( SurfaceRenderer::getClassName(), os );
+	// TODO:
+	//_primitiveSetGenerator
+	dumpStateEnd( SurfaceRenderer::getClassName(), os );
+}
+
 // core
 }
 // lfx

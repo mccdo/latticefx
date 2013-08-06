@@ -814,6 +814,61 @@ bool Renderer::load( JsonSerializer *json, const std::string &name, osg::Vec4f &
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void Renderer::dumpState( std::ostream &os )
+{
+	OperationBase::dumpState( os );
+
+	dumpStateStart( Renderer::getClassName(), os );
+
+	os << "_uniformInfo count: " << _uniformInfo.size() << std::endl;
+	BOOST_FOREACH( UniformInfo ui, _uniformInfo )
+	{
+		os << "_description: " << ui._description << std::endl;
+		os << "_access: " << ui._access << std::endl;
+
+		if( !ui._prototype )
+		{
+			os << "_prototype: NULL" << std::endl;
+			continue;
+		}
+
+		os << "type: " << ui._prototype->getTypename( ui._prototype->getType() ) << std::endl;
+		os << "num elements: " << ui._prototype->getNumElements() << std::endl; 
+		os << "internal array num elements: " << ui._prototype->getInternalArrayNumElements() << std::endl; 
+		os << "type num components: " << ui._prototype->getTypeNumComponents( ui._prototype->getType() ) << std::endl;
+	}
+
+	os << "_baseUnit: " << _baseUnit << std::endl;
+	os << "_unitAssignmentCounter: " << _unitAssignmentCounter << std::endl;
+
+	os << "_unitAssignmentMap count: " << _unitAssignmentMap.size() << std::endl;
+	BOOST_FOREACH( const UnitAssignmentMap::value_type& pair, _unitAssignmentMap )
+	{
+		os << pair.first << " : " << pair.second << std::endl;
+	}
+
+	if( _tfImage )
+	{
+		os << "_tfImage: " << _tfImage->getName() << std::endl;
+	}
+	else
+	{
+		os << "_tfImage: NULL" << std::endl;
+	}
+	 
+    os << "_tfInputName: " << _tfInputName<< std::endl;
+	os << "_tfRange: (" << _tfRange.x() << ", " << _tfRange.y() << ")" << std::endl;
+	os << "_tfDest: " << getEnumName( _tfDest ) << std::endl;
+	os << "_tfDestMask: (" << _tfDestMask.x() << ", " << _tfDestMask.y() << ", " << _tfDestMask.z() << ", " << _tfDestMask.w() << ")" << std::endl;
+    os << "_hmSource: " << getEnumName( _hmSource ) << std::endl;
+	os << "_hmInputName: " << _hmInputName << std::endl;
+	os << "_hmReference: " << _hmReference << std::endl;
+	os << "_hmOperator: " << _hmReference << std::endl;
+
+	dumpStateEnd( Renderer::getClassName(), os );
+}
+
 // core
 }
 // lfx

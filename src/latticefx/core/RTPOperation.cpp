@@ -92,6 +92,15 @@ bool RTPOperation::loadData( JsonSerializer *json, IObjFactory *pfactory, std::s
 	return true;
 }
 
+void RTPOperation::dumpState( std::ostream &os )
+{
+	OperationBase::dumpState( os );
+
+	dumpStateStart( RTPOperation::getClassName(), os );
+	os << "_rtpOpType: " << getEnumName( _rtpOpType ) << std::endl;
+	dumpStateEnd( RTPOperation::getClassName(), os );
+}
+
 // core
 }
 // lfx

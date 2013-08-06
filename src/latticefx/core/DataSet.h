@@ -293,6 +293,8 @@ public:
     /** \brief Get the pipeline dirty flag. */
     int getDirty() const;
 
+	virtual void dumpState( std::ostream &os );
+
     ///\}
 
 protected:

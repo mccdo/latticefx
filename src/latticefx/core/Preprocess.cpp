@@ -98,6 +98,14 @@ bool Preprocess::loadData( JsonSerializer *json, IObjFactory *pfactory, std::str
 	return true;
 }
 
+void Preprocess::dumpState( std::ostream &os )
+{
+	OperationBase::dumpState( os );
+
+	dumpStateStart( Preprocess::getClassName(), os );
+	os << "_action: " << getEnumName( _action ) << std::endl;
+	dumpStateEnd( Preprocess::getClassName(), os );
+}
 
 // core
 }

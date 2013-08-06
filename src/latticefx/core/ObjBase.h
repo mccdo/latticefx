@@ -66,6 +66,10 @@ public:
 
 	virtual void serialize( JsonSerializer *json ) const;
 
+	virtual void dumpState( std::ostream &os );
+	static void dumpStateStart( const std::string &name, std::ostream &os );
+	static void dumpStateEnd( const std::string &name, std::ostream &os );
+
 protected:
 	virtual void serializeStart( JsonSerializer *json ) const;
 	virtual void serializeData( JsonSerializer *json ) const;
