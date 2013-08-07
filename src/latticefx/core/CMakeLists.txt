@@ -32,6 +32,7 @@ set( _headerFiles
     LogBase.h
     LogMacros.h
     ObjBase.h
+    ObjFactoryCore.h
     OctreeGroup.h
     OperationBase.h
     OperationValue.h
@@ -71,6 +72,7 @@ set( _sourceFiles
     LoadRequest.cpp
     Log.cpp
     ObjBase.cpp
+    ObjFactoryCore.cpp
     OctreeGroup.cpp
     OperationBase.cpp
     OperationValue.cpp

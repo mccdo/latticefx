@@ -92,7 +92,7 @@ public:
 
 	virtual std::string getClassName() const { return std::string( "DataSet" ); }
 
-	virtual bool loadPipeline( PluginManager *pm, const std::string &filePath, std::string *perr=NULL );
+	virtual bool loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr=NULL );
 	virtual bool savePipeline( const std::string &filePath, std::string *perr=NULL );
 
     /** \name Data Section

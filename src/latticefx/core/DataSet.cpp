@@ -774,7 +774,7 @@ bool DataSet::isTemporalData() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std::string *perr )
+bool DataSet::loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr )
 {
     /*
 	// TODO: ifstream seems to be an issue is osg, where using ifstream it creates a link problem
@@ -824,7 +824,7 @@ bool DataSet::loadPipeline( PluginManager *pm, const std::string &filePath, std:
 
 		
 		std::string err;
-		ObjBasePtr p = ObjBase::loadObj( &js, (IObjFactory *)pm, &err );
+		ObjBasePtr p = ObjBase::loadObj( &js, objf, &err );
 		if( !p )
 		{
 			if (perr) *perr = std::string("Failed to load the pipeline: ") + err;
