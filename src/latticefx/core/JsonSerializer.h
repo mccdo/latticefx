@@ -80,7 +80,7 @@ protected:
 	typedef boost::shared_ptr< JsonParent > JsonParentPtr;
 
 public:
-    JsonSerializer( int version=1, const char *srcName="latticefx" );
+    JsonSerializer( const char *fileName="", int version=1, const char *srcName="latticefx" );
 
 	// of the current parent
 	bool isObj();
@@ -131,6 +131,9 @@ public:
 	std::string toString( unsigned int indent=2 ) const;
 	void toStream( std::ostream *pos, unsigned int indent=2 ) const;
 
+	void setFileName( const char *file ) { _fileName = file; }
+	const char* getFileName() { return _fileName.c_str(); }
+
 protected:
 	bool getObjArr( const std::string &name, bool push, bool obj);
 	
@@ -155,6 +158,7 @@ protected:
 	std::vector< unsigned int > _markStack;
 	int _version;
 	std::string _sourceName;
+	std::string _fileName;
 };
 
 typedef boost::shared_ptr< JsonSerializer > JsonSerializerPtr;

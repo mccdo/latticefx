@@ -144,8 +144,9 @@ void JsonSerializer::JsonParent::toStream( std::ostream *pos, unsigned int inden
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-JsonSerializer::JsonSerializer( int version, const char *sourceName )
+JsonSerializer::JsonSerializer( const char *fileName, int version, const char *sourceName )
 {
+	_fileName = fileName;
 	_version = version;
 	_sourceName = sourceName;
 }
