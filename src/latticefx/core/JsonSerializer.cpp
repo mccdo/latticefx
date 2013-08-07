@@ -22,6 +22,8 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/DefaultHandler.h>
 
+#include <boost/filesystem.hpp>
+
 using namespace Poco::JSON;
 using namespace Poco::Dynamic;
 
@@ -144,9 +146,9 @@ void JsonSerializer::JsonParent::toStream( std::ostream *pos, unsigned int inden
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-JsonSerializer::JsonSerializer( const char *fileName, int version, const char *sourceName )
+JsonSerializer::JsonSerializer( const char *fileFullPath, int version, const char *sourceName )
 {
-	_fileName = fileName;
+	_fileFullPath = fileFullPath;
 	_version = version;
 	_sourceName = sourceName;
 }
@@ -579,6 +581,25 @@ void JsonSerializer::setProperty( Object::Ptr obj, const std::string &name, cons
 	obj->set( name, value );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+std::string JsonSerializer::getFileName()
+{
+	if( _fileFullPath.size() <= 0 ) return std::string();
+
+	boost::filesystem::path path( _fileFullPath );
+	return path.stem().string();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::string JsonSerializer::getFileDir()
+{
+	if( _fileFullPath.size() <= 0 ) return std::string();
+
+	boost::filesystem::path path( _fileFullPath );
+	return path.parent_path().string();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // core
 }
 // lfx

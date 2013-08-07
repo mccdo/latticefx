@@ -32,7 +32,6 @@
 #include <osg/MatrixTransform>
 
 #include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
 
 //#include <iostream>
 #include <fstream>
@@ -817,7 +816,7 @@ bool DataSet::loadPipeline( IObjFactory *objf, const std::string &filePath, std:
 
 	try
 	{
-		JsonSerializer js;
+		JsonSerializer js( filePath.c_str() );
 		if( !js.load( strJson ) )
 		{ 
 			if (perr) *perr =  std::string( "Json does not appear to be valid in file: " ) + filePath;
@@ -884,9 +883,7 @@ bool DataSet::savePipeline( const std::string &filePath, std::string *perr )
 			return false;
 		}
 
-		boost::filesystem::path path( filePath );
-		const char *fileName = path.stem().string().c_str();
-		JsonSerializer js( fileName );
+		JsonSerializer js( filePath.c_str() );
 		serialize( &js );
 
 		js.toStream( &file );
