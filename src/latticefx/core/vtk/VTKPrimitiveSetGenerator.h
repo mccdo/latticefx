@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
-#ifndef __LATTICEFX_CORE_VTK_BASE_RTP_OPERATION_H__
-#define __LATTICEFX_CORE_VTK_BASE_RTP_OPERATION_H__ 1
+#ifndef __LATTICEFX_CORE_VTK_PRIMITIVE_SET_GENERATOR_H__
+#define __LATTICEFX_CORE_VTK_PRIMITIVE_SET_GENERATOR_H__ 1
 
 #include <latticefx/core/SurfaceRenderer.h>
 
@@ -50,6 +50,12 @@ class LATTICEFX_CORE_VTK_EXPORT VTKPrimitiveSetGenerator : public lfx::core::Pri
 public:
 
     ///Default constructor
+	VTKPrimitiveSetGenerator()    :
+        lfx::core::PrimitiveSetGenerator(),
+        m_triStrips( vtkCellArray::New() )
+    {
+    }
+
     VTKPrimitiveSetGenerator( vtkCellArray* const strips )
         :
         lfx::core::PrimitiveSetGenerator(),
