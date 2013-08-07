@@ -21,6 +21,7 @@
 #include <latticefx/core/PluginManager.h>
 #include <latticefx/core/OperationBase.h>
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/ObjFactoryCore.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
 
@@ -105,7 +106,8 @@ int main()
         }
 
         DataSet newDataSet;
-        if( !newDataSet.loadPipeline( plug, file, &err ) )
+		ObjFactoryCore objf( plug );
+        if( !newDataSet.loadPipeline( &objf, file, &err ) )
         {
             LFX_ERROR_STATIC( logstr, "Json Serialization: Failed to load the pipeline: " + err );
             return( 1 );
