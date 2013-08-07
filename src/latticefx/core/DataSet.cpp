@@ -32,6 +32,8 @@
 #include <osg/MatrixTransform>
 
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+
 //#include <iostream>
 #include <fstream>
 
@@ -882,7 +884,9 @@ bool DataSet::savePipeline( const std::string &filePath, std::string *perr )
 			return false;
 		}
 
-		JsonSerializer js;
+		boost::filesystem::path path( filePath );
+		const char *fileName = path.stem().string().c_str();
+		JsonSerializer js( fileName );
 		serialize( &js );
 
 		js.toStream( &file );
