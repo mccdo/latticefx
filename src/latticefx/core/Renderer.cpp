@@ -21,15 +21,24 @@
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/JsonSerializer.h>
+#include <latticefx/core/RawImg.h>
 
 #include <osg/Image>
 #include <osg/Texture1D>
 #include <osg/Texture2D>
 #include <osg/Texture3D>
 #include <osgDB/FileUtils>
+#include <osgDB/WriteFile>
+#include <osgDB/ReadFile>
 #include <osg/io_utils>
 
+#include <fstream>
+
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include <Poco/Platform.h>
 
 
@@ -37,6 +46,7 @@ namespace lfx
 {
 namespace core
 {
+
 
 
 Renderer::Renderer( const std::string logNameSuffix, const std::string& logName )
@@ -655,12 +665,41 @@ void Renderer::serializeData( JsonSerializer *json ) const
 	// let the parent write its data
 	OperationBase::serializeData( json );
 
+	std::string tfimgFile = "";
+
+	if( _tfImage )
+	{
+		tfimgFile = json->getFileName();
+		tfimgFile = tfimgFile + "-tf-[00].rawosg";
+
+		boost::filesystem::path pfile( tfimgFile ), pdir( json->getFileDir() );
+		boost::filesystem::path ptfimg = pdir / pfile;
+	
+		std::ofstream ofs( ptfimg.string() );
+		RawImg img( _tfImage.get() );
+		// save data to archive
+		{
+			boost::archive::text_oarchive oa(ofs);
+			oa << img;
+		}
+
+		/*
+		if( !osgDB::writeImageFile( *_tfImage, ptfimg.string() ) )
+		{
+			// TODO: need and error string
+			LFX_ERROR( "Renderer::serializeData: Failed to save the transfer function image to file: " + ptfimg.string() + "." );
+			//tfimgFile = "";
+		}
+		*/
+	}
+
 	json->insertObj( Renderer::getClassName(), true);
 	json->insertObjValue( "baseUnit",  _baseUnit );
 	json->insertObjValue( "tfInputName",  _tfInputName );
 	serialize( json, "tfRange", _tfRange );
 	json->insertObjValue( "tfDest",  getEnumName( _tfDest ) );
 	serialize( json, "tfDestMask", _tfDestMask );
+	json->insertObjValue( "tfImage00",  tfimgFile );
 	json->insertObjValue( "hmSource",  getEnumName( _hmSource ) );
 	json->insertObjValue( "_hmInputName",  _hmInputName );
 	json->insertObjValue( "_hmReference",  _hmReference );
@@ -707,6 +746,38 @@ bool Renderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::strin
 		json->popParent();
 		return false;
 	}
+
+	std::string tfimgFile;
+	json->getValue( "tfImage00",  &tfimgFile );
+
+	if( tfimgFile.size() > 0 )
+	{
+		boost::filesystem::path pfile( tfimgFile ), pdir( json->getFileDir() );
+		boost::filesystem::path ptfimg = pdir / pfile;
+
+		RawImg img;
+		{
+			// create and open an archive for input
+			std::ifstream ifs( ptfimg.string() );
+			boost::archive::text_iarchive ia(ifs);
+			ia >> img;
+		}
+
+		_tfImage = img.get();
+
+		/*
+		osg::Image* image( osgDB::readImageFile( ptfimg.string() ) );
+		if( image == NULL )
+		{
+			if (perr) *perr = std::string("Json: Renderer: Failed to load tfImage00 image: ") + ptfimg.string();
+		}
+		else
+		{
+			_tfImage = osg::ref_ptr< osg::Image >(image);
+		}
+		*/
+	}
+
 
 	json->popParent();
 	return true;
@@ -851,6 +922,19 @@ void Renderer::dumpState( std::ostream &os )
 	if( _tfImage )
 	{
 		os << "_tfImage: " << _tfImage->getName() << std::endl;
+		os << "  pixel format: " << _tfImage->getPixelFormat() << std::endl;
+		os << "  dataType: " << _tfImage->getDataType() << std::endl;
+		os << "  internal format: " << _tfImage->getInternalTextureFormat() << std::endl;
+		os << "  total size: " << _tfImage->getTotalSizeInBytes() << std::endl;
+		os << "  image size: " << _tfImage->getImageSizeInBytes() << std::endl;
+		os << "  row size in bytes: " << _tfImage->getRowSizeInBytes() << std::endl;
+		os << "  width: " << _tfImage->s() << std::endl;
+		os << "  height: " << _tfImage->t() << std::endl;
+		os << "  depth: " << _tfImage->r() << std::endl;
+		os << "  num mipmap levels: " << _tfImage->getNumMipmapLevels() << std::endl;
+		os << "  packing: " << _tfImage->getPacking() << std::endl;
+		os << "  pixel aspect ratio: " << _tfImage->getPixelAspectRatio() << std::endl;
+		os << "  pixel size in bits: " << _tfImage->getPixelSizeInBits() << std::endl;
 	}
 	else
 	{

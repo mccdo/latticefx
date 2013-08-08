@@ -33,12 +33,6 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include <osgwTools/SerializerSupport.h>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization//base_object.hpp>
-#include <boost/serialization/nvp.hpp>
-
 #include <list>
 #include <map>
 #include <string>
@@ -573,27 +567,6 @@ protected:
     float _hmEpsilon;
     unsigned int _hmOperator;
 
-
-private:
-
-	/*
-    friend class boost::serialization::access;
-
-    template< class Archive >
-    void serialize( Archive& ar, const unsigned int version )
-    {
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( OperationBase );
-        ar& BOOST_SERIALIZATION_NVP( _baseUnit );
-        ar& BOOST_SERIALIZATION_NVP( _tfInputName );
-        ar& BOOST_SERIALIZATION_NVP( _tfRange );
-        ar& BOOST_SERIALIZATION_NVP( _tfDest );
-        ar& BOOST_SERIALIZATION_NVP( _tfDestMask );
-        ar& BOOST_SERIALIZATION_NVP( _hmSource );
-        ar& BOOST_SERIALIZATION_NVP( _hmInputName );
-        ar& BOOST_SERIALIZATION_NVP( _hmReference );
-        ar& BOOST_SERIALIZATION_NVP( _hmOperator );
-    }
-	*/
 };
 
 
@@ -605,10 +578,6 @@ typedef std::list< RendererPtr > RendererList;
 }
 // lfx
 }
-
-
-BOOST_CLASS_VERSION( lfx::core::Renderer, 0 );
-
 
 // __LFX_CORE_RENDERER_H__
 #endif
