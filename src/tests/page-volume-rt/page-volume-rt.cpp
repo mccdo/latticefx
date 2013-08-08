@@ -34,6 +34,8 @@
 #include <latticefx/core/TransferFunctionUtils.h>
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/PluginManager.h>
+#include <latticefx/core/ObjFactoryCore.h>
 
 #include <latticefx/core/DBDisk.h>
 
@@ -74,11 +76,11 @@ osg::Node* createClipSubgraph()
     return( cn );
 }
 
-DataSetPtr prepareVolume( const osg::Vec3& dims,
+DataSetPtr prepareVolume2( const osg::Vec3& dims,
                           const std::string& csFile, const std::string& diskPath,
-                          const bool useIso, const float isoVal, const bool nopage )
+                          const bool useIso, const float isoVal, const bool nopage, const bool loadPipeline )
 {
-    DataSetPtr dsp( new DataSet() );
+	DataSetPtr dsp( new DataSet() );
 
     DBBasePtr dbBase;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -116,6 +118,28 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
     }
     dsp->setDB( dbBase );
 
+	if (loadPipeline)
+	{
+		std::string err;
+		// Add additional plugin search paths.
+		PluginManager* plug( PluginManager::instance() );
+		if( plug == NULL )
+		{
+			LFX_ERROR_STATIC( logstr, "Failure: NULL PluginManager." );
+			return( DataSetPtr() );
+		}
+		plug->loadConfigFiles();
+
+		ObjFactoryCore objf( plug );
+		if( !dsp->loadPipeline( &objf, "page-volume-rt.json", &err ) )
+		{
+			LFX_FATAL_STATIC( logstr, err );
+			LFX_FATAL_STATIC( logstr, "Serialization load failed" );
+			return( DataSetPtr() );
+		} 
+
+		return( dsp );
+	}
 
     LoadHierarchyPtr loader( new LoadHierarchy() );
     if( nopage )
@@ -148,7 +172,45 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
         renderOp->setHardwareMaskEpsilon( 0.02 );
     }
 
-    return( dsp );
+	return( dsp );
+}
+
+DataSetPtr prepareVolume( const osg::Vec3& dims,
+                          const std::string& csFile, const std::string& diskPath,
+                          const bool useIso, const float isoVal, const bool nopage, const bool serialize )
+{
+	DataSetPtr dsp = prepareVolume2( dims, csFile, diskPath, useIso, isoVal, nopage, false );
+	if( !dsp ) return( dsp );
+	if( !serialize ) return( dsp );
+
+	// debug
+	std::ofstream osPre, osPst;
+	osPre.open( "DataSetDumpPre.txt" );
+	osPst.open( "DataSetDumpPst.txt" );
+	dsp->dumpState( osPre );
+	osPre.close();
+
+	osg::ref_ptr< osg::Image > img = dsp->getRenderer()->getTransferFunction();
+
+	// test serailization by saving the pipeline and then reloading it to test if all settings are restored.
+	std::string err;
+	if( !dsp->savePipeline( "page-volume-rt.json", &err ) )
+	{
+		LFX_FATAL_STATIC( logstr, err );
+		LFX_FATAL_STATIC( logstr, "Serialization save failed" );
+		return( DataSetPtr() );
+	}
+
+	dsp = prepareVolume2( dims, csFile, diskPath, useIso, isoVal, nopage, true );
+	if( !dsp ) return dsp;
+
+	// debug
+	//dsp->getRenderer()->setTransferFunction(img.get());
+	dsp->dumpState( osPst );
+	osPst.close();
+	
+
+	return( dsp );
 }
 
 
@@ -359,7 +421,8 @@ int main( int argc, char** argv )
 #endif
 
 
-    Log::instance()->setPriority( Log::PrioInfo, Log::Console );
+	Log::instance()->setPriority( Log::PrioTrace, Log::Console );
+    //Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     //Log::instance()->setPriority( Log::PrioTrace, "lfx.core.page" );
 
     osg::ArgumentParser arguments( &argc, argv );
@@ -372,6 +435,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-iso <x>\tDisplay as an isosurface." );
     LFX_CRITICAL_STATIC( logstr, "-clip\tTest clip plane." );
     LFX_CRITICAL_STATIC( logstr, "-nopage\tDisable paging (all textures are stored in the scene graph)." );
+	LFX_CRITICAL_STATIC( logstr, "-ser\tTest serialization, by saving and then loading the render graph." );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -395,6 +459,7 @@ int main( int argc, char** argv )
 
     const bool clip( arguments.find( "-clip" ) > 0 );
     const bool nopage( arguments.find( "-nopage" ) > 0 );
+	const bool serialize( arguments.find( "-ser" ) > 0 );
 
     osgViewer::Viewer viewer;
     viewer.setThreadingModel( osgViewer::ViewerBase::CullDrawThreadPerContext );
@@ -411,7 +476,7 @@ int main( int argc, char** argv )
     RTTInfo rttInfo( setupStandardRTTRendering( viewer, scene ) );
     viewer.setUpViewInWindow( 20, 30, rttInfo.winSize.x(), rttInfo.winSize.y() );
 
-    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal, nopage ) );
+    DataSetPtr dsp( prepareVolume( dims, csFile, diskPath, useIso, isoVal, nopage, serialize ) );
     setupLfxVolumeRTRendering( rttInfo, viewer, dsp->getSceneData(), clip );
 
 
