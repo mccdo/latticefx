@@ -21,7 +21,6 @@
 #include <latticefx/core/Renderer.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/JsonSerializer.h>
-#include <latticefx/core/RawImg.h>
 
 #include <osg/Image>
 #include <osg/Texture1D>
@@ -36,8 +35,6 @@
 
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include <Poco/Platform.h>
 
@@ -670,27 +667,17 @@ void Renderer::serializeData( JsonSerializer *json ) const
 	if( _tfImage )
 	{
 		tfimgFile = json->getFileName();
-		tfimgFile = tfimgFile + "-tf-[00].rawosg";
+		tfimgFile = tfimgFile + "-tf-[00].ive";
 
 		boost::filesystem::path pfile( tfimgFile ), pdir( json->getFileDir() );
 		boost::filesystem::path ptfimg = pdir / pfile;
-	
-		std::ofstream ofs( ptfimg.string() );
-		RawImg img( _tfImage.get() );
-		// save data to archive
-		{
-			boost::archive::text_oarchive oa(ofs);
-			oa << img;
-		}
 
-		/*
 		if( !osgDB::writeImageFile( *_tfImage, ptfimg.string() ) )
 		{
 			// TODO: need and error string
 			LFX_ERROR( "Renderer::serializeData: Failed to save the transfer function image to file: " + ptfimg.string() + "." );
 			//tfimgFile = "";
 		}
-		*/
 	}
 
 	json->insertObj( Renderer::getClassName(), true);
@@ -755,17 +742,6 @@ bool Renderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::strin
 		boost::filesystem::path pfile( tfimgFile ), pdir( json->getFileDir() );
 		boost::filesystem::path ptfimg = pdir / pfile;
 
-		RawImg img;
-		{
-			// create and open an archive for input
-			std::ifstream ifs( ptfimg.string() );
-			boost::archive::text_iarchive ia(ifs);
-			ia >> img;
-		}
-
-		_tfImage = img.get();
-
-		/*
 		osg::Image* image( osgDB::readImageFile( ptfimg.string() ) );
 		if( image == NULL )
 		{
@@ -775,7 +751,6 @@ bool Renderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::strin
 		{
 			_tfImage = osg::ref_ptr< osg::Image >(image);
 		}
-		*/
 	}
 
 

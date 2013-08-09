@@ -43,7 +43,6 @@ set( _headerFiles
     PlayControlPtr.h
     PluginManager.h
     Preprocess.h
-    RawImg.h
     Renderer.h
     RTPOperation.h
     SurfaceRenderer.h
@@ -83,7 +82,6 @@ set( _sourceFiles
     PlayControl.cpp
     PluginManager.cpp
     Preprocess.cpp
-    RawImg.cpp
     Renderer.cpp
     RTPOperation.cpp
     SurfaceRenderer.cpp
