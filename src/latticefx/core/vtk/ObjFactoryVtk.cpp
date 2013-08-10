@@ -19,6 +19,7 @@
  *************** <auto-copyright.rb END do not edit this line> ***************/
 
 #include <latticefx/core/vtk/ObjFactoryVtk.h>
+#include <latticefx/core/vtk/VTKActorRenderer.h>
 #include <latticefx/core/vtk/VTKBaseRTP.h>
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/VTKIsoSurfaceRTP.h>
@@ -72,7 +73,11 @@ ObjBasePtr ObjFactoryVtk::createObj(const std::string &typeName, const ObjBase::
 
 ObjBasePtr ObjFactoryVtk::createVtkObj( const std::string &typeName, std::string *perr )
 {
-	if( !typeName.compare( "VTKBaseRTP" ) )
+	if( !typeName.compare( "VTKActorRenderer" ) )
+	{
+		return ObjBasePtr( new VTKActorRenderer() );
+	}
+	else if( !typeName.compare( "VTKBaseRTP" ) )
 	{
 		return ObjBasePtr( new VTKBaseRTP( RTPOperation::Undefined, "" ) );
 	}
