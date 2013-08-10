@@ -23,6 +23,7 @@
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/SurfaceRenderer.h>
 #include <latticefx/core/TransferFunctionUtils.h>
+#include <latticefx/core/PluginManager.h>
 
 #include <latticefx/core/Log.h>
 #include <latticefx/core/LogMacros.h>
@@ -43,6 +44,7 @@
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
 #include <latticefx/core/vtk/VTKIsoSurfaceRTP.h>
+#include <latticefx/core/vtk/ObjFactoryVtk.h>
 
 #include <osgViewer/Viewer>
 
@@ -131,11 +133,207 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     }
     return tempDataSet;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+bool loadPipeline( lfx::core::DataSetPtr dsp, const std::string &jsonfile )
+{
+	// load pipeline from json serialization
+
+	std::string err;
+	// Add additional plugin search paths.
+	lfx::core::PluginManager* plug( lfx::core::PluginManager::instance() );
+	if( plug == NULL )
+	{
+		std::cout << "Failure: NULL PluginManager.";
+		return( false );
+	}
+	plug->loadConfigFiles();
+
+	lfx::core::vtk::ObjFactoryVtk objf( plug );
+	if( !dsp->loadPipeline( &objf, jsonfile, &err ) )
+	{
+		std::cout << "Serialization load failed for file: " << jsonfile << endl;
+		std::cout << "Error: " << err << endl;
+		return( false );
+	} 
+
+	return( true );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool savePipeline( lfx::core::DataSetPtr dsp, const std::string &jsonfile )
+{
+	std::string err;
+	if( !dsp->savePipeline( jsonfile, &err ) )
+	{
+		std::cout << "Serialization load failed" << err << endl;
+		return( false );
+	}
+
+	return( true );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup, 
+									  lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr, 
+									  lfx::core::vtk::DataSetPtr tempDataSet,
+									  bool serialize, 
+									  bool loadPipeLine )
+{
+	//Create the DataSet for this visualization with VTK
+	lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
+	dsp->addChannel( dobjPtr );
+
+	// load pipeline from json serialization and return
+	if( loadPipeLine )
+	{
+		if( !loadPipeline( dsp, "vtk-surface-vol2.json" ) ) return lfx::core::DataSetPtr();
+
+		std::cout << "lfx...creating data from serialization..." << std::endl;
+		tempGroup->addChild( dsp->getSceneData() );
+		std::cout << "...finished creating data from serialization. " << std::endl;
+
+		return dsp;
+	}
+
+	lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
+
+
+#if 1
+	// test roi
+	std::vector<double> bounds;
+	bounds.resize(6);
+	tempDataSet->GetBounds(&bounds[0]);
+
+	bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2;
+	bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/2.;
+	//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/2.;
+	isosurfaceRTP->SetRoiBox(bounds);
+	isosurfaceRTP->ExtractBoundaryCells(true);
+#endif
+#if 0
+	isosurfaceRTP->SetRequestedValue( 500.0 );
+	isosurfaceRTP->SetActiveScalar( "200_to_1000" );
+#else
+	isosurfaceRTP->SetRequestedValue( 150.0 );
+	isosurfaceRTP->SetActiveScalar( "Momentum_magnitude" );
+#endif
+	isosurfaceRTP->addInput( "vtkDataObject" );
+	dsp->addOperation( isosurfaceRTP );
+
+	//Try the vtkActor renderer
+	lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
+#if 0
+	renderOp2->SetActiveVector( "steve's_vector" );
+	renderOp2->SetActiveScalar( "200_to_1000" );
+#else
+	renderOp2->SetActiveVector( "Momentum" );
+	renderOp2->SetActiveScalar( "Momentum_magnitude" );
+#endif
+	renderOp2->addInput( "vtkPolyDataMapper" );
+	renderOp2->addInput( "vtkDataObject" );
+	dsp->setRenderer( renderOp2 );
+
+	std::cout << "lfx...creating data..." << std::endl;
+	tempGroup->addChild( dsp->getSceneData() );
+	std::cout << "...finished creating data. " << std::endl;
+	renderOp2->dumpUniformInfo( std::cout );
+
+	if( serialize )
+	{
+		if( !savePipeline( dsp, "vtk-surface-vol2.json" ) ) return lfx::core::DataSetPtr();
+		return dsp;
+	}
+
+	return( dsp );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+lfx::core::DataSetPtr prepareVolume1(  osg::ref_ptr< osg::Group > tempGroup, 
+									  lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr, 
+									  lfx::core::vtk::DataSetPtr tempDataSet,
+									  bool serialize, 
+									  bool loadPipeLine )
+{
+	lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
+
+	//Create the DataSet for this visualization with VTK
+	dsp->addChannel( dobjPtr );
+
+	// load pipeline from json serialization and return
+	if( loadPipeLine )
+	{
+		if( !loadPipeline( dsp, "vtk-surface-vol1.json" ) ) return lfx::core::DataSetPtr();
+
+		std::cout << "lfx...creating data from serialization..." << std::endl;
+		tempGroup->addChild( dsp->getSceneData() );
+		std::cout << "...finished creating data from serialization. " << std::endl;
+
+		return dsp;
+	}
+	
+	lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
+	vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::Y_PLANE );
+	vectorRTP->SetRequestedValue( 50.0 );
+	vectorRTP->addInput( "vtkDataObject" );
+
+#if 1
+	// test roi
+	std::vector<double> bounds;
+	bounds.resize(6);
+	tempDataSet->GetBounds(&bounds[0]);
+
+	bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2.;
+	//bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/5.;
+	//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/5.;
+	vectorRTP->SetRoiBox(bounds);
+	vectorRTP->ExtractBoundaryCells(true);
+#endif
+
+	dsp->addOperation( vectorRTP );
+
+	//Try the vtkActor renderer
+	lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
+#if 0
+	renderOp->SetActiveVector( "steve's_vector" );
+	renderOp->SetActiveScalar( "200_to_1000" );
+#else
+	renderOp->SetActiveVector( "Momentum" );
+	renderOp->SetActiveScalar( "Momentum_magnitude" );
+#endif
+	renderOp->addInput( "vtkPolyDataMapper" );
+	renderOp->addInput( "vtkDataObject" );
+	dsp->setRenderer( renderOp );
+
+	std::cout << "lfx...creating data..." << std::endl;
+	tempGroup->addChild( dsp->getSceneData() );
+	std::cout << "...finished creating data. " << std::endl;
+	renderOp->dumpUniformInfo( std::cout );
+
+	if( serialize )
+	{
+		if( !savePipeline( dsp, "vtk-surface-vol1.json" ) ) return lfx::core::DataSetPtr();
+		return dsp;
+	}
+
+	return( dsp );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 int main( int argc, char** argv )
 {
     Log::instance()->setPriority( Log::PrioInfo, Log::Console );
     Log::instance()->setPriority( Log::PrioInfo, "lfx.core.hier" );
+
+	bool serialize = false;
+	if (argc < 2) return false;
+	if (argc > 2)
+	{
+		if( !strcmp(argv[2], "-ser") )
+		{
+			serialize = true;
+		}
+	}
 
     //Pre work specific to VTK
     vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
@@ -152,6 +350,44 @@ int main( int argc, char** argv )
     //just one instance of it
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
 
+	lfx::core::DataSetPtr dsp1;
+	if( serialize )
+	{
+		// debug
+		std::ofstream osPre1, osPst1, osPre2, osPst2;
+		osPre1.open( "DataSetDumpPreVol1.txt" );
+		osPst1.open( "DataSetDumpPstVol1.txt" );
+		osPre2.open( "DataSetDumpPreVol2.txt" );
+		osPst2.open( "DataSetDumpPstVol2.txt" );
+
+		osg::ref_ptr< osg::Group > grp = new osg::Group();
+		lfx::core::DataSetPtr dsp2;
+		dsp1 = prepareVolume1( grp, dobjPtr, tempDataSet, true, false );
+		if( dsp1 == NULL ) return -1;
+		dsp2 = prepareVolume2( grp, dobjPtr, tempDataSet, true, false );
+		if( dsp2 == NULL ) return -1;
+
+		// debug
+		dsp1->dumpState( osPre1 );
+		dsp2->dumpState( osPre2 );
+		
+
+		dsp1 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, true );
+		if( dsp1 == NULL ) return -1;
+		dsp2 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, true );
+		if( dsp2 == NULL ) return -1;
+
+		// debug
+		dsp1->dumpState( osPst1 );
+		dsp2->dumpState( osPst2 );
+	}
+	else
+	{
+		dsp1 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
+		prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
+	}
+
+	/*
     lfx::core::DataSetPtr dsp1( new lfx::core::DataSet() );
     {
         //Create the DataSet for this visualization with VTK
@@ -237,13 +473,14 @@ int main( int argc, char** argv )
 #endif
         renderOp2->addInput( "vtkPolyDataMapper" );
         renderOp2->addInput( "vtkDataObject" );
-        dsp->setRenderer( renderOp2 );
+        dsp->setRenderer( renderOp2 );h
 
-        std::cout << "lfx...creating data..." << std::endl;
+        std::cout << "lfx...creating data..." << std::endl;6
         tempGroup->addChild( dsp->getSceneData() );
         std::cout << "...finished creating data. " << std::endl;
         renderOp2->dumpUniformInfo( std::cout );
     }
+	*/
 
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
