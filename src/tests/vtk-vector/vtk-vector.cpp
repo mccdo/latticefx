@@ -18,6 +18,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/DataSet.h>
+#include <latticefx/core/PluginManager.h>
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
@@ -25,6 +26,7 @@
 #include <latticefx/core/vtk/VTKVectorRenderer.h>
 #include <latticefx/core/vtk/VTKActorRenderer.h>
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
+#include <latticefx/core/vtk/ObjFactoryVtk.h>
 
 #include <osgViewer/Viewer>
 
@@ -97,19 +99,12 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     }
     return tempDataSet;
 }
-////////////////////////////////////////////////////////////////////////////////
-int main( int argc, char** argv )
+
+lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool loadPipeline,  lfx::core::vtk::DataSetPtr &tempDataSet)
 {
-    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
-    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
-
-    //Pre work specific to VTK
-    vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
-    vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
-    prototype->Delete();
-
-    //Load the VTK data
-    lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
+	//Load the VTK data
+    //lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( dsFile ) );
+	tempDataSet = LoadDataSet( dsFile );
 
     //Create the DataSet for this visualization with VTK
     lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
@@ -117,6 +112,29 @@ int main( int argc, char** argv )
     //1st Step
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
     dsp->addChannel( dobjPtr );
+
+	// load pipeline from json serialization
+	if( loadPipeline )
+	{
+		std::string err;
+		// Add additional plugin search paths.
+		lfx::core::PluginManager* plug( lfx::core::PluginManager::instance() );
+		if( plug == NULL )
+		{
+			std::cout << "Failure: NULL PluginManager.";
+			return( lfx::core::DataSetPtr() );
+		}
+		plug->loadConfigFiles();
+
+		lfx::core::vtk::ObjFactoryVtk objf( plug );
+		if( !dsp->loadPipeline( &objf, "vtk-vector.json", &err ) )
+		{
+			std::cout << "Serialization load failed" << err << endl;
+			return( lfx::core::DataSetPtr() );
+		} 
+
+		return( dsp );
+	}
 
     lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
     vectorRTP->SetRequestedValue( 50.0 );
@@ -139,14 +157,14 @@ int main( int argc, char** argv )
 		double quarterx = fabs(bounds[1] - bounds[0])/4.; 
 		double quartery = fabs(bounds[3] - bounds[2])/4.; 
 		double quarterz = fabs(bounds[5] - bounds[4])/4.;
-
+	
 		bounds[0] += quarterx;
 		bounds[1] -= quarterx;
 		bounds[2] += quartery;
 		bounds[3] -= quartery;
 		bounds[4] += quarterz;
 		bounds[5] -= quarterz;
-		*/
+		*/	
 
 
 		vectorRTP->SetRoiBox(bounds);
@@ -173,9 +191,78 @@ int main( int argc, char** argv )
     renderOp->addInput( "vtkPolyDataMapper" );
     dsp->setRenderer( renderOp );
 
+	if( serialize )
+	{
+		std::string err;
+		if( !dsp->savePipeline( "vtk-vector.json", &err ) )
+		{
+			std::cout << "Serialization load failed" << err << endl;
+			return( lfx::core::DataSetPtr() );
+		}
+	}
+
+	/*
     std::cout << "lfx...creating data..." << std::endl;
     osg::Node* sceneNode = dsp->getSceneData();
     std::cout << "...finished creating data. " << std::endl;
+	*/
+
+	return dsp;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int main( int argc, char** argv )
+{
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
+    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
+
+	bool serialize = false;
+	if (argc < 2) return false;
+	if (argc > 2)
+	{
+		if( !strcmp(argv[2], "-ser") )
+		{
+			serialize = true;
+		}
+	}
+
+    //Pre work specific to VTK
+    vtkCompositeDataPipeline* prototype = vtkCompositeDataPipeline::New();
+    vtkAlgorithm::SetDefaultExecutivePrototype( prototype );
+    prototype->Delete();
+	 
+	lfx::core::DataSetPtr dsp;
+	lfx::core::vtk::DataSetPtr tempDataSet;
+
+	if( serialize )
+	{
+		// debug
+		std::ofstream osPre, osPst;
+		osPre.open( "DataSetDumpPre.txt" );
+		osPst.open( "DataSetDumpPst.txt" );
+
+		dsp = prepareVolume( argv[1], true, false, tempDataSet );
+		if( dsp == NULL ) return -1;
+
+		// debug
+		dsp->dumpState( osPre );
+		osPre.close();
+
+		dsp = prepareVolume( argv[1], false, true, tempDataSet );
+
+		// debug
+		dsp->dumpState( osPst );
+		osPst.close();
+	}
+	else
+	{
+		dsp = prepareVolume( argv[1], false, false, tempDataSet );
+	}
+
+	
+	if( dsp == NULL ) return -1;
+
+    osg::Node* sceneNode = dsp->getSceneData();
 
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
