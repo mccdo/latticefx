@@ -100,7 +100,7 @@ lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
     return tempDataSet;
 }
 
-lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool loadPipeline,  lfx::core::vtk::DataSetPtr &tempDataSet)
+lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool loadPipeline,  lfx::core::vtk::DataSetPtr &tempDataSet )
 {
 	//Load the VTK data
     //lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( dsFile ) );
@@ -249,6 +249,7 @@ int main( int argc, char** argv )
 		osPre.close();
 
 		dsp = prepareVolume( argv[1], false, true, tempDataSet );
+		if( dsp == NULL ) return -1;
 
 		// debug
 		dsp->dumpState( osPst );
