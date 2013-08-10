@@ -87,7 +87,7 @@ Derived classes might want to add additional functionality, such as the
 point rendering styles supported by VectorRenderer (see
 VectorRenderer::setPointStyle()). Alternatively, OperationBase supports
 a name-value pair interface for passing control parameters. This is
-particularly useful if the derived Renderer is to be loaded from a plugin,
+particularly useful if the derived Renderer is to be loaded from a plugin, 
 in which case compile-time access to public methods is not available.
 
 LatticeFX and the Renderer base class provide several tools and utilities to

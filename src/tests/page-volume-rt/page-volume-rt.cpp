@@ -172,6 +172,8 @@ DataSetPtr prepareVolume2( const osg::Vec3& dims,
         renderOp->setHardwareMaskEpsilon( 0.02 );
     }
 
+
+
 	return( dsp );
 }
 
@@ -205,7 +207,6 @@ DataSetPtr prepareVolume( const osg::Vec3& dims,
 	if( !dsp ) return dsp;
 
 	// debug
-	//dsp->getRenderer()->setTransferFunction(img.get());
 	dsp->dumpState( osPst );
 	osPst.close();
 	
