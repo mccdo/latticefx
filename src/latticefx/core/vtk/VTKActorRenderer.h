@@ -65,6 +65,9 @@ public:
         ;
     }
 
+	///Get a string name for this class
+	virtual std::string getClassName() const { return std::string( "VTKActorRenderer" ); }
+
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use
     void SetActiveVector( const std::string& activeVector );
@@ -77,7 +80,13 @@ public:
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
+
+	virtual void serializeData( JsonSerializer *json ) const;
+	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
     ///The active vector to set which vector to use for rendering
     std::string m_activeVector;
     ///The active scalar to set which scalar to use for rendering

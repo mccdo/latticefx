@@ -125,6 +125,50 @@ osg::Node* VTKActorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mask
 
     return( tempGeode.release() );
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKActorRenderer::serializeData( JsonSerializer *json ) const
+{
+	// let the parent write its data
+	Renderer::serializeData( json );
+	
+	json->insertObj( VTKActorRenderer::getClassName(), true);
+	json->insertObjValue( "activeVector",  m_activeVector );
+	json->insertObjValue( "activeScalar",  m_activeScalar );
+	json->popParent();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKActorRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr )
+{
+	// let the parent load its data
+	if ( !Renderer::loadData( json, pfactory, perr )) return false;
+
+	// get to this classes data
+	if ( !json->getObj( VTKActorRenderer::getClassName() ) )
+	{
+		if (perr) *perr = "Json: Failed to get VTKActorRenderer data";
+		return false;
+	}
+
+	json->getValue( "activeVector",  &m_activeVector );
+	json->getValue( "activeScalar",  &m_activeScalar );
+	json->popParent();
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKActorRenderer::dumpState( std::ostream &os )
+{
+	Renderer::dumpState( os );
+
+	dumpStateStart( VTKActorRenderer::getClassName(), os );
+	os << "_activeVector: " << m_activeVector << std::endl;
+	os << "_activeScalar: " << m_activeScalar << std::endl;
+	dumpStateEnd( VTKActorRenderer::getClassName(), os );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 }
 }
