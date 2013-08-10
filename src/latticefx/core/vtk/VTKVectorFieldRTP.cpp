@@ -120,6 +120,16 @@ bool VTKVectorFieldRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVectorFieldRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKVectorFieldRTP::getClassName(), os );
+	os << "_mask: " << m_mask << std::endl;
+	dumpStateEnd( VTKVectorFieldRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

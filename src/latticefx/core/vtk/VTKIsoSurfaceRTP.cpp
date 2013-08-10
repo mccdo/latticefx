@@ -154,6 +154,16 @@ bool VTKIsoSurfaceRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, st
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKIsoSurfaceRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKIsoSurfaceRTP::getClassName(), os );
+	// no data
+	dumpStateEnd( VTKIsoSurfaceRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

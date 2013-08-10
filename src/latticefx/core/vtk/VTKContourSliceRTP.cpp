@@ -218,6 +218,16 @@ bool VTKContourSliceRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKContourSliceRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKContourSliceRTP::getClassName(), os );
+	// no data
+	dumpStateEnd( VTKContourSliceRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

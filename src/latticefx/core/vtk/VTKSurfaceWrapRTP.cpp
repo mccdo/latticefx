@@ -115,6 +115,16 @@ bool VTKSurfaceWrapRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceWrapRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKSurfaceWrapRTP::getClassName(), os );
+	// add anydata here
+	dumpStateEnd( VTKSurfaceWrapRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

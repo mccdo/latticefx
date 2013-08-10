@@ -105,6 +105,16 @@ bool VTKPrimitiveSetGenerator::loadData( JsonSerializer *json, IObjFactory *pfac
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKPrimitiveSetGenerator::dumpState( std::ostream &os )
+{
+	PrimitiveSetGenerator::dumpState( os );
+
+	dumpStateStart( VTKPrimitiveSetGenerator::getClassName(), os );
+	// add any data here
+	dumpStateEnd( VTKPrimitiveSetGenerator::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

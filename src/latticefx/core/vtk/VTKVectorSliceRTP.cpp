@@ -142,6 +142,16 @@ bool VTKVectorSliceRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVectorSliceRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKVectorSliceRTP::getClassName(), os );
+	// add any data here
+	dumpStateEnd( VTKVectorSliceRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

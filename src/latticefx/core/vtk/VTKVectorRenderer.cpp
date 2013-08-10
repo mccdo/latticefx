@@ -194,6 +194,17 @@ bool VTKVectorRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVectorRenderer::dumpState( std::ostream &os )
+{
+	VectorRenderer::dumpState( os );
+
+	dumpStateStart( VTKVectorRenderer::getClassName(), os );
+	os << "_activeVector: " << m_activeVector << std::endl;
+	os << "_activeScalar: " << m_activeScalar << std::endl;
+	dumpStateEnd( VTKVectorRenderer::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

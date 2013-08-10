@@ -204,6 +204,29 @@ bool VTKBaseRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, std::str
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::dumpState( std::ostream &os )
+{
+	RTPOperation::dumpState( os );
+
+	dumpStateStart( VTKBaseRTP::getClassName(), os );
+	os << "_requestedValue: " << m_requestedValue << std::endl;
+	os << "_minScalarValue: " << m_minScalarValue << std::endl;
+	os << "_maxScalarValue: " << m_maxScalarValue << std::endl;
+	os << "_activeScalar: " << m_activeScalar << std::endl;
+	os << "_activeVector: " << m_activeVector << std::endl;
+	os << "_mask: " << m_mask << std::endl;
+	os << "_roiExtractBoundaryCells: " << m_roiExtractBoundaryCells << std::endl;
+	os << "_planeDirection " << CuttingPlane::getEnumName( m_planeDirection ) << std::endl;
+	os << "_roiBox size: " << m_roiBox.size() << std::endl;
+	for( unsigned int i=0; i < m_roiBox.size(); i++ )
+	{
+		os << "_roiBox[" << i << "]: " << m_roiBox[i] << std::endl;
+	}
+
+	dumpStateEnd( VTKBaseRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

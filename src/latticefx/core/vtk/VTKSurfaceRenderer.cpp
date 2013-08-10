@@ -314,6 +314,18 @@ bool VTKSurfaceRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKSurfaceRenderer::dumpState( std::ostream &os )
+{
+	SurfaceRenderer::dumpState( os );
+
+	dumpStateStart( VTKSurfaceRenderer::getClassName(), os );
+	os << "_activeVector: " << m_activeVector << std::endl;
+	os << "_activeScalar: " << m_activeScalar << std::endl;
+	os << "_colorByScalar: " << m_colorByScalar << std::endl;
+	dumpStateEnd( VTKSurfaceRenderer::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

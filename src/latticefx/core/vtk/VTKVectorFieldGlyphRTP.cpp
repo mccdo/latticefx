@@ -131,6 +131,16 @@ bool VTKVectorFieldGlyphRTP::loadData( JsonSerializer *json, IObjFactory *pfacto
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKVectorFieldGlyphRTP::dumpState( std::ostream &os )
+{
+	VTKBaseRTP::dumpState( os );
+
+	dumpStateStart( VTKVectorFieldGlyphRTP::getClassName(), os );
+	os << "_mask: " << m_mask << std::endl;
+	dumpStateEnd( VTKVectorFieldGlyphRTP::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 }
 }
 }

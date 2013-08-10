@@ -72,6 +72,8 @@ public:
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
 
 	virtual void serializeData( JsonSerializer *json ) const;

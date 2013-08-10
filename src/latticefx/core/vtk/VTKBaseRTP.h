@@ -99,6 +99,8 @@ public:
 
 	void ExtractBoundaryCells(bool extract) { m_roiExtractBoundaryCells = extract; }
 
+	virtual void dumpState( std::ostream &os );
+
 protected:
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkDataObject *pdo);
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkAlgorithmOutput* pOutPin);
