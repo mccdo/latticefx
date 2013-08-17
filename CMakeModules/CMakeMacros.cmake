@@ -121,7 +121,9 @@ macro( _addLibrary _category _libName )
 
     _splitList( LATTICEFX_LIBRARIES sources libs ${ARGN} )
 
-    if( ( ${_category} STREQUAL "Plugin" ) OR BUILD_SHARED_LIBS )
+    if( ${_category} STREQUAL "Plugin" )
+        add_library( ${_libName} MODULE ${sources} )
+    elif( BUILD_SHARED_LIBS )
         add_library( ${_libName} SHARED ${sources} )
     else()
         add_library( ${_libName} ${sources} )
