@@ -125,8 +125,12 @@ macro( _addLibrary _category _libName )
         add_library( ${_libName} MODULE ${sources} )
     elseif( BUILD_SHARED_LIBS )
         add_library( ${_libName} SHARED ${sources} )
+        set_target_properties( ${_libName} PROPERTIES VERSION ${LATTICEFX_VERSION} )
+        set_target_properties( ${_libName} PROPERTIES SOVERSION ${LATTICEFX_VERSION} )
     else()
         add_library( ${_libName} ${sources} )
+        set_target_properties( ${_libName} PROPERTIES VERSION ${LATTICEFX_VERSION} )
+        set_target_properties( ${_libName} PROPERTIES SOVERSION ${LATTICEFX_VERSION} )
     endif()
 
     target_link_libraries( ${_libName}
@@ -135,8 +139,6 @@ macro( _addLibrary _category _libName )
         ${_optionalDependencyLibraries}
     )
 
-    set_target_properties( ${_libName} PROPERTIES VERSION ${LATTICEFX_VERSION} )
-    set_target_properties( ${_libName} PROPERTIES SOVERSION ${LATTICEFX_VERSION} )
     set_target_properties( ${_libName} PROPERTIES PROJECT_LABEL "${_category} ${_libName}" )
 
     include( ModuleInstall REQUIRED )
