@@ -37,11 +37,11 @@
 
 #include <osg/ref_ptr>
 
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization/nvp.hpp>
+//#include <boost/serialization/access.hpp>
+//#include <boost/serialization/list.hpp>
+//#include <boost/serialization/shared_ptr.hpp>
+//#include <boost/serialization/version.hpp>
+//#include <boost/serialization/nvp.hpp>
 
 #include <string>
 #include <list>
@@ -94,6 +94,9 @@ public:
 
 	virtual bool loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr=NULL );
 	virtual bool savePipeline( const std::string &filePath, std::string *perr=NULL );
+
+	std::string getName() { return _name; }
+	void setName(const std::string &name) { _name = name; }
 
     /** \name Data Section
     \details TBD */
@@ -295,6 +298,11 @@ public:
 
 	virtual void dumpState( std::ostream &os );
 
+	///Accessor methods to store and query the uuids for specfic
+    ///attributes of a DataSet
+    void setUUID( const std::string& attribute, const std::string& uuid );
+    const std::string getUUID( const std::string& attribute );
+
     ///\}
 
 protected:
@@ -318,12 +326,17 @@ protected:
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
+	std::string _name;
+
     typedef std::map< TimeValue, ChannelDataList > ChannelDataTimeMap;
     ChannelDataTimeMap _data;
 
     typedef std::set< std::string > StringSet;
     /** Set of unique ChannelData names. */
     StringSet _dataNames;
+
+	/** To store and query the uuids for specfic attributes of a DataSet */
+	std::map< std::string, std::string > _dataSetUUIDMap;
 
     DBBasePtr _db;
 
@@ -362,7 +375,7 @@ typedef std::list< DataSetPtr > DataSetList;
 }
 
 
-BOOST_CLASS_VERSION( lfx::core::DataSet, 0 );
+//BOOST_CLASS_VERSION( lfx::core::DataSet, 0 );
 
 
 // __LFX_CORE_DATA_SET_H__

@@ -65,6 +65,7 @@ DataSet::DataSet( const DataSet& rhs )
 }
 DataSet::~DataSet()
 {
+	_dataSetUUIDMap.clear();
 }
 
 void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue time )
@@ -1032,6 +1033,27 @@ void DataSet::dumpState( std::ostream &os )
 	os << "_dirty: " << _dirty << std::endl;
 
 	dumpStateEnd( DataSet::getClassName(), os );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void DataSet::setUUID( const std::string& attribute, const std::string& uuid )
+{
+    _dataSetUUIDMap[ attribute ] = uuid;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+const std::string DataSet::getUUID( const std::string& attribute )
+{
+    std::map< std::string, std::string >::iterator iter;
+    iter = _dataSetUUIDMap.find( attribute );
+    if( iter == _dataSetUUIDMap.end() )
+    {
+        return std::string( "" );
+    }
+    else
+    {
+        return iter->second;
+    }
 }
 
 // core
