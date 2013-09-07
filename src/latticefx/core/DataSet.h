@@ -92,11 +92,16 @@ public:
 
 	virtual std::string getClassName() const { return std::string( "DataSet" ); }
 
-	virtual bool loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr=NULL );
-	virtual bool savePipeline( const std::string &filePath, std::string *perr=NULL );
 
 	std::string getName() { return _name; }
 	void setName(const std::string &name) { _name = name; }
+
+	bool loadFromCrunchstore( const std::string &file );
+	bool loadFromFolder( const std::string &folder );
+	bool loadPipeline( const std::string &file, std::string *perr=NULL );
+
+	virtual bool loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr=NULL );
+	virtual bool savePipeline( const std::string &filePath, std::string *perr=NULL );
 
     /** \name Data Section
     \details TBD */

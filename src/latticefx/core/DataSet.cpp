@@ -27,6 +27,7 @@
 #include <latticefx/core/PagingCallback.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/JsonSerializer.h>
+#include <latticefx/core/DBCrunchStore.h>
 
 #include <osg/Group>
 #include <osg/MatrixTransform>
@@ -36,6 +37,17 @@
 //#include <iostream>
 #include <fstream>
 
+#ifdef LFX_USE_CRUNCHSTORE
+#  include <crunchstore/DataManager.h>
+#  include <crunchstore/NullCache.h>
+#  include <crunchstore/NullBuffer.h>
+#  include <crunchstore/SQLiteStore.h>
+#  include <latticefx/core/DBCrunchStore.h>
+#endif
+
+#include <latticefx/core/DBDisk.h>
+#include <latticefx/core/PluginManager.h>
+#include <latticefx/core/ObjFactoryCore.h>
 
 namespace lfx
 {
@@ -66,6 +78,72 @@ DataSet::DataSet( const DataSet& rhs )
 DataSet::~DataSet()
 {
 	_dataSetUUIDMap.clear();
+}
+
+bool DataSet::loadFromCrunchstore( const std::string &file )
+{
+#ifndef LFX_USE_CRUNCHSTORE
+	LFX_ERROR( "Latticefx not built with Crunchstore support" );
+	return false;
+#endif
+
+	DBCrunchStorePtr cs( DBCrunchStorePtr( new DBCrunchStore() ) );
+
+	crunchstore::DataManagerPtr manager( crunchstore::DataManagerPtr( new crunchstore::DataManager() ) );
+    crunchstore::DataAbstractionLayerPtr cache( new crunchstore::NullCache );
+    crunchstore::DataAbstractionLayerPtr buffer( new crunchstore::NullBuffer );
+	manager->SetCache( cache );
+    manager->SetBuffer( buffer );
+    crunchstore::SQLiteStorePtr sqstore( new crunchstore::SQLiteStore );
+    sqstore->SetStorePath( file );
+    manager->AttachStore( sqstore, crunchstore::Store::BACKINGSTORE_ROLE );
+	try
+    {
+		cs->setDataManager( manager );
+	}
+    catch( std::exception exc )
+    {
+		LFX_ERROR( std::string( exc.what() ) );
+		LFX_ERROR( "Unable to set DataManager." );
+        return false;
+	}
+
+	setDB( ( DBBasePtr )cs );
+	return true;
+}
+
+bool DataSet::loadFromFolder( const std::string &folder )
+{
+	DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
+	disk->setRootPath( folder );
+	setDB( ( DBBasePtr )disk );
+	return true;
+}
+
+bool DataSet::loadPipeline( const std::string &file, std::string *perr )
+{
+	// Add additional plugin search paths.
+	PluginManager* plug( PluginManager::instance() );
+	if( plug == NULL )
+	{
+		LFX_ERROR( "Failure: NULL PluginManager." );
+		if( perr ) *perr = "Failure: NULL PluginManager.";
+		return false;
+	}
+		
+	plug->loadConfigFiles();
+
+	std::string err;
+	ObjFactoryCore objf( plug );
+	if( !loadPipeline( &objf, file, &err ) )
+	{
+		LFX_ERROR( err );
+		LFX_ERROR( "Serialization load failed" );
+		if( perr ) *perr = std::string( "Serialization load failed: " ) + err;
+		return false;
+	}
+
+	return true;
 }
 
 void DataSet::addChannel( const ChannelDataPtr channel, const TimeValue time )
