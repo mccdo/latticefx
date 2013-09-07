@@ -96,8 +96,8 @@ public:
 	std::string getName() { return _name; }
 	void setName(const std::string &name) { _name = name; }
 
-	bool loadFromCrunchstore( const std::string &file );
-	bool loadFromFolder( const std::string &folder );
+	bool loadDsFromCrunchstore( const std::string &file );
+	bool loadDsFromFolder( const std::string &folder );
 	bool loadPipeline( const std::string &file, std::string *perr=NULL );
 
 	virtual bool loadPipeline( IObjFactory *objf, const std::string &filePath, std::string *perr=NULL );

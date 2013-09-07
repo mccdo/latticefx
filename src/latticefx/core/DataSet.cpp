@@ -80,7 +80,7 @@ DataSet::~DataSet()
 	_dataSetUUIDMap.clear();
 }
 
-bool DataSet::loadFromCrunchstore( const std::string &file )
+bool DataSet::loadDsFromCrunchstore( const std::string &file )
 {
 #ifndef LFX_USE_CRUNCHSTORE
 	LFX_ERROR( "Latticefx not built with Crunchstore support" );
@@ -112,7 +112,7 @@ bool DataSet::loadFromCrunchstore( const std::string &file )
 	return true;
 }
 
-bool DataSet::loadFromFolder( const std::string &folder )
+bool DataSet::loadDsFromFolder( const std::string &folder )
 {
 	DBDiskPtr disk( DBDiskPtr( new DBDisk() ) );
 	disk->setRootPath( folder );
