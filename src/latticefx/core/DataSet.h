@@ -36,6 +36,7 @@
 #include <latticefx/core/DataSetPtr.h>
 
 #include <osg/ref_ptr>
+#include <osg/Group>
 
 //#include <boost/serialization/access.hpp>
 //#include <boost/serialization/list.hpp>
@@ -47,14 +48,6 @@
 #include <list>
 #include <map>
 #include <set>
-
-
-
-// Forwards
-namespace osg
-{
-class Group;
-}
 
 
 namespace lfx
@@ -84,7 +77,7 @@ class LATTICEFX_EXPORT DataSet : public ObjBase, protected LogBase
 {
 public:
     ///Constructor
-    DataSet( const std::string& logName = std::string( "" ) );
+    DataSet( const std::string& logName = std::string( "" ), osg::Group* rootNode = new osg::Group() );
     ///Copy constructor
     DataSet( const DataSet& rhs );
     ///Destructor

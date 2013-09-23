@@ -29,7 +29,6 @@
 #include <latticefx/core/JsonSerializer.h>
 #include <latticefx/core/DBCrunchStore.h>
 
-#include <osg/Group>
 #include <osg/MatrixTransform>
 
 #include <boost/foreach.hpp>
@@ -54,11 +53,10 @@ namespace lfx
 namespace core
 {
 
-
-DataSet::DataSet( const std::string& logName)
+DataSet::DataSet( const std::string& logName, osg::Group* rootNode )
     : ObjBase(),
       LogBase( logName.empty() ? "lfx.core.dataset" : logName ),
-      _sceneGraph( new osg::Group ),
+      _sceneGraph( rootNode ),
       _dirty( ALL_DIRTY )
 {
 }
