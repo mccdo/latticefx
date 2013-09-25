@@ -51,6 +51,7 @@ set( _headerFiles
     types.h
     VectorRenderer.h
     VolumeRenderer.h
+    VolumeBrickDataPtr.h
 )
 
 set( _sourceFiles
