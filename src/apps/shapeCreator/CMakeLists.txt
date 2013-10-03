@@ -31,6 +31,7 @@ _addExecutable( App ${_exeName}
     ${_sharedSources}
     LATTICEFX_LIBRARIES
         latticefx_core
+        latticefx_core_vtk
         ${_vtkLibs}
 )
 set_property( TARGET ${_exeName} PROPERTY FOLDER "App")
@@ -69,6 +70,7 @@ if( QT_FOUND )
     )
 
     target_link_libraries(${_exeName} ${QT_LIBRARIES})
+    target_link_libraries(${_exeName} latticefx_core_vtk)
 
     set_property( TARGET ${_exeName} PROPERTY FOLDER "App")
 

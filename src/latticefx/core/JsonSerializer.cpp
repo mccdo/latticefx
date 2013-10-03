@@ -20,7 +20,12 @@
 
 #include <latticefx/core/JsonSerializer.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/Version.h>
+#if POCO_VERSION >= 1050200
+#include <Poco/JSON/ParseHandler.h>
+#else
 #include <Poco/JSON/DefaultHandler.h>
+#endif
 
 #include <boost/filesystem.hpp>
 
@@ -184,11 +189,19 @@ size_t JsonSerializer::size()
 bool JsonSerializer::load( const std::string &json )
 {
 	Parser parser;
+#if POCO_VERSION >= 1050200
+    Poco::JSON::ParseHandler handler;
+#else
 	DefaultHandler handler;
+#endif
 	parser.setHandler(&handler);
 	parser.parse(json);
 
-	Var result = handler.result();
+#if POCO_VERSION >= 1050200
+        Poco::DynamicAny result = handler.asVar();
+#else
+        Poco::DynamicAny result = handler.result();
+#endif
 	Object::Ptr object = result.extract<Object::Ptr>();
 
 	JsonParentPtr parent;
@@ -198,7 +211,7 @@ bool JsonSerializer::load( const std::string &json )
 	}
 	else
 	{
-		Array::Ptr ar = result.extract<Array::Ptr>();
+		Poco::JSON::Array::Ptr ar = result.extract<Poco::JSON::Array::Ptr>();
 		if (ar)
 		{
 			parent.reset( new JsonParent( ar ) );
@@ -266,7 +279,7 @@ bool JsonSerializer::getObjArr( const std::string &name, bool push, bool obj )
 	}
 	else
 	{
-		Array::Ptr arr = v.extract<Array::Ptr>();
+		Poco::JSON::Array::Ptr arr = v.extract<Poco::JSON::Array::Ptr>();
 		if ( !arr ) return false;
 		newParent.reset( new JsonParent( arr ) );
 	}
@@ -377,7 +390,7 @@ void JsonSerializer::insertObj( const std::string &name, Object::Ptr obj, bool p
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void JsonSerializer::insertArray( const std::string &name, Array::Ptr arr, bool push )
+void JsonSerializer::insertArray( const std::string &name, Poco::JSON::Array::Ptr arr, bool push )
 {
 	Var var( arr );
 	insertParentData( name, JsonParentPtr( new JsonParent( arr ) ), var, push);
@@ -568,9 +581,9 @@ Object::Ptr JsonSerializer::createObj()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Array::Ptr JsonSerializer::createArray() 
+Poco::JSON::Array::Ptr JsonSerializer::createArray() 
 { 
-	return Array::Ptr( new Poco::JSON::Array() ); 
+	return Poco::JSON::Array::Ptr( new Poco::JSON::Array() ); 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
