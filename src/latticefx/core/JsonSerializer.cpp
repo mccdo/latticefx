@@ -21,7 +21,7 @@
 #include <latticefx/core/JsonSerializer.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Version.h>
-#if POCO_VERSION >= 1050200
+#if POCO_VERSION >= 0x01050200
 #include <Poco/JSON/ParseHandler.h>
 #else
 #include <Poco/JSON/DefaultHandler.h>
@@ -189,7 +189,7 @@ size_t JsonSerializer::size()
 bool JsonSerializer::load( const std::string &json )
 {
 	Parser parser;
-#if POCO_VERSION >= 1050200
+#if POCO_VERSION >= 0x01050200
     Poco::JSON::ParseHandler handler;
 #else
 	DefaultHandler handler;
@@ -197,7 +197,7 @@ bool JsonSerializer::load( const std::string &json )
 	parser.setHandler(&handler);
 	parser.parse(json);
 
-#if POCO_VERSION >= 1050200
+#if POCO_VERSION >= 0x01050200
         Poco::DynamicAny result = handler.asVar();
 #else
         Poco::DynamicAny result = handler.result();
