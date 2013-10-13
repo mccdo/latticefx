@@ -111,7 +111,7 @@ Renderer::~Renderer()
 }
 
 
-
+/*
 Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description,
                                     const AccessType access, const int numElements )
     : _description( description ),
@@ -128,6 +128,7 @@ Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
 Renderer::UniformInfo::~UniformInfo()
 {
 }
+*/
 
 void Renderer::registerUniform( const UniformInfo& info )
 {
