@@ -451,7 +451,7 @@ public:
 
     virtual ChannelDataPtr operator()();
 
-	static void identifyScalarsVectors( const DBBase *pdb, std::vector<int> *stypes, std::vector<int> *vtypes );
+	static void identifyScalarsVectors( const DBBase *pdb, std::vector<std::string> *stypes, std::vector<std::string> *vtypes );
 
     /** \brief Set whether to actually load the data into memory.
     \details By default, LoadHierarchy creates a ChannelData hierarchy that
@@ -474,6 +474,7 @@ public:
 	std::string getChannelName( ) const;
 
 protected:
+
     static bool valid( const std::string& fileName );
 	static bool valid( const std::string& fileName, const std::string& filter );
 

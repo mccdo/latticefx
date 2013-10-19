@@ -1431,7 +1431,7 @@ ChannelDataPtr LoadHierarchy::operator()()
     return( cdp );
 }
 
-void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<int> *stypes, std::vector<int> *vtypes )
+void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<std::string> *stypes, std::vector<std::string> *vtypes )
 {
 	if( pdb == NULL )
     {
@@ -1473,7 +1473,7 @@ void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<int> 
 			strType.push_back( actualName.at(i) );
 		}
 
-		std::vector<int> *ptype = NULL;
+		std::vector<std::string> *ptype = NULL;
 		if( strType.at( 0 ) == 's' )
 		{
 			ptype = stypes;
@@ -1488,22 +1488,9 @@ void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<int> 
 			continue;
 		}
 
-		std::string num;
-		for( size_t i=1; i<strType.size(); i++)
+		if( std::find( ptype->begin(), ptype->end(), strType ) == ptype->end() )
 		{
-			num.push_back( strType.at( i ) );
-		}
-
-		if( !num.size() )
-		{
-			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, type number not found for file: " + actualName );
-			continue;
-		}
-
-		int number = atoi( num.c_str() );
-		if( std::find(ptype->begin(), ptype->end(), number) == ptype->end() )
-		{
-			ptype->push_back( number );
+			ptype->push_back( strType );
 		}
     }
 }
