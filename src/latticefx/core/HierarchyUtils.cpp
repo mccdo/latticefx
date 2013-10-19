@@ -1336,8 +1336,10 @@ bool SaveHierarchy::resolutionPruneTest( const std::string brickNameParent )
 	return true;    
 }
 
-LoadHierarchy::LoadHierarchy()
-    : _load( false )
+LoadHierarchy::LoadHierarchy( std::string channelName, std::string filter ) :
+	_channelName( channelName ),
+	_filter( filter ),
+	_load( false )
 {
     setActionType( Preprocess::ADD_DATA );
 }
@@ -1425,7 +1427,7 @@ ChannelDataPtr LoadHierarchy::operator()()
     }
 
     // Return the hierarchy root.
-    cdp->setName( "volumedata" );
+    cdp->setName( _channelName );
     return( cdp );
 }
 
@@ -1546,6 +1548,16 @@ std::string LoadHierarchy::getFilter( ) const
 	return _filter;
 }
 
+void LoadHierarchy::setChannelName( const char* name )
+{
+	_channelName = name;
+}
+
+std::string LoadHierarchy::getChannelName( ) const
+{
+	return _channelName;
+}
+
 void LoadHierarchy::serializeData( JsonSerializer *json ) const
 {
 	// let the parent write its data
@@ -1554,6 +1566,7 @@ void LoadHierarchy::serializeData( JsonSerializer *json ) const
 	json->insertObj( LoadHierarchy::getClassName(), true);
 	json->insertObjValue( "load",  _load );
 	json->insertObjValue( "filter",  _filter );
+	json->insertObjValue( "channelName",  _channelName );
 	json->popParent();
 }
 
@@ -1571,6 +1584,8 @@ bool LoadHierarchy::loadData( JsonSerializer *json, IObjFactory *pfactory, std::
 
 	json->getValue( "load", &_load, false );
 	json->getValue( "filter", &_filter, "" );
+	json->getValue( "channelName", &_channelName, "" );
+
 
 	json->popParent();
 	return true;

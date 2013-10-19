@@ -444,7 +444,7 @@ from all volume data sets will be added to the ChannelData hierarchy). */
 class LATTICEFX_EXPORT LoadHierarchy : public Preprocess
 {
 public:
-    LoadHierarchy();
+    LoadHierarchy(std::string channelName="volumedata", std::string filter="");
     virtual ~LoadHierarchy();
 
 	virtual std::string getClassName() const { return "LoadHierarchy"; }
@@ -468,6 +468,11 @@ public:
 	/** \brief Get the db key filter, only keys with the filter as a substring will be valid and loaded. */
 	std::string getFilter( ) const;
 
+	/** \brief Set the name of the ChannelData. */
+	void setChannelName( const char* name );
+	/** \brief Get the name of the ChannelData. */
+	std::string getChannelName( ) const;
+
 protected:
     static bool valid( const std::string& fileName );
 	static bool valid( const std::string& fileName, const std::string& filter );
@@ -478,6 +483,7 @@ protected:
     bool _load;
 
 	std::string _filter;
+	std::string _channelName;
 };
 
 typedef boost::shared_ptr< LoadHierarchy > LoadHierarchyPtr;
