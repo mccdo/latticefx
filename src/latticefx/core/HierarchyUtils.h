@@ -451,6 +451,8 @@ public:
 
     virtual ChannelDataPtr operator()();
 
+	static void identifyScalarsVectors( const DBBase *pdb, std::vector<int> *stypes, std::vector<int> *vtypes );
+
     /** \brief Set whether to actually load the data into memory.
     \details By default, LoadHierarchy creates a ChannelData hierarchy that
     contains only DB keys but no actual data. Call setLoadData(true) to
@@ -461,13 +463,21 @@ public:
     /** \brief Get whether to load the data into memory. */
     bool getLoadData() const;
 
+	/** \brief Set the db key filter, only keys with the filter as a substring will be valid and loaded. */
+	void setFilter( const char* filter );
+	/** \brief Get the db key filter, only keys with the filter as a substring will be valid and loaded. */
+	std::string getFilter( ) const;
+
 protected:
     static bool valid( const std::string& fileName );
+	static bool valid( const std::string& fileName, const std::string& filter );
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
     bool _load;
+
+	std::string _filter;
 };
 
 typedef boost::shared_ptr< LoadHierarchy > LoadHierarchyPtr;

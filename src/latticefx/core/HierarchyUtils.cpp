@@ -1372,7 +1372,7 @@ ChannelDataPtr LoadHierarchy::operator()()
     unsigned int maxDepth( 1 );
     BOOST_FOREACH( const std::string & fName, results )
     {
-        if( !valid( fName ) )
+        if( !valid( fName, _filter ) )
         {
             continue;
         }
@@ -1429,6 +1429,83 @@ ChannelDataPtr LoadHierarchy::operator()()
     return( cdp );
 }
 
+void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<int> *stypes, std::vector<int> *vtypes )
+{
+	if( pdb == NULL )
+    {
+		LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - DB is NULL." );
+        return;
+    }
+
+    DBBase::StringSet results( pdb->getAllKeys() );
+    if( results.empty() )
+    {
+        LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - No keys in DB." );
+		return;
+    }
+
+    // Determine the hierarchy maxDepth from the longest hierarchy name.
+    BOOST_FOREACH( const std::string & fName, results )
+    {
+        if( !valid( fName ) )
+        {
+            continue;
+        }
+
+        Poco::Path pocoPath( fName );
+        const std::string& actualName( pocoPath.getFileName() );
+
+		size_t pos1 = actualName.find_first_of( "_" );
+		if( pos1 == std::string::npos ) continue;
+
+		size_t pos2 = actualName.find_first_of( "-", pos1 );
+		if( pos2 == std::string::npos )
+		{
+			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, - not found in name." );
+			continue;
+		}
+
+		std::string strType;
+		for( size_t i=pos1; i<pos2; i++ )
+		{
+			strType.push_back( actualName.at(i) );
+		}
+
+		std::vector<int> *ptype = NULL;
+		if( strType.at( 0 ) == 's' )
+		{
+			ptype = stypes;
+		}
+		else if( strType.at( 0 ) == 'v' )
+		{
+			ptype = vtypes;
+		}
+		else
+		{
+			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected type: " + strType + " for file: " + actualName );
+			continue;
+		}
+
+		std::string num;
+		for( size_t i=1; i<strType.size(); i++)
+		{
+			num.push_back( strType.at( i ) );
+		}
+
+		if( !num.size() )
+		{
+			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, type number not found for file: " + actualName );
+			continue;
+		}
+
+		int number = atoi( num.c_str() );
+		if( std::find(ptype->begin(), ptype->end(), number) == ptype->end() )
+		{
+			ptype->push_back( number );
+		}
+    }
+}
+
 bool LoadHierarchy::valid( const std::string& fileName )
 {
     const std::string nameOnly( osgDB::getSimpleFileName( fileName ) );
@@ -1445,6 +1522,30 @@ bool LoadHierarchy::valid( const std::string& fileName )
     }
 }
 
+bool LoadHierarchy::valid( const std::string& fileName, const std::string& filter )
+{
+	if( filter.size() > 0 )
+	{
+		size_t pos = fileName.find( filter );
+		if( pos == std::string::npos )
+		{
+			return false;
+		}
+	}
+
+	return valid( fileName );
+}
+
+void LoadHierarchy::setFilter( const char* filter )
+{
+	_filter = filter;
+}
+
+std::string LoadHierarchy::getFilter( ) const
+{
+	return _filter;
+}
+
 void LoadHierarchy::serializeData( JsonSerializer *json ) const
 {
 	// let the parent write its data
@@ -1452,6 +1553,7 @@ void LoadHierarchy::serializeData( JsonSerializer *json ) const
 
 	json->insertObj( LoadHierarchy::getClassName(), true);
 	json->insertObjValue( "load",  _load );
+	json->insertObjValue( "filter",  _filter );
 	json->popParent();
 }
 
@@ -1468,6 +1570,7 @@ bool LoadHierarchy::loadData( JsonSerializer *json, IObjFactory *pfactory, std::
 	}
 
 	json->getValue( "load", &_load, false );
+	json->getValue( "filter", &_filter, "" );
 
 	json->popParent();
 	return true;
