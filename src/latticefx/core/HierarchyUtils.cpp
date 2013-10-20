@@ -257,6 +257,7 @@ void AssembleHierarchy::addChannelData( ChannelDataPtr cdp, const std::string na
             std::string message = "addChannelData: Invalid nameString digit: ";
             message.push_back( *iter );
             LFX_ERROR_STATIC( "lfx.core.hier", message );
+            return;
             break;
         }
         }
