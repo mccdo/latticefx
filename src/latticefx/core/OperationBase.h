@@ -140,6 +140,8 @@ public:
     virtual StringList getInputNames();
     /** \overload StringList OperationBase::getInputNames() */
     virtual const StringList& getInputNames() const;
+	/** \brief Remove all input names */
+    virtual void clearInputNames();
 
     /** \brief Associate a ChannelData name with an integer value.
     \details This method allows the application to use arbitrarily named ChannelData

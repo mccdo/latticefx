@@ -114,6 +114,9 @@ public:
     /** \overload ChannelDataPtr getChannel(const std::string&,const TimeValue) */
     const ChannelDataPtr getChannel( const std::string& name, const TimeValue time = 0. ) const;
 
+	int getNumChannelsAtTime( const TimeValue time=0 ) ;
+	ChannelDataList getDataAtTime( const TimeValue time );
+
 
 
     /** \brief Returns the min and max time extents of all attached data. */
@@ -315,7 +318,8 @@ protected:
     osg::Node* recurseGetSceneGraph( ChannelDataList& data, ChannelDataPtr mask );
 
     TimeSet getTimeSet() const;
-    ChannelDataList getDataAtTime( const TimeValue time );
+	//int getNumChannelsAtTime( const TimeValue time=0 );
+	//ChannelDataList getDataAtTime( const TimeValue time );
     ChannelDataList getCompositeChannels( ChannelDataList data, const unsigned int index );
     static void setInputs( OperationBasePtr opPtr, ChannelDataList& currentData );
 

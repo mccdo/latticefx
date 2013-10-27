@@ -775,6 +775,11 @@ TimeSet DataSet::getTimeSet() const
     return( timeSet );
 }
 
+int DataSet::getNumChannelsAtTime( const TimeValue time )
+{
+	return( getDataAtTime( time ).size() );
+}
+
 ChannelDataList DataSet::getDataAtTime( const TimeValue time )
 {
     ChannelDataList cdl;

@@ -236,6 +236,7 @@ osg::Geometry* VolumeRenderer::createDAIGeometry( int nInstances )
 osg::Geometry* VolumeRenderer::createCubeGeometry()
 {
     osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
+	geom->setName( "lfx::core::VolumeRenderer Cube" );
     geom->setUseDisplayList( false );
     geom->setUseVertexBufferObjects( true );
 

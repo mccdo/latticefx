@@ -97,6 +97,10 @@ void OperationBase::addInput( const std::string& name )
 {
     _inputNames.push_back( name );
 }
+void OperationBase::clearInputNames()
+{
+	_inputNames.clear();
+}
 ChannelDataPtr OperationBase::getInput( const std::string& name )
 {
     // Find the ChannelData in _inputs with the same name as the parameter,
