@@ -63,6 +63,47 @@ static std::string logstr( "lfx.demo" );
 
 using namespace lfx::core;
 
+class MyKeyHandler : public osgGA::GUIEventHandler
+{
+public:
+	MyKeyHandler( lfx::core::DataSetPtr ds, lfx::core::RendererPtr renderer, const vector<std::string> &channels )
+        : _ds( ds ),
+		  _renderer( renderer ),
+		  _channels( channels ),
+		  _curChan( 0 )
+    {
+    }
+
+    virtual bool handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* )
+    {
+        bool handled( false );
+        if( ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN )
+        {
+			if( ea.getKey() == 'c' )
+			{
+				// set the next channel
+				if( _channels.size() <= 1 ) return handled;
+
+				_curChan++;
+				if( _curChan >= _channels.size() ) _curChan = 0;
+				std::string chanName = _channels[_curChan];
+				_renderer->setInputNameAlias( lfx::core::VolumeRenderer::VOLUME_DATA, chanName );
+				_ds->setRenderer( _renderer ); // force dirty
+				_ds->updateAll(); // update now with new channel data.
+				LFX_TRACE_STATIC( logstr, "set input channel: " + chanName );
+				handled = true;
+			}
+        }
+        return( handled );
+    }
+
+protected:
+	lfx::core::DataSetPtr _ds;
+	lfx::core::RendererPtr _renderer;
+    vector<std::string> _channels;
+	int _curChan;
+};
+
 
 
 osg::Node* createClipSubgraph()
@@ -141,12 +182,32 @@ DataSetPtr prepareVolume2( const osg::Vec3& dims,
 		return( dsp );
 	}
 
-    LoadHierarchyPtr loader( new LoadHierarchy() );
-    if( nopage )
-        // Not paging. Load the data.
-        loader->setLoadData( true );
-    loader->setDB( dbBase );
-    dsp->addPreprocess( loader );
+	LoadHierarchy::DataTypeInfoMap chanTypeMap;
+	LoadHierarchy::identifyScalarsVectors( dbBase.get(), &chanTypeMap );
+	//LoadHierarchy::identifyScalarsVectors( dbBase.get(), &stypes, &vtypes );
+	//stypes.insert(stypes.end(), vtypes.begin(), vtypes.end()); // not use vectors for now.
+	//if( stypes.empty() ) stypes.push_back( "volumedata" );
+
+	lfx::core::OperationBase::StringList chanList;
+	LoadHierarchy::DataTypeInfoMap::iterator it = chanTypeMap.begin();
+	while( it != chanTypeMap.end() )
+	{
+		LoadHierarchy::DataTypeInfoPtr dataType = it->second;
+		LoadHierarchyPtr loader( new LoadHierarchy(dataType->typeName, dataType->typeName, dataType) );
+		it++;
+
+		if( nopage )
+		{
+			// Not paging. Load the data.
+			loader->setLoadData( true );
+		}
+
+		loader->setDB( dbBase );
+		dsp->addPreprocess( loader );
+		chanList.push_back( loader->getChannelName() );
+	}
+
+	if( !chanList.size() ) chanList.push_back( "volumedata" );
 
     VolumeRendererPtr renderOp( new VolumeRenderer() );
     if( !nopage )
@@ -156,7 +217,9 @@ DataSetPtr prepareVolume2( const osg::Vec3& dims,
     renderOp->setMaxSamples( 400.f );
     renderOp->setTransparencyEnable( useIso ? false : true );
 
-    renderOp->addInput( "volumedata" );
+    //renderOp->addInput( "volumedata" );
+	renderOp->setInputs( chanList );
+	renderOp->setInputNameAlias( VolumeRenderer::VOLUME_DATA, chanList[0] );
     dsp->setRenderer( renderOp );
 
     osg::ref_ptr< osg::Image > tfImage( lfx::core::loadImageFromDat( "01.dat", LFX_ALPHA_RAMP_0_TO_1 ) );
@@ -397,6 +460,46 @@ void setupLfxVolumeRTRendering( const RTTInfo& rttInfo,
     stateSet->addUniform( uniform );
 }
 
+bool initKeyboard(osgViewer::Viewer *viewer, lfx::core::DataSetPtr dsp)
+{
+	lfx::core::RendererPtr renderer = dsp->getRenderer();
+	if( !renderer )
+	{
+		return false;
+	}
+
+	////////////////////
+	// DEBUG
+	//
+	// dump input names
+
+
+	lfx::core::OperationBase::StringList inputNameList = dsp->getRenderer()->getInputNames();
+	BOOST_FOREACH( std::string input, inputNameList )
+	{
+		LFX_WARNING_STATIC( logstr, "input name: " + input );
+	}
+	
+	
+	// DEBUG
+	////////////////////
+	std::vector< std::string > channelNames;
+	lfx::core::PreprocessList &list = dsp->getPreprocesses();
+	BOOST_FOREACH( PreprocessPtr prep, list )
+	{
+		LoadHierarchy *pload = dynamic_cast<LoadHierarchy *>( prep.get() );
+		if( !pload ) continue;
+
+		std::string name = pload->getChannelName();
+		if( std::find( channelNames.begin(), channelNames.end(), name) == channelNames.end() )
+		{
+			channelNames.push_back( name );
+		}
+	}
+
+	viewer->addEventHandler( new MyKeyHandler( dsp, dsp->getRenderer(), channelNames ) );
+	return true;
+}
 
 int main( int argc, char** argv )
 {
@@ -437,6 +540,7 @@ int main( int argc, char** argv )
     LFX_CRITICAL_STATIC( logstr, "-clip\tTest clip plane." );
     LFX_CRITICAL_STATIC( logstr, "-nopage\tDisable paging (all textures are stored in the scene graph)." );
 	LFX_CRITICAL_STATIC( logstr, "-ser\tTest serialization, by saving and then loading the render graph." );
+	LFX_CRITICAL_STATIC( logstr, "keyboard - c\tHit the c key to switch rendering channels in a multi-scalar/vector database" );
 
     std::string csFile;
 #ifdef LFX_USE_CRUNCHSTORE
@@ -487,6 +591,8 @@ int main( int argc, char** argv )
     const osg::Camera* cam( viewer.getCamera() );
     pageThread->setTransforms( cam->getProjectionMatrix(), cam->getViewport() );
 
+	initKeyboard( &viewer, dsp );
+
     osg::Vec3d eye, center, up;
     while( !viewer.done() )
     {
@@ -520,5 +626,8 @@ specified, the test renders alpha values equal to the specified value.
 
 If -nopage is not specified, stub textures are stored in the scene graph
 and actual textures are paged in at runtime.
+
+Keyboard options:
+\li keyboard - c : Hit the c key to switch rendering channels in a multi-scalar/vector database.
 
 */
