@@ -444,14 +444,28 @@ from all volume data sets will be added to the ChannelData hierarchy). */
 class LATTICEFX_EXPORT LoadHierarchy : public Preprocess
 {
 public:
-    LoadHierarchy(std::string channelName="volumedata", std::string filter="");
+	class DataTypeInfo
+	{
+	public:
+		DataTypeInfo() {}
+		bool isScalar;
+		std::string typeName;
+		int maxDepth;
+		std::vector<std::string> fileNames;
+	};
+	typedef boost::shared_ptr< DataTypeInfo > DataTypeInfoPtr;
+	typedef std::map<std::string, DataTypeInfoPtr> DataTypeInfoMap;
+
+public:
+    LoadHierarchy(std::string channelName="volumedata", std::string filter="", DataTypeInfoPtr dataTypeInfo=DataTypeInfoPtr());
     virtual ~LoadHierarchy();
 
 	virtual std::string getClassName() const { return "LoadHierarchy"; }
 
     virtual ChannelDataPtr operator()();
 
-	static void identifyScalarsVectors( const DBBase *pdb, std::vector<std::string> *stypes, std::vector<std::string> *vtypes );
+	static bool identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types );
+	static bool parseTypeName(const std::string &actualName, std::string *ptype, bool *pbscalar);
 
     /** \brief Set whether to actually load the data into memory.
     \details By default, LoadHierarchy creates a ChannelData hierarchy that
@@ -475,8 +489,12 @@ public:
 
 protected:
 
+	ChannelDataPtr loadFromDataTypeInfo();
+	ChannelDataPtr loadChannelData(const std::vector<std::string> &files, int maxDepth);
+	void addFile( AssembleHierarchy *ah, const std::string &fName );
+
     static bool valid( const std::string& fileName );
-	static bool valid( const std::string& fileName, const std::string& filter );
+	static bool validWithFilter( const std::string& fileName, const std::string& filter );
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
@@ -485,6 +503,8 @@ protected:
 
 	std::string _filter;
 	std::string _channelName;
+
+	DataTypeInfoPtr _dataTypeInfo;
 };
 
 typedef boost::shared_ptr< LoadHierarchy > LoadHierarchyPtr;

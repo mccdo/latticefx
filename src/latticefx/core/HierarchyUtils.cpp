@@ -1337,9 +1337,10 @@ bool SaveHierarchy::resolutionPruneTest( const std::string brickNameParent )
 	return true;    
 }
 
-LoadHierarchy::LoadHierarchy( std::string channelName, std::string filter ) :
+LoadHierarchy::LoadHierarchy( std::string channelName, std::string filter, DataTypeInfoPtr dataTypeInfo ) :
 	_channelName( channelName ),
 	_filter( filter ),
+	_dataTypeInfo( dataTypeInfo ),
 	_load( false )
 {
     setActionType( Preprocess::ADD_DATA );
@@ -1365,20 +1366,36 @@ ChannelDataPtr LoadHierarchy::operator()()
         return( ChannelDataPtr( (ChannelData*)NULL ) );
     }
 
+	if( _dataTypeInfo.get() )
+	{
+		return loadFromDataTypeInfo();
+	}
+
     DBBase::StringSet results( _db->getAllKeys() );
     if( results.empty() )
     {
         LFX_FATAL_STATIC( "lfx.core.hier", "No keys in DB." );
     }
 
+	int filecount = 0;
+	std::vector<std::string> files;
     // Determine the hierarchy maxDepth from the longest hierarchy name.
     unsigned int maxDepth( 1 );
     BOOST_FOREACH( const std::string & fName, results )
     {
-        if( !valid( fName, _filter ) )
+        if( !validWithFilter( fName, _filter ) )
         {
-            continue;
+			if( _filter.size() > 0 && filecount > 0 ) break;
+			continue;
         }
+
+		if( !valid( fName ) )
+		{
+			continue;
+		}
+
+		filecount++;
+		files.push_back( fName );
 
         Poco::Path pocoPath( fName );
         const std::string& actualName( pocoPath.getFileName() );
@@ -1389,34 +1406,29 @@ ChannelDataPtr LoadHierarchy::operator()()
         }
     }
 
-    // Create the ChannelData hierarchy.
-    ChannelDataPtr cdp( ( ChannelData* )NULL );
+	return loadChannelData(files, maxDepth);
+}
+
+ChannelDataPtr LoadHierarchy::loadFromDataTypeInfo()
+{
+	if( !_dataTypeInfo.get() ) return ChannelDataPtr();
+
+	// Create the ChannelData hierarchy.
+	return loadChannelData(_dataTypeInfo->fileNames, _dataTypeInfo->maxDepth);
+} 
+
+ChannelDataPtr LoadHierarchy::loadChannelData(const std::vector<std::string> &files, int maxDepth)
+{
+	ChannelDataPtr cdp( ( ChannelData* )NULL );
+
+	// Create the ChannelData hierarchy.
     try
     {
-        AssembleHierarchy ah( maxDepth, 60000. );
-        BOOST_FOREACH( const std::string & fName, results )
+		AssembleHierarchy ah( maxDepth, 60000. );
+        BOOST_FOREACH( const std::string &fName, files )
         {
-            if( !valid( fName ) )
-            {
-                continue;
-            }
-
-            // Create this ChannelData.
-            ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
-            cdImage->setDBKey( DBKey( fName ) );
-            if( _load )
-                cdImage->setImage( _db->loadImage( DBKey( fName ) ) );
-
-            // Get the hierarchy name string.
-            Poco::Path pocoPath( fName );
-            const std::string& actualName( pocoPath.getFileName() );
-            const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
-            const size_t lastLoc( actualName.find_last_of( "-" ) );
-            const std::string hierarchyName( actualName.substr( firstLoc, lastLoc - firstLoc ) );
-
-            LFX_DEBUG_STATIC( "lfx.core.hier", "Adding " + fName + ": " + hierarchyName );
-            cdImage->setName( "volumedata" );
-            ah.addChannelData( cdImage, hierarchyName );
+            // add the texture to the channel
+           addFile( &ah, fName );
         }
         ah.prune();
         cdp = ah.getRoot();
@@ -1431,21 +1443,96 @@ ChannelDataPtr LoadHierarchy::operator()()
     cdp->setName( _channelName );
     return( cdp );
 }
+ 
+void LoadHierarchy::addFile( AssembleHierarchy *ah, const std::string &fName )
+{
+	 // Create this ChannelData.
+	ChannelDataOSGImagePtr cdImage( new ChannelDataOSGImage() );
+    cdImage->setDBKey( DBKey( fName ) );
+	if( _load ) 
+	{
+		cdImage->setImage( _db->loadImage( DBKey( fName ) ) );
+	}
+    
+	// Get the hierarchy name string.
+    Poco::Path pocoPath( fName );
+    const std::string& actualName( pocoPath.getFileName() );
+    const size_t firstLoc( actualName.find_first_of( "-" ) + 1 );
+    const size_t lastLoc( actualName.find_last_of( "-" ) );
+    const std::string hierarchyName( actualName.substr( firstLoc, lastLoc - firstLoc ) );
 
-void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<std::string> *stypes, std::vector<std::string> *vtypes )
+    LFX_DEBUG_STATIC( "lfx.core.hier", "Adding " + fName + ": " + hierarchyName );
+    cdImage->setName( _channelName );
+    ah->addChannelData( cdImage, hierarchyName );
+}
+
+bool LoadHierarchy::parseTypeName(const std::string &actualName, std::string *ptype, bool *pbscalar)
+{
+	size_t pos1 = actualName.find_first_of( "_" );	
+	if( pos1 == std::string::npos )
+	{
+		return false;
+	}
+
+	pos1++;
+
+	size_t pos2 = actualName.find_first_of( "-", pos1 );
+	if( pos2 == std::string::npos )
+	{
+		LFX_ERROR_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, - not found in name." );
+		return false;
+	}
+
+	if( pos1 >= pos2 )
+	{
+		LFX_ERROR_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, _ and - not positioned properly, unrecoginzed image name." );
+		return false;
+	}
+
+	std::string strType;
+	for( size_t i=pos1; i<pos2; i++ )
+	{
+		strType.push_back( actualName.at(i) );
+	}
+
+	bool isScalar = true;
+	if( strType.at( 0 ) == 's' )
+	{
+		isScalar = true;
+	}
+	else if( strType.at( 0 ) == 'v' )
+	{
+		isScalar = false;
+	}
+	else
+	{
+		LFX_TRACE_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected type: " + strType + " for file: " + actualName );
+		return false;
+	}
+
+	if( ptype ) *ptype = strType;
+	if( pbscalar ) *pbscalar = isScalar;
+
+	return true;
+}
+
+bool LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types )
 {
 	if( pdb == NULL )
     {
 		LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - DB is NULL." );
-        return;
+        return false;
     }
 
     DBBase::StringSet results( pdb->getAllKeys() );
     if( results.empty() )
     {
         LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - No keys in DB." );
-		return;
+		return false;
     }
+
+	int filecount = 0;
+	unsigned int maxDepth = 1;
 
     // Determine the hierarchy maxDepth from the longest hierarchy name.
     BOOST_FOREACH( const std::string & fName, results )
@@ -1455,45 +1542,45 @@ void LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, std::vector<std::
             continue;
         }
 
-        Poco::Path pocoPath( fName );
-        const std::string& actualName( pocoPath.getFileName() );
-
-		size_t pos1 = actualName.find_first_of( "_" );
-		if( pos1 == std::string::npos ) continue;
-
-		size_t pos2 = actualName.find_first_of( "-", pos1 );
-		if( pos2 == std::string::npos )
-		{
-			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected, - not found in name." );
-			continue;
-		}
+		filecount++;
 
 		std::string strType;
-		for( size_t i=pos1; i<pos2; i++ )
+		bool isScalar = true;
+        Poco::Path pocoPath( fName );
+        const std::string& actualName( pocoPath.getFileName() );
+		if( !parseTypeName(actualName, &strType, &isScalar) )
 		{
-			strType.push_back( actualName.at(i) );
+			strType = "volumedata";
+			LFX_TRACE_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected type: " + strType + " for file: " + actualName + ", defaulting to volumedata." );
 		}
 
-		std::vector<std::string> *ptype = NULL;
-		if( strType.at( 0 ) == 's' )
+		DataTypeInfoPtr dataType;
+		DataTypeInfoMap::iterator it = types->find( strType );
+		if( it == types->end() )
 		{
-			ptype = stypes;
-		}
-		else if( strType.at( 0 ) == 'v' )
-		{
-			ptype = vtypes;
+			dataType.reset( new DataTypeInfo() );
+			dataType->typeName = strType;
+			dataType->isScalar = isScalar;
+			dataType->maxDepth = 1;
+			(*types)[strType] = dataType;
 		}
 		else
 		{
-			LFX_FATAL_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected type: " + strType + " for file: " + actualName );
-			continue;
+			dataType = it->second;
 		}
 
-		if( std::find( ptype->begin(), ptype->end(), strType ) == ptype->end() )
-		{
-			ptype->push_back( strType );
-		}
+		size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
+        if( depth > dataType->maxDepth )
+        {
+			dataType->maxDepth = depth;
+        }
+
+		dataType->fileNames.push_back( fName );
     }
+
+	if( filecount > 0 ) return true; // we have data
+
+	return false; // no data
 }
 
 bool LoadHierarchy::valid( const std::string& fileName )
@@ -1512,7 +1599,7 @@ bool LoadHierarchy::valid( const std::string& fileName )
     }
 }
 
-bool LoadHierarchy::valid( const std::string& fileName, const std::string& filter )
+bool LoadHierarchy::validWithFilter( const std::string& fileName, const std::string& filter )
 {
 	if( filter.size() > 0 )
 	{
@@ -1523,7 +1610,7 @@ bool LoadHierarchy::valid( const std::string& fileName, const std::string& filte
 		}
 	}
 
-	return valid( fileName );
+	return true;
 }
 
 void LoadHierarchy::setFilter( const char* filter )
