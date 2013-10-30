@@ -367,6 +367,16 @@ const RendererPtr DataSet::getRenderer() const
     return( _renderer );
 }
 
+void DataSet::updateRendererUniforms()
+{
+	if( !_renderer.get() ) return;
+
+	osg::StateSet *ss = _sceneGraph->getStateSet();
+	if( !ss ) return;
+
+	_renderer->updateUniforms( ss );
+}
+
 osg::Node* DataSet::getSceneData()
 {
     if( _sceneGraph->getNumChildren() == 0 )
@@ -644,6 +654,7 @@ bool DataSet::updateRenderer()
 
 
     _sceneGraph->setStateSet( _renderer->getRootState() );
+
     return( true );
 }
 

@@ -240,6 +240,8 @@ public:
     /** \overload */
     const RendererPtr getRenderer() const;
 
+	void updateRendererUniforms();
+
     ///\}
 
 

@@ -1516,7 +1516,7 @@ bool LoadHierarchy::parseTypeName(const std::string &actualName, std::string *pt
 	return true;
 }
 
-bool LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types )
+bool LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types, std::vector< std::string > *pChanNames )
 {
 	if( pdb == NULL )
     {
@@ -1554,28 +1554,39 @@ bool LoadHierarchy::identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *
 			LFX_TRACE_STATIC( "lfx.core.hier", "identifyScalarsVectors - unexpected type: " + strType + " for file: " + actualName + ", defaulting to volumedata." );
 		}
 
-		DataTypeInfoPtr dataType;
-		DataTypeInfoMap::iterator it = types->find( strType );
-		if( it == types->end() )
+		if ( types )
 		{
-			dataType.reset( new DataTypeInfo() );
-			dataType->typeName = strType;
-			dataType->isScalar = isScalar;
-			dataType->maxDepth = 1;
-			(*types)[strType] = dataType;
-		}
-		else
-		{
-			dataType = it->second;
+			DataTypeInfoPtr dataType;
+			DataTypeInfoMap::iterator it = types->find( strType );
+			if( it == types->end() )
+			{
+				dataType.reset( new DataTypeInfo() );
+				dataType->typeName = strType;
+				dataType->isScalar = isScalar;
+				dataType->maxDepth = 1;
+				(*types)[strType] = dataType;
+			}
+			else
+			{
+				dataType = it->second;
+			}
+
+			size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
+			if( depth > dataType->maxDepth )
+			{
+				dataType->maxDepth = depth;
+			}
+
+			dataType->fileNames.push_back( fName );
 		}
 
-		size_t depth( actualName.find_last_of( "-" ) - actualName.find_first_of( "-" ) );
-        if( depth > dataType->maxDepth )
-        {
-			dataType->maxDepth = depth;
-        }
-
-		dataType->fileNames.push_back( fName );
+		if( pChanNames )
+		{
+			if( std::find( pChanNames->begin(), pChanNames->end(), strType ) == pChanNames->end() )
+			{
+				pChanNames->push_back( strType );
+			}
+		}
     }
 
 	if( filecount > 0 ) return true; // we have data

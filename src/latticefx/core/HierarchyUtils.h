@@ -464,7 +464,7 @@ public:
 
     virtual ChannelDataPtr operator()();
 
-	static bool identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types );
+	static bool identifyScalarsVectors( const DBBase *pdb, DataTypeInfoMap *types=NULL, std::vector< std::string > *pChanNames=NULL );
 	static bool parseTypeName(const std::string &actualName, std::string *ptype, bool *pbscalar);
 
     /** \brief Set whether to actually load the data into memory.

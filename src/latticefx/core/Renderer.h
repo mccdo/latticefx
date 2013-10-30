@@ -201,24 +201,12 @@ public:
             PUBLIC
         } AccessType;
 
-        UniformInfo() {}
         /** \brief Constructor
         \details Creates an instance of an osg::Uniform with \c name and \c type and stored it in _prototype. */
-        //UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description = std::string( "" ), const AccessType access = PUBLIC, const int numElements = 1 );
-        //UniformInfo( const UniformInfo& rhs );
-        ~UniformInfo() {}
-
-		UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description = std::string( "" ), const AccessType access = PUBLIC, const int numElements = 1 )
-			: _description( description ),
-				_access( access )
-		{
-			_prototype = new osg::Uniform( type, name, numElements );
-		}
-
-		UniformInfo( const UniformInfo& rhs )
-			: _description( rhs._description ),
-			_access( rhs._access ),
-			_prototype( rhs._prototype ) {}
+		UniformInfo();
+        UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description = std::string( "" ), const AccessType access = PUBLIC, const int numElements = 1 );
+        UniformInfo( const UniformInfo& rhs );
+        ~UniformInfo();
 
         std::string _description;
         AccessType _access;
@@ -243,6 +231,7 @@ public:
     no registered UniformInfo structs named \c name, a warning is displayed and the
     first UniformInfo struct is returned. */
     const UniformInfo& getUniform( const std::string& name ) const;
+
     /** \brief Create a new instance of a Uniform based on the specified \c info.
     \details This static method simply invokes the Uniform copy constructor on the \c info's
     UniformInfo::_prototype. */
@@ -286,6 +275,7 @@ Renderer::addInput( "scalar-string-name" );
 
     /**@}*/
 
+	void updateUniforms( osg::StateSet *ss );
 
 
     /** \name Texture Unit Usage
@@ -398,6 +388,7 @@ Renderer::addInput( "scalar-string-name" );
 
 	std::string getEnumName( TransferFunctionDestination e ) const;
 	TransferFunctionDestination getEnumFromNameTrans( const std::string &name ) const;
+	void getEnumListTrans( std::vector< std::string > *enumList ) const;
 
     /**@}*/
 
@@ -450,6 +441,7 @@ Renderer::addInput( "scalar-string-name" );
 
 	std::string getEnumName( HardwareMaskInputSource e ) const;
 	HardwareMaskInputSource getEnumFromNameMaskInput( const std::string &name ) const;
+	void getEnumListMaskInput( std::vector< std::string > *enumList ) const;
 
     /** \brief Specify the hardware mask input ChannelData.
     \details Specifies the ChannelData to use as the hardware mask source input when
@@ -500,9 +492,9 @@ Renderer::addInput( "scalar-string-name" );
     /** \brief Get the hardware mask comparison operatos. */
     unsigned int getHardwareMaskOperator() const;
 
-	/** \brief Get a non-const UniformInfo with the given \c name.
-    \details This method is useful for setting the value of the UniformInfo::_prototype. */
-    UniformInfo& getUniform( const std::string& name );
+	std::string getEnumName( HardwareMaskOperator e ) const;
+	HardwareMaskOperator getEnumFromNameHardwareMaskOperator( const std::string &name ) const;
+	void getEnumListHardwareMaskOperator( std::vector< std::string > *enumList ) const;
 
 	virtual void serialize( JsonSerializer *json ) const { OperationBase::serialize( json ); }
 	static void serialize( JsonSerializer *json, const std::string &name, const osg::Vec2f &v );
@@ -513,6 +505,25 @@ Renderer::addInput( "scalar-string-name" );
 	static bool load( JsonSerializer *json, const std::string &name, osg::Vec4f &v );
 	 
 	virtual void dumpState( std::ostream &os );
+
+	enum PropType
+	{
+		PT_ENUM_BEGIN,
+		PT_TF_DST,
+		PT_HM_SRC,
+		PT_HM_OPE,
+		PT_ENUM_END,
+
+		PT_FLOAT_BEGIN,
+		PT_HM_REF,
+		PT_HM_EPS,
+		PT_FLOAT_END,
+
+		PT_FLOATRNG_BEGIN,
+		PT_TF_INR,
+		PT_FLOATRNG_END
+	};
+
 
     /**@}*/
 
@@ -557,6 +568,10 @@ protected:
 
     /** \brief Register a uniform. */
     void registerUniform( const UniformInfo& info );
+
+	/** \brief Get a non-const UniformInfo with the given \c name.
+    \details This method is useful for setting the value of the UniformInfo::_prototype. */
+    UniformInfo& getUniform( const std::string& name );
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );

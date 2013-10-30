@@ -110,8 +110,9 @@ Renderer::~Renderer()
 {
 }
 
-
-/*
+Renderer::UniformInfo::UniformInfo() 
+{
+}
 Renderer::UniformInfo::UniformInfo( const std::string& name, const osg::Uniform::Type& type, const std::string& description,
                                     const AccessType access, const int numElements )
     : _description( description ),
@@ -128,7 +129,6 @@ Renderer::UniformInfo::UniformInfo( const UniformInfo& rhs )
 Renderer::UniformInfo::~UniformInfo()
 {
 }
-*/
 
 void Renderer::registerUniform( const UniformInfo& info )
 {
@@ -409,6 +409,13 @@ Renderer::TransferFunctionDestination Renderer::getEnumFromNameTrans( const std:
 	return TF_ALPHA;
 }
 
+void Renderer::getEnumListTrans( std::vector< std::string > *enumList ) const
+{
+	enumList->push_back( getEnumName( TF_RGB ) );
+	enumList->push_back( getEnumName( TF_RGBA ) );
+	enumList->push_back( getEnumName( TF_ALPHA ) );
+}
+
 void Renderer::setHardwareMaskInputSource( const HardwareMaskInputSource source )
 {
     _hmSource = source;
@@ -438,6 +445,12 @@ Renderer::HardwareMaskInputSource Renderer::getEnumFromNameMaskInput( const std:
 	return HM_SOURCE_SCALAR;
 }
 
+void Renderer::getEnumListMaskInput( std::vector< std::string > *enumList ) const
+{
+	enumList->push_back( getEnumName( HM_SOURCE_ALPHA ) );
+	enumList->push_back( getEnumName( HM_SOURCE_RED ) );
+	enumList->push_back( getEnumName( HM_SOURCE_SCALAR ) );
+}
 
 void Renderer::setHardwareMaskInput( const std::string& inputName )
 {
@@ -475,7 +488,150 @@ unsigned int Renderer::getHardwareMaskOperator() const
     return( _hmOperator );
 }
 
+std::string Renderer::getEnumName( HardwareMaskOperator e ) const
+{ 
+	switch( e )
+	{
+	case HM_OP_OFF:
+		return "HM_OP_OFF";
+	case HM_OP_EQ:
+		return "HM_OP_EQ";
+	case HM_OP_LT:
+		return "HM_OP_LT";
+	case HM_OP_GT:
+		return "HM_OP_GT";
+	}
 
+	return "HM_OP_NOT";
+}
+
+Renderer::HardwareMaskOperator Renderer::getEnumFromNameHardwareMaskOperator( const std::string &name ) const
+{
+	if( !name.compare( "HM_OP_OFF" )) return HM_OP_OFF;
+	else if( !name.compare( "HM_OP_EQ" )) return HM_OP_EQ;
+	else if( !name.compare( "HM_OP_LT" )) return HM_OP_LT;
+	else if( !name.compare( "HM_OP_GT" )) return HM_OP_GT;
+	return HM_OP_NOT;
+}
+
+void Renderer::getEnumListHardwareMaskOperator( std::vector< std::string > *enumList ) const
+{
+	enumList->push_back( getEnumName( HM_OP_OFF ) );
+	enumList->push_back( getEnumName( HM_OP_EQ ) );
+	enumList->push_back( getEnumName( HM_OP_LT ) );
+	enumList->push_back( getEnumName( HM_OP_GT ) );
+	enumList->push_back( getEnumName( HM_OP_NOT ) );
+}
+
+void Renderer::updateUniforms( osg::StateSet *ss)
+{
+    int tfDimension;
+    osg::Image* function( getTransferFunction() );
+    if( function == NULL )
+    {
+        // No transfer function specified.
+        tfDimension = 0;
+    }
+    else if( ( function->t() == 1 ) && ( function->r() == 1 ) )
+    {
+        // 1D transfer function.
+        tfDimension = 1;
+    }
+    else if( function->r() == 1 )
+    {
+        // 2D transfer function.
+        tfDimension = 2;
+    }
+    else
+    {
+        // 3D transfer function.
+        tfDimension = 3;
+    }
+    
+	osg::Uniform* pu;
+
+    {
+		// going to update the prototypes as well
+        UniformInfo& info( getUniform( "tfRange" ) );
+        info._prototype->set( _tfRange );
+
+		pu = ss->getOrCreateUniform( info._prototype->getName() , info._prototype->getType() );
+		pu->set( _tfRange );
+		ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
+    }
+
+	/*
+    {
+        UniformInfo& info( getUniform( "tfDimension" ) );
+        info._prototype->set( tfDimension );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+	*/
+
+    {
+        UniformInfo& info( getUniform( "tfDest" ) );
+        info._prototype->set( _tfDestMask );
+        
+		pu = ss->getOrCreateUniform( info._prototype->getName() , info._prototype->getType() );
+		pu->set( _tfDestMask );
+		ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
+    }
+
+
+    // Cram all mask parameters into a single vec4 uniform:
+    //   Element 0: Input source (0=alpha, 1=red, 2=scalar, 1000=no mask)
+    //   Element 1: Mask operator (0=EQ, -1=LT, 1=GT).
+    //   Element 2: Operator negate flag (1=no negate, -1=negate).
+    //   Element 3: Reference value.
+    osg::Vec4 maskParams( 1000., 0., 0., _hmReference );
+    if( _hmOperator != HM_OP_OFF )
+    {
+        if( _hmSource == HM_SOURCE_ALPHA )
+        {
+            maskParams[ 0 ] = 0.f;
+        }
+        else if( _hmSource == HM_SOURCE_RED )
+        {
+            maskParams[ 0 ] = 1.f;
+        }
+        else if( _hmSource == HM_SOURCE_SCALAR )
+        {
+            maskParams[ 0 ] = 2.f;
+        }
+
+        if( ( _hmOperator & HM_OP_EQ ) != 0 )
+        {
+            maskParams[ 1 ] = 0.f;
+        }
+        else if( ( _hmOperator & HM_OP_LT ) != 0 )
+        {
+            maskParams[ 1 ] = -1.f;
+        }
+        else if( ( _hmOperator & HM_OP_GT ) != 0 )
+        {
+            maskParams[ 1 ] = 1.f;
+        }
+
+        maskParams[ 2 ] = ( ( _hmOperator & HM_OP_NOT ) != 0 ) ? -1.f : 1.;
+    }
+
+    {
+        UniformInfo& info( getUniform( "hmParams" ) );
+        info._prototype->set( maskParams );
+        
+		pu = ss->getOrCreateUniform( info._prototype->getName() , info._prototype->getType() );
+		pu->set( maskParams );
+		ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
+    }
+    {
+        UniformInfo& info( getUniform( "hmEpsilon" ) );
+        info._prototype->set( _hmEpsilon );
+        
+		pu = ss->getOrCreateUniform( info._prototype->getName() , info._prototype->getType() );
+		pu->set( _hmEpsilon );
+		ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
+    }
+}
 
 void Renderer::addHardwareFeatureUniforms( osg::StateSet* stateSet )
 {
