@@ -104,4 +104,5 @@ _addLibrary( Lib ${_libName}
     ${_sourceFiles}
     LATTICEFX_LIBRARIES
         ${_vtkLibraries}
+        ${POCO_LIBRARIES}
 )
