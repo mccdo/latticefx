@@ -64,11 +64,15 @@ const std::string logstr( "lfx.demo" );
 class MyKeyHandler : public osgGA::GUIEventHandler
 {
 public:
-    MyKeyHandler( lfx::core::DataSetPtr dsp, osg::Group* group )
+    MyKeyHandler( lfx::core::DataSetPtr dsp, osg::Group* group, const std::vector<std::string> &scalars, const std::vector<std::string> &vectors )
         :
         m_dsp( dsp ),
         m_group( group ),
-        _mode( false )
+        _mode( false ),
+		_scalars( scalars ),
+		_vectors( vectors ),
+		_curScalar( 0 ),
+		_curColorScalar( 0 )
     {
         ;
     }
@@ -85,6 +89,44 @@ public:
                 m_dsp->getSceneData();
                 handled = true;
             }
+			else if( ea.getKey() == 's' )
+			{
+				// set the next channel
+				if( _scalars.size() <= 1 ) return handled;
+
+				 _curScalar++;
+				if( _curScalar >= _scalars.size() ) _curScalar = 0;
+				std::string name = _scalars[_curScalar];
+				boost::dynamic_pointer_cast< lfx::core::vtk::VTKSurfaceRenderer >( m_dsp->getRenderer() )->SetActiveScalar( name );
+                
+
+				lfx::core::RTPOperationList& oplist = m_dsp->getOperations();
+				BOOST_FOREACH( lfx::core::RTPOperationPtr op, oplist  )
+				{
+					lfx::core::vtk::VTKBaseRTP *prtp = dynamic_cast<lfx::core::vtk::VTKBaseRTP *>( op.get() );
+					if( !prtp ) continue;
+					prtp->SetActiveScalar( name );
+				}
+
+				//m_dsp->setDirty( lfx::core::DataSet::RENDERER_DIRTY | lfx::core::DataSet::RTPOPERATION_DIRTY );
+				m_dsp->setDirty( lfx::core::DataSet::ALL_DIRTY );
+				m_dsp->updateAll();
+                handled = true;
+			}
+			else if( ea.getKey() == 'c' )
+			{
+				// set the next channel
+				if( _scalars.size() <= 1 ) return handled;
+
+				_curColorScalar++;
+				if( _curColorScalar >= _scalars.size() ) _curColorScalar = 0;
+				std::string name = _scalars[_curColorScalar];
+				boost::dynamic_pointer_cast< lfx::core::vtk::VTKSurfaceRenderer >( m_dsp->getRenderer() )->SetColorByScalar( name );
+
+				m_dsp->setDirty( lfx::core::DataSet::RENDERER_DIRTY | lfx::core::DataSet::RTPOPERATION_DIRTY );
+                m_dsp->updateAll();
+                handled = true;
+			}
         }
         return( handled );
     }
@@ -92,6 +134,10 @@ public:
 protected:
     lfx::core::DataSetPtr m_dsp;
     osg::ref_ptr< osg::Group > m_group;
+	std::vector<std::string> _scalars;
+	std::vector<std::string> _vectors;
+	int _curScalar;
+	int _curColorScalar;
     bool _mode;
 };
 
@@ -345,6 +391,10 @@ int main( int argc, char** argv )
     //Load the VTK data
     lfx::core::vtk::DataSetPtr tempDataSet( LoadDataSet( argv[ 1 ] ) );
 
+	std::vector< std::string > scalars, vectors;
+	scalars = tempDataSet->GetScalarNames();
+    vectors = tempDataSet->GetVectorNames();
+
     //1st Step
     //Since we are not modifying the original channel data we can create
     //just one instance of it
@@ -360,8 +410,9 @@ int main( int argc, char** argv )
 		osPre2.open( "DataSetDumpPreVol2.txt" );
 		osPst2.open( "DataSetDumpPstVol2.txt" );
 
-		osg::ref_ptr< osg::Group > grp = new osg::Group();
 		lfx::core::DataSetPtr dsp2;
+		osg::ref_ptr< osg::Group > grp = new osg::Group();
+		//lfx::core::DataSetPtr dsp2;
 		dsp1 = prepareVolume1( grp, dobjPtr, tempDataSet, true, false );
 		if( dsp1 == NULL ) return -1;
 		dsp2 = prepareVolume2( grp, dobjPtr, tempDataSet, true, false );
@@ -383,8 +434,8 @@ int main( int argc, char** argv )
 	}
 	else
 	{
-		dsp1 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
-		prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
+		// prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
+		dsp1 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
 	}
 
 	/*
@@ -489,7 +540,7 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( tempGroup.get() );
-    viewer.addEventHandler( new MyKeyHandler( dsp1, tempGroup.get() ) );
+    viewer.addEventHandler( new MyKeyHandler( dsp1, tempGroup.get(), scalars, vectors ) );
 
     return( viewer.run() );
 }
