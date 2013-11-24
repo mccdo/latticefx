@@ -46,9 +46,19 @@ void VTKBaseRTP::SetActiveScalar( std::string const scalarName )
     m_activeScalar = scalarName;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void VTKBaseRTP::SetActiceVector( std::string const vectorName )
+std::string VTKBaseRTP::GetActiveScalar()
+{
+	return m_activeScalar;
+}
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::SetActiveVector( std::string const vectorName )
 {
     m_activeVector = vectorName;
+}
+////////////////////////////////////////////////////////////////////////////////
+std::string VTKBaseRTP::GetActiveVector()
+{
+	return m_activeVector;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetMaskValue( double const value )

@@ -51,7 +51,8 @@ public:
     VTKSurfaceRenderer( const std::string& logName = std::string( "" ) )
         :
         lfx::core::SurfaceRenderer( logName ),
-        m_pd( 0 )
+        m_pd( 0 ),
+		m_refresh( false )
     {
         ;
     }
@@ -68,21 +69,26 @@ public:
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use
     void SetActiveVector( const std::string& activeVector );
+	std::string GetActiveVector() const;
 
     ///Set the active scalar name to tell the render what to put in the textures
     ///\param activeScalar The active scalar name to use
     void SetActiveScalar( const std::string& activeScalar );
+	std::string GetActiveScalar() const;
 
     ///Set the color by scalar
     ///\note Used in pipelines where the active scalar is used to make a surface
     ///or some other feature and a second scalar is used for color.
     void SetColorByScalar( std::string const scalarName );
+	std::string GetColorByScalar() const;
 
     ///We are overriding the lfx::core::VectorRenderer method and then calling it
     ///once we have given it all of the data it needs.
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
 
 	virtual void dumpState( std::ostream &os );
+
+	void FullRefresh() { m_refresh = true; }
 
 protected:
     ///Create the raw OSG primitives from the VTK data
@@ -103,12 +109,16 @@ protected:
     std::string m_activeScalar;
     ///The color by scalar
     std::string m_colorByScalar;
+	///The color by scalar
+    std::string m_curScalar;
     ///The raw VTK data to render
     vtkPolyData* m_pd;
     ///Scalar channel data
     std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
     ///The raw dataset object
     lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
+
+	bool m_refresh;
 };
 
 typedef boost::shared_ptr< VTKSurfaceRenderer > VTKSurfaceRendererPtr;

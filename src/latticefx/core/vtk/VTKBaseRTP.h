@@ -81,9 +81,11 @@ public:
 
     ///Set the active scalar to use for this pipeline
     void SetActiveScalar( std::string const scalarName );
+	std::string GetActiveScalar();
 
     ///Set the active vector to use for this pipeline
-    void SetActiceVector( std::string const vectorName );
+    void SetActiveVector( std::string const vectorName );
+	std::string GetActiveVector();
 
     ///If points need to be masked via the vtkMaskPoints class this method
     ///controls the number of points masked

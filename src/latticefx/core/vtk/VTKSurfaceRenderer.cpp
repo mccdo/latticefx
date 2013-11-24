@@ -53,14 +53,29 @@ void VTKSurfaceRenderer::SetActiveVector( const std::string& activeVector )
     m_activeVector = activeVector;
 }
 ////////////////////////////////////////////////////////////////////////////////
+std::string VTKSurfaceRenderer::GetActiveVector() const
+{
+	return m_activeVector;
+}
+////////////////////////////////////////////////////////////////////////////////
 void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
 {
     m_activeScalar = activeScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
+std::string VTKSurfaceRenderer::GetActiveScalar() const
+{
+	return m_activeScalar;
+}
+////////////////////////////////////////////////////////////////////////////////
 void VTKSurfaceRenderer::SetColorByScalar( std::string const scalarName )
 {
     m_colorByScalar = scalarName;
+}
+////////////////////////////////////////////////////////////////////////////////
+std::string VTKSurfaceRenderer::GetColorByScalar() const
+{
+	return m_colorByScalar;
 }
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
@@ -103,10 +118,17 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         return 0;
     }
 
+	m_curScalar = m_activeScalar;
     if( !m_colorByScalar.empty() )
     {
-        m_activeScalar = m_colorByScalar;
+        m_curScalar = m_colorByScalar;
     }
+
+	if( m_refresh )
+	{
+		m_scalarChannels.clear();
+		m_refresh = false;
+	}
 
     if( !m_scalarChannels.empty() )
     {
@@ -116,7 +138,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         {
             addInput( iter->second );
         }
-        setTransferFunctionInput( m_activeScalar );
+        setTransferFunctionInput( m_curScalar );
         return( lfx::core::SurfaceRenderer::getSceneGraph( maskIn ) );
     }
 
@@ -131,9 +153,9 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 ////////////////////////////////////////////////////////////////////////////////
 void VTKSurfaceRenderer::ExtractVTKPrimitives()
 {
-    m_pd->Update();
+    m_pd->Update(); 
 
-    vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();
+    vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();  
     triangleFilter->SetInput( m_pd );
     triangleFilter->PassVertsOff();
     triangleFilter->PassLinesOff();
@@ -270,7 +292,7 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
     if( haveScalarData )
     {
         // Configure transfer function.
-        setTransferFunctionInput( m_activeScalar );
+        setTransferFunctionInput( m_curScalar );
         setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
@@ -285,7 +307,8 @@ void VTKSurfaceRenderer::serializeData( JsonSerializer *json ) const
 	json->insertObj( VTKSurfaceRenderer::getClassName(), true);
 	json->insertObjValue( "activeVector", m_activeVector );
 	json->insertObjValue( "activeScalar", m_activeScalar );
-	json->insertObjValue( "colorByScalar", m_colorByScalar ); 
+	json->insertObjValue( "colorByScalar", m_colorByScalar );
+	json->insertObjValue( "curScalar", m_curScalar );
     //vtkPolyData* m_pd;
     //std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
     //lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
@@ -308,6 +331,7 @@ bool VTKSurfaceRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, 
 	json->getValue( "activeVector", &m_activeVector);
 	json->getValue( "activeScalar", &m_activeScalar );
 	json->getValue( "colorByScalar", &m_colorByScalar );
+	json->getValue( "curScalar", &m_curScalar );
 
 	json->popParent();
 	return true;
@@ -322,6 +346,7 @@ void VTKSurfaceRenderer::dumpState( std::ostream &os )
 	os << "_activeVector: " << m_activeVector << std::endl;
 	os << "_activeScalar: " << m_activeScalar << std::endl;
 	os << "_colorByScalar: " << m_colorByScalar << std::endl;
+	os << "_curScalar: " << m_curScalar << std::endl;
 	dumpStateEnd( VTKSurfaceRenderer::getClassName(), os );
 }
 
