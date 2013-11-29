@@ -98,6 +98,7 @@ public:
 	//vector must contain 6 values in this order: xmin,xmax,ymin,ymax,zmin,zmax
 	//If no roi is set, the default sate, then the entire dataset will be used for any operations
 	void SetRoiBox(const std::vector<double> &roiBox);
+	std::vector<double>& GetRoiBox() { return m_roiBox; }
 
 	void ExtractBoundaryCells(bool extract) { m_roiExtractBoundaryCells = extract; }
 

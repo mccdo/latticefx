@@ -509,18 +509,27 @@ Renderer::addInput( "scalar-string-name" );
 	enum PropType
 	{
 		PT_ENUM_BEGIN,
-		PT_TF_DST,
-		PT_HM_SRC,
-		PT_HM_OPE,
+			PT_TF_DST,
+			PT_HM_SRC,
+			PT_HM_OPE,
 		PT_ENUM_END,
 
 		PT_FLOAT_BEGIN,
-		PT_HM_REF,
-		PT_HM_EPS,
+			PT_HM_REF,
+			PT_HM_EPS,
+			PT_RTP_BEGIN,
+				PT_RTP_PTMASK,
+				PT_RTP_ROIBOX_X_MIN,
+				PT_RTP_ROIBOX_X_MAX,
+				PT_RTP_ROIBOX_Y_MIN,
+				PT_RTP_ROIBOX_Y_MAX,
+				PT_RTP_ROIBOX_Z_MIN,
+				PT_RTP_ROIBOX_Z_MAX,
+			PT_RTP_END,
 		PT_FLOAT_END,
 
 		PT_FLOATRNG_BEGIN,
-		PT_TF_INR,
+			PT_TF_INR,
 		PT_FLOATRNG_END
 	};
 
