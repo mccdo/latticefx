@@ -39,7 +39,6 @@
 #include <vtkAlgorithmOutput.h>
 #include <vtkDataObject.h>
 
-
 ////////////////////////////////////////////////////////////////////////////////
 lfx::core::vtk::DataSetPtr LoadDataSet( std::string filename )
 {
@@ -136,10 +135,19 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 		return( dsp );
 	}
 
-    lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
-    vectorRTP->SetRequestedValue( 50.0 );
+
+#define ACTOR_RENDERER 0
+#define ROI_TEST 0
+
+#if ACTOR_RENDERER
+     lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
+#else
+	lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
+#endif
+    //vectorRTP->SetRequestedValue( 50.0 );
     vectorRTP->addInput( "vtkDataObject" );
-#if 1
+
+#if ROI_TEST
 		// test roi
 		std::vector<double> bounds;
 		bounds.resize(6);
@@ -172,24 +180,23 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 #endif
     dsp->addOperation( vectorRTP );
 
-    //2nd Step - the output of this is a ChannelData containing vtkPolyData
-    //lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
-    //vectorRTP->addInput( "vtkDataObject" );
-    //dsp->addOperation( vectorRTP );
-
-    //3rd Step - now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
-    /*lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
-    renderOp->SetActiveVector( "Momentum" );
-    renderOp->SetActiveScalar( "Density" );
-    renderOp->addInput( "vtkPolyData" );
-    dsp->setRenderer( renderOp );*/
-
+#if ACTOR_RENDERER
     //Try the vtkActor renderer
     lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyDataMapper" );
     dsp->setRenderer( renderOp );
+#else
+	// now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
+	lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
+    renderOp->SetActiveVector( "Momentum" );
+    renderOp->SetActiveScalar( "Density" );
+    renderOp->addInput( "vtkPolyData" );
+    dsp->setRenderer( renderOp );
+#endif
+	
+	
 
 	if( serialize )
 	{
