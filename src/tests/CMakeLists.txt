@@ -6,6 +6,7 @@ add_subdirectory( multiop-plugin )
 # Run-time / interactive tests
 add_subdirectory( page-volume )
 add_subdirectory( page-volume-rt )
+add_subdirectory( streamline )
 add_subdirectory( surface )
 add_subdirectory( test0 )
 add_subdirectory( timeseries-vector )

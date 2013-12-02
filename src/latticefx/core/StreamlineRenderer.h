@@ -122,8 +122,6 @@ public:
     typedef enum
     {
         POSITION,    /**< "positions" */
-        DIRECTION,   /**< "directions" */
-        RADIUS       /**< "radii" */
     } InputType;
 
 
@@ -138,26 +136,6 @@ public:
     virtual osg::StateSet* getRootState();
 
 
-    /** \brief Rendering style
-    \details Enum for supported rendering styles.
-    NOTE: POINT_SPRITES is currently unsupported. */
-    typedef enum
-    {
-        SIMPLE_POINTS,
-        POINT_SPRITES,
-        SPHERES,
-        DIRECTION_VECTORS
-    } PointStyle;
-
-	std::string getEnumName( PointStyle e ) const;
-	PointStyle getEnumFromName( const std::string &name ) const;
-
-    /** \brief Set the rendering style.
-    \details The default is SIMPLE_POINTS. */
-    void setPointStyle( const PointStyle& pointStyle );
-    /** \brief Get the rendering style. */
-    PointStyle getPointStyle() const;
-
 	virtual void dumpState( std::ostream &os );
 
 protected:
@@ -166,8 +144,6 @@ protected:
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
-    PointStyle _pointStyle;
-
 private:
     friend class boost::serialization::access;
 
@@ -175,7 +151,6 @@ private:
     void serialize( Archive& ar, const unsigned int version )
     {
         ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP( Renderer );
-        ar& BOOST_SERIALIZATION_NVP( _pointStyle );
     }
 };
 

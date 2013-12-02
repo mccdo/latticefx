@@ -52,13 +52,10 @@ namespace core
 {
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const std::string& logName )
-    : Renderer( "vec", logName ),
-      _pointStyle( SIMPLE_POINTS )
+    : Renderer( "stl", logName )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
-    setInputNameAlias( DIRECTION, "directions" );
-    setInputNameAlias( RADIUS, "radii" );
 
     // Create and register uniform information, and initial/default values
     // (if we have them -- in some cases, we don't know the actual initial
@@ -68,9 +65,6 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
     registerUniform( info );
 
     info = UniformInfo( "texPos", osg::Uniform::SAMPLER_3D, "Position texture data sampler unit.", UniformInfo::PRIVATE );
-    registerUniform( info );
-
-    info = UniformInfo( "texRad", osg::Uniform::SAMPLER_3D, "Radius texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "texDir", osg::Uniform::SAMPLER_3D, "Vector direction texture data sampler unit.", UniformInfo::PRIVATE );
@@ -84,8 +78,7 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
 }
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const StreamlineRenderer& rhs )
-    : Renderer( rhs ),
-      _pointStyle( rhs._pointStyle )
+    : Renderer( rhs )
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,256 +104,84 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( static_cast< osg::Vec3Array* >( sourceArray ) );
 
-    switch( _pointStyle )
+    // Geodesic sphere with subdivision=1 produces 20 sides. sub=2 produces 80 sides.
+    osg::Geometry* geom( osgwTools::makeGeodesicSphere( 1., 1 ) );
+    geom->setUseDisplayList( false );
+    geom->setUseVertexBufferObjects( true );
+    // TBD bound pad needs to be settable.
+    geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+    geode->addDrawable( geom );
+
+    // Set the number of instances.
+    unsigned int idx;
+    for( idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
     {
-    default:
-    case SIMPLE_POINTS:
-    {
-        osg::Geometry* geom( new osg::Geometry() );
-        geom->setUseDisplayList( false );
-        geom->setUseVertexBufferObjects( true );
-
-        // Set vertex array from our osg::Vec3Array of position data.
-        geom->setVertexArray( positions );
-
-        // Note that the transfer function input must be specified in the
-        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
-        // because the derived class might require the input data in a specific
-        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
-        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
-        if( getTransferFunction() != NULL )
-        {
-            // If using a transfer function, we must have a valid input.
-            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
-            if( tfInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getTransferFunctionInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-            osg::Array* tfInputArray( tfInputChannel->asOSGArray() );
-            // simplepoints shader supports only vec3 tf input. Convert the tf input data to a vec3 array.
-            osg::Vec3Array* tfInputArray3( ChannelDataOSGArray::convertToVec3Array( tfInputArray ) );
-            geom->setVertexAttribArray( TF_INPUT_ATTRIB, tfInputArray3 );
-            geom->setVertexAttribBinding( TF_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
-        }
-
-        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
-        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
-        {
-            // Hardware mask input is a scalar. Find the ChannelData and return an error
-            // if it's not present.
-            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
-            if( hmInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getHardwareMaskInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-            osg::Array* hmInputArray( hmInputChannel->asOSGArray() );
-            geom->setVertexAttribArray( HM_INPUT_ATTRIB, hmInputArray );
-            geom->setVertexAttribBinding( HM_INPUT_ATTRIB, osg::Geometry::BIND_PER_VERTEX );
-        }
-
-        // Draw points.
-        geom->addPrimitiveSet( new osg::DrawArrays( GL_POINTS, 0, numElements ) );
-        geode->addDrawable( geom );
-        break;
+        geom->getPrimitiveSet( idx )->setNumInstances( numElements );
     }
-    case POINT_SPRITES:
+
+    osg::StateSet* stateSet( geode->getOrCreateStateSet() );
+
+    // We send down instanced data in a 3D texture. We use the instance ID to generate
+    // a 3D texture coordinate and retrieve the data from the array. Get the dimensions,
+    // and pass it to the shader (required so that it can compute the texture coordinates).
+    //
+    // DO NOT specify texDim uniform in getRootState(). The number of elements in the
+    // input ChannelData could vary from one time step to the next, which affects the
+    // size of the data textures and therefore the texDim uniform values. It must be
+    // specified per time step.
+    const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
     {
-        LFX_CRITICAL( "getSceneGraph(): POINT_SPRITES style is not yet implemented." );
-        break;
+        UniformInfo& info( getUniform( "texDim" ) );
+        info._prototype->set( dimensions );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
-    case SPHERES:
+
+    // Create image data and store in DB.
+    osg::Texture3D* posTex( createTexture( posChannel ) );
+
+    const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
+    stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
+
+    // Note that the transfer function input must be specified in the
+    // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
+    // because the derived class might require the input data in a specific
+    // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
+    // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
+    if( getTransferFunction() != NULL )
     {
-        // Geodesic sphere with subdivision=1 produces 20 sides. sub=2 produces 80 sides.
-        osg::Geometry* geom( osgwTools::makeGeodesicSphere( 1., 1 ) );
-        geom->setUseDisplayList( false );
-        geom->setUseVertexBufferObjects( true );
-        // TBD bound pad needs to be settable.
-        geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
-        geode->addDrawable( geom );
-
-        // Set the number of instances.
-        unsigned int idx;
-        for( idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
+        const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
+        if( tfInputByName == NULL )
         {
-            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
-        }
-
-        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-
-        // We send down instanced data in a 3D texture. We use the instance ID to generate
-        // a 3D texture coordinate and retrieve the data from the array. Get the dimensions,
-        // and pass it to the shader (required so that it can compute the texture coordinates).
-        //
-        // DO NOT specify texDim uniform in getRootState(). The number of elements in the
-        // input ChannelData could vary from one time step to the next, which affects the
-        // size of the data textures and therefore the texDim uniform values. It must be
-        // specified per time step.
-        const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
-        {
-            UniformInfo& info( getUniform( "texDim" ) );
-            info._prototype->set( dimensions );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        // Create image data and store in DB.
-        osg::Texture3D* posTex( createTexture( posChannel ) );
-
-        const unsigned int posTexUnit( getOrAssignTextureUnit( "posTex" ) );
-        stateSet->setTextureAttributeAndModes( posTexUnit, posTex, osg::StateAttribute::OFF );
-
-        // Get the radius data using the input type alias for the RADIUS input type.
-        ChannelDataPtr radAlias( getInput( getInputNameAlias( RADIUS ) ) );
-        if( radAlias == NULL )
-        {
-            LFX_WARNING( "getSceneGraph(): Unable to find required RADIUS ChannelData." );
+            LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
+                            getTransferFunctionInput() + "\"." );
             return( NULL );
         }
-        const ChannelDataPtr radChannel( radAlias->getMaskedChannel( maskIn ) );
+        const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
 
-        // Create image data and store in DB.
-        osg::Texture3D* radTex( createTexture( radChannel ) );
+        osg::Texture3D* tfInputTex( createTexture( tfInputChannel ) );
 
-        const unsigned int radTexUnit( getOrAssignTextureUnit( "radTex" ) );
-        stateSet->setTextureAttributeAndModes( radTexUnit, radTex, osg::StateAttribute::OFF );
-
-        // Note that the transfer function input must be specified in the
-        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
-        // because the derived class might require the input data in a specific
-        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
-        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
-        if( getTransferFunction() != NULL )
-        {
-            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
-            if( tfInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getTransferFunctionInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-
-            osg::Texture3D* tfInputTex( createTexture( tfInputChannel ) );
-
-            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-            stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
-        }
-
-        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
-        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
-        {
-            // Hardware mask input is a scalar. Find the ChannelData and return an error
-            // if it's not present.
-            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
-            if( hmInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getHardwareMaskInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-
-            osg::Texture3D* hmInputTex( createTexture( hmInputChannel ) );
-
-            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
-            stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
-        }
-        break;
+        const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
+        stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
     }
-    case DIRECTION_VECTORS:
+
+    // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
+    if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
     {
-        osg::Geometry* geom( osgwTools::makeArrow() );
-        geom->setUseDisplayList( false );
-        geom->setUseVertexBufferObjects( true );
-        // TBD bound pad needs to be settable.
-        geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
-        geode->addDrawable( geom );
-
-        // Set the number of instances.
-        unsigned int idx;
-        for( idx = 0; idx < geom->getNumPrimitiveSets(); ++idx )
+        // Hardware mask input is a scalar. Find the ChannelData and return an error
+        // if it's not present.
+        const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
+        if( hmInputByName == NULL )
         {
-            geom->getPrimitiveSet( idx )->setNumInstances( numElements );
-        }
-
-        osg::StateSet* stateSet( geode->getOrCreateStateSet() );
-
-        // We send down instanced data in a 3D texture. We use the instance ID to generate
-        // a 3D texture coordinate and retrieve the data from the array. Get the dimensions,
-        // and pass it to the shader (required so that it can compute the texture coordinates).
-        //
-        // DO NOT specify texDim uniform in getRootState(). The number of elements in the
-        // input ChannelData could vary from one time step to the next, which affects the
-        // size of the data textures and therefore the texDim uniform values. It must be
-        // specified per time step.
-        const osg::Vec3f dimensions( lfx::core::computeTexture3DDimensions( numElements ) );
-        {
-            UniformInfo& info( getUniform( "texDim" ) );
-            info._prototype->set( dimensions );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        osg::Texture3D* posTex( createTexture( posChannel ) );
-
-        const unsigned int posUnit( getOrAssignTextureUnit( "posTex" ) );
-        stateSet->setTextureAttributeAndModes( posUnit, posTex, osg::StateAttribute::OFF );
-
-        // Get the direction data using the input type alias for the DIRECTION input type.
-        ChannelDataPtr dirAlias( getInput( getInputNameAlias( DIRECTION ) ) );
-        if( dirAlias == NULL )
-        {
-            LFX_WARNING( "getSceneGraph(): Unable to find required DIRECTION ChannelData." );
+            LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
+                            getHardwareMaskInput() + "\"." );
             return( NULL );
         }
-        const ChannelDataPtr dirChannel( dirAlias->getMaskedChannel( maskIn ) );
-        osg::Texture3D* dirTex( createTexture( dirChannel ) );
-        const unsigned int dirUnit( getOrAssignTextureUnit( "dirTex" ) );
-        stateSet->setTextureAttributeAndModes( dirUnit, dirTex, osg::StateAttribute::OFF );
+        const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
 
-        // Note that the transfer function input must be specified in the
-        // Renderer-derived class rather than Renderer::addHardwareFeatureUniforms()
-        // because the derived class might require the input data in a specific
-        // format. SPHERES and DIRECTION_VECTORS, which use instanced rendering, require
-        // a 3D texture. But SIMPLE_POINTS requires a generic vertex attrib.
-        if( getTransferFunction() != NULL )
-        {
-            const ChannelDataPtr tfInputByName( getInput( getTransferFunctionInput() ) );
-            if( tfInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getTransferFunctionInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr tfInputChannel( tfInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* tfInputTex( createTexture( tfInputChannel ) );
-            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-            stateSet->setTextureAttributeAndModes( tfInputUnit, tfInputTex, osg::StateAttribute::OFF );
-        }
+        osg::Texture3D* hmInputTex( createTexture( hmInputChannel ) );
 
-        // As above, hardware mask input not handled by Renderer::addHardwareFeatureUniforms().
-        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
-        {
-            // Hardware mask input is a scalar. Find the ChannelData and return an error
-            // if it's not present.
-            const ChannelDataPtr hmInputByName( getInput( getHardwareMaskInput() ) );
-            if( hmInputByName == NULL )
-            {
-                LFX_WARNING( "getSceneGraph(): Unable to find input \"" +
-                             getHardwareMaskInput() + "\"." );
-                return( NULL );
-            }
-            const ChannelDataPtr hmInputChannel( hmInputByName->getMaskedChannel( maskIn ) );
-            osg::Texture3D* hmInputTex( createTexture( hmInputChannel ) );
-            const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
-            stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
-        }
-        break;
-    }
+        const unsigned int hmInputUnit( getOrAssignTextureUnit( "hmInput" ) );
+        stateSet->setTextureAttributeAndModes( hmInputUnit, hmInputTex, osg::StateAttribute::OFF );
     }
 
     return( geode.release() );
@@ -370,156 +191,45 @@ osg::StateSet* StreamlineRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
 
-    switch( _pointStyle )
+    // Required for correct lighting of clipped spheres.
+    stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
+
+    // position, radius, transfer function input, and hardware mask input texture
+    // units are the same for all time steps, so set their sampler uniform unit
+    // values in the root state.
     {
-    default:
-    case SIMPLE_POINTS:
+        UniformInfo& info( getUniform( "texPos" ) );
+        info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+    }
+
+    if( getTransferFunction() != NULL )
     {
-        // Set base class transfer function and hardware mask uniforms.
-        addHardwareFeatureUniforms( stateSet.get() );
-
-        osg::Program* program = new osg::Program();
-        program->addBindAttribLocation( "tfInput", TF_INPUT_ATTRIB );
-        program->addBindAttribLocation( "hmInput", HM_INPUT_ATTRIB );
-        stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-simplepoints.vert" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-simplepoints.frag" ) );
-        break;
+        UniformInfo& info( getUniform( "tfInput" ) );
+        info._prototype->set( getOrAssignTextureUnit( "tfInput" ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
-    case POINT_SPRITES:
+
+    if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
     {
-        LFX_CRITICAL( "getRootState(): POINT_SPRITES style is not yet implemented." );
-        break;
+        UniformInfo& info( getUniform( "hmInput" ) );
+        info._prototype->set( getOrAssignTextureUnit( "hmInput" ) );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
-    case SPHERES:
-    {
-        // Required for correct lighting of clipped spheres.
-        stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
 
-        // position, radius, transfer function input, and hardware mask input texture
-        // units are the same for all time steps, so set their sampler uniform unit
-        // values in the root state.
-        {
-            UniformInfo& info( getUniform( "texPos" ) );
-            info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        {
-            UniformInfo& info( getUniform( "texRad" ) );
-            info._prototype->set( getOrAssignTextureUnit( "radTex" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        if( getTransferFunction() != NULL )
-        {
-            UniformInfo& info( getUniform( "tfInput" ) );
-            info._prototype->set( getOrAssignTextureUnit( "tfInput" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
-        {
-            UniformInfo& info( getUniform( "hmInput" ) );
-            info._prototype->set( getOrAssignTextureUnit( "hmInput" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        // Set base class transfer function and hardware mask uniforms.
-        addHardwareFeatureUniforms( stateSet.get() );
+    // Set base class transfer function and hardware mask uniforms.
+    addHardwareFeatureUniforms( stateSet.get() );
 
 
-        osg::Program* program = new osg::Program();
-        stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-pointspheres.vert" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-pointspheres.frag" ) );
-        break;
-    }
-    case DIRECTION_VECTORS:
-    {
-        // Required for correct lighting of clipped arrows.
-        stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
-
-        // position, direction, transfer function input, and hardware mask input texture
-        // units are the same for all time steps, so set their sampler uniform unit
-        // values in the root state.
-        {
-            UniformInfo& info( getUniform( "texPos" ) );
-            info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        {
-            UniformInfo& info( getUniform( "texDir" ) );
-            info._prototype->set( getOrAssignTextureUnit( "dirTex" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        if( getTransferFunction() != NULL )
-        {
-            const unsigned int tfInputUnit( getOrAssignTextureUnit( "tfInput" ) );
-            osg::Uniform* tfInputUni( new osg::Uniform( osg::Uniform::SAMPLER_3D, "tfInput" ) );
-            tfInputUni->set( ( int )tfInputUnit );
-            stateSet->addUniform( tfInputUni );
-        }
-
-        if( getHardwareMaskInputSource() == HM_SOURCE_SCALAR )
-        {
-            UniformInfo& info( getUniform( "hmInput" ) );
-            info._prototype->set( getOrAssignTextureUnit( "hmInput" ) );
-            stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
-        }
-
-        // Set base class transfer function and hardware mask uniforms.
-        addHardwareFeatureUniforms( stateSet.get() );
-
-
-        osg::Program* program = new osg::Program();
-        stateSet->setAttribute( program );
-        program->addShader( loadShader( osg::Shader::VERTEX, "lfx-vectorfield.vert" ) );
-        program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-vectorfield.frag" ) );
-        break;
-    }
-    }
+    osg::Program* program = new osg::Program();
+    stateSet->setAttribute( program );
+    program->addShader( loadShader( osg::Shader::VERTEX, "lfx-streamline.vert" ) );
+    program->addShader( loadShader( osg::Shader::FRAGMENT, "lfx-streamline.frag" ) );
 
     return( stateSet.release() );
 }
 
-////////////////////////////////////////////////////////////////////////////////
-std::string StreamlineRenderer::getEnumName( PointStyle e ) const
-{
-	switch( e )
-	{
-	case SIMPLE_POINTS:
-		return "SIMPLE_POINTS";
-	case POINT_SPRITES:
-		return "POINT_SPRITES";
-    case SPHERES:
-		return "SPHERES";
-	}
 
-	return "DIRECTION_VECTORS";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-StreamlineRenderer::PointStyle StreamlineRenderer::getEnumFromName( const std::string &name ) const
-{
-	if( !name.compare( "SIMPLE_POINTS" )) return SIMPLE_POINTS;
-	else if( !name.compare( "POINT_SPRITES" )) return POINT_SPRITES;
-	else if( !name.compare( "SPHERES" )) return SPHERES;
-	return DIRECTION_VECTORS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void StreamlineRenderer::setPointStyle( const PointStyle& pointStyle )
-{
-    _pointStyle = pointStyle;
-}
-////////////////////////////////////////////////////////////////////////////////
-StreamlineRenderer::PointStyle StreamlineRenderer::getPointStyle() const
-{
-    return( _pointStyle );
-}
 ////////////////////////////////////////////////////////////////////////////////
 osg::Texture3D* StreamlineRenderer::createTexture( ChannelDataPtr data )
 {
@@ -564,7 +274,6 @@ void StreamlineRenderer::serializeData( JsonSerializer *json ) const
 	Renderer::serializeData( json );
 
 	json->insertObj( StreamlineRenderer::getClassName(), true );
-	json->insertObjValue( "pointStyle", getEnumName(  _pointStyle ) );
 	json->popParent();
 }
 
@@ -581,10 +290,6 @@ bool StreamlineRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, 
 		return false;
 	}
 
-	std::string name;
-	json->getValue( "pointStyle", &name, getEnumName( _pointStyle ) );
-	_pointStyle = getEnumFromName( name );
-
 	json->popParent();
 	return true;
 }
@@ -595,7 +300,6 @@ void StreamlineRenderer::dumpState( std::ostream &os )
 	Renderer::dumpState( os );
 
 	dumpStateStart( StreamlineRenderer::getClassName(), os );
-	os << "_pointStyle: " << getEnumName( _pointStyle ) << std::endl;
 	dumpStateEnd( StreamlineRenderer::getClassName(), os );
 }
 
