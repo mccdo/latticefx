@@ -45,6 +45,7 @@ set( _headerFiles
     Preprocess.h
     Renderer.h
     RTPOperation.h
+    StreamlineRenderer.h
     SurfaceRenderer.h
     TextureUtils.h
     TransferFunctionUtils.h
@@ -85,6 +86,7 @@ set( _sourceFiles
     Preprocess.cpp
     Renderer.cpp
     RTPOperation.cpp
+    StreamlineRenderer.cpp
     SurfaceRenderer.cpp
     TextureUtils.cpp
     TransferFunctionUtils.cpp
@@ -97,12 +99,13 @@ if( crunchstore_FOUND )
     list( APPEND _headerFiles DBCrunchStore.h )
 endif()
 
-set(INCLUDE_DIRECTORY_NAME "latticefx/core")
+set( INCLUDE_DIRECTORY_NAME "latticefx/core" )
 
 _addLibrary( Lib ${_libName}
     ${_headerFiles}
     ${_sourceFiles}
     LATTICEFX_LIBRARIES
-        ${_vtkLibraries}
         ${POCO_LIBRARIES}
 )
+
+#        ${_vtkLibraries}
