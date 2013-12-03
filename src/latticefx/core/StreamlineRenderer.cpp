@@ -33,6 +33,9 @@
 #include <osg/Shader>
 #include <osg/Program>
 #include <osg/Uniform>
+#include <osgDB/ReadFile>
+#include <osg/BlendFunc>
+#include <osg/Depth>
 
 #include <osgwTools/Shapes.h>
 #include <string>
@@ -73,6 +76,9 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
     registerUniform( info );
 
     info = UniformInfo( "hmInput", osg::Uniform::SAMPLER_3D, "Hardware mask input data sampler unit.", UniformInfo::PRIVATE );
+    registerUniform( info );
+
+    info = UniformInfo( "stlImage", osg::Uniform::SAMPLER_2D, "Image for individual streamline points.", UniformInfo::PRIVATE );
     registerUniform( info );
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +216,35 @@ osg::StateSet* StreamlineRenderer::getRootState()
         info._prototype->set( getOrAssignTextureUnit( "posTex" ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
     }
+
+    // All streamline points have the same texture image.
+    {
+        UniformInfo& info( getUniform( "stlImage" ) );
+        const int unit( getOrAssignTextureUnit( "stlImage" ) );
+        info._prototype->set( unit );
+        stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );
+
+        osg::Texture2D *tex( new osg::Texture2D() );
+        tex->setImage( osgDB::readImageFile( "splotch.png" ) );
+        stateSet->setTextureAttributeAndModes( unit, tex, osg::StateAttribute::ON );
+    }
+
+    // Note:
+    // It turns out that SRC_ALPHA, ONE_MINUS_SRC_ALPHA actually is
+    // non-saturating. Give it a color just shy of full intensity white,
+    // and the result will never saturate to white no matter how many
+    // times it is overdrawn.
+    osg::ref_ptr< osg::BlendFunc > bf( new osg::BlendFunc(
+        GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ) );
+    stateSet->setAttributeAndModes( bf.get() );
+
+    // Note:
+    // Leave the depth test enabled, but mask off depth writes (4th param is false).
+    // This allows us to render the streamline points in any order, front to back
+    // or back to front, and not lose any points by depth testing against themselves.
+    osg::ref_ptr< osg::Depth > depth( new osg::Depth( osg::Depth::LESS, 0., 1., false ) );
+    stateSet->setAttributeAndModes( depth.get() );
+
 
     if( getTransferFunction() != NULL )
     {

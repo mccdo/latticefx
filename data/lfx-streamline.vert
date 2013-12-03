@@ -177,4 +177,7 @@ void main()
     // Transform into clip coordinates.
     gl_Position = gl_ModelViewProjectionMatrix * modelPos;
     gl_ClipVertex = gl_ModelViewMatrix * modelPos;
+
+    // Pass tex coords to look up streamline image.
+    gl_TexCoord[ 0 ] = gl_MultiTexCoord0;
 }
