@@ -50,6 +50,8 @@ namespace lfx
 {
 namespace core
 {
+
+
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const std::string& logName )
     : Renderer( "stl", logName )
@@ -65,9 +67,6 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
     registerUniform( info );
 
     info = UniformInfo( "texPos", osg::Uniform::SAMPLER_3D, "Position texture data sampler unit.", UniformInfo::PRIVATE );
-    registerUniform( info );
-
-    info = UniformInfo( "texDir", osg::Uniform::SAMPLER_3D, "Vector direction texture data sampler unit.", UniformInfo::PRIVATE );
     registerUniform( info );
 
     info = UniformInfo( "tfInput", osg::Uniform::SAMPLER_3D, "Transfer function input data sampler unit.", UniformInfo::PRIVATE );
@@ -103,7 +102,7 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( static_cast< osg::Vec3Array* >( sourceArray ) );
-
+#if 0
     // Geodesic sphere with subdivision=1 produces 20 sides. sub=2 produces 80 sides.
     osg::Geometry* geom( osgwTools::makeGeodesicSphere( 1., 1 ) );
     geom->setUseDisplayList( false );
@@ -111,6 +110,18 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     // TBD bound pad needs to be settable.
     geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
     geode->addDrawable( geom );
+#else
+    const float dimX( 1.f ), dimY( 1.f );
+    const float halfDimX( dimX * .5f );
+    const float halfDimY( dimY * .5f );
+    osg::Geometry* geom( osgwTools::makePlane( osg::Vec3( -halfDimX, -halfDimY, 0. ),
+        osg::Vec3( dimX, 0., 0. ), osg::Vec3( 0., dimY, 0. ) ) );
+    geom->setUseDisplayList( false );
+    geom->setUseVertexBufferObjects( true );
+    // TBD bound pad needs to be settable.
+    geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
+    geode->addDrawable( geom );
+#endif
 
     // Set the number of instances.
     unsigned int idx;
@@ -191,10 +202,7 @@ osg::StateSet* StreamlineRenderer::getRootState()
 {
     osg::ref_ptr< osg::StateSet > stateSet( new osg::StateSet() );
 
-    // Required for correct lighting of clipped spheres.
-    stateSet->setMode( GL_VERTEX_PROGRAM_TWO_SIDE, osg::StateAttribute::ON );
-
-    // position, radius, transfer function input, and hardware mask input texture
+    // position, transfer function input, and hardware mask input texture
     // units are the same for all time steps, so set their sampler uniform unit
     // values in the root state.
     {

@@ -46,6 +46,7 @@
 #include <osg/ClipNode>
 #include <osg/LightSource>
 #include <osg/Material>
+#include <osg/io_utils>
 
 #include <iostream>
 #include <sstream>
@@ -82,37 +83,46 @@ public:
     }
 };
 
+#define DEV_DATA 1
 
 unsigned int computeDynamicPositions( osg::Vec3Array* a,
-                                      const unsigned int w, const unsigned int h, const unsigned int d, const double t )
+                                      const unsigned int samples, const double t )
 {
-    a->resize( w * h * d );
+    a->resize( samples );
     unsigned int index( 0 );
-    unsigned int wIdx, hIdx, dIdx;
-    for( wIdx = 0; wIdx < w; ++wIdx )
+    for( unsigned int idx = 0; idx < samples; ++idx )
     {
-        for( hIdx = 0; hIdx < h; ++hIdx )
-        {
-            for( dIdx = 0; dIdx < d; ++dIdx )
-            {
-                const double x( ( ( double )wIdx ) / ( w - 1. ) * ( double )w - ( w * .5 ) );
-                const double y( ( ( double )hIdx ) / ( h - 1. ) * ( double )h - ( h * .5 ) );
-                const double z( ( ( double )dIdx ) / ( d - 1. ) * ( double )d - ( d * .5 ) );
-                ( *a )[ index ].set( x + sin( ( x + y + t )*.8 ), y + sin( ( x + y + t ) ), z + sin( ( x + y + t ) * 1.2 ) );
-                ++index;
-            }
-        }
+#ifdef DEV_DATA
+        ( *a )[ index ].set(
+            idx * 0.05,
+            t,
+            4. * sin( (double)( idx ) / (double)( samples ) * osg::PI * 2. )
+            );
+#else
+        const double x( ( double )( idx % 2323 ) / 2323. );
+        const double y( ( double )( idx % 3701 ) / 3701. );
+        const double z( ( double )( idx % 1097 ) / 1097. );
+        ( *a )[ index ].set(
+            ( x + sin( ( x + y + t ) * .8 ) ) * 5.,
+            ( y + sin( ( x + y + t ) ) ) * 5.,
+            z + sin( ( x + y + t ) * 1.2 )
+            );
+#endif
+        ++index;
     }
     return( index );
 }
 
-DataSetPtr prepareSpheres( DBBasePtr dbBase )
+DataSetPtr prepareStreamline( DBBasePtr dbBase )
 {
-    const unsigned int w( 15 ), h( 12 ), d( 9 );
-    const unsigned int samplesPerTime( w * h * d );
+#ifdef DEV_DATA
+    const unsigned int samplesPerTime( 100 );
+#else
+    const unsigned int samplesPerTime( 10000 );
+#endif
     {
         std::ostringstream ostr;
-        ostr << "Creating data set. Dimensions: " << w << " x " << h << " x " << d;
+        ostr << "Creating data set. Samples: " << samplesPerTime;
         LFX_INFO_STATIC( logstr, ostr.str() );
     }
 
@@ -131,7 +141,7 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
     for( time = 0.; time < maxTime; time += 1. / sampleRate )
     {
         osg::ref_ptr< osg::Vec3Array > posArray( new osg::Vec3Array );
-        unsigned int count( computeDynamicPositions( posArray.get(), w, h, d, time ) );
+        unsigned int count( computeDynamicPositions( posArray.get(), samplesPerTime, time ) );
         totalSamples += count;
         ChannelDataOSGArrayPtr posData( ChannelDataOSGArrayPtr( new ChannelDataOSGArray( "positions", posArray.get() ) ) );
         dsp->addChannel( posData, time );
@@ -157,7 +167,7 @@ DataSetPtr prepareSpheres( DBBasePtr dbBase )
     renderOp->setTransferFunctionDestination( Renderer::TF_RGBA );
 
     // Configure hardware mask.
-    if( true )
+    if( false )
     {
         renderOp->setHardwareMaskInputSource( Renderer::HM_SOURCE_SCALAR );
         renderOp->setHardwareMaskInput( "depth" );
@@ -226,7 +236,7 @@ DataSetPtr prepareDataSet( const std::string& csFile, const std::string& diskPat
         LFX_CRITICAL_STATIC( logstr, "Paging disabled." );
     }
 
-    dataSet = prepareSpheres( dbBase );
+    dataSet = prepareStreamline( dbBase );
 
     return( dataSet );
 }
@@ -312,9 +322,11 @@ int main( int argc, char** argv )
         prevClockTime = clockTime;
         playControl->elapsedClockTick( elapsed );
 
+        /*
         // Test dynamic hardware mask range.
     	Renderer::setHardwareMaskRange(root->getStateSet(),
             (float)(2. * cos( clockTime * .7 )), 1.f + (float)(2. * sin( clockTime )) );
+            */
 
         viewer.frame();
     }
