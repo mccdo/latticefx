@@ -3,20 +3,6 @@
 #extension GL_ARB_draw_instanced : require
 
 
-/** begin light **/
-
-varying vec3 ecVertex;
-varying vec3 ecNormal;
-
-void vertexLighting( in vec4 ocVertex, in vec3 ocNormal )
-{
-    ecVertex = vec3( gl_ModelViewMatrix * ocVertex );
-    ecNormal = gl_NormalMatrix * ocNormal;
-}
-
-/** end light **/
-
-
 /** begin transfer function **/
 
 uniform sampler1D tf1d;
@@ -121,7 +107,6 @@ bool hardwareMask( in vec3 tC )
 
 
 uniform sampler3D texPos;
-uniform sampler3D texRad;
 uniform vec3 texDim;
 
 
@@ -143,6 +128,28 @@ vec3 generateTexCoord( const in int iid )
     return( vec3( s1 / texDim.x + sEps, t1 / texDim.y + tEps, p1 / texDim.z + pEps ) );
 }
 
+mat3 makeOrientMat( const in vec3 dir )
+{
+    // Compute a vector at a right angle to the direction.
+    // First try projection direction into xy rotated -90 degrees.
+    // If that gives us a very short vector,
+    // then project into yz instead, rotated -90 degrees.
+    vec3 c = vec3( dir.y, -dir.x, 0.0 );
+    if( dot( c, c ) < 0.1 )
+        c = vec3( 0.0, dir.z, -dir.y );
+        
+    // Appears to be a bug in normalize when z==0
+    //normalize( c.xyz );
+    float l = length( c );
+    c /= l;
+
+    vec3 up = normalize( cross( dir, c ) );
+
+    // Orientation uses the cross product vector as x,
+    // the up vector as y, and the direction vector as z.
+    return( mat3( c, up, dir ) );
+}
+
 
 void main()
 {
@@ -161,13 +168,13 @@ void main()
     // Sample (look up) xyz position
     vec4 pos = texture3D( texPos, tC );
 
-    // Sample (look up) radius. texRad texture format is GL_ALPHA32F_ARB.
-    float scale = texture3D( texRad, tC ).a;
-
-    // Scale and translate the vertex, then transform to clip coords.
-    vec4 oVec = vec4( scale * gl_Vertex.xyz + pos.xyz, 1.0 );
-    gl_Position = gl_ModelViewProjectionMatrix * oVec;
-    gl_ClipVertex = gl_ModelViewMatrix * oVec;
-
-    vertexLighting( oVec, gl_Normal );
+    // Compute orientation
+    vec4 eye = gl_ModelViewMatrixInverse * vec4( 0., 0., 0., 1. );
+    vec3 direction = normalize( eye.xyz - pos.xyz );
+    mat3 orient = makeOrientMat( direction );
+    // Orient the incoming vertices and translate by the instance position.
+    vec4 modelPos = vec4( orient * gl_Vertex.xyz, 0. ) + pos;
+    // Transform into clip coordinates.
+    gl_Position = gl_ModelViewProjectionMatrix * modelPos;
+    gl_ClipVertex = gl_ModelViewMatrix * modelPos;
 }
