@@ -13,6 +13,8 @@ uniform vec2 tfRange;
 uniform int tfDimension;
 uniform vec4 tfDest;
 
+vec4 internalColor;
+
 void transferFunction( in vec3 tC )
 {
     vec4 xfer;
@@ -45,9 +47,7 @@ void transferFunction( in vec3 tC )
     // localDestMask is rgba floats, and will be either 1.0 or 0.0 for each element.
     // For element=1.0, take element from the xfer function.
     // Otherwise, take element from glColor.
-    gl_FrontColor = ( xfer * localDestMask )
-        + ( gl_Color * ( 1. - localDestMask ) );
-    gl_BackColor = ( xfer * localDestMask )
+    internalColor = ( xfer * localDestMask )
         + ( gl_Color * ( 1. - localDestMask ) );
 }
 
@@ -151,6 +151,8 @@ mat3 makeOrientMat( const in vec3 dir )
 }
 
 
+uniform float osg_SimulationTime;
+
 void main()
 {
     // Generate stp texture coords from the instance ID.
@@ -180,4 +182,29 @@ void main()
 
     // Pass tex coords to look up streamline image.
     gl_TexCoord[ 0 ] = gl_MultiTexCoord0;
+
+
+    float totalInstances = texDim.x * texDim.y * texDim.z;
+    const float numTraces = 1.; // TBD uniform.
+    const float traceInterval = 4.; // TBD uniform.
+    const float traceLength = 75.; // TBD uniform.
+    float fInstanceID = gl_InstanceIDARB;
+
+    // Compute the length of a trace segment, in points.
+    float segLength = totalInstances / numTraces;
+    // Use current time to compute an offset in points for the animation.
+    float time = mod( osg_SimulationTime, traceInterval );
+    float pointOffset = ( time / traceInterval ) * segLength;
+
+    // Find the segment tail for this point's relavant segment.
+    float segTail = floor( (fInstanceID - pointOffset) / segLength ) * segLength + pointOffset;
+    // ...and the head, which will have full intensity alpha.
+    float segHead = floor( segTail + segLength );
+
+    // Use smoothstep to fade from the head to the traceLength.
+    float alpha = smoothstep( segHead-traceLength, segHead, fInstanceID );
+
+    vec4 color = internalColor;
+    color.a *= alpha;
+    gl_FrontColor = color;
 }

@@ -7,6 +7,7 @@ void main()
 {
     vec4 color = texture2D( stlImage, gl_TexCoord[ 0 ].st );
     color.rgb = gl_Color.rgb;
+    color.a *= gl_Color.a;
     gl_FragData[ 0 ] = color;
 
     // Support for second/glow render target.
