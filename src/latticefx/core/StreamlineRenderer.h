@@ -134,6 +134,16 @@ public:
     void setTraceLengthPercent( float traceLengthPercent );
     /** \brief Get the trace length percent. */
     float getTraceLengthPercent() const;
+    /** \brief Set animation speed.
+    \details Specifies the animation speed as a normalized percentage of
+    iterating over the entire vector input data per second. For example,
+    a speed of 1.0 means the trace iteraties over the entire data set once
+    per second. A speed of 0.2 (the default) means 20% of the data is
+    traversed in a second (5 second for the entire data). Values are not
+    clamped and can be > 1.0. Negative values reverse the animation. */
+    void setTraceSpeed( const float traceSpeed );
+    /** \brief Get the trace animation speed. */
+    float getTraceSpeed() const;
 
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
@@ -161,8 +171,8 @@ protected:
     osg::Texture3D* createTexture( ChannelDataPtr data );
 
     int _numTraces;
-    float _traceInterval;
     float _traceLengthPercent;
+    float _traceSpeed;
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );

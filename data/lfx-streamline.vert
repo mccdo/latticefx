@@ -153,9 +153,12 @@ mat3 makeOrientMat( const in vec3 dir )
 
 uniform float osg_SimulationTime;
 
+// Total number of traces along the streamline.
 uniform float numTraces;
-uniform float traceInterval; // Speed. Smaller is faster.
+// Length of each trace as a normalized percent of all samples.
 uniform float traceLengthPercent;
+// Normalized percent of data to traverse in animation per second.
+uniform float traceSpeed;
 
 void main()
 {
@@ -188,6 +191,7 @@ void main()
     gl_TexCoord[ 0 ] = gl_MultiTexCoord0;
 
 
+    // Compute some constants used for animation.
     float totalInstances = texDim.x * texDim.y * texDim.z;
     float traceLength = totalInstances * traceLengthPercent;
     float fInstanceID = gl_InstanceIDARB;
@@ -195,8 +199,8 @@ void main()
     // Compute the length of a trace segment, in points.
     float segLength = totalInstances / numTraces;
     // Use current time to compute an offset in points for the animation.
-    float time = mod( osg_SimulationTime, traceInterval );
-    float pointOffset = ( time / traceInterval ) * segLength;
+    float time = mod( osg_SimulationTime, 1. / traceSpeed );
+    float pointOffset = ( time * traceSpeed ) * segLength;
 
     // Find the segment tail for this point's relavant segment.
     float segTail = floor( (fInstanceID - pointOffset) / segLength ) * segLength + pointOffset;
