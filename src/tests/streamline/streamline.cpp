@@ -83,7 +83,7 @@ public:
     }
 };
 
-#define DEV_DATA 1
+//#define DEV_DATA 1
 
 unsigned int computeDynamicPositions( osg::Vec3Array* a,
                                       const unsigned int samples, const double t )
@@ -94,9 +94,9 @@ unsigned int computeDynamicPositions( osg::Vec3Array* a,
     {
 #ifdef DEV_DATA
         ( *a )[ index ].set(
-            idx * 0.05,
-            t,
-            4. * sin( (double)( idx ) / (double)( samples ) * osg::PI * 2. )
+            idx * 0.1,
+            sin( t * .25 + t / 3. ),
+            3. * sin( (double)( idx ) / (double)( samples ) * osg::PI * 2. )
             );
 #else
         const double x( ( double )( idx % 2323 ) / 2323. );

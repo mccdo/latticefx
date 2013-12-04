@@ -161,6 +161,8 @@ uniform float traceLengthPercent;
 uniform float traceSpeed;
 // If true, animate. If false, display all sample point non-animation.
 uniform bool enableAnimation;
+// Splotch image scale
+uniform float imageScale;
 
 void main()
 {
@@ -184,7 +186,7 @@ void main()
     vec3 direction = normalize( eye.xyz - pos.xyz );
     mat3 orient = makeOrientMat( direction );
     // Orient the incoming vertices and translate by the instance position.
-    vec4 modelPos = vec4( orient * gl_Vertex.xyz, 0. ) + pos;
+    vec4 modelPos = vec4( orient * imageScale * gl_Vertex.xyz, 0. ) + pos;
     // Transform into clip coordinates.
     gl_Position = gl_ModelViewProjectionMatrix * modelPos;
     gl_ClipVertex = gl_ModelViewMatrix * modelPos;

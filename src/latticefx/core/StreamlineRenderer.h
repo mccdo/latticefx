@@ -150,6 +150,13 @@ public:
     void setAnimationEnable( bool enable=true );
     /** \brief Get enaimation enable state. */
     bool getAnimationEnable() const;
+    /** \brief Scale the apparent streamline diameter.
+    \details By default, the streamline billboard images are rendered such that the
+    apparent diameter of the streamline is 1.0 world coordinate. Set this scalar to
+    modify the diameter. The default is 1.0. */
+    void setImageScale( float scale );
+    /** \brief Get the streamline diameter scale factor. */
+    float getImageScale() const;
 
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
@@ -180,6 +187,7 @@ protected:
     float _traceLengthPercent;
     float _traceSpeed;
     bool _enableAnimation;
+    float _imageScale;
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );

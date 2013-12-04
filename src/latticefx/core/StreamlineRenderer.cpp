@@ -61,7 +61,8 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
       _numTraces( 1 ),
       _traceLengthPercent( .25f ),
       _traceSpeed( .2f ),
-      _enableAnimation( true )
+      _enableAnimation( true ),
+      _imageScale( 1.f )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
@@ -96,6 +97,9 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
 
     info = UniformInfo( "enableAnimation", osg::Uniform::BOOL, "Enable or disable animation." );
     registerUniform( info );
+
+    info = UniformInfo( "imageScale", osg::Uniform::FLOAT, "Streamline diameter scale factor." );
+    registerUniform( info );
 }
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const StreamlineRenderer& rhs )
@@ -103,7 +107,8 @@ StreamlineRenderer::StreamlineRenderer( const StreamlineRenderer& rhs )
       _numTraces( rhs._numTraces ),
       _traceLengthPercent( rhs._traceLengthPercent ),
       _traceSpeed( rhs._traceSpeed ),
-      _enableAnimation( rhs._enableAnimation )
+      _enableAnimation( rhs._enableAnimation ),
+      _imageScale( rhs._imageScale )
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,6 +161,16 @@ bool StreamlineRenderer::getAnimationEnable() const
     return( _enableAnimation );
 }
 ////////////////////////////////////////////////////////////////////////////////
+void StreamlineRenderer::setImageScale( float scale )
+{
+    _imageScale = scale;
+}
+////////////////////////////////////////////////////////////////////////////////
+float StreamlineRenderer::getImageScale() const
+{
+    return( _imageScale );
+}
+////////////////////////////////////////////////////////////////////////////////
 osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
 {
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
@@ -173,15 +188,7 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     osg::Array* sourceArray( posChannel->asOSGArray() );
     const unsigned int numElements( sourceArray->getNumElements() );
     osg::Vec3Array* positions( static_cast< osg::Vec3Array* >( sourceArray ) );
-#if 0
-    // Geodesic sphere with subdivision=1 produces 20 sides. sub=2 produces 80 sides.
-    osg::Geometry* geom( osgwTools::makeGeodesicSphere( 1., 1 ) );
-    geom->setUseDisplayList( false );
-    geom->setUseVertexBufferObjects( true );
-    // TBD bound pad needs to be settable.
-    geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
-    geode->addDrawable( geom );
-#else
+
     const float dimX( 1.f ), dimY( 1.f );
     const float halfDimX( dimX * .5f );
     const float halfDimY( dimY * .5f );
@@ -192,7 +199,6 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     // TBD bound pad needs to be settable.
     geom->setInitialBound( lfx::core::getBound( *positions, osg::Vec3( 1., 1., 1. ) ) );
     geode->addDrawable( geom );
-#endif
 
     // Set the number of instances.
     unsigned int idx;
@@ -315,6 +321,15 @@ osg::StateSet* StreamlineRenderer::getRootState()
         info._prototype->set( _enableAnimation );
         stateSet->addUniform( createUniform( info ) );
     }
+    {
+        UniformInfo& info( getUniform( "imageScale" ) );
+        info._prototype->set( _imageScale );
+        stateSet->addUniform( createUniform( info ) );
+    }
+
+    // Go in "transparent bin" (bin 10) so that streamlines render
+    // after opaque objects in the scene.
+    stateSet->setRenderBinDetails( 10, "RenderBin" );
 
     // Note:
     // It turns out that SRC_ALPHA, ONE_MINUS_SRC_ALPHA actually is
