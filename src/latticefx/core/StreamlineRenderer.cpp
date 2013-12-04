@@ -419,6 +419,11 @@ void StreamlineRenderer::serializeData( JsonSerializer *json ) const
 	Renderer::serializeData( json );
 
 	json->insertObj( StreamlineRenderer::getClassName(), true );
+	json->insertObjValue( "numTraces", _numTraces );
+	json->insertObjValue( "traceLengthPercent", _traceLengthPercent );
+	json->insertObjValue( "traceSpeed", _traceSpeed );
+	json->insertObjValue( "enableAnimation", _enableAnimation );
+	json->insertObjValue( "imageScale", _imageScale );
 	json->popParent();
 }
 
@@ -435,6 +440,12 @@ bool StreamlineRenderer::loadData( JsonSerializer *json, IObjFactory *pfactory, 
 		return false;
 	}
 
+	json->getValue( "numTraces", &_numTraces, _numTraces );
+	json->getValue( "traceLengthPercent", &_traceLengthPercent, _traceLengthPercent );
+	json->getValue( "traceSpeed", &_traceSpeed, _traceSpeed );
+	json->getValue( "enableAnimation", &_enableAnimation, _enableAnimation );
+	json->getValue( "imageScale", &_imageScale, _imageScale );
+
 	json->popParent();
 	return true;
 }
@@ -445,7 +456,14 @@ void StreamlineRenderer::dumpState( std::ostream &os )
 	Renderer::dumpState( os );
 
 	dumpStateStart( StreamlineRenderer::getClassName(), os );
-	dumpStateEnd( StreamlineRenderer::getClassName(), os );
+
+    os << "_numTraces: " << _numTraces << std::endl;
+    os << "_traceLengthPercent: " << _traceLengthPercent << std::endl;
+    os << "_traceSpeed: " << _traceSpeed << std::endl;
+    os << "_enableAnimation: " << _enableAnimation << std::endl;
+    os << "_imageScale: " << _imageScale << std::endl;
+
+    dumpStateEnd( StreamlineRenderer::getClassName(), os );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

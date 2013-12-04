@@ -99,13 +99,13 @@ unsigned int computeDynamicPositions( osg::Vec3Array* a,
             3. * sin( (double)( idx ) / (double)( samples ) * osg::PI * 2. )
             );
 #else
-        const double x( ( double )( idx % 2323 ) / 2323. );
-        const double y( ( double )( idx % 3701 ) / 3701. );
-        const double z( ( double )( idx % 1097 ) / 1097. );
+        const double x( ( double )( idx ) / 5323. );
+        const double y( ( double )( idx ) / 4701. );
+        const double z( ( double )( idx ) / 8097. );
         ( *a )[ index ].set(
-            ( x + sin( ( x + y + t ) * .8 ) ) * 5.,
-            ( y + sin( ( x + y + t ) ) ) * 5.,
-            z + sin( ( x + y + t ) * 1.2 )
+            3. + sin( x + y + t ) * 8. - 4.,
+            cos( x + y + t ) * 6. - 3.,
+            sin( t * .25 ) * 6. - 3.
             );
 #endif
         ++index;
