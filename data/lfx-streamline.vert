@@ -153,6 +153,10 @@ mat3 makeOrientMat( const in vec3 dir )
 
 uniform float osg_SimulationTime;
 
+uniform float numTraces;
+uniform float traceInterval; // Speed. Smaller is faster.
+uniform float traceLengthPercent;
+
 void main()
 {
     // Generate stp texture coords from the instance ID.
@@ -185,9 +189,7 @@ void main()
 
 
     float totalInstances = texDim.x * texDim.y * texDim.z;
-    const float numTraces = 1.; // TBD uniform.
-    const float traceInterval = 4.; // TBD uniform.
-    const float traceLength = 75.; // TBD uniform.
+    float traceLength = totalInstances * traceLengthPercent;
     float fInstanceID = gl_InstanceIDARB;
 
     // Compute the length of a trace segment, in points.

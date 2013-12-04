@@ -57,7 +57,10 @@ namespace core
 
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const std::string& logName )
-    : Renderer( "stl", logName )
+    : Renderer( "stl", logName ),
+      _numTraces( 1 ),
+      _traceInterval( 5. ),
+      _traceLengthPercent( .25 )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
@@ -80,15 +83,62 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
 
     info = UniformInfo( "stlImage", osg::Uniform::SAMPLER_2D, "Image for individual streamline points.", UniformInfo::PRIVATE );
     registerUniform( info );
+
+    info = UniformInfo( "numTraces", osg::Uniform::FLOAT, "Number of traces per vector data input." );
+    registerUniform( info );
+
+    info = UniformInfo( "traceInterval", osg::Uniform::FLOAT, "Number of seconds for animation to cycle." );
+    registerUniform( info );
+
+    info = UniformInfo( "traceLengthPercent", osg::Uniform::FLOAT, "Length of streamline trace as a percent of total data." );
+    registerUniform( info );
 }
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const StreamlineRenderer& rhs )
-    : Renderer( rhs )
+    : Renderer( rhs ),
+      _numTraces( rhs._numTraces ),
+      _traceInterval( rhs._traceInterval ),
+      _traceLengthPercent( rhs._traceLengthPercent )
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::~StreamlineRenderer()
 {
+}
+////////////////////////////////////////////////////////////////////////////////
+void StreamlineRenderer::setNumTraces( const int numTraces )
+{
+    _numTraces = numTraces;
+}
+////////////////////////////////////////////////////////////////////////////////
+int StreamlineRenderer::getNumTraces() const
+{
+    return( _numTraces );
+}
+////////////////////////////////////////////////////////////////////////////////
+void StreamlineRenderer::setTraceInterval( const float traceInterval )
+{
+    _traceInterval = traceInterval;
+}
+////////////////////////////////////////////////////////////////////////////////
+float StreamlineRenderer::getTraceInterval() const
+{
+    return( _traceInterval );
+}
+////////////////////////////////////////////////////////////////////////////////
+void StreamlineRenderer::setTraceLengthPercent( float traceLengthPercent )
+{
+    if( traceLengthPercent > 1. )
+        _traceLengthPercent = 1.;
+    else if( traceLengthPercent < 0. )
+        _traceLengthPercent = 0.;
+    else
+        _traceLengthPercent = traceLengthPercent;
+}
+////////////////////////////////////////////////////////////////////////////////
+float StreamlineRenderer::getTraceLengthPercent() const
+{
+    return( _traceLengthPercent );
 }
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
@@ -227,6 +277,23 @@ osg::StateSet* StreamlineRenderer::getRootState()
         osg::Texture2D *tex( new osg::Texture2D() );
         tex->setImage( osgDB::readImageFile( "splotch.png" ) );
         stateSet->setTextureAttributeAndModes( unit, tex, osg::StateAttribute::ON );
+    }
+
+    // Animation parameters
+    {
+        UniformInfo& info( getUniform( "numTraces" ) );
+        info._prototype->set( (float)_numTraces );
+        stateSet->addUniform( createUniform( info ) );
+    }
+    {
+        UniformInfo& info( getUniform( "traceInterval" ) );
+        info._prototype->set( _traceInterval );
+        stateSet->addUniform( createUniform( info ) );
+    }
+    {
+        UniformInfo& info( getUniform( "traceLengthPercent" ) );
+        info._prototype->set( _traceLengthPercent );
+        stateSet->addUniform( createUniform( info ) );
     }
 
     // Note:

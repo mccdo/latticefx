@@ -322,11 +322,9 @@ int main( int argc, char** argv )
         prevClockTime = clockTime;
         playControl->elapsedClockTick( elapsed );
 
-        /*
         // Test dynamic hardware mask range.
     	Renderer::setHardwareMaskRange(root->getStateSet(),
             (float)(2. * cos( clockTime * .7 )), 1.f + (float)(2. * sin( clockTime )) );
-            */
 
         viewer.frame();
     }

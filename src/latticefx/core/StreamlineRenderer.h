@@ -117,6 +117,25 @@ public:
 	virtual std::string getClassName() const { return "StreamlineRenderer"; }
 
 
+    /** \brief Specify the number of traces rendered along the streamline vector input data.
+    \details Default is 1. */
+    void setNumTraces( const int numTraces );
+    /** \brief Get the number of streamline traces. */
+    int getNumTraces() const;
+    /** \brief Specify the streamline animation speed.
+    \details The number of seconds for a trace to iterate over all vector data.
+    Smaller means faster. Default is 5.0 seconds. */
+    void setTraceInterval( const float traceInterval );
+    /** \brief Get the streamline animation speed. */
+    float getTraceInterval() const;
+    /** \brief Set trace length as a percent of total data.
+    \details This is a normalized percent and will be clamped to the range (0.0 - 1.0).
+    Default is 0.25, or 1/4 the data length. */
+    void setTraceLengthPercent( float traceLengthPercent );
+    /** \brief Get the trace length percent. */
+    float getTraceLengthPercent() const;
+
+
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
     attaching input ChannelData with arbitrary names. */
     typedef enum
@@ -140,6 +159,10 @@ public:
 
 protected:
     osg::Texture3D* createTexture( ChannelDataPtr data );
+
+    int _numTraces;
+    float _traceInterval;
+    float _traceLengthPercent;
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
