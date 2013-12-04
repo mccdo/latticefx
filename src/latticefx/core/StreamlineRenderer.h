@@ -144,6 +144,12 @@ public:
     void setTraceSpeed( const float traceSpeed );
     /** \brief Get the trace animation speed. */
     float getTraceSpeed() const;
+    /** \brief Enable or disable animation.
+    \details Default: true. When disabled (false), all sample points
+    are visible. */
+    void setAnimationEnable( bool enable=true );
+    /** \brief Get enaimation enable state. */
+    bool getAnimationEnable() const;
 
 
     /** \brief Input aliases; use with OperationBase::set/getInputNameAlias to allow
@@ -173,6 +179,7 @@ protected:
     int _numTraces;
     float _traceLengthPercent;
     float _traceSpeed;
+    bool _enableAnimation;
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );

@@ -59,8 +59,9 @@ namespace core
 StreamlineRenderer::StreamlineRenderer( const std::string& logName )
     : Renderer( "stl", logName ),
       _numTraces( 1 ),
-      _traceLengthPercent( .25 ),
-      _traceSpeed( .2 )
+      _traceLengthPercent( .25f ),
+      _traceSpeed( .2f ),
+      _enableAnimation( true )
 {
     // Specify default ChannelData name aliases for the required inputs.
     setInputNameAlias( POSITION, "positions" );
@@ -92,13 +93,17 @@ StreamlineRenderer::StreamlineRenderer( const std::string& logName )
 
     info = UniformInfo( "traceSpeed", osg::Uniform::FLOAT, "Percent of data to traverse per second during animation." );
     registerUniform( info );
+
+    info = UniformInfo( "enableAnimation", osg::Uniform::BOOL, "Enable or disable animation." );
+    registerUniform( info );
 }
 ////////////////////////////////////////////////////////////////////////////////
 StreamlineRenderer::StreamlineRenderer( const StreamlineRenderer& rhs )
     : Renderer( rhs ),
       _numTraces( rhs._numTraces ),
       _traceLengthPercent( rhs._traceLengthPercent ),
-      _traceSpeed( rhs._traceSpeed )
+      _traceSpeed( rhs._traceSpeed ),
+      _enableAnimation( rhs._enableAnimation )
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +144,16 @@ void StreamlineRenderer::setTraceSpeed( const float traceSpeed )
 float StreamlineRenderer::getTraceSpeed() const
 {
     return( _traceSpeed );
+}
+////////////////////////////////////////////////////////////////////////////////
+void StreamlineRenderer::setAnimationEnable( bool enable )
+{
+    _enableAnimation = enable;
+}
+////////////////////////////////////////////////////////////////////////////////
+bool StreamlineRenderer::getAnimationEnable() const
+{
+    return( _enableAnimation );
 }
 ////////////////////////////////////////////////////////////////////////////////
 osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
@@ -293,6 +308,11 @@ osg::StateSet* StreamlineRenderer::getRootState()
     {
         UniformInfo& info( getUniform( "traceSpeed" ) );
         info._prototype->set( _traceSpeed );
+        stateSet->addUniform( createUniform( info ) );
+    }
+    {
+        UniformInfo& info( getUniform( "enableAnimation" ) );
+        info._prototype->set( _enableAnimation );
         stateSet->addUniform( createUniform( info ) );
     }
 

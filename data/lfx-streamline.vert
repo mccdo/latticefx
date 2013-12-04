@@ -159,6 +159,8 @@ uniform float numTraces;
 uniform float traceLengthPercent;
 // Normalized percent of data to traverse in animation per second.
 uniform float traceSpeed;
+// If true, animate. If false, display all sample point non-animation.
+uniform bool enableAnimation;
 
 void main()
 {
@@ -191,24 +193,32 @@ void main()
     gl_TexCoord[ 0 ] = gl_MultiTexCoord0;
 
 
-    // Compute some constants used for animation.
-    float totalInstances = texDim.x * texDim.y * texDim.z;
-    float traceLength = totalInstances * traceLengthPercent;
-    float fInstanceID = gl_InstanceIDARB;
+    float alpha;
+    if( !enableAnimation )
+    {
+        alpha = 1.f;
+    }
+    else
+    {
+        // Compute some constants used for animation.
+        float totalInstances = texDim.x * texDim.y * texDim.z;
+        float traceLength = totalInstances * traceLengthPercent;
+        float fInstanceID = gl_InstanceIDARB;
 
-    // Compute the length of a trace segment, in points.
-    float segLength = totalInstances / numTraces;
-    // Use current time to compute an offset in points for the animation.
-    float time = mod( osg_SimulationTime, 1. / traceSpeed );
-    float pointOffset = ( time * traceSpeed ) * segLength;
+        // Compute the length of a trace segment, in points.
+        float segLength = totalInstances / numTraces;
+        // Use current time to compute an offset in points for the animation.
+        float time = mod( osg_SimulationTime, 1. / traceSpeed );
+        float pointOffset = ( time * traceSpeed ) * segLength;
 
-    // Find the segment tail for this point's relavant segment.
-    float segTail = floor( (fInstanceID - pointOffset) / segLength ) * segLength + pointOffset;
-    // ...and the head, which will have full intensity alpha.
-    float segHead = floor( segTail + segLength );
+        // Find the segment tail for this point's relavant segment.
+        float segTail = floor( (fInstanceID - pointOffset) / segLength ) * segLength + pointOffset;
+        // ...and the head, which will have full intensity alpha.
+        float segHead = floor( segTail + segLength );
 
-    // Use smoothstep to fade from the head to the traceLength.
-    float alpha = smoothstep( segHead-traceLength, segHead, fInstanceID );
+        // Use smoothstep to fade from the head to the traceLength.
+        alpha = smoothstep( segHead-traceLength, segHead, fInstanceID );
+    }
 
     vec4 color = internalColor;
     color.a *= alpha;
