@@ -186,6 +186,7 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyDataMapper" );
+    renderOp->addInput( "vtkDataObject" );
     dsp->setRenderer( renderOp );
 #else
 	// now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
@@ -193,10 +194,9 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
     renderOp->SetActiveVector( "Momentum" );
     renderOp->SetActiveScalar( "Density" );
     renderOp->addInput( "vtkPolyData" );
+    renderOp->addInput( "vtkDataObject" );
     dsp->setRenderer( renderOp );
 #endif
-	
-	
 
 	if( serialize )
 	{
@@ -207,12 +207,6 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 			return( lfx::core::DataSetPtr() );
 		}
 	}
-
-	/*
-    std::cout << "lfx...creating data..." << std::endl;
-    osg::Node* sceneNode = dsp->getSceneData();
-    std::cout << "...finished creating data. " << std::endl;
-	*/
 
 	return dsp;
 }

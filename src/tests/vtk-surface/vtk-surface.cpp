@@ -245,7 +245,7 @@ lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup,
 	lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
 
 
-#if 1
+#if 0
 	// test roi
 	std::vector<double> bounds;
 	bounds.resize(6);
@@ -280,7 +280,7 @@ lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup,
 	renderOp2->addInput( "vtkDataObject" );
 	dsp->setRenderer( renderOp2 );
 
-	std::cout << "lfx...creating data..." << std::endl;
+	std::cout << "lfx...creating iso surface data..." << std::endl;
 	tempGroup->addChild( dsp->getSceneData() );
 	std::cout << "...finished creating data. " << std::endl;
 	renderOp2->dumpUniformInfo( std::cout );
@@ -323,7 +323,7 @@ lfx::core::DataSetPtr prepareVolume1(  osg::ref_ptr< osg::Group > tempGroup,
 	vectorRTP->SetRequestedValue( 50.0 );
 	vectorRTP->addInput( "vtkDataObject" );
 
-#if 1
+#if 0
 	// test roi
 	std::vector<double> bounds;
 	bounds.resize(6);
@@ -351,7 +351,7 @@ lfx::core::DataSetPtr prepareVolume1(  osg::ref_ptr< osg::Group > tempGroup,
 	renderOp->addInput( "vtkDataObject" );
 	dsp->setRenderer( renderOp );
 
-	std::cout << "lfx...creating data..." << std::endl;
+	std::cout << "lfx...creating contour data..." << std::endl;
 	tempGroup->addChild( dsp->getSceneData() );
 	std::cout << "...finished creating data. " << std::endl;
 	renderOp->dumpUniformInfo( std::cout );
@@ -401,6 +401,7 @@ int main( int argc, char** argv )
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
 
 	lfx::core::DataSetPtr dsp1;
+    lfx::core::DataSetPtr dsp2;
 	if( serialize )
 	{
 		// debug
@@ -410,7 +411,7 @@ int main( int argc, char** argv )
 		osPre2.open( "DataSetDumpPreVol2.txt" );
 		osPst2.open( "DataSetDumpPstVol2.txt" );
 
-		lfx::core::DataSetPtr dsp2;
+		//lfx::core::DataSetPtr dsp2;
 		osg::ref_ptr< osg::Group > grp = new osg::Group();
 		//lfx::core::DataSetPtr dsp2;
 		dsp1 = prepareVolume1( grp, dobjPtr, tempDataSet, true, false );
@@ -434,104 +435,9 @@ int main( int argc, char** argv )
 	}
 	else
 	{
-		// prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
+		dsp2 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
 		dsp1 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
 	}
-
-	/*
-    lfx::core::DataSetPtr dsp1( new lfx::core::DataSet() );
-    {
-        //Create the DataSet for this visualization with VTK
-        dsp1->addChannel( dobjPtr );
-
-        lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
-        vectorRTP->SetPlaneDirection( lfx::core::vtk::CuttingPlane::Y_PLANE );
-        vectorRTP->SetRequestedValue( 50.0 );
-        vectorRTP->addInput( "vtkDataObject" );
-
-#if 1
-		// test roi
-		std::vector<double> bounds;
-		bounds.resize(6);
-		tempDataSet->GetBounds(&bounds[0]);
-        
-		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2.;
-		//bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/5.;
-		//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/5.;
-		vectorRTP->SetRoiBox(bounds);
-		vectorRTP->ExtractBoundaryCells(true);
-#endif
-
-        dsp1->addOperation( vectorRTP );
-
-        //Try the vtkActor renderer
-        lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
-#if 0
-        renderOp->SetActiveVector( "steve's_vector" );
-        renderOp->SetActiveScalar( "200_to_1000" );
-#else
-        renderOp->SetActiveVector( "Momentum" );
-        renderOp->SetActiveScalar( "Momentum_magnitude" );
-#endif
-        renderOp->addInput( "vtkPolyDataMapper" );
-        renderOp->addInput( "vtkDataObject" );
-        dsp1->setRenderer( renderOp );
-
-        std::cout << "lfx...creating data..." << std::endl;
-        tempGroup->addChild( dsp1->getSceneData() );
-        std::cout << "...finished creating data. " << std::endl;
-        renderOp->dumpUniformInfo( std::cout );
-    }
-
-    {
-        //Create the DataSet for this visualization with VTK
-        lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
-        dsp->addChannel( dobjPtr );
-
-        lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
-
-	
-#if 1
-		// test roi
-		std::vector<double> bounds;
-		bounds.resize(6);
-		tempDataSet->GetBounds(&bounds[0]);
-
-		bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2;
-		bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/2.;
-		//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/2.;
-		isosurfaceRTP->SetRoiBox(bounds);
-		isosurfaceRTP->ExtractBoundaryCells(true);
-#endif
-#if 0
-        isosurfaceRTP->SetRequestedValue( 500.0 );
-        isosurfaceRTP->SetActiveScalar( "200_to_1000" );
-#else
-        isosurfaceRTP->SetRequestedValue( 150.0 );
-        isosurfaceRTP->SetActiveScalar( "Momentum_magnitude" );
-#endif
-        isosurfaceRTP->addInput( "vtkDataObject" );
-        dsp->addOperation( isosurfaceRTP );
-
-        //Try the vtkActor renderer
-        lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
-#if 0
-        renderOp2->SetActiveVector( "steve's_vector" );
-        renderOp2->SetActiveScalar( "200_to_1000" );
-#else
-        renderOp2->SetActiveVector( "Momentum" );
-        renderOp2->SetActiveScalar( "Momentum_magnitude" );
-#endif
-        renderOp2->addInput( "vtkPolyDataMapper" );
-        renderOp2->addInput( "vtkDataObject" );
-        dsp->setRenderer( renderOp2 );h
-
-        std::cout << "lfx...creating data..." << std::endl;6
-        tempGroup->addChild( dsp->getSceneData() );
-        std::cout << "...finished creating data. " << std::endl;
-        renderOp2->dumpUniformInfo( std::cout );
-    }
-	*/
 
     //And do not forget to cleanup the algorithm executive prototype
     vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
