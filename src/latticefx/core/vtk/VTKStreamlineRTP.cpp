@@ -54,7 +54,8 @@ namespace core
 namespace vtk
 {
 
-VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Channel ),
+VTKStreamlineRTP::VTKStreamlineRTP(vtkLookupTable *lut) : VTKBaseRTP( lfx::core::RTPOperation::Channel ),
+	_dsBounds(6, 0),
 	_bbox( 6, 0 ),
 	_numPts( 3, 4 ),
 	_integrationDirection( 0 ),
@@ -65,7 +66,7 @@ VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Chan
     _lineDiameter( 1.0f ),
     _arrowDiameter( 1 ),
     _particleDiameter( 1.0f ),
-	_lut( NULL )
+	_lut( lut )
 {
 	_bbox[1] = 1;
 	_bbox[3] = 1;
@@ -75,6 +76,15 @@ VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Chan
 ////////////////////////////////////////////////////////////////////////////////
 VTKStreamlineRTP::~VTKStreamlineRTP()
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setDatasetBounds(double *bounds)
+{
+	for( int i=0; i<6; i++ )
+	{
+		_dsBounds[i] = bounds[i];
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,13 +111,10 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
         LFX_ERROR( "VTKStreamlineRTP::channel : Lookup table is null." );
     }
 
-	lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr =
-        boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(
-            getInput( "vtkDataObject" ) );
+	lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(getInput( "vtkDataObject" ) );
     vtkDataObject *tempVtkDO = cddoPtr->GetDataObject();
-	vtkDataSet *ds = dynamic_cast<vtkDataSet *>(tempVtkDO);
 
-	vtkPolyData *seedPoints = createSeedPoints(ds, _bbox, _numPts);
+	vtkPolyData *seedPoints = createSeedPoints(_dsBounds, _bbox, _numPts);
 
 	vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
 	// TODO: caller needs to set this up
@@ -327,14 +334,15 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
     mapper->UseLookupTableScalarRangeOn();
     mapper->SelectColorArray( m_activeScalar.c_str() );
 
+	cleanPD->Update();
+	lfx::core::ChannelDataPtr cdpd = lfx::core::vtk::ChannelDatavtkPolyDataPtr(
+                   new lfx::core::vtk::ChannelDatavtkPolyData( cleanPD->GetOutput(), "vtkPolyData" ) );
+
 	cleanPD->Delete();
     if( ribbon )
     {
         ribbon->Delete();
     }
-
-	lfx::core::ChannelDataPtr cdpd = lfx::core::vtk::ChannelDatavtkPolyDataPtr(
-                   new lfx::core::vtk::ChannelDatavtkPolyData( cleanPD->GetOutput(), "vtkPolyData" ) );
 
 	return cdpd;
 
@@ -433,10 +441,10 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-vtkPolyData* VTKStreamlineRTP::createSeedPoints( vtkDataSet *ds, const std::vector<double> &bbox, const std::vector<int> &numPts )
+vtkPolyData* VTKStreamlineRTP::createSeedPoints( const std::vector<double> &bounds, const std::vector<double> &bbox, const std::vector<int> &numPts )
 {
-    double bounds[ 6 ];
-    ds->GetBounds( bounds );
+    //double bounds[ 6 ];
+    //ds->GetBounds( bounds );
 
     double xDiff = bounds[ 1 ] - bounds[ 0 ];
     double yDiff = bounds[ 3 ] - bounds[ 2 ];

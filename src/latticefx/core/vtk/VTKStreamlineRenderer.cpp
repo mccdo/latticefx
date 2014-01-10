@@ -22,7 +22,6 @@
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
-#include <latticefx/core/vtk/VTKPrimitiveSetGenerator.h>
 
 #include <latticefx/core/ChannelDataOSGArray.h>
 #include <latticefx/core/TransferFunctionUtils.h>
@@ -386,6 +385,7 @@ void VTKStreamlineRenderer::CreateStreamLines( vtkPolyData *polyData, const std:
 
 
 	ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( getInputNameAlias( StreamlineRenderer::POSITION ), posArray.get() ) );
+	addInput( cdv );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

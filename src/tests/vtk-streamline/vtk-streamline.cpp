@@ -22,10 +22,8 @@
 
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
-#include <latticefx/core/vtk/VTKVectorFieldRTP.h>
-#include <latticefx/core/vtk/VTKVectorRenderer.h>
-#include <latticefx/core/vtk/VTKActorRenderer.h>
-#include <latticefx/core/vtk/VTKContourSliceRTP.h>
+#include <latticefx/core/vtk/VTKStreamlineRTP.h>
+#include <latticefx/core/vtk/VTKStreamlineRenderer.h>
 #include <latticefx/core/vtk/ObjFactoryVtk.h>
 
 #include <osgViewer/Viewer>
@@ -126,7 +124,7 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 		plug->loadConfigFiles();
 
 		lfx::core::vtk::ObjFactoryVtk objf( plug );
-		if( !dsp->loadPipeline( &objf, "vtk-vector.json", &err ) )
+		if( !dsp->loadPipeline( &objf, "vtk-streamline.json", &err ) )
 		{
 			std::cout << "Serialization load failed" << err << endl;
 			return( lfx::core::DataSetPtr() );
@@ -135,17 +133,30 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 		return( dsp );
 	}
 
+	std::vector< std::string > vnames = tempDataSet->GetVectorNames();
+	std::vector< std::string > snames = tempDataSet->GetScalarNames();
+	if( vnames.size() <= 0 || snames.size() <= 0 )
+	{
+		std::cout << "Failure: missing a vector or scalar.";
+		return( lfx::core::DataSetPtr() );
+	}
 
-#define ACTOR_RENDERER 0
+	std::string vector = vnames[0];
+	std::string scalar = snames[0];
+
+
 #define ROI_TEST 0
 
-#if ACTOR_RENDERER
-     lfx::core::vtk::VTKContourSliceRTPPtr vectorRTP( new lfx::core::vtk::VTKContourSliceRTP() );
-#else
-	lfx::core::vtk::VTKVectorFieldRTPPtr vectorRTP( new lfx::core::vtk::VTKVectorFieldRTP() );
-#endif
-    //vectorRTP->SetRequestedValue( 50.0 );
-    vectorRTP->addInput( "vtkDataObject" );
+	std::vector<double> bounds;
+	bounds.resize(6);
+	tempDataSet->GetBounds(&bounds[0]);
+
+	vtkLookupTable *lut = tempDataSet->GetLookupTable();
+	lfx::core::vtk::VTKStreamlineRTPPtr rtp( new lfx::core::vtk::VTKStreamlineRTP(lut) );
+	rtp->SetActiveVector( vector );
+    rtp->SetActiveScalar( scalar );
+	rtp->setDatasetBounds(&bounds[0]);
+    rtp->addInput( "vtkDataObject" );
 
 #if ROI_TEST
 		// test roi
@@ -178,30 +189,21 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 		vectorRTP->SetRoiBox(bounds);
 		vectorRTP->ExtractBoundaryCells(true);
 #endif
-    dsp->addOperation( vectorRTP );
+    dsp->addOperation( rtp );
 
-#if ACTOR_RENDERER
-    //Try the vtkActor renderer
-    lfx::core::vtk::VTKActorRendererPtr renderOp( new lfx::core::vtk::VTKActorRenderer() );
-    renderOp->SetActiveVector( "Momentum" );
-    renderOp->SetActiveScalar( "Density" );
-    renderOp->addInput( "vtkPolyDataMapper" );
-    renderOp->addInput( "vtkDataObject" );
-    dsp->setRenderer( renderOp );
-#else
-	// now lets use out generic Renderer for vtkPolyData-to-an-instance-vector-field
-	lfx::core::vtk::VTKVectorRendererPtr renderOp( new lfx::core::vtk::VTKVectorRenderer() );
-    renderOp->SetActiveVector( "Momentum" );
-    renderOp->SetActiveScalar( "Density" );
+
+	lfx::core::vtk::VTKStreamlineRendererPtr renderOp( new lfx::core::vtk::VTKStreamlineRenderer() );
+    renderOp->SetActiveVector( vector );
+    renderOp->SetActiveScalar( scalar );
     renderOp->addInput( "vtkPolyData" );
     renderOp->addInput( "vtkDataObject" );
+	renderOp->addInput( "positions" );
     dsp->setRenderer( renderOp );
-#endif
 
 	if( serialize )
 	{
 		std::string err;
-		if( !dsp->savePipeline( "vtk-vector.json", &err ) )
+		if( !dsp->savePipeline( "vtk-streamline.json", &err ) )
 		{
 			std::cout << "Serialization load failed" << err << endl;
 			return( lfx::core::DataSetPtr() );
@@ -238,7 +240,7 @@ int main( int argc, char** argv )
 	if( serialize )
 	{
 		// debug
-		std::ofstream osPre, osPst;
+		std::ofstream osPre, osPst; 
 		osPre.open( "DataSetDumpPre.txt" );
 		osPst.open( "DataSetDumpPst.txt" );
 
