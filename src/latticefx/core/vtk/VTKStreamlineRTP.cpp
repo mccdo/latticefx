@@ -62,11 +62,11 @@ VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Chan
     _streamArrows( 0 ),
     _streamRibbons( 0 ),
     _propagationTime( -1 ),
-	_integrationStepLength( .1 ),
-    //_integrationStepLength( -1 ),
+    _integrationStepLength( -1 ),
     _lineDiameter( 1.0f ),
     _arrowDiameter( 1 ),
-    _particleDiameter( 1.0f )
+    _particleDiameter( 1.0f ),
+	_maxTime( 1 )
 {
 	_bbox[1] = 1;
 	_bbox[3] = 1;
@@ -85,6 +85,12 @@ void VTKStreamlineRTP::setDatasetBounds(double *bounds)
 	{
 		_dsBounds[i] = bounds[i];
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setMaxTime( float time )
+{
+	_maxTime = time;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,17 +113,15 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
 
 	vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
 	// TODO: caller needs to set this up
-	/*
     if( _propagationTime == -1 )
     {
-        propagationTime = 10.0f * ds->GetMaxTime();
+        _propagationTime = 10.0f * _maxTime;
     }
 
-    if( integrationStepLength == -1 )
+    if( _integrationStepLength == -1 )
     {
-        integrationStepLength = 0.050f;
+        _integrationStepLength = 0.050f;
     }
-	*/
 
     vtkCellDataToPointData* c2p = vtkCellDataToPointData::New();
     c2p->SetInput( tempVtkDO );

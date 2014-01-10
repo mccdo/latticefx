@@ -151,7 +151,9 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 	bounds.resize(6);
 	tempDataSet->GetBounds(&bounds[0]);
 
+	float maxTime = tempDataSet->GetMaxTime();
 	lfx::core::vtk::VTKStreamlineRTPPtr rtp( new lfx::core::vtk::VTKStreamlineRTP() );
+	rtp->setMaxTime( maxTime );
 	rtp->SetActiveVector( vector );
     rtp->SetActiveScalar( scalar );
 	rtp->setDatasetBounds(&bounds[0]);

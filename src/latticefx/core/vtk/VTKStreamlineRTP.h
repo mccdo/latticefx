@@ -50,7 +50,9 @@ public:
 
 	virtual std::string getClassName() const { return "VTKStreamlineRTP"; }
 
-	void setDatasetBounds(double *bounds);
+	void setDatasetBounds( double *bounds );
+
+	void setMaxTime( float time );
 
     ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
@@ -78,6 +80,8 @@ protected:
     float _lineDiameter;
     double _arrowDiameter;
     float _particleDiameter;
+
+	float _maxTime;
 };
 
 typedef boost::shared_ptr< VTKStreamlineRTP > VTKStreamlineRTPPtr;
