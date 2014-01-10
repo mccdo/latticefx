@@ -43,7 +43,7 @@ class LATTICEFX_CORE_VTK_EXPORT VTKStreamlineRTP : public VTKBaseRTP
 public:
 
     ///Default constructor
-    VTKStreamlineRTP(vtkLookupTable *lut);
+    VTKStreamlineRTP();
 
     ///Destructor
     virtual ~VTKStreamlineRTP();
@@ -51,7 +51,6 @@ public:
 	virtual std::string getClassName() const { return "VTKStreamlineRTP"; }
 
 	void setDatasetBounds(double *bounds);
-	void setLookupTable(vtkLookupTable *lut);
 
     ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
@@ -79,8 +78,6 @@ protected:
     float _lineDiameter;
     double _arrowDiameter;
     float _particleDiameter;
-
-	vtkLookupTable *_lut;
 };
 
 typedef boost::shared_ptr< VTKStreamlineRTP > VTKStreamlineRTPPtr;

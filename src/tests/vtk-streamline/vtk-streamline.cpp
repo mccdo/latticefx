@@ -151,8 +151,7 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 	bounds.resize(6);
 	tempDataSet->GetBounds(&bounds[0]);
 
-	vtkLookupTable *lut = tempDataSet->GetLookupTable();
-	lfx::core::vtk::VTKStreamlineRTPPtr rtp( new lfx::core::vtk::VTKStreamlineRTP(lut) );
+	lfx::core::vtk::VTKStreamlineRTPPtr rtp( new lfx::core::vtk::VTKStreamlineRTP() );
 	rtp->SetActiveVector( vector );
     rtp->SetActiveScalar( scalar );
 	rtp->setDatasetBounds(&bounds[0]);

@@ -54,7 +54,7 @@ namespace core
 namespace vtk
 {
 
-VTKStreamlineRTP::VTKStreamlineRTP(vtkLookupTable *lut) : VTKBaseRTP( lfx::core::RTPOperation::Channel ),
+VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Channel ),
 	_dsBounds(6, 0),
 	_bbox( 6, 0 ),
 	_numPts( 3, 4 ),
@@ -62,16 +62,15 @@ VTKStreamlineRTP::VTKStreamlineRTP(vtkLookupTable *lut) : VTKBaseRTP( lfx::core:
     _streamArrows( 0 ),
     _streamRibbons( 0 ),
     _propagationTime( -1 ),
-    _integrationStepLength( -1 ),
+	_integrationStepLength( .1 ),
+    //_integrationStepLength( -1 ),
     _lineDiameter( 1.0f ),
     _arrowDiameter( 1 ),
-    _particleDiameter( 1.0f ),
-	_lut( lut )
+    _particleDiameter( 1.0f )
 {
 	_bbox[1] = 1;
 	_bbox[3] = 1;
 	_bbox[5] = 1;
-	//_bbox[4] = 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -89,12 +88,6 @@ void VTKStreamlineRTP::setDatasetBounds(double *bounds)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setLookupTable(vtkLookupTable *lut)
-{
-	_lut = lut;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
 	if( m_activeVector.empty() )
@@ -105,11 +98,6 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
 	if( m_activeScalar.empty() )
     {
         LFX_ERROR( "VTKStreamlineRTP::channel : The scalar name for the streamline is empty." );
-    }
-
-	if( !_lut )
-	{
-        LFX_ERROR( "VTKStreamlineRTP::channel : Lookup table is null." );
     }
 
 	lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(getInput( "vtkDataObject" ) );
@@ -325,23 +313,18 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
 
 
 
-			/*
+			
             mapper->SetInputConnection( cleanPD->GetOutputPort() );
-			*/
         }
     }
 
-	/*
     mapper->SetColorModeToMapScalars();
-	if( _lut )
-	{
-		mapper->SetLookupTable( _lut );
-	}
     mapper->ImmediateModeRenderingOn();
     mapper->SetScalarModeToUsePointFieldData();
     mapper->UseLookupTableScalarRangeOn();
     mapper->SelectColorArray( m_activeScalar.c_str() );
-	*/
+
+	mapper->Update();
 
 	// this is from OSGStreamlineStage::createInstanced.. 
 	vtkCleanPolyData* cleanPD2 = vtkCleanPolyData::New();
