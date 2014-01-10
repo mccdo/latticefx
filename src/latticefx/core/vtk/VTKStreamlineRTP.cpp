@@ -70,7 +70,8 @@ VTKStreamlineRTP::VTKStreamlineRTP(vtkLookupTable *lut) : VTKBaseRTP( lfx::core:
 {
 	_bbox[1] = 1;
 	_bbox[3] = 1;
-	_bbox[4] = 1;
+	_bbox[5] = 1;
+	//_bbox[4] = 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,10 +321,17 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
              writer->Write();
              writer->Delete();
              }*/
+
+
+
+
+			/*
             mapper->SetInputConnection( cleanPD->GetOutputPort() );
+			*/
         }
     }
 
+	/*
     mapper->SetColorModeToMapScalars();
 	if( _lut )
 	{
@@ -333,11 +341,37 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
     mapper->SetScalarModeToUsePointFieldData();
     mapper->UseLookupTableScalarRangeOn();
     mapper->SelectColorArray( m_activeScalar.c_str() );
+	*/
+
+	// this is from OSGStreamlineStage::createInstanced.. 
+	vtkCleanPolyData* cleanPD2 = vtkCleanPolyData::New();
+    cleanPD2->PointMergingOn();
+    cleanPD2->SetTolerance( 0.0f );
+    cleanPD2->SetInput( cleanPD->GetOutput() );
+    cleanPD2->Update();
+    vtkPolyData* streamlinePD = cleanPD2->GetOutput();
+
+    vtkPointData* pointData = streamlinePD->GetPointData();
+    if( pointData == NULL )
+    {
+		LFX_ERROR( "VTKStreamlineRTP::channel : pd point data is null." );
+        return NULL;
+    }
+    //pointData->Update();
+
+    vtkPoints* points = streamlinePD->GetPoints();
+    if( points == NULL )
+    {
+		LFX_ERROR( "VTKStreamlineRTP::channel : points are null." );
+        return NULL;
+    }
+
 
 	cleanPD->Update();
 	lfx::core::ChannelDataPtr cdpd = lfx::core::vtk::ChannelDatavtkPolyDataPtr(
-                   new lfx::core::vtk::ChannelDatavtkPolyData( cleanPD->GetOutput(), "vtkPolyData" ) );
+                   new lfx::core::vtk::ChannelDatavtkPolyData( streamlinePD, "vtkPolyData" ) );
 
+	cleanPD2->Delete();
 	cleanPD->Delete();
     if( ribbon )
     {
