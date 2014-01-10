@@ -218,7 +218,12 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
 int main( int argc, char** argv )
 {
     lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, lfx::core::Log::Console );
-    lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
+	lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioInfo, "lfx.core.hier" );
+	lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioDebug, lfx::core::Log::Console );
+	lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioDebug, "lfx.core.hier" );
+	lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioTrace, lfx::core::Log::Console );
+	lfx::core::Log::instance()->setPriority( lfx::core::Log::PrioTrace, "lfx.core.hier" );
+    
 
 	bool serialize = false;
 	if (argc < 2) return false;

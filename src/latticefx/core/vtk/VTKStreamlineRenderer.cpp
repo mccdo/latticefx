@@ -135,8 +135,6 @@ void VTKStreamlineRenderer::ExtractVTKPrimitives( vtkPolyData *polydata )
 ////////////////////////////////////////////////////////////////////////////////
 void VTKStreamlineRenderer::ProcessStreamLines( vtkPolyData* polydata,  std::vector< std::deque< Point > > &streamlineList)
 {
-	LFX_WARNING( "VTKStreamlineRenderer::getSceneGraph(): No vtkDataObject input was specified." );
-
 	/*
 	std::stringstream ss;
 	ss << "tNumber of Cells :: (" << brickNum << "), " << "depth: " << _depth << ", " << m_bricksDone << " of " << totbricks << ", cached: " << brickCached;
@@ -335,6 +333,9 @@ void VTKStreamlineRenderer::CreateStreamLines( vtkPolyData *polyData, const std:
         }
     }
 
+	std::stringstream ss;
+	ss << "StreamLine Count: " << numStreamLines << " Total Point Count: " << posArray->size();
+	LFX_TRACE( ss.str().c_str() ); 
 
 	ChannelDataOSGArrayPtr cdv( new ChannelDataOSGArray( getInputNameAlias( StreamlineRenderer::POSITION ), posArray.get() ) );
 	addInput( cdv );
@@ -348,6 +349,7 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
     double val;
     double scalarRange[ 2 ];
     bool haveScalarData = false;
+	int count = 0;
     
     for( size_t i = 0; i < numDataArrays; ++i )
     {
@@ -382,6 +384,10 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
                 }
             }
 			*/
+
+		std::stringstream ss;
+		ss << "SetupColorArrays ColorArray: " << arrayName << " count: " << colorArray->size();
+		LFX_TRACE( ss.str().c_str() ); 
 
         lfx::core::ChannelDataOSGArrayPtr colorData( new lfx::core::ChannelDataOSGArray( arrayName, colorArray.get() ) );
         addInput( colorData );                       

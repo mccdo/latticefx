@@ -106,6 +106,10 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
         LFX_ERROR( "VTKStreamlineRTP::channel : The scalar name for the streamline is empty." );
     }
 
+	std::stringstream ss;
+	ss << "VTKStreamlineRTP - Creating streamlines with active vector: " << m_activeVector << " and active scalar: " << m_activeScalar;
+	LFX_TRACE( ss.str().c_str() ); 
+
 	lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >(getInput( "vtkDataObject" ) );
     vtkDataObject *tempVtkDO = cddoPtr->GetDataObject();
 
