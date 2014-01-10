@@ -130,58 +130,6 @@ void VTKStreamlineRenderer::ExtractVTKPrimitives( vtkPolyData *polydata )
 	SetupColorArrays( polydata, streamlineList );
 
 	setNumTraces( streamlineList.size() );
-
-	/*
-    pd->Update(); 
-
-    vtkTriangleFilter* triangleFilter = vtkTriangleFilter::New();  
-    triangleFilter->SetInput( pd );
-    triangleFilter->PassVertsOff();
-    triangleFilter->PassLinesOff();
-    //triangleFilter->Update();
-
-    vtkStripper* triangleStripper = vtkStripper::New();  
-    triangleStripper->SetInput( triangleFilter->GetOutput() );
-    int stripLength = triangleStripper->GetMaximumLength();
-    triangleStripper->SetMaximumLength( stripLength * 1000 );
-    //triangleStripper->Update();
-
-    vtkPolyDataNormals* normalGen = vtkPolyDataNormals::New();
-    normalGen->SetInput( triangleStripper->GetOutput() );
-    normalGen->NonManifoldTraversalOn();
-    normalGen->AutoOrientNormalsOn();
-    normalGen->ConsistencyOn();
-    normalGen->SplittingOn();
-
-    vtkStripper* reTriangleStripper = vtkStripper::New();
-    reTriangleStripper->SetInput( normalGen->GetOutput() );
-    reTriangleStripper->SetMaximumLength( stripLength * 1000 );
-    reTriangleStripper->Update();
-
-    normalGen->Delete();
-    triangleFilter->Delete();
-    triangleStripper->Delete();
-
-    vtkPolyData* pd = reTriangleStripper->GetOutput();
-
-    {
-        VTKPrimitiveSetGeneratorPtr primitiveGenerator =
-            VTKPrimitiveSetGeneratorPtr( new VTKPrimitiveSetGenerator( pd->GetStrips() ) );
-        setPrimitiveSetGenerator( primitiveGenerator );
-    }
-
-    //Number of vertex is potentially bigger than number of points,
-    //Since the same points can appear in different triangle strip.
-
-
-    //Setup normals and verts
-    SetupNormalAndVertexArrays( pd );
-
-    //Setup the scalar arrays
-    SetupColorArrays( pd );
-
-    reTriangleStripper->Delete();
-	*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,13 +344,9 @@ void VTKStreamlineRenderer::CreateStreamLines( vtkPolyData *polyData, const std:
 void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector< std::deque< Point > > &streamlineList )
 {
     vtkPointData* pointData = pd->GetPointData();
-    vtkCellArray* strips = pd->GetStrips();
     size_t numDataArrays = pointData->GetNumberOfArrays();
     double val;
     double scalarRange[ 2 ];
-    vtkIdType* pts = 0;
-    vtkIdType cStripNp = 0;
-    int stripNum = 0;
     bool haveScalarData = false;
     
     for( size_t i = 0; i < numDataArrays; ++i )
@@ -414,6 +358,7 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
         const std::string arrayName = scalarArray->GetName();
         m_dataObject->GetScalarRange( arrayName, scalarRange );
 
+		
 		size_t numStreamLines = streamlineList.size();
 		for( size_t i = 0; i < numStreamLines; ++i )
 		{
@@ -421,7 +366,6 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
 			for( size_t p=0; p < tempLine.size(); p++ )
 			{
 				Point pt = tempLine[p];
-
 				scalarArray->GetTuple( pt.vertId, &val ); 
 				val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
 				colorArray->push_back( val );

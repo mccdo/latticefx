@@ -326,7 +326,7 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
     mapper->ImmediateModeRenderingOn();
     mapper->SetScalarModeToUsePointFieldData();
     mapper->UseLookupTableScalarRangeOn();
-    mapper->SelectColorArray( m_activeScalar.c_str() );
+    // mapper->SelectColorArray( m_activeScalar.c_str() );
 
 	mapper->Update();
 
