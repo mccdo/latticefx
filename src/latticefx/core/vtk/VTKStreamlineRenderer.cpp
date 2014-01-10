@@ -127,6 +127,10 @@ void VTKStreamlineRenderer::ExtractVTKPrimitives( vtkPolyData *polydata )
 	std::vector< std::deque< Point > > streamlineList;
 	ProcessStreamLines( polydata,  streamlineList );
 	CreateStreamLines( polydata, streamlineList );
+	SetupColorArrays( polydata, streamlineList );
+
+	setNumTraces( streamlineList.size() );
+
 	/*
     pd->Update(); 
 
