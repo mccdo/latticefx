@@ -26,6 +26,7 @@ void transferFunction( in vec3 tC )
         index = ( index - tfRange.x ) / ( tfRange.y - tfRange.x );
         xfer = texture1D( tf1d, index );
     }
+    /*
     else if( tfDimension == 2 ) // 2D transfer function.
     {
         // tfInput texture format is GL_LUMINANCE_ALPHA32F_ARB.
@@ -39,6 +40,7 @@ void transferFunction( in vec3 tC )
         index = ( index - tfRange.x ) / ( tfRange.y - tfRange.x );
         xfer = texture3D( tf3d, index );
     }
+    */
 
     // If tfDimension is non-zero, we get the normal destination mask.
     // If zero, set dest mask to all zeros to get all gl_Color.
