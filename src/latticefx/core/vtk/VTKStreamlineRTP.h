@@ -54,6 +54,17 @@ public:
 
 	void setMaxTime( float time );
 
+	void setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ );
+	void setSeedPtsCount( int x, int y, int z );
+	void setIntegrationDir( int dir );
+	void setStreamArrows( int sa );
+	void setStreamRibbons( int sr );
+	void setPropagationTime( float t );
+	void setIntegrationStepLen( float l );
+	void setLineDiameter( float d );
+	void setArrowDiameter( float d );
+	void setParticleDiameter( float d );
+
     ///We are going to be creating a ChannelDatavtkPolyData so we override the
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );

@@ -94,6 +94,73 @@ void VTKStreamlineRTP::setMaxTime( float time )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ )
+{
+	_bbox[0] = minX;
+	_bbox[1] = maxX;
+	_bbox[2] = minY;
+	_bbox[3] = maxY;
+	_bbox[4] = minZ;
+	_bbox[5] = maxZ;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setSeedPtsCount( int x, int y, int z )
+{
+	_numPts[0] = x; 
+	_numPts[1] = y;
+	_numPts[2] = z;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setIntegrationDir( int dir )
+{
+	_integrationDirection = dir;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setStreamArrows( int sa )
+{
+	_streamArrows = sa;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setStreamRibbons( int sr )
+{
+	_streamRibbons = sr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setPropagationTime( float t )
+{
+	_propagationTime = t;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setIntegrationStepLen( float l )
+{
+	_integrationStepLength = l;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setLineDiameter( float d )
+{
+	_lineDiameter = d;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setArrowDiameter( float d )
+{
+	_arrowDiameter = d;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKStreamlineRTP::setParticleDiameter( float d )
+{
+	_particleDiameter = d;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDataPtr maskIn )
 {
 	if( m_activeVector.empty() )
@@ -525,6 +592,8 @@ void VTKStreamlineRTP::serializeData( JsonSerializer *json ) const
 	// let the parent write its data
 	VTKBaseRTP::serializeData( json );
 
+	// TOOD: finish this
+
 	json->insertObj( VTKStreamlineRTP::getClassName(), true);
 	// store any class specific data here
 	json->popParent();
@@ -535,6 +604,8 @@ bool VTKStreamlineRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, st
 {
 	// let the parent load its data
 	if ( !VTKBaseRTP::loadData( json, pfactory, perr )) return false;
+
+	// TOOD: finish this
 
 	// get to this classes data
 	if ( !json->getObj( VTKStreamlineRTP::getClassName() ) )
@@ -551,6 +622,8 @@ bool VTKStreamlineRTP::loadData( JsonSerializer *json, IObjFactory *pfactory, st
 void VTKStreamlineRTP::dumpState( std::ostream &os )
 {
 	VTKBaseRTP::dumpState( os );
+
+	// TOOD: finish this
 
 	dumpStateStart( VTKStreamlineRTP::getClassName(), os );
 	// no data
