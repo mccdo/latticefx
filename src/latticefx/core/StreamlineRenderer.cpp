@@ -349,7 +349,7 @@ osg::StateSet* StreamlineRenderer::getRootState()
 
 
     if( getTransferFunction() != NULL )
-    {
+    { 
         UniformInfo& info( getUniform( "tfInput" ) );
         info._prototype->set( getOrAssignTextureUnit( "tfInput" ) );
         stateSet->addUniform( createUniform( info ), osg::StateAttribute::PROTECTED );

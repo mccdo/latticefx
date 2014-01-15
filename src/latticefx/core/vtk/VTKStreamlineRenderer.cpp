@@ -48,36 +48,6 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRenderer::SetActiveVector( const std::string& activeVector )
-{
-    m_activeVector = activeVector;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKStreamlineRenderer::GetActiveVector() const
-{
-	return m_activeVector;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRenderer::SetActiveScalar( const std::string& activeScalar )
-{
-    m_activeScalar = activeScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKStreamlineRenderer::GetActiveScalar() const
-{
-	return m_activeScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRenderer::SetColorByScalar( std::string const scalarName )
-{
-    m_colorByScalar = scalarName;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKStreamlineRenderer::GetColorByScalar() const
-{
-	return m_colorByScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKStreamlineRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     vtkPolyData* tempVtkPD = boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyData >( getInput( "vtkPolyData" ) )->GetPolyData();
@@ -130,6 +100,10 @@ void VTKStreamlineRenderer::ExtractVTKPrimitives( vtkPolyData *polydata )
 	SetupColorArrays( polydata, streamlineList );
 
 	setNumTraces( streamlineList.size() );
+
+	float perLen = ( ( 1. / (float)getNumTraces() ) * 0.2f );
+	setTraceLengthPercent(perLen);
+	setImageScale(.2f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -373,17 +347,6 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
 				colorArray->push_back( val );
 			}
 		}
-			/*
-            for( strips->InitTraversal(); strips->GetNextCell( cStripNp, pts ); ++stripNum )
-            {
-                for( vtkIdType j = 0; j < cStripNp; ++j )
-                {
-                    scalarArray->GetTuple( pts[j], &val );                                                                                        
-                    val = vtkMath::ClampAndNormalizeValue( val, scalarRange );
-                    colorArray->push_back( val );
-                }
-            }
-			*/
 
 		std::stringstream ss;
 		ss << "SetupColorArrays ColorArray: " << arrayName << " count: " << colorArray->size();
@@ -410,6 +373,7 @@ void VTKStreamlineRenderer::serializeData( JsonSerializer *json ) const
 	// let the parent write its data
 	StreamlineRenderer::serializeData( json );
 
+	// TOOD: finish this
 	json->insertObj( VTKStreamlineRenderer::getClassName(), true);
 	json->insertObjValue( "activeVector", m_activeVector );
 	json->insertObjValue( "activeScalar", m_activeScalar );
@@ -434,6 +398,7 @@ bool VTKStreamlineRenderer::loadData( JsonSerializer *json, IObjFactory *pfactor
 		return false;
 	}
 
+	// TOOD: finish this
 	json->getValue( "activeVector", &m_activeVector);
 	json->getValue( "activeScalar", &m_activeScalar );
 	json->getValue( "colorByScalar", &m_colorByScalar );
@@ -448,6 +413,7 @@ void VTKStreamlineRenderer::dumpState( std::ostream &os )
 {
 	StreamlineRenderer::dumpState( os );
 
+	// TOOD: finish this
 	dumpStateStart( VTKStreamlineRenderer::getClassName(), os );
 	os << "_activeVector: " << m_activeVector << std::endl;
 	os << "_activeScalar: " << m_activeScalar << std::endl;

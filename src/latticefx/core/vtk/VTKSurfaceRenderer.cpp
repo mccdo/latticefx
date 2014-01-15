@@ -48,36 +48,6 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKSurfaceRenderer::SetActiveVector( const std::string& activeVector )
-{
-    m_activeVector = activeVector;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKSurfaceRenderer::GetActiveVector() const
-{
-	return m_activeVector;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKSurfaceRenderer::SetActiveScalar( const std::string& activeScalar )
-{
-    m_activeScalar = activeScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKSurfaceRenderer::GetActiveScalar() const
-{
-	return m_activeScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKSurfaceRenderer::SetColorByScalar( std::string const scalarName )
-{
-    m_colorByScalar = scalarName;
-}
-////////////////////////////////////////////////////////////////////////////////
-std::string VTKSurfaceRenderer::GetColorByScalar() const
-{
-	return m_colorByScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     lfx::core::ChannelDataPtr channelDataTemp = getInput( "vtkPolyDataMapper" );

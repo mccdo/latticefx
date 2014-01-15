@@ -38,16 +38,6 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorRenderer::SetActiveVector( const std::string& activeVector )
-{
-    m_activeVector = activeVector;
-}
-////////////////////////////////////////////////////////////////////////////////
-void VTKVectorRenderer::SetActiveScalar( const std::string& activeScalar )
-{
-    m_activeScalar = activeScalar;
-}
-////////////////////////////////////////////////////////////////////////////////
 osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr maskIn )
 {
     vtkPolyData* tempVtkPD =
