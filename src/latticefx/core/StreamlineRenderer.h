@@ -123,7 +123,7 @@ public:
     \details By default, the streamline billboard images are rendered such that the
     apparent diameter of the streamline is 1.0 world coordinate. Set this scalar to
     modify the diameter. The default is 1.0. */
-    void setImageScale( float scale );
+    bool setImageScale( float scale );
     /** \brief Get the streamline diameter scale factor. */
     float getImageScale() const;
 

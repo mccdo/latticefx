@@ -52,8 +52,7 @@ public:
     VTKStreamlineRenderer( const std::string& logName = std::string( "" ) )
         :
         lfx::core::StreamlineRenderer( logName ),
-        m_pd( 0 ),
-		m_refresh( false )
+        m_pd( 0 )
     {
         ;
     }
@@ -72,8 +71,6 @@ public:
     virtual osg::Node* getSceneGraph( const lfx::core::ChannelDataPtr maskIn );
 
 	virtual void dumpState( std::ostream &os );
-
-	void FullRefresh() { m_refresh = true; }
 
 protected:
 
@@ -98,8 +95,6 @@ protected:
     std::map< std::string, lfx::core::ChannelDataPtr > m_scalarChannels;
     ///The raw dataset object
     lfx::core::vtk::ChannelDatavtkDataObjectPtr m_dataObject;
-
-	bool m_refresh;
 };
 
 typedef boost::shared_ptr< VTKStreamlineRenderer > VTKStreamlineRendererPtr;

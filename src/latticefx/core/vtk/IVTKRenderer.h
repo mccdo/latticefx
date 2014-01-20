@@ -22,7 +22,6 @@
 #define __LFX_CORE_IVTK_RENDERER_H__ 1
 
 #include <latticefx/core/vtk/Export.h>
-
 #include <string>
 
 namespace lfx
@@ -42,10 +41,12 @@ class LATTICEFX_CORE_VTK_EXPORT IVTKRenderer
 {
 public:
     ///Default constructor
-	IVTKRenderer() {}
+	IVTKRenderer() : m_refresh( false ) {}
 
     ///Destructor
 	virtual ~IVTKRenderer() {}
+
+	void FullRefresh();
 
     ///Set the active vector name to tell the render what to put in the textures
     ///\param activeVector The active vector name to use. 
@@ -75,6 +76,8 @@ protected:
     std::string m_colorByScalar;
 	///The color by scalar
     std::string m_curScalar;
+
+	bool m_refresh;
 };
 
 }

@@ -54,13 +54,17 @@ public:
 
 	void setMaxTime( float time );
 
-	void setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ );
-	void setSeedPtsCount( int x, int y, int z );
-	void setIntegrationDir( int dir );
+	bool setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ );
+	bool setSeedPtsBox( const std::vector<double> &box );
+	bool setSeedPtsCount( int x, int y, int z );
+	bool setSeedPtsCount( const std::vector<int> &count );
+	bool setIntegrationDir( int dir );
+	bool setPropagationTime( float t );
+	bool setIntegrationStepLen( float l );
+
+	/// these may not be needed, currently not being used
 	void setStreamArrows( int sa );
 	void setStreamRibbons( int sr );
-	void setPropagationTime( float t );
-	void setIntegrationStepLen( float l );
 	void setLineDiameter( float d );
 	void setArrowDiameter( float d );
 	void setParticleDiameter( float d );

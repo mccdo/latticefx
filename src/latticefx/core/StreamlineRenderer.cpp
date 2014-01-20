@@ -24,6 +24,7 @@
 #include <latticefx/core/BoundUtils.h>
 #include <latticefx/core/LogMacros.h>
 #include <latticefx/core/JsonSerializer.h>
+#include <latticefx/core/MiscUtils.h>
 
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -161,9 +162,15 @@ bool StreamlineRenderer::getAnimationEnable() const
     return( _enableAnimation );
 }
 ////////////////////////////////////////////////////////////////////////////////
-void StreamlineRenderer::setImageScale( float scale )
+bool StreamlineRenderer::setImageScale( float scale )
 {
-    _imageScale = scale;
+	if( MiscUtils::isnot_close( _imageScale, scale, .001f ) )
+	{
+		_imageScale = scale;
+		return true;
+	}
+
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////
 float StreamlineRenderer::getImageScale() const

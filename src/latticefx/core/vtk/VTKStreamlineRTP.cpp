@@ -22,6 +22,7 @@
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
 
 #include <latticefx/core/LogMacros.h>
+#include <latticefx/core/MiscUtils.h>
 
 #include <vtkDataObject.h>
 #include <vtkDataSetSurfaceFilter.h>
@@ -94,28 +95,114 @@ void VTKStreamlineRTP::setMaxTime( float time )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ )
+bool VTKStreamlineRTP::setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ )
 {
-	_bbox[0] = minX;
-	_bbox[1] = maxX;
-	_bbox[2] = minY;
-	_bbox[3] = maxY;
-	_bbox[4] = minZ;
-	_bbox[5] = maxZ;
+	std::vector<double> box;
+	box.push_back( minX );
+	box.push_back( maxX );
+	box.push_back( minY );
+	box.push_back( maxY );
+	box.push_back( minZ );
+	box.push_back( maxZ );
+	return setSeedPtsBox( box );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setSeedPtsCount( int x, int y, int z )
+bool VTKStreamlineRTP::setSeedPtsBox( const std::vector<double> &v )
 {
-	_numPts[0] = x; 
-	_numPts[1] = y;
-	_numPts[2] = z;
+	if( v.size() != 6 ) return false;
+
+	bool modified = false;
+	for( unsigned int i=0; i<v.size(); i++ )
+	{
+		if( MiscUtils::isnot_close( _bbox[i], v[i], .001 ) )
+		{
+			modified = true;
+			break;
+		}
+	}
+
+	if( !modified ) return false;
+
+
+	for( unsigned int i=0; i<v.size(); i++ )
+	{
+		_bbox[i] = v[i];
+	}
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setIntegrationDir( int dir )
+bool VTKStreamlineRTP::setSeedPtsCount( int x, int y, int z )
 {
-	_integrationDirection = dir;
+	std::vector<int> count;
+	count.push_back( x );
+	count.push_back( y );
+	count.push_back( z );
+	return setSeedPtsCount( count );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKStreamlineRTP::setSeedPtsCount( const std::vector<int> &v)
+{
+	if( v.size() != 3 ) return false;
+
+	bool modified = false;
+	for( unsigned int i=0; i<v.size(); i++ )
+	{
+		if( MiscUtils::isnot_close( _numPts[i], v[i], .001 ) )
+		{
+			modified = true;
+			break;
+		}
+	}
+
+	if( !modified ) return false;
+
+
+	for( unsigned int i=0; i<v.size(); i++ )
+	{
+		_numPts[i] = v[i];
+	}
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKStreamlineRTP::setIntegrationDir( int dir )
+{
+	if( _integrationDirection != dir )
+	{
+		_integrationDirection = dir;
+		return true;
+	}
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKStreamlineRTP::setIntegrationStepLen( float l )
+{
+	if( MiscUtils::isnot_close( _integrationStepLength, l, .001f ) )
+	{
+		_integrationStepLength = l;
+		return true;
+	}
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKStreamlineRTP::setPropagationTime( float t )
+{
+	if( MiscUtils::isnot_close( _propagationTime, t, .001f ) )
+	{
+		_propagationTime = t;
+		return true;
+	}
+
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,18 +215,6 @@ void VTKStreamlineRTP::setStreamArrows( int sa )
 void VTKStreamlineRTP::setStreamRibbons( int sr )
 {
 	_streamRibbons = sr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setPropagationTime( float t )
-{
-	_propagationTime = t;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setIntegrationStepLen( float l )
-{
-	_integrationStepLength = l;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

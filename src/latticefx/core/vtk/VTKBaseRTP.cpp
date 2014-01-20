@@ -35,6 +35,14 @@ void VTKBaseRTP::SetMinMaxScalarRangeValue( double const minVal, double const ma
     m_minScalarValue = minVal;
     m_maxScalarValue = maxVal;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::GetMinMaxScalarRangeValue( double *minVal, double *maxVal )
+{
+	*minVal = m_minScalarValue;
+    *maxVal = m_maxScalarValue;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetRequestedValue( double const value )
 {

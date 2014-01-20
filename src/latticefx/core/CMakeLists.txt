@@ -31,6 +31,7 @@ set( _headerFiles
     Log.h
     LogBase.h
     LogMacros.h
+    MiscUtils.h
     ObjBase.h
     ObjFactoryCore.h
     OctreeGroup.h
@@ -78,6 +79,7 @@ set( _sourceFiles
     OctreeGroup.cpp
     OperationBase.cpp
     OperationValue.cpp
+    MiscUtils.cpp
     PageData.cpp
     PagingCallback.cpp
     PagingThread.cpp
