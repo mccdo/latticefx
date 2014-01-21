@@ -199,6 +199,8 @@ lfx::core::DataSetPtr prepareVolume( const char *dsFile, bool serialize, bool lo
     renderOp->addInput( "vtkPolyData" );
     renderOp->addInput( "vtkDataObject" );
 	renderOp->addInput( "positions" );
+	renderOp->setHardwareMaskOperator( lfx::core::Renderer::HM_OP_OFF );
+	renderOp->setAnimationEnable( false );
     dsp->setRenderer( renderOp );
 
 	if( serialize )
@@ -275,7 +277,7 @@ int main( int argc, char** argv )
     osg::Node* sceneNode = dsp->getSceneData();
 
     //And do not forget to cleanup the algorithm executive prototype
-    vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
+    // vtkAlgorithm::SetDefaultExecutivePrototype( 0 );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
