@@ -50,8 +50,6 @@ public:
 
 	virtual std::string getClassName() const { return "VTKStreamlineRTP"; }
 
-	void setDatasetBounds( double *bounds );
-
 	void setMaxTime( float time );
 
 	bool setSeedPtsBox( double minX, double maxX, double minY, double maxY, double minZ, double maxZ );
@@ -83,7 +81,6 @@ protected:
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
 protected:
-	std::vector<double> _dsBounds;
 	std::vector<double> _bbox;
 	std::vector<int> _numPts;
 	int _integrationDirection;

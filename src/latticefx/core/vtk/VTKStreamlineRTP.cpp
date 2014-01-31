@@ -56,7 +56,6 @@ namespace vtk
 {
 
 VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Channel ),
-	_dsBounds(6, 0),
 	_bbox( 6, 0 ),
 	_numPts( 3, 4 ),
 	_integrationDirection( 0 ),
@@ -77,15 +76,6 @@ VTKStreamlineRTP::VTKStreamlineRTP() : VTKBaseRTP( lfx::core::RTPOperation::Chan
 ////////////////////////////////////////////////////////////////////////////////
 VTKStreamlineRTP::~VTKStreamlineRTP()
 {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void VTKStreamlineRTP::setDatasetBounds(double *bounds)
-{
-	for( int i=0; i<6; i++ )
-	{
-		_dsBounds[i] = bounds[i];
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

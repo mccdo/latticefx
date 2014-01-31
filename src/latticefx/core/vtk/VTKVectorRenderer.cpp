@@ -51,6 +51,12 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
         return 0;
     }
 
+	if( m_refresh )
+	{
+		m_scalarChannels.clear();
+		m_refresh = false;
+	}
+
     if( !m_scalarChannels.empty() )
     {
         //Re-add all of the local inputs since they get removed in this call

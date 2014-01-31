@@ -95,6 +95,9 @@ public:
     ///Set the plane direction if it is needed for this rtp operation
     void SetPlaneDirection( const CuttingPlane::SliceDirection& planeDirection );
 
+	///Set the dataset bounding box
+	void setDatasetBounds( double *bounds );
+
 	//Set the region of interest bounding box
 	//vector must contain 6 values in this order: xmin,xmax,ymin,ymax,zmin,zmax
 	//If no roi is set, the default sate, then the entire dataset will be used for any operations
@@ -109,6 +112,8 @@ protected:
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkDataObject *pdo);
 	vtkSmartPointer<vtkExtractGeometry> GetRoi(vtkAlgorithmOutput* pOutPin);
 	vtkSmartPointer<vtkExtractPolyDataGeometry> GetRoiPoly(vtkAlgorithmOutput* pOutPin);
+
+	void ConnectGeometryFilter( vtkDataObject* tempVtkDO, vtkAlgorithmOutput* outputPort, vtkAlgorithm* connectTo );
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
@@ -135,6 +140,8 @@ protected:
 
 	std::vector<double> m_roiBox;
 	bool m_roiExtractBoundaryCells;
+
+	std::vector<double> _dsBounds;
 };
 
 typedef boost::shared_ptr< VTKBaseRTP > VTKBaseRTPPtr;

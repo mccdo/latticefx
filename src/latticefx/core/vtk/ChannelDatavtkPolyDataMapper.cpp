@@ -51,7 +51,7 @@ ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( const ChannelDatavtk
     :
     ChannelData( rhs ),
     m_pdm( rhs.m_pdm )
-{
+{ 
     ;
 }
 ////////////////////////////////////////////////////////////////////////////////

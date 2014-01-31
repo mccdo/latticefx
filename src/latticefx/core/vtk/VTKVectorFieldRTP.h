@@ -21,8 +21,11 @@
 #define __LATTICEFX_CORE_VTK_VECTORFIELD_RTP_OPERATION_H__ 1
 
 #include <latticefx/core/vtk/VTKBaseRTP.h>
-
 #include <latticefx/core/vtk/Export.h>
+#include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+
+class vtkMaskPoints;
+class vtkThresholdPoints;
 
 namespace lfx
 {
@@ -44,12 +47,7 @@ public:
     ///Default constructor
     ///\note Since this is a channel operation we pass the enum for a Channel
     ///operation when we construct the VTKVectorFieldRTP.
-    VTKVectorFieldRTP()
-        :
-        VTKBaseRTP( lfx::core::RTPOperation::Channel )
-    {
-        ;
-    }
+    VTKVectorFieldRTP();
 
     ///Destructor
     virtual ~VTKVectorFieldRTP()
@@ -64,14 +62,28 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
+	void setVectorRatioFactor( double value );
+	void setVectorThreshHold( double min, double max );
+	void setNumberOfSteps( int steps );
+
 	virtual void dumpState( std::ostream &os );
 
 protected:
 
+	lfx::core::ChannelDataPtr createPresetVector( ChannelDatavtkDataObjectPtr cddoPtr );
+	vtkMaskPoints* createMaskPoints( ChannelDatavtkDataObjectPtr cddoPtr );
+	vtkThresholdPoints* filterByThreshHold( ChannelDatavtkDataObjectPtr cddoPtr, vtkMaskPoints *ptmask );
+
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
 
-    double m_mask;
+protected:
+	double _vectorRatioFactor;
+    //double m_mask;
+	// int _vectorRatioFactor; // this is m_mask
+	double _vectorThreshHold[2];
+    int _numSteps;///<number of steps
+
 };
 
 typedef boost::shared_ptr< VTKVectorFieldRTP > VTKVectorFieldRTPPtr;

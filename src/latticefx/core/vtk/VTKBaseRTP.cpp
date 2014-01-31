@@ -20,6 +20,12 @@
 #include <latticefx/core/vtk/VTKBaseRTP.h>
 #include <vtkBox.h>
 
+#include <vtkDataObject.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkAlgorithm.h>
+#include <vtkAlgorithmOutput.h>
+
 namespace lfx
 {
 
@@ -78,6 +84,16 @@ void VTKBaseRTP::SetPlaneDirection( const CuttingPlane::SliceDirection& planeDir
 {
     m_planeDirection = planeDirection;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::setDatasetBounds(double *bounds)
+{
+	for( int i=0; i<6; i++ )
+	{
+		_dsBounds[i] = bounds[i];
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetRoiBox(const std::vector<double> &roiBox)
 {
@@ -155,6 +171,25 @@ vtkSmartPointer<vtkExtractPolyDataGeometry> VTKBaseRTP::GetRoiPoly(vtkAlgorithmO
 	extract->SetInputConnection(0, pOutPin);
 
 	return extract;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void VTKBaseRTP::ConnectGeometryFilter( vtkDataObject* tempVtkDO, vtkAlgorithmOutput* outputPort, vtkAlgorithm* connectTo )
+{
+    if( tempVtkDO->IsA( "vtkCompositeDataSet" ) )
+    {
+        vtkCompositeDataGeometryFilter* multiGroupGeomFilter = vtkCompositeDataGeometryFilter::New();
+        multiGroupGeomFilter->SetInputConnection( outputPort );
+        connectTo->SetInputConnection( multiGroupGeomFilter->GetOutputPort( 0 ) );
+        multiGroupGeomFilter->Delete();
+    }
+    else
+    {
+        vtkDataSetSurfaceFilter* surfaceFilter = vtkDataSetSurfaceFilter::New();
+        surfaceFilter->SetInputConnection( outputPort );
+        connectTo->SetInputConnection( surfaceFilter->GetOutputPort() );
+        surfaceFilter->Delete();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

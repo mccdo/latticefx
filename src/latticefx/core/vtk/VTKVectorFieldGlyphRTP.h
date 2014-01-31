@@ -21,8 +21,8 @@
 #define __LATTICEFX_CORE_VTK_VECTORFIELDGLYPH_RTP_OPERATION_H__ 1
 
 #include <latticefx/core/vtk/VTKBaseRTP.h>
-
 #include <latticefx/core/vtk/Export.h>
+
 
 namespace lfx
 {
@@ -65,7 +65,7 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
-    void SetMaskValue( double value );
+    void SetMaskValue( double value ); // same as vectorRatioFactor
 
 	virtual void dumpState( std::ostream &os );
 
@@ -73,6 +73,8 @@ protected:
 
 	virtual void serializeData( JsonSerializer *json ) const;
 	virtual bool loadData( JsonSerializer *json, IObjFactory *pfactory, std::string *perr=NULL );
+
+protected:
 
     double m_mask;
 };
