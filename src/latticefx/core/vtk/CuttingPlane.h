@@ -45,10 +45,13 @@ class LATTICEFX_CORE_VTK_EXPORT CuttingPlane
 public:
     typedef enum
     {
+		BEGIN = -1,
+		CUSTOM = -1,
         X_PLANE = 0,
         Y_PLANE = 1,
         Z_PLANE = 2,
-		ALL = 3
+		ALL = 3,
+		END = 3
     } SliceDirection;
 
 	static std::string getEnumName( SliceDirection e );

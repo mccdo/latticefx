@@ -62,9 +62,11 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
-	void setVectorRatioFactor( double value );
-	void setVectorThreshHold( double min, double max );
-	void setNumberOfSteps( int steps );
+	bool setVectorRatioFactor( double value );
+	bool setVectorThreshHold( double min, double max );
+	bool setNumberOfSteps( int steps );
+	bool setPlaneOrigin( double o[3] );
+	bool setPlaneNormal( double n[3] );
 
 	virtual void dumpState( std::ostream &os );
 
@@ -83,6 +85,10 @@ protected:
 	// int _vectorRatioFactor; // this is m_mask
 	double _vectorThreshHold[2];
     int _numSteps;///<number of steps
+
+	// only used if planeDiretion is CuttinPlan::CUSTOM
+	double _planeOrigin[3];
+	double _planeNormal[3];
 
 };
 

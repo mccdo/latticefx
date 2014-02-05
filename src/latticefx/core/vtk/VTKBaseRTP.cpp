@@ -86,6 +86,18 @@ void VTKBaseRTP::SetPlaneDirection( const CuttingPlane::SliceDirection& planeDir
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+bool VTKBaseRTP::SetPlaneDirection( int planeDirection )
+{
+	if( planeDirection < CuttingPlane::SliceDirection::BEGIN ) planeDirection = CuttingPlane::SliceDirection::BEGIN;
+	if( planeDirection > CuttingPlane::SliceDirection::END ) planeDirection = CuttingPlane::SliceDirection::END;
+
+	if( m_planeDirection == planeDirection ) return false;
+
+	m_planeDirection = (CuttingPlane::SliceDirection)planeDirection;
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::setDatasetBounds(double *bounds)
 {
 	for( int i=0; i<6; i++ )

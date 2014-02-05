@@ -94,6 +94,7 @@ public:
 
     ///Set the plane direction if it is needed for this rtp operation
     void SetPlaneDirection( const CuttingPlane::SliceDirection& planeDirection );
+	bool SetPlaneDirection( int planeDirection );
 
 	///Set the dataset bounding box
 	void setDatasetBounds( double *bounds );

@@ -20,6 +20,7 @@
 #include <latticefx/core/vtk/VTKVectorFieldRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyData.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+#include <latticefx/core/MiscUtils.h>
 
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
@@ -50,25 +51,90 @@ VTKVectorFieldRTP::VTKVectorFieldRTP() : VTKBaseRTP( lfx::core::RTPOperation::Ch
 {
 	_vectorThreshHold[ 0 ] = 0.0;
     _vectorThreshHold[ 1 ] = 100.0;
+
+	_planeOrigin[0] = 0;
+	_planeOrigin[1] = 0;
+	_planeOrigin[2] = 0;
+	_planeNormal[0] = 1;
+	_planeNormal[1] = 0;
+	_planeNormal[2] = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::setVectorRatioFactor( double value )
+bool VTKVectorFieldRTP::setVectorRatioFactor( double value )
 {
-	_vectorRatioFactor = value;
+	if( MiscUtils::isnot_close( _vectorRatioFactor , value, .001 ) )
+	{
+		_vectorRatioFactor = value;
+		return true;
+	}
+	
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::setNumberOfSteps( int steps )
+bool VTKVectorFieldRTP::setNumberOfSteps( int steps )
 {
-	_numSteps = steps;
+	if( _numSteps != steps )
+	{
+		_numSteps = steps;
+		return true;
+	}
+
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKVectorFieldRTP::setVectorThreshHold( double min, double max )
+bool VTKVectorFieldRTP::setVectorThreshHold( double min, double max )
 {
-	_vectorThreshHold[ 0 ] = min;
-    _vectorThreshHold[ 1 ] = max;
+	bool modified = false;
+	if( MiscUtils::isnot_close( _vectorThreshHold[ 0 ] , min, .001 ) )
+	{
+		_vectorThreshHold[ 0 ] = min;
+		modified = true;
+	}
+
+	if( MiscUtils::isnot_close( _vectorThreshHold[ 1 ] , max, .001 ) )
+	{
+		_vectorThreshHold[ 1 ] = max;
+		modified = true;
+	}
+    
+	return modified;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorFieldRTP::setPlaneOrigin( double o[3] )
+{
+	bool modified = false;
+
+	for( int i=0; i<3; i++ )
+	{
+		if( MiscUtils::isnot_close( _planeOrigin[ i ] , o[ i ], .001 ) )
+		{
+			_planeOrigin[ i ] = o[ i ];
+			modified = true;
+		}
+	}
+
+	return modified;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKVectorFieldRTP::setPlaneNormal( double n[3] )
+{
+	bool modified = false;
+
+	for( int i=0; i<3; i++ )
+	{
+		if( MiscUtils::isnot_close( _planeNormal[ i ] , n[ i ], .001 ) )
+		{
+			_planeNormal[ i ] = n[ i ];
+			modified = true;
+		}
+	}
+
+	return modified;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,8 +249,22 @@ lfx::core::ChannelDataPtr VTKVectorFieldRTP::createPresetVector( ChannelDatavtkD
 	cddoPtr->GetBounds( bounds );
 	
 
+	if( m_planeDirection == CuttingPlane::SliceDirection::CUSTOM)
+	{
+		vtkPlane *plane = vtkPlane::New();
+		plane->SetOrigin( _planeOrigin );
+		plane->SetNormal( _planeNormal );
 
-    if( m_planeDirection < 3 )
+		vtkCutter* cutter = vtkCutter::New();
+        cutter->SetInput( tempVtkDO );
+        cutter->SetCutFunction( plane );
+        cutter->Update();
+        c2p->SetInputConnection( cutter->GetOutputPort() );
+		//c2p->Update();
+        cutter->Delete();
+		plane->Delete();
+	}
+    else if( m_planeDirection < 3 )
     {
 		CuttingPlane cuttingPlane(bounds, m_planeDirection, _numSteps);
                 
