@@ -18,8 +18,9 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/VTKBaseRTP.h>
-#include <vtkBox.h>
+#include <latticefx/core/MiscUtils.h>
 
+#include <vtkBox.h>
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
@@ -50,9 +51,15 @@ void VTKBaseRTP::GetMinMaxScalarRangeValue( double *minVal, double *maxVal )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKBaseRTP::SetRequestedValue( double const value )
+bool VTKBaseRTP::SetRequestedValue( double const value )
 {
-    m_requestedValue = value;
+	if( MiscUtils::isnot_close( m_requestedValue, value, .001 ) )
+	{
+		m_requestedValue = value;
+		return true;
+	}
+
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void VTKBaseRTP::SetActiveScalar( std::string const scalarName )

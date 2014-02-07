@@ -74,7 +74,7 @@ public:
 	virtual std::string getClassName() const { return std::string( "VTKBaseRTP" ); }
 
     ///Set the value for a plane location or scalar value for an isosurface
-    void SetRequestedValue( double const value );
+    bool SetRequestedValue( double const value );
 
     ///Set the min max values for scalar ranges for coloring objects
     void SetMinMaxScalarRangeValue( double const minVal, double const maxVal );
