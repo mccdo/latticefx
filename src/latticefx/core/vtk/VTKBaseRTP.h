@@ -77,7 +77,7 @@ public:
     bool SetRequestedValue( double const value );
 
     ///Set the min max values for scalar ranges for coloring objects
-    void SetMinMaxScalarRangeValue( double const minVal, double const maxVal );
+    bool SetMinMaxScalarRangeValue( double const minVal, double const maxVal );
 	void GetMinMaxScalarRangeValue( double *minVal, double *maxVal );
 
     ///Set the active scalar to use for this pipeline

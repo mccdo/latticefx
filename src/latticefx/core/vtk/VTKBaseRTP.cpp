@@ -37,10 +37,23 @@ namespace vtk
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-void VTKBaseRTP::SetMinMaxScalarRangeValue( double const minVal, double const maxVal )
-{
-    m_minScalarValue = minVal;
-    m_maxScalarValue = maxVal;
+bool VTKBaseRTP::SetMinMaxScalarRangeValue( double const minVal, double const maxVal )
+{   
+	bool modified = false;
+
+	if( MiscUtils::isnot_close( m_minScalarValue, minVal, .001 ) )
+	{
+		m_minScalarValue = minVal;
+		modified = true;
+	}
+
+	if( MiscUtils::isnot_close( m_maxScalarValue, maxVal, .001 ) )
+	{
+		m_maxScalarValue = maxVal;
+		modified = true;
+	}
+
+	return modified;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
