@@ -59,7 +59,8 @@ public:
         m_maxScalarValue( 100.0 ),
         m_mask( 1.0 ),
         m_planeDirection( CuttingPlane::X_PLANE ),
-		m_roiExtractBoundaryCells( true )
+		m_roiExtractBoundaryCells( true ),
+		_dsBounds( 6, 0 )
     {
         ;
     }
