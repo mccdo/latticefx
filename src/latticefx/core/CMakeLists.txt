@@ -27,6 +27,7 @@ set( _headerFiles
     DBOperations.h
     HierarchyUtils.h
     JsonSerializer.h
+    LineRenderer.h
     LoadRequest.h
     Log.h
     LogBase.h
@@ -72,6 +73,7 @@ set( _sourceFiles
     DBOperations.cpp
     HierarchyUtils.cpp
     JsonSerializer.cpp
+    LineRenderer.cpp
     LoadRequest.cpp
     Log.cpp
     ObjBase.cpp
