@@ -47,6 +47,21 @@ ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* 
     m_pdm->UseLookupTableScalarRangeOn();
 }
 ////////////////////////////////////////////////////////////////////////////////
+ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( vtkPolyData* pd, const std::string& name, const std::string& logName )
+    :
+    ChannelData( name, logName ),
+    m_pdm( vtkPolyDataMapper::New() )
+{
+    m_pdm->SetInput( pd );
+    //m_pdm->DebugOn();
+    //mapper->SetScalarModeToDefault();
+    //mapper->SetColorModeToDefault();
+    //mapper->SetColorModeToMapScalars();
+    //mapper->InterpolateScalarsBeforeMappingOff();
+    m_pdm->SetScalarModeToUsePointFieldData();
+    m_pdm->UseLookupTableScalarRangeOn();
+}
+////////////////////////////////////////////////////////////////////////////////
 ChannelDatavtkPolyDataMapper::ChannelDatavtkPolyDataMapper( const ChannelDatavtkPolyDataMapper& rhs )
     :
     ChannelData( rhs ),

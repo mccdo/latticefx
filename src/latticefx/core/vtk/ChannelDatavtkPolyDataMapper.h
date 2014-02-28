@@ -46,6 +46,7 @@ class LATTICEFX_CORE_VTK_EXPORT ChannelDatavtkPolyDataMapper : public lfx::core:
 public:
 
     ChannelDatavtkPolyDataMapper( vtkAlgorithmOutput* const pd, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
+	ChannelDatavtkPolyDataMapper( vtkPolyData* const pd, const std::string& name = std::string( "" ), const std::string& logName = std::string( "" ) );
     ChannelDatavtkPolyDataMapper( const ChannelDatavtkPolyDataMapper& rhs );
     virtual ~ChannelDatavtkPolyDataMapper();
 
