@@ -28,6 +28,7 @@
 
 class vtkPolyDataMapper;
 class vtkAlgorithmOutput;
+class vtkPolyData;
 
 namespace lfx
 {
