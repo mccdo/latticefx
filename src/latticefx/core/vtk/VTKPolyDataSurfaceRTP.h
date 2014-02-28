@@ -66,6 +66,9 @@ public:
     ///channel method since we do not have a ChannelData already
     virtual lfx::core::ChannelDataPtr channel( const lfx::core::ChannelDataPtr maskIn );
 
+	bool setWarpSurface( bool value );
+	bool setWarpedContourScale( double value );
+
 	virtual void dumpState( std::ostream &os );
 
 protected:

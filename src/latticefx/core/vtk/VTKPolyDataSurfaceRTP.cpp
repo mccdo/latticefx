@@ -20,6 +20,7 @@
 #include <latticefx/core/vtk/VTKPolyDataSurfaceRTP.h>
 #include <latticefx/core/vtk/ChannelDatavtkPolyDataMapper.h>
 #include <latticefx/core/vtk/ChannelDatavtkDataObject.h>
+#include <latticefx/core/MiscUtils.h>
 
 #include <vtkDataObject.h>
 #include <vtkCompositeDataGeometryFilter.h>
@@ -77,6 +78,30 @@ lfx::core::ChannelDataPtr VTKPolyDataSurfaceRTP::channel( const lfx::core::Chann
     normalGen->Delete();
 
     return( cdpd );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKPolyDataSurfaceRTP::setWarpSurface( bool value )
+{
+	if( _warpSurface != value )
+	{
+		_warpSurface = value;
+		return true;
+	}
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool VTKPolyDataSurfaceRTP::setWarpedContourScale( double value )
+{
+	if( MiscUtils::isnot_close( _warpedContourScale , value, .001 ) )
+	{
+		_warpedContourScale = value;
+		return true;
+	}
+
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
