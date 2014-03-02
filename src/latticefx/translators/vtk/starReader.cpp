@@ -86,7 +86,7 @@ vtkUnstructuredGrid* starReader::GetUnsGrid( void )
 
     std::ifstream fvertices( this->starVertFileName.c_str() );
 
-    if( fvertices == NULL )
+    if( !fvertices.is_open() )
     {
         std::cerr << "\nError - Cannot open the designated vertex file: "
                   << this->starVertFileName << std::endl;
@@ -206,7 +206,7 @@ vtkUnstructuredGrid* starReader::GetUnsGrid( void )
     std::cout << "\nReading cell data from " << this->starCellFileName << std::endl;
 
     std::ifstream fcells( this->starCellFileName.c_str() );
-    if( fcells == NULL )
+    if( !fcells.is_open() )
     {
         std::cerr << "\nError - Cannot open the designated cell file: "
                   << this->starCellFileName << std::endl;
@@ -1004,7 +1004,7 @@ vtkUnstructuredGrid* starReader::GetUnsGrid( void )
     float* data = new float [ numColumns ];
 
     std::ifstream fsolns( this->starUsrFileName.c_str(), std::ios::in );
-    if( fsolns == NULL )
+    if( !fsolns.is_open() )
     {
         std::cerr << "\nError - Cannot open the designated solution file: "
                   << this->starUsrFileName << std::endl;
