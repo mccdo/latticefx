@@ -478,7 +478,7 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
     if( pointData == NULL )
     {
 		LFX_ERROR( "VTKStreamlineRTP::channel : pd point data is null." );
-        return NULL;
+        return lfx::core::ChannelDataPtr();
     }
     //pointData->Update();
 
@@ -486,7 +486,7 @@ lfx::core::ChannelDataPtr VTKStreamlineRTP::channel( const lfx::core::ChannelDat
     if( points == NULL )
     {
 		LFX_ERROR( "VTKStreamlineRTP::channel : points are null." );
-        return NULL;
+        return lfx::core::ChannelDataPtr();
     }
 
 
