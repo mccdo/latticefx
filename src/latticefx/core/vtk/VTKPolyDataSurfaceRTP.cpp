@@ -54,6 +54,12 @@ lfx::core::ChannelDataPtr VTKPolyDataSurfaceRTP::channel( const lfx::core::Chann
 	//vtkCellTypes* types = vtkCellTypes::New();
     //pd->GetCellTypes( types );
 
+	vtkPoints *pts = pd->GetPoints();
+	if( !pts )
+	{
+		std::cout << "VTKPolyDataSurfaceRTP::channel : There are no points in this surface." << std::endl;
+	}
+
 	vtkPolyDataNormals* normalGen = vtkPolyDataNormals::New();
 	normalGen->SetInput( pd );
     normalGen->NonManifoldTraversalOn();
@@ -64,7 +70,17 @@ lfx::core::ChannelDataPtr VTKPolyDataSurfaceRTP::channel( const lfx::core::Chann
 	if( _warpSurface )
 	{
 		vtkWarpVector* warper = vtkWarpVector::New();
-		warper->SetInput( normalGen->GetOutput() );
+		vtkPolyData* pd2 = normalGen->GetOutput();
+		vtkPoints *pts2 = pd2->GetPoints(); // if we don't have any points, then we need to go back to the original polydata.
+		if( !pts2 )
+		{
+			warper->SetInput( pd );
+		}
+		else
+		{
+			warper->SetInput( normalGen->GetOutput() );
+		}
+
         warper->SetScaleFactor( _warpedContourScale );
         warper->Update();//can this go???
 		cdpd.reset( new lfx::core::vtk::ChannelDatavtkPolyDataMapper( warper->GetOutputPort(), "vtkPolyDataMapper" ) );
@@ -72,7 +88,17 @@ lfx::core::ChannelDataPtr VTKPolyDataSurfaceRTP::channel( const lfx::core::Chann
 	}
 	else
 	{
-		cdpd.reset( new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normalGen->GetOutput(), "vtkPolyDataMapper" ) );
+		vtkPolyData* pd2 = normalGen->GetOutput();
+		vtkPoints *pts2 = pd2->GetPoints();
+		if( !pts2 )
+		{
+			// if we don't have any points, then we need to go back to the original polydata.
+			cdpd.reset( new lfx::core::vtk::ChannelDatavtkPolyDataMapper( pd, "vtkPolyDataMapper" ) );
+		}
+		else
+		{
+			cdpd.reset( new lfx::core::vtk::ChannelDatavtkPolyDataMapper( normalGen->GetOutput(), "vtkPolyDataMapper" ) );
+		}
 	}
 
     normalGen->Delete();

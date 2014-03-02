@@ -90,7 +90,7 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
 
 	m_curScalar = m_activeScalar;
     if( !m_colorByScalar.empty() )
-    {
+    { 
         m_curScalar = m_colorByScalar;
     }
 

@@ -44,6 +44,7 @@
 #include <latticefx/core/vtk/VTKContourSliceRTP.h>
 #include <latticefx/core/vtk/VTKSurfaceRenderer.h>
 #include <latticefx/core/vtk/VTKIsoSurfaceRTP.h>
+#include <latticefx/core/vtk/VTKPolyDataSurfaceRTP.h>
 #include <latticefx/core/vtk/ObjFactoryVtk.h>
 
 #include <osgViewer/Viewer>
@@ -220,6 +221,73 @@ bool savePipeline( lfx::core::DataSetPtr dsp, const std::string &jsonfile )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+lfx::core::DataSetPtr prepareVolumePolyDataSurf(  osg::ref_ptr< osg::Group > tempGroup, 
+									  lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr, 
+									  lfx::core::vtk::DataSetPtr tempDataSet,
+									  bool serialize, 
+									  bool loadPipeLine )
+{
+	//Create the DataSet for this visualization with VTK
+	lfx::core::DataSetPtr dsp( new lfx::core::DataSet() );
+	dsp->addChannel( dobjPtr );
+
+	// load pipeline from json serialization and return
+	if( loadPipeLine )
+	{
+		if( !loadPipeline( dsp, "vtk-surface-vol3.json" ) ) return lfx::core::DataSetPtr();
+
+		std::cout << "lfx...creating data from serialization..." << std::endl;
+		tempGroup->addChild( dsp->getSceneData() );
+		std::cout << "...finished creating data from serialization. " << std::endl;
+
+		return dsp;
+	}
+
+	lfx::core::vtk::VTKPolyDataSurfaceRTPPtr rtp( new lfx::core::vtk::VTKPolyDataSurfaceRTP() );
+
+	const std::string scalar = tempDataSet->GetActiveScalarName();
+	const std::string vector = tempDataSet->GetActiveVectorName();
+
+#if 0
+	// test roi
+	std::vector<double> bounds;
+	bounds.resize(6);
+	tempDataSet->GetBounds(&bounds[0]);
+
+	bounds[1] = bounds[0] + fabs(bounds[1] - bounds[0])/2;
+	bounds[3] = bounds[2] + fabs(bounds[3] - bounds[2])/2.;
+	//bounds[5] = bounds[4] + fabs(bounds[5] - bounds[4])/2.;
+	isosurfaceRTP->SetRoiBox(bounds);
+	isosurfaceRTP->ExtractBoundaryCells(true);
+#endif
+
+	//rtp->SetActiveScalar( scalar );
+	rtp->addInput( "vtkDataObject" );
+	dsp->addOperation( rtp );
+
+	//Try the vtkActor renderer
+	lfx::core::vtk::VTKSurfaceRendererPtr renderOp2( new lfx::core::vtk::VTKSurfaceRenderer() );
+	renderOp2->SetActiveVector( vector );
+	renderOp2->SetActiveScalar( scalar );
+	renderOp2->addInput( "vtkPolyDataMapper" );
+	renderOp2->addInput( "vtkDataObject" );
+	dsp->setRenderer( renderOp2 );
+
+	std::cout << "lfx...creating iso surface data..." << std::endl;
+	tempGroup->addChild( dsp->getSceneData() );
+	std::cout << "...finished creating data. " << std::endl;
+	renderOp2->dumpUniformInfo( std::cout );
+
+	if( serialize )
+	{
+		if( !savePipeline( dsp, "vtk-surface-vol3.json" ) ) return lfx::core::DataSetPtr();
+		return dsp;
+	}
+
+	return( dsp );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup, 
 									  lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr, 
 									  lfx::core::vtk::DataSetPtr tempDataSet,
@@ -244,6 +312,8 @@ lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup,
 
 	lfx::core::vtk::VTKIsoSurfaceRTPPtr isosurfaceRTP( new lfx::core::vtk::VTKIsoSurfaceRTP() );
 
+	const std::string scalar = tempDataSet->GetActiveScalarName();
+	const std::string vector = tempDataSet->GetActiveVectorName();
 
 #if 0
 	// test roi
@@ -260,9 +330,12 @@ lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup,
 #if 0
 	isosurfaceRTP->SetRequestedValue( 500.0 );
 	isosurfaceRTP->SetActiveScalar( "200_to_1000" );
-#else
+#elif 0
 	isosurfaceRTP->SetRequestedValue( 150.0 );
 	isosurfaceRTP->SetActiveScalar( "Momentum_magnitude" );
+#else
+	isosurfaceRTP->SetRequestedValue( 150.0 );
+	isosurfaceRTP->SetActiveScalar( scalar );
 #endif
 	isosurfaceRTP->addInput( "vtkDataObject" );
 	dsp->addOperation( isosurfaceRTP );
@@ -272,9 +345,12 @@ lfx::core::DataSetPtr prepareVolume2(  osg::ref_ptr< osg::Group > tempGroup,
 #if 0
 	renderOp2->SetActiveVector( "steve's_vector" );
 	renderOp2->SetActiveScalar( "200_to_1000" );
-#else
+#elif 0
 	renderOp2->SetActiveVector( "Momentum" );
 	renderOp2->SetActiveScalar( "Momentum_magnitude" );
+#else
+	renderOp2->SetActiveVector( vector );
+	renderOp2->SetActiveScalar( scalar );
 #endif
 	renderOp2->addInput( "vtkPolyDataMapper" );
 	renderOp2->addInput( "vtkDataObject" );
@@ -340,12 +416,19 @@ lfx::core::DataSetPtr prepareVolume1(  osg::ref_ptr< osg::Group > tempGroup,
 
 	//Try the vtkActor renderer
 	lfx::core::vtk::VTKSurfaceRendererPtr renderOp( new lfx::core::vtk::VTKSurfaceRenderer() );
+
+	const std::string scalar = tempDataSet->GetActiveScalarName();
+	const std::string vector = tempDataSet->GetActiveVectorName();
+
 #if 0
 	renderOp->SetActiveVector( "steve's_vector" );
 	renderOp->SetActiveScalar( "200_to_1000" );
-#else
+#elif 0
 	renderOp->SetActiveVector( "Momentum" );
 	renderOp->SetActiveScalar( "Momentum_magnitude" );
+#else
+	renderOp->SetActiveVector( vector );
+	renderOp->SetActiveScalar( scalar );
 #endif
 	renderOp->addInput( "vtkPolyDataMapper" );
 	renderOp->addInput( "vtkDataObject" );
@@ -400,16 +483,17 @@ int main( int argc, char** argv )
     //just one instance of it
     lfx::core::vtk::ChannelDatavtkDataObjectPtr dobjPtr( new lfx::core::vtk::ChannelDatavtkDataObject( tempDataSet->GetDataSet(), "vtkDataObject" ) );
 
-	lfx::core::DataSetPtr dsp1;
-    lfx::core::DataSetPtr dsp2;
+	lfx::core::DataSetPtr dsp1, dsp2, dsp3;
 	if( serialize )
 	{
 		// debug
-		std::ofstream osPre1, osPst1, osPre2, osPst2;
+		std::ofstream osPre1, osPst1, osPre2, osPst2, osPre3, osPst3;
 		osPre1.open( "DataSetDumpPreVol1.txt" );
 		osPst1.open( "DataSetDumpPstVol1.txt" );
 		osPre2.open( "DataSetDumpPreVol2.txt" );
 		osPst2.open( "DataSetDumpPstVol2.txt" );
+		osPre3.open( "DataSetDumpPreVol3.txt" );
+		osPst3.open( "DataSetDumpPstVol3.txt" );
 
 		//lfx::core::DataSetPtr dsp2;
 		osg::ref_ptr< osg::Group > grp = new osg::Group();
@@ -418,25 +502,32 @@ int main( int argc, char** argv )
 		if( dsp1 == NULL ) return -1;
 		dsp2 = prepareVolume2( grp, dobjPtr, tempDataSet, true, false );
 		if( dsp2 == NULL ) return -1;
+		dsp3 = prepareVolumePolyDataSurf( grp, dobjPtr, tempDataSet, true, false );
+		if( dsp3 == NULL ) return -1;
 
 		// debug
 		dsp1->dumpState( osPre1 );
 		dsp2->dumpState( osPre2 );
+		dsp3->dumpState( osPre3 );
 		
 
 		dsp1 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, true );
 		if( dsp1 == NULL ) return -1;
 		dsp2 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, true );
 		if( dsp2 == NULL ) return -1;
+		dsp3 = prepareVolumePolyDataSurf( tempGroup, dobjPtr, tempDataSet, false, true );
+		if( dsp3 == NULL ) return -1;
 
 		// debug
 		dsp1->dumpState( osPst1 );
 		dsp2->dumpState( osPst2 );
+		dsp3->dumpState( osPst3 );
 	}
 	else
 	{
-		dsp2 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
-		dsp1 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
+		dsp1 = prepareVolume1( tempGroup, dobjPtr, tempDataSet, false, false );
+		dsp2 = prepareVolume2( tempGroup, dobjPtr, tempDataSet, false, false );
+		dsp3 = prepareVolumePolyDataSurf( tempGroup, dobjPtr, tempDataSet, false, false );
 	}
 
     //And do not forget to cleanup the algorithm executive prototype
@@ -446,7 +537,7 @@ int main( int argc, char** argv )
     viewer.setUpViewInWindow( 10, 30, 800, 440 );
     // Obtain the data set's scene graph and add it to the viewer.
     viewer.setSceneData( tempGroup.get() );
-    viewer.addEventHandler( new MyKeyHandler( dsp1, tempGroup.get(), scalars, vectors ) );
+    viewer.addEventHandler( new MyKeyHandler( dsp3, tempGroup.get(), scalars, vectors ) );
 
     return( viewer.run() );
 }
