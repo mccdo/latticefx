@@ -60,9 +60,9 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkPolyDataMapper >( channelDataTemp )->GetPolyDataMapper()->GetInput();
     /*{
         vtkXMLPolyDataWriter* writer = vtkXMLPolyDataWriter::New();
-        writer->SetInput( ( vtkPolyData* ) m_pd );
+        writer->SetInput( m_pd );
         writer->SetDataModeToAscii();
-        writer->SetFileName( "teststreamersclean.vtk" );
+        writer->SetFileName( "testpd_surface.vtp" );
         writer->Write();
         writer->Delete();
     }*/
