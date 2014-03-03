@@ -75,6 +75,7 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
     //Setup the position and direction arrays
     {
         vtkDataArray* vectorArray = pointData->GetVectors( m_activeVector.c_str() );
+		if( !vectorArray ) return NULL;
 
         double x[3];
         size_t dataSize = points->GetNumberOfPoints();
