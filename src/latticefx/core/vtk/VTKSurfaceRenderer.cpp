@@ -268,6 +268,7 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
     }
 	else
 	{
+		setTransferFunctionDestination( TF_DISABLE );
 		setTransferFunction( NULL ); // disable the transfer function.
 	}
 }
