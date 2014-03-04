@@ -266,6 +266,10 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
         setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
         setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
     }
+	else
+	{
+		setTransferFunction( NULL ); // disable the transfer function.
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,7 +279,7 @@ void VTKSurfaceRenderer::serializeData( JsonSerializer *json ) const
 	SurfaceRenderer::serializeData( json );
 
 	json->insertObj( VTKSurfaceRenderer::getClassName(), true);
-	json->insertObjValue( "activeVector", m_activeVector );
+	json->insertObjValue( "activeVector", m_activeVector ); 
 	json->insertObjValue( "activeScalar", m_activeScalar );
 	json->insertObjValue( "colorByScalar", m_colorByScalar );
 	json->insertObjValue( "curScalar", m_curScalar );
