@@ -18,7 +18,7 @@
  *
  *************** <auto-copyright.rb END do not edit this line> ***************/
 #include <latticefx/core/vtk/IVTKRenderer.h>
-
+#include <latticefx/core/TransferFunctionUtils.h>
 
 namespace lfx
 {
@@ -64,6 +64,39 @@ void IVTKRenderer::SetColorByScalar( std::string const scalarName )
 std::string IVTKRenderer::GetColorByScalar() const
 {
 	return m_colorByScalar;
+}
+////////////////////////////////////////////////////////////////////////////////
+void IVTKRenderer::transferFuncRefresh( lfx::core::Renderer *pr )
+{
+	if( m_curScalar.length() > 0 )
+	{
+		pr->setTransferFunctionInput( m_curScalar );
+
+		if( pr->getTransferFunction() == NULL )
+		{
+			pr->setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
+			pr->setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
+		}
+	}
+	else
+	{
+		pr->setTransferFunction( NULL ); // disable the transfer function.
+	}
+}
+////////////////////////////////////////////////////////////////////////////////
+void IVTKRenderer::transferFuncInit( lfx::core::Renderer *pr )
+{
+	// Configure transfer function.	
+	if( m_curScalar.length() > 0 )
+	{
+		pr->setTransferFunctionInput( m_curScalar );
+		pr->setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
+		pr->setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
+	}
+	else
+	{
+		pr->setTransferFunction( NULL ); // disable the transfer function.
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

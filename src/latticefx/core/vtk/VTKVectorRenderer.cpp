@@ -57,6 +57,8 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
 		m_refresh = false;
 	}
 
+	m_curScalar = m_activeScalar;
+
     if( !m_scalarChannels.empty() )
     {
         //Re-add all of the local inputs since they get removed in this call
@@ -65,7 +67,9 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
         {
             addInput( iter->second );
         }
-        setTransferFunctionInput( m_activeScalar );
+
+		transferFuncRefresh( this );
+
         return( lfx::core::VectorRenderer::getSceneGraph( maskIn ) );
     }
 
@@ -142,9 +146,7 @@ osg::Node* VTKVectorRenderer::getSceneGraph( const lfx::core::ChannelDataPtr mas
         }
 
         // Configure transfer function.
-        setTransferFunctionInput( m_activeScalar );
-        setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
-        setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
+		transferFuncInit( this );
     }
 
 

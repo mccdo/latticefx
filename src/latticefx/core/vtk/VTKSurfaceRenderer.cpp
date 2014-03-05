@@ -108,6 +108,8 @@ osg::Node* VTKSurfaceRenderer::getSceneGraph( const lfx::core::ChannelDataPtr ma
         {
             addInput( iter->second );
         }
+
+		transferFuncRefresh( this );
         setTransferFunctionInput( m_curScalar );
         return( lfx::core::SurfaceRenderer::getSceneGraph( maskIn ) );
     }
@@ -259,17 +261,7 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
         }
     }
 
-    if( haveScalarData )
-    {
-        // Configure transfer function.
-        setTransferFunctionInput( m_curScalar );
-        setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
-        setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
-    }
-	else
-	{
-		setTransferFunction( NULL ); // disable the transfer function.
-	}
+	transferFuncInit( this );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
 #define __LFX_CORE_IVTK_RENDERER_H__ 1
 
 #include <latticefx/core/vtk/Export.h>
+#include <latticefx/core/Renderer.h>
 #include <string>
 
 namespace lfx
@@ -65,6 +66,10 @@ public:
 	///but for streamlines scalars are only used for color and vectors are used for position
     void SetColorByScalar( std::string const scalarName );
 	std::string GetColorByScalar() const;
+
+protected:
+	void transferFuncRefresh( lfx::core::Renderer *pr );
+	void transferFuncInit( lfx::core::Renderer *pr );
 
 protected:
 

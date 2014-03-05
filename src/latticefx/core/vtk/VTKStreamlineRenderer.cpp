@@ -79,7 +79,8 @@ osg::Node* VTKStreamlineRenderer::getSceneGraph( const lfx::core::ChannelDataPtr
         {
             addInput( iter->second );
         }
-        setTransferFunctionInput( m_curScalar );
+
+		transferFuncRefresh( this );
         return( lfx::core::StreamlineRenderer::getSceneGraph( maskIn ) );
     }
 
@@ -358,13 +359,8 @@ void VTKStreamlineRenderer::SetupColorArrays( vtkPolyData* pd, const std::vector
 		haveScalarData = true;
     }
 
-    if( haveScalarData )
-    {
-        // Configure transfer function.
-        setTransferFunctionInput( m_curScalar );
-        setTransferFunction( lfx::core::loadImageFromDat( "01.dat" ) );
-        setTransferFunctionDestination( lfx::core::Renderer::TF_RGBA );
-    }
+
+    transferFuncInit( this );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
