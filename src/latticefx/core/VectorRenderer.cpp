@@ -117,6 +117,7 @@ osg::Node* VectorRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     case SIMPLE_POINTS:
     {
         osg::Geometry* geom( new osg::Geometry() );
+        addColorArray( geom );
         geom->setUseDisplayList( false );
         geom->setUseVertexBufferObjects( true );
 

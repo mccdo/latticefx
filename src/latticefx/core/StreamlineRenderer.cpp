@@ -201,6 +201,7 @@ osg::Node* StreamlineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     const float halfDimY( dimY * .5f );
     osg::Geometry* geom( osgwTools::makePlane( osg::Vec3( -halfDimX, -halfDimY, 0. ),
         osg::Vec3( dimX, 0., 0. ), osg::Vec3( 0., dimY, 0. ) ) );
+    addColorArray( geom );
     geom->setUseDisplayList( false );
     geom->setUseVertexBufferObjects( true );
     // TBD bound pad needs to be settable.

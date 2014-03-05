@@ -112,6 +112,7 @@ osg::Node* SurfaceRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     }
 
     osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
+    addColorArray( geom.get() );
     geom->setUseDisplayList( false );
     geom->setUseVertexBufferObjects( true );
 

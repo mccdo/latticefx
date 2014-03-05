@@ -92,6 +92,7 @@ osg::Node* LineRenderer::getSceneGraph( const ChannelDataPtr maskIn )
     osg::Vec3Array* norms( static_cast< osg::Vec3Array* >( sourceArray ) );
 
     osg::ref_ptr< osg::Geometry > geom( new osg::Geometry );
+    addColorArray( geom.get() );
     geom->setUseDisplayList( false );
     geom->setUseVertexBufferObjects( true );
 

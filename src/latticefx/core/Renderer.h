@@ -43,6 +43,7 @@ namespace osg
 {
 class Node;
 class StateSet;
+class Geometry;
 }
 
 namespace lfx
@@ -575,6 +576,8 @@ protected:
     \returns A valid Shader object on success. Returns NULL on failure. Note that
     osg::Program::addShader() is a no-op if the shader parameter is NULL. */
     osg::Shader* loadShader( const osg::Shader::Type type, const std::string& fileName );
+
+    void addColorArray( osg::Geometry* geom );
 
     /** \brief Register a uniform. */
     void registerUniform( const UniformInfo& info );

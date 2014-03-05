@@ -579,7 +579,14 @@ void Renderer::updateUniforms( osg::StateSet *ss)
         info._prototype->set( _tfDestMask );
         
 		pu = ss->getOrCreateUniform( info._prototype->getName() , info._prototype->getType() );
-		pu->set( _tfDestMask );
+        // If transfer function is NULL, disable using transfer function
+        // in the shader by setting tfDest to 0,0,0,0. This enables use
+        // of gl_Color (all white).
+        if( function == NULL )
+            // Use gl_Color
+            pu->set( osg::Vec4( 0., 0., 0., 0. ) );
+        else
+		    pu->set( _tfDestMask );
 		ss->addUniform( pu, osg::StateAttribute::OVERRIDE );
     }
 
@@ -818,6 +825,14 @@ osg::Shader* Renderer::loadShader( const osg::Shader::Type type, const std::stri
         return( NULL );
     }
     return( shader.release() );
+}
+
+void Renderer::addColorArray( osg::Geometry* geom )
+{
+    osg::Vec4Array* osgC = new osg::Vec4Array;
+    osgC->push_back( osg::Vec4( 1., 1., 1., 1. ) );
+    geom->setColorArray( osgC );
+    geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 }
 
 void Renderer::serializeData( JsonSerializer *json ) const
