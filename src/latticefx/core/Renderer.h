@@ -371,7 +371,6 @@ Renderer::addInput( "scalar-string-name" );
         TF_RGB = 0,
         TF_RGBA = 1,
         TF_ALPHA = 2,
-		TF_DISABLE = 3
     } TransferFunctionDestination;
     /** \brief Specify the transfer function destination.
     \details The transfer function image (setTransferFunction()) is indexed by the input

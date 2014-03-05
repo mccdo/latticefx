@@ -382,9 +382,6 @@ void Renderer::setTransferFunctionDestination( const Renderer::TransferFunctionD
     case TF_ALPHA:
         _tfDestMask.set( 0., 0., 0., 1. );
         break;
-	case TF_DISABLE:
-		_tfDestMask.set( 0., 0., 0., 0. );
-        break;
     }
 }
 Renderer::TransferFunctionDestination Renderer::getTransferFunctionDestination() const
@@ -400,8 +397,6 @@ std::string Renderer::getEnumName( TransferFunctionDestination e ) const
 		return "TF_RGB";
 	case TF_RGBA:
 		return "TF_RGBA";
-	case TF_DISABLE:
-		return "TF_DISABLE";
 	}
 
 	return "TF_ALPHA";
@@ -411,7 +406,6 @@ Renderer::TransferFunctionDestination Renderer::getEnumFromNameTrans( const std:
 {
 	if( !name.compare( "TF_RGB" )) return TF_RGB;
 	else if( !name.compare( "TF_RGBA" )) return TF_RGBA;
-	else if( !name.compare( "TF_DISABLE" )) return TF_DISABLE;
 	return TF_ALPHA;
 }
 

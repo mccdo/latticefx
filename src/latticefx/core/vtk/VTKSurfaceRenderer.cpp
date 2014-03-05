@@ -268,7 +268,6 @@ void VTKSurfaceRenderer::SetupColorArrays( vtkPolyData* pd )
     }
 	else
 	{
-		setTransferFunctionDestination( TF_DISABLE );
 		setTransferFunction( NULL ); // disable the transfer function.
 	}
 }
@@ -278,7 +277,7 @@ void VTKSurfaceRenderer::serializeData( JsonSerializer *json ) const
 {
 	// let the parent write its data
 	SurfaceRenderer::serializeData( json );
-
+	 
 	json->insertObj( VTKSurfaceRenderer::getClassName(), true);
 	json->insertObjValue( "activeVector", m_activeVector ); 
 	json->insertObjValue( "activeScalar", m_activeScalar );
