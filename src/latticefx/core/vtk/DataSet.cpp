@@ -1271,6 +1271,12 @@ const std::vector< std::string > DataSet::GetScalarNames() const
 {
     return scalarName;
 }
+
+const std::vector< std::string >& DataSet::GetTransientScalarNames() const
+{
+	return _transientScalarNames;
+}
+
 //////////////////////////////////////////////////////////////////////////
 const std::vector< std::string > DataSet::GetVectorNames() const
 {
@@ -1447,6 +1453,37 @@ double* DataSet::GetScalarRange( const std::string& scalarName )
         }
     }
     return NULL;
+}
+/////////////////////////////////////////
+void DataSet::storeTransientInfo()
+{
+	
+	lfx::vtk_utils::DataObjectHandler* dataObjectHandler = new lfx::vtk_utils::DataObjectHandler();
+
+	lfx::vtk_utils::CountNumberOfParametersCallback* getNumParamsCbk = new lfx::vtk_utils::CountNumberOfParametersCallback();
+    dataObjectHandler->SetDatasetOperatorCallback( getNumParamsCbk );
+
+    for( size_t i = 0; i < m_transientDataSets.size(); ++i )
+    {
+        vtkDataObject* tempDataSet = m_transientDataSets.at( i )->GetDataSet();
+        
+        dataObjectHandler->OperateOnAllDatasetsInObject( tempDataSet );
+    }
+
+    _transientScalarNames = getNumParamsCbk->GetParameterNames( false );
+    for( size_t i = 0; i < _transientScalarNames.size(); ++i )
+    {
+        std::cout << " scalar names " << _transientScalarNames.at( i ) << std::endl;
+    }
+
+	// set child datasets transient scalars to match parent
+	for( size_t i = 0; i < m_childDataSets.size(); ++i )
+	{
+		m_childDataSets[i]->_transientScalarNames = _transientScalarNames;
+	}
+
+	delete dataObjectHandler;
+    delete getNumParamsCbk;
 }
 /////////////////////////////
 void DataSet::Print()
@@ -1817,6 +1854,8 @@ void DataSet::LoadTransientData( const std::string& dirName, const std::string f
         m_transientDataSets.at( i )->
         SetTransientDataSetsList( m_transientDataSets );
     }
+
+	storeTransientInfo();
 }
 ////////////////////////////////////////////////////////////////////////////////
 const std::vector< DataSetPtr >& DataSet::GetTransientDataSets()
@@ -1923,6 +1962,8 @@ void DataSet::LoadTemporalDataSet( vtkDataObject* temporalDataSet )
         m_transientDataSets.at( i )->
         SetTransientDataSetsList( m_transientDataSets );
     }
+
+	storeTransientInfo();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void DataSet::InitializeVTKDataObject( vtkDataObject* tempDataObject )

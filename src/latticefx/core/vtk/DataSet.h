@@ -174,6 +174,8 @@ public:
     const std::string GetActiveScalarName();
     const std::vector< std::string > GetScalarNames() const;
 
+	const std::vector< std::string >& GetTransientScalarNames() const;
+
     void SetActiveVector( int );
     void SetActiveVector( const std::string& vectorName );
     int GetActiveVector();
@@ -305,6 +307,8 @@ public:
 protected:
     void WriteDatabaseEntry();
 
+	void storeTransientInfo();
+
 private:
     ///Load a VTK Temporal data set
     ///\param temporalDataSet The temporal data object
@@ -380,6 +384,8 @@ private:
     std::vector< std::string > scalarName;
     ///Null scalar name
     std::string m_nullScalarName;
+	///Scalar names
+    std::vector< std::string > _transientScalarNames;
     ///Vector names
     std::vector< std::string > vectorName;
     ///Null vector name
