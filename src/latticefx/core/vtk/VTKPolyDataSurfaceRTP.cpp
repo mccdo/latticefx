@@ -47,8 +47,8 @@ lfx::core::ChannelDataPtr VTKPolyDataSurfaceRTP::channel( const lfx::core::Chann
     vtkDataObject* vtkdo = cddoPtr->GetDataObject();
 	lfx::core::vtk::ChannelDatavtkPolyDataMapperPtr cdpd;
 
-	if( vtkdo == NULL ) return NULL;
-	if( !vtkdo->IsA( "vtkPolyData" ) ) return NULL;
+	if( vtkdo == NULL ) return lfx::core::ChannelDataPtr();
+	if( !vtkdo->IsA( "vtkPolyData" ) ) return lfx::core::ChannelDataPtr();
 
 	vtkPolyData* pd = ( vtkPolyData* )vtkdo;
 	//vtkCellTypes* types = vtkCellTypes::New();

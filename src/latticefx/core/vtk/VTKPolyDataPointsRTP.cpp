@@ -39,8 +39,8 @@ lfx::core::ChannelDataPtr VTKPolyDataPointsRTP::channel( const lfx::core::Channe
     lfx::core::vtk::ChannelDatavtkDataObjectPtr cddoPtr = boost::static_pointer_cast< lfx::core::vtk::ChannelDatavtkDataObject >( getInput( "vtkDataObject" ) );
     vtkDataObject* vtkdo = cddoPtr->GetDataObject();
 
-	if( vtkdo == NULL ) return NULL;
-	if( !vtkdo->IsA( "vtkPolyData" ) ) return NULL;
+	if( vtkdo == NULL ) return lfx::core::ChannelDataPtr();
+	if( !vtkdo->IsA( "vtkPolyData" ) ) return lfx::core::ChannelDataPtr();
 
 	vtkPolyData* pd = ( vtkPolyData* )vtkdo;
 	//vtkCellTypes* types = vtkCellTypes::New();
@@ -98,3 +98,4 @@ void VTKPolyDataPointsRTP::dumpState( std::ostream &os )
 }
 }
 }
+
